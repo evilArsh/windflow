@@ -1,0 +1,22 @@
+$scrollbar_width: 8px;
+$scrollbar_height: 8px;
+$scrollbar_track_color: rgba(0, 0, 0, 0);
+$scrollbar_thumb_color: rgba(0, 0, 0, 0.2);
+::-webkit-scrollbar {
+  width: $scrollbar_width;
+  height: $scrollbar_height;
+}
+::-webkit-scrollbar-track {
+  background: $scrollbar_track_color;
+}
+::-webkit-scrollbar-thumb {
+  background: $scrollbar_thumb_color;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #0005;
+}
+::-webkit-scrollbar-track:hover {
+  border-radius: 4px;
+}

@@ -1,0 +1,44 @@
+{
+  "include": [
+    "src/renderer/src/env.d.ts",
+    "src/renderer/src/*.ts",
+    "src/renderer/src/**/*.ts",
+    "src/renderer/src/**/*.tsx",
+    "src/renderer/src/**/*.vue",
+    "src/preload/*.d.ts",
+    "src/renderer/auto-imports.d.ts",
+    "src/renderer/components.d.ts"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "strict": true,
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "sourceMap": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsxImportSource": "vue",
+    // "suppressImplicitAnyIndexErrors":true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "types": ["element-plus/global", "unplugin-icons/types/vue"],
+    "noEmit": false,
+    "composite": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+
+    "paths": {
+      "@renderer/*": ["src/renderer/src/*"]
+    }
+  }
+}
