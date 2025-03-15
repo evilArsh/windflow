@@ -7,6 +7,7 @@ export default async (app: App<Element>) => {
     zh: (await import("@renderer/i18n/locales/zh.json")).default,
   }
   const i18n = createI18n({
+    legacy: false,
     locale: "zh",
     fallbackLocale: "en",
     messages,

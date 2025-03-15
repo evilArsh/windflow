@@ -1,18 +1,20 @@
 <template>
   <slot></slot>
-  <Icon v-if="config.minimized" @click="tool.min">
-    <i class="i-ic-round-indeterminate-check-box"></i>
-  </Icon>
-  <Icon v-if="config.maximized" @click="tool.max">
+  <Hover v-if="config.minimized" @click="tool.min">
+    <div class="flex items-center justify-center">
+      <i class="i-ic-round-indeterminate-check-box"></i>
+    </div>
+  </Hover>
+  <Hover v-if="config.maximized" @click="tool.max">
     <i v-if="isMax" class="i-ic:sharp-close-fullscreen"></i>
     <i v-else class="i-ic:baseline-open-in-full"></i>
-  </Icon>
-  <Icon v-if="config.closable" describe="关闭" @click="tool.close">
+  </Hover>
+  <Hover v-if="config.closable" describe="关闭" @click="tool.close">
     <i class="i-ic:round-cancel"></i>
-  </Icon>
+  </Hover>
 </template>
 <script lang="ts" setup>
-import Icon from "../../components/icon.vue"
+import Hover from "@renderer/components/Hover/index.vue"
 import { DragOffset, ScaleConfig } from "../../types"
 import useHandle, { Status } from "../../useHandle"
 import useScale from "../../useScale"

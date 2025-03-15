@@ -42,7 +42,7 @@ export default defineConfig({
       Icons({}),
       Unocss(),
       AutoImport({
-        imports: ["vue", "vue-router"],
+        imports: ["vue", "vue-router", "vue-i18n"],
         vueTemplate: true,
         dts: true,
         eslintrc: {
