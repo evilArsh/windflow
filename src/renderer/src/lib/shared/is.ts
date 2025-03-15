@@ -1,22 +1,8 @@
 import { ulid } from "ulid"
 
 /**
- * 从node与其父节点和dst比较直到body元素
- */
-export const isFinalEqual = (node?: HTMLElement | null, dst?: HTMLElement): boolean => {
-  if (!(node && dst) || node === document.body) {
-    return false
-  }
-  if (node === dst) {
-    return true
-  }
-  return isFinalEqual(node.parentElement, dst)
-}
-
-/**
  * from @vue/core packages/shared/src/index.ts
  */
-
 export const objectToString = Object.prototype.toString
 export const toTypeString = (value: unknown): string => objectToString.call(value)
 export const isArray = Array.isArray
@@ -37,23 +23,4 @@ export const isUndefined = (val: unknown): val is undefined => typeof val === "u
 export const isBoolean = (val: unknown): val is boolean => typeof val === "boolean"
 export const uniqueId = (seed?: number): string => {
   return ulid(seed)
-}
-
-/**
- * 将字符串组装为路径格式
- * @param path 路径或路径数组
- * @param withPrefix 是否需要 `/`前缀
- * @example eg: ["foo","bar"] ==> "foo/bar"
- */
-export const resolvePath = (path: string | string[], withPrefix: boolean = true): string => {
-  let p: string = ""
-  let _path = Array.isArray(path) ? path.join("/") : path
-  _path = _path.replace(/\/{1,}/g, "/")
-  _path = _path === "/" ? _path : _path.endsWith("/") ? _path.slice(0, -1) : _path
-  if (withPrefix) {
-    p = "/" + _path
-  } else {
-    p = _path.startsWith("/") ? _path.substring(1) : _path
-  }
-  return p.replace(/\/{1,}/g, "/")
 }

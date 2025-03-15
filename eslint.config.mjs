@@ -167,6 +167,8 @@ export default [
       n: pluginN,
     },
     rules: {
+      "promise/catch-or-return": "off",
+      "promise/always-return": "off",
       "n/exports-style": ["error", "module.exports"],
       "n/no-missing-import": "off",
       "n/no-unsupported-features/node-builtins": [

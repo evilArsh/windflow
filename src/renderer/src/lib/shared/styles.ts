@@ -1,4 +1,4 @@
-import { isString, isNumber } from "@renderer/lib/shared/utils"
+import { isString, isNumber } from "@renderer/lib/shared/is"
 
 /**
  * from

@@ -6,8 +6,6 @@ export type ArrMutKeys = "splice" | "push" | "pop" | "shift" | "unshift"
  */
 export type FixedArray<T, L extends number> = Pick<T[], Exclude<keyof T[], ArrMutKeys>> & {
   readonly length: L
-  // [I: number]: T
-  // [Symbol.iterator]: () => IterableIterator<T>
 }
 
 export interface CallBack {

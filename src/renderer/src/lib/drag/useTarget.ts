@@ -2,6 +2,16 @@ import { initDragAttr, initRect } from "./types"
 import type { DragAttr, Pos, Rect, Target } from "./types"
 import useEvent from "@renderer/lib/shared/useEvent"
 
+// const isFinalEqual = (node?: HTMLElement | null, dst?: HTMLElement): boolean => {
+//   if (!(node && dst) || node === document.body) {
+//     return false
+//   }
+//   if (node === dst) {
+//     return true
+//   }
+//   return isFinalEqual(node.parentElement, dst)
+// }
+
 export default <T extends HTMLElement>(): Target<T> => {
   let ele: T | undefined | null
   let rect: Rect = initRect()

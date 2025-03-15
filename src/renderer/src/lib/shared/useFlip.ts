@@ -5,7 +5,6 @@
  */
 
 import { type CallBackFn, type FixedArray } from "@renderer/lib/shared/types"
-// import { isUndefined } from "@renderer/lib/shared/utils"
 /**
  * [css3 transform property]
  * perspective
