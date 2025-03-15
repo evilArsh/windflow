@@ -49,7 +49,7 @@ export default defineConfig({
           enabled: true,
           filepath: "./.eslintrc-auto-import.json",
         },
-        dirs: ["./src/renderer/src/lib/shared"],
+        dirs: ["./src/lib/shared"],
         resolvers: [IconsResolver(), ElementPlusResolver()],
       }),
       Components({

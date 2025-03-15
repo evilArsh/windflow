@@ -1,5 +1,5 @@
 import { ulid } from "ulid"
-import type { CSSProperties } from "@/lib/shared/types"
+import type { CSSProperties } from "@renderer/lib/shared/types"
 import {
   type SandboxInstance,
   setSandbox,
