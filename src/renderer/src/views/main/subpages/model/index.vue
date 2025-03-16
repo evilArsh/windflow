@@ -1,9 +1,18 @@
+<script lang="ts" setup>
+import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
+import Provider from "./components/provider.vue"
+import Setting from "./components/setting.vue"
+</script>
 <template>
-  <div class="model-container">模型</div>
+  <SubNavLayout>
+    <template #submenu>
+      <el-scrollbar>
+        <Provider></Provider>
+      </el-scrollbar>
+    </template>
+    <template #content>
+      <Setting></Setting>
+    </template>
+  </SubNavLayout>
 </template>
-<script lang="ts" setup></script>
-<style lang="scss" scoped>
-.chat-container {
-  width: 100%;
-}
-</style>
+<style lang="scss" scoped></style>

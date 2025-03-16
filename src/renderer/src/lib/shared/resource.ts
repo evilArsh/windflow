@@ -20,20 +20,20 @@ export const resolvePath = (path: string | string[], withPrefix: boolean = true)
   return p
 }
 
-/**
- * 本地图片资源
- * @param path 图片路径
- * @returns 图片资源路径
- */
-export const localImg = (path: string) => {
-  return new URL(`/src/assets/images/${path}`, import.meta.url).href
-}
+// /**
+//  * 本地图片资源
+//  * @param path 图片路径
+//  * @returns 图片资源路径
+//  */
+// export const localImg = (path: string) => {
+//   return new URL(`/src/assets/images/${path}`, import.meta.url).href
+// }
 
-/**
- * 本地资源
- * @param path 资源路径
- * @returns 资源路径
- */
-export const localAssets = (path: string) => {
-  return new URL(`/src/assets/${path}`, import.meta.url).href
-}
+// /**
+//  * 本地资源
+//  * @param path 资源路径
+//  * @returns 资源路径
+//  */
+// export const localAssets = (path: string) => {
+//   return new URL(`/src/assets/${path}`, import.meta.url).href
+// }

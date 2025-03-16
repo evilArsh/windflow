@@ -2,8 +2,14 @@
   "app": {
     "name": "糖果盒"
   },
+  "en": "English",
+  "model": {
+    "apiKey": "API Key",
+    "apiUrl": "API地址"
+  },
   "nav": {
     "chat": "聊天",
-    "modelSetting": "模型配置"
-  }
+    "modelSetting": "模型"
+  },
+  "zh": "简体中文"
 }

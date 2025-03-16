@@ -1,16 +1,17 @@
 import { App } from "vue"
 import { createI18n } from "vue-i18n"
+import en from "@renderer/i18n/locales/en.json"
+import zh from "@renderer/i18n/locales/zh.json"
 
 export default async (app: App<Element>) => {
-  const messages = {
-    en: (await import("@renderer/i18n/locales/en.json")).default,
-    zh: (await import("@renderer/i18n/locales/zh.json")).default,
-  }
   const i18n = createI18n({
     legacy: false,
     locale: "zh",
     fallbackLocale: "en",
-    messages,
+    messages: {
+      en,
+      zh,
+    },
   })
   app.use(i18n)
 }

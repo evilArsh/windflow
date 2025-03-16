@@ -1,8 +1,31 @@
+<script lang="ts" setup>
+import navStore from "@renderer/pinia/nav.store"
+import { storeToRefs } from "pinia"
+import I18n from "./i18n.vue"
+const { page, defaultRoute } = storeToRefs(navStore())
+const route = useRoute()
+const menuEv = {
+  onSelect: (key: string) => {
+    defaultRoute.value = key
+  },
+}
+const status = reactive({
+  dark: false,
+  toggleDark: () => {
+    status.dark = !status.dark
+    document.documentElement.classList.toggle("dark", status.dark)
+  },
+})
+
+onMounted(() => {
+  defaultRoute.value = route.path
+})
+</script>
 <template>
   <div class="nav-container">
     <div class="nav-menu">
       <el-scrollbar>
-        <el-menu :default-active="defaultRoute" @select="event.onSelect" router>
+        <el-menu :default-active="defaultRoute" @select="menuEv.onSelect" router>
           <el-menu-item v-for="item in page" :key="item.index" :index="item.index" :disabled="item.disabled">
             <div class="nav-menu-item">
               <Hover background still-lock :default-lock="defaultRoute == item.index">
@@ -20,29 +43,24 @@
     </div>
     <div class="nav-bottom">
       <Hover background>
+        <div class="nav-bottom-item" @click="status.toggleDark">
+          <i-ic:baseline-mode-night v-if="status.dark" class="text-1.4rem"></i-ic:baseline-mode-night>
+          <i-ic:twotone-light-mode v-else class="text-1.4rem"></i-ic:twotone-light-mode>
+        </div>
+      </Hover>
+      <Hover background>
         <div class="nav-bottom-item">
-          <i-mdi:settings class="text-1.8rem"></i-mdi:settings>
+          <I18n></I18n>
+        </div>
+      </Hover>
+      <Hover background>
+        <div class="nav-bottom-item">
+          <i-mdi:settings class="text-1.4rem"></i-mdi:settings>
         </div>
       </Hover>
     </div>
   </div>
 </template>
-
-<script lang="ts" setup>
-import navStore from "@renderer/pinia/nav.store"
-import { storeToRefs } from "pinia"
-const { page, defaultRoute } = storeToRefs(navStore())
-const route = useRoute()
-const event = {
-  onSelect: (key: string) => {
-    defaultRoute.value = key
-  },
-}
-
-onMounted(() => {
-  defaultRoute.value = route.path
-})
-</script>
 
 <style lang="scss" scoped>
 .nav-container {
@@ -53,8 +71,10 @@ onMounted(() => {
   --el-menu-sub-item-height: auto;
   --el-menu-active-color: transparent;
   --el-menu-hover-bg-color: transparent;
-  --nav-container-icon-color: #333;
+  --nav-container-nav-menu-item-icon-color: #333;
   --nav-container-bg-color: #fff;
+  --nav-container-nav-menu-item-inner-width: 80%;
+  --nav-container-nav-menu-item-inner-height: 80%;
 
   width: 100%;
   position: relative;
@@ -76,12 +96,12 @@ onMounted(() => {
 
     .nav-menu-item-icon {
       font-size: 1.8rem;
-      color: var(--nav-container-icon-color);
+      color: var(--nav-container-nav-menu-item-icon-color);
     }
     .nav-menu-item-inner {
       border-radius: 0.5rem;
-      width: 80%;
-      height: 80%;
+      width: var(--nav-container-nav-menu-item-inner-width);
+      height: var(--nav-container-nav-menu-item-inner-height);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -101,7 +121,7 @@ onMounted(() => {
     align-items: center;
     .nav-bottom-item {
       border-radius: 0.5rem;
-      margin: 0.5rem;
+      margin: 0.1rem;
       padding: 0.2rem;
       display: flex;
       flex-direction: column;

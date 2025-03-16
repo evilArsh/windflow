@@ -2,8 +2,10 @@
   "app": {
     "name": "Candy Box"
   },
+  "en": "English",
   "nav": {
     "chat": "chat",
-    "modelSetting": "model config"
-  }
+    "modelSetting": "model"
+  },
+  "zh": "简体中文"
 }

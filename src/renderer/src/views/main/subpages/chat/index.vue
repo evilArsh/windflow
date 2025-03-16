@@ -1,9 +1,38 @@
+<script lang="ts" setup>
+import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
+import Provider from "./components/provider.vue"
+import Chatbox from "./components/chatbox.vue"
+const keyword = ref<string>("")
+</script>
 <template>
-  <div class="chat-container">聊天</div>
+  <SubNavLayout>
+    <template #submenu>
+      <div class="chat-provider-header">
+        <el-input v-model="keyword" placeholder="搜索"></el-input>
+      </div>
+      <div class="chat-provider-content">
+        <el-scrollbar>
+          <Provider></Provider>
+        </el-scrollbar>
+      </div>
+    </template>
+    <template #content>
+      <Chatbox></Chatbox>
+    </template>
+  </SubNavLayout>
 </template>
-<script lang="ts" setup></script>
 <style lang="scss" scoped>
-.chat-container {
-  width: 100%;
+.chat-provider-header {
+  --chat-container-padding: 0.5rem;
+
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--chat-container-padding);
+}
+.chat-provider-content {
+  flex: 1;
+  overflow: hidden;
 }
 </style>

@@ -18,6 +18,8 @@ onMounted(() => {})
 <style lang="scss" scoped>
 .main-container {
   --main-container-bg: #f1f1f1;
+  --main-container-main-aside-width: 7rem;
+  --main-container-content-header-height: 5rem;
 
   background-color: var(--main-container-bg);
   flex: 1;
@@ -25,9 +27,9 @@ onMounted(() => {})
   height: 100%;
   overflow: hidden;
   display: flex;
-  gap: 1rem;
+  // gap: 1rem;
   .main-aside {
-    width: 7rem;
+    width: var(--main-container-main-aside-width);
     overflow: hidden;
     display: flex;
   }
@@ -38,7 +40,7 @@ onMounted(() => {})
     flex-direction: column;
     gap: 1rem;
     .content-header {
-      height: 5rem;
+      height: var(--main-container-content-header-height);
       display: flex;
       align-items: center;
       justify-content: center;
