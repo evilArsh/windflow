@@ -1,7 +1,7 @@
 import type { Ref, ShallowRef } from "vue"
 import { type ScaleConfig } from "./types"
 import { toNumber } from "@renderer/lib/shared/styles"
-import useEvent from "@renderer/lib/shared/useEvent"
+import useEvent from "@renderer/usable/useEvent"
 import { type CallBackFn } from "@renderer/lib/shared/types"
 import { useElementBounding } from "@vueuse/core"
 import { useStyleHandler } from "./helper"

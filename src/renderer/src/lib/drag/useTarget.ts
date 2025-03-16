@@ -1,6 +1,6 @@
 import { initDragAttr, initRect } from "./types"
 import type { DragAttr, Pos, Rect, Target } from "./types"
-import useEvent from "@renderer/lib/shared/useEvent"
+import useEvent from "@renderer/usable/useEvent"
 
 // const isFinalEqual = (node?: HTMLElement | null, dst?: HTMLElement): boolean => {
 //   if (!(node && dst) || node === document.body) {

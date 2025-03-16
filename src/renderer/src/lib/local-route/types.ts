@@ -37,7 +37,7 @@ export interface ResolveConfig {
  */
 export interface RouterTreeConfig {
   /**
-   *  默认首页
+   *  路由前缀
    */
   index: string
   /**
@@ -52,6 +52,15 @@ export interface RouterTreeConfig {
    *  需要截断的路由路径字符串前缀 default: `/src/views/`
    */
   viewsDir?: string | RegExp
+  /**
+   * 是否默认重定向到子路由。
+   * 默认重定向到子路由`index`路由
+   */
+  redirect?: boolean
+  /**
+   * 当默认`index`路由没有组件时，是否重定向到第一个子路由。
+   */
+  redirectToChild?: boolean
 }
 /**
  * `import.meta.glob`加载路由数据配置

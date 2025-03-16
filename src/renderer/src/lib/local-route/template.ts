@@ -5,15 +5,16 @@ import Node from "./node"
 
 export class RouterTree {
   readonly root: Node
-  private rawRoutes: Record<string, AsyncComponnet>
+  private routes: Map<string, Node | null | undefined>
   private readonly __PREFIX__ = "__PREFIX__"
   private readonly config: RouterTreeConfig
   private readonly cache: Map<string, Node>
   constructor(config: RouterTreeConfig) {
-    this.rawRoutes = {}
+    this.routes = new Map()
     this.config = { ...config, viewsDir: config?.viewsDir ?? vars.VIEWS_DIR }
     this.cache = new Map()
     this.root = Node.create(this.config.index)
+    this.routes.set(this.root.getPath(), this.root)
     this.root.setComponent(this.config.layout)
   }
 
@@ -44,9 +45,8 @@ export class RouterTree {
    */
   resolve(records: Record<string, AsyncComponnet>, cfg?: ResolveConfig): this {
     if (!cfg?.append) {
-      this.rawRoutes = {}
+      this.routes.clear()
     }
-    this.rawRoutes = records
     Object.entries(records).forEach(kv => {
       this.add(kv[0], kv[1])
     })
@@ -78,18 +78,16 @@ export class RouterTree {
   /**
    * 添加路由节点
    * @param path 路径 必须以`this.getPrefix()`开头
-   * @param func 路径对应的 Component
+   * @param asyncComp 路径对应的 Component
    */
-  add(path: string, func: AsyncComponnet): this {
+  add(path: string, asyncComp: AsyncComponnet): this {
     if (!path.replace(this.getPrefix(), this.__PREFIX__).startsWith(this.__PREFIX__)) {
       console.warn(`path must start with ${this.getPrefix()}`)
       return this
     }
     const fileName = path.slice(path.lastIndexOf("/") + 1)
     if (vars.FILE_REG.test(fileName)) {
-      const _path = path.replace(this.getPrefix(), "").replace(vars.FILE_EXT_REG, "")
-      const pathArr = _path.split("/").filter(v => v.length > 0)
-      this.push(this.root, this.root.getPath(), pathArr, func)
+      this.push(this.root, this.root.getPath(), path.replace(this.getPrefix(), ""), asyncComp)
     }
     return this
   }
@@ -128,86 +126,41 @@ export class RouterTree {
     }
   }
 
-  /**
-   root/test1/test1-1/index.vue => ["test1","test1-1","index"]
-   root/index.vue               => ["index"]
-   root/test1-1/test1-2.vue     => ["test1-1","test1-2"]
-                root
-              /  |  \
-          test  ...  index.vue
-          /  \
-        test1 test2
-        /      \
-    test1-1   test2-1
-       |        |
-    index.vue name.vue
-   */
-  private push(prevNode: Node, prevPath: string, pathArr: string[], func: AsyncComponnet): void {
-    if (pathArr.length === 0) {
-      return
-    }
-    let mapedNode: Node | null = null
-    const curPath = pathArr[0]
-    const curFullPath = resolvePath([prevPath, curPath])
-    const curNode = this.find(curFullPath)
-    pathArr.splice(0, 1)
-    if (curNode) {
-      mapedNode = curNode
-    } else {
-      const child = prevNode.getChild()
-      for (let i = 0; i < child.length; i++) {
-        if (child[i].getPath() === curPath) {
-          mapedNode = child[i]
-          break
+  private push(parent: Node, parentAbsPath: string, path: string, comp: AsyncComponnet): void {
+    if (path.length === 0) return
+    const subCount = path.match(vars.SUBPAGE_REG)?.length ?? 0
+    if (subCount === 0) {
+      if (path.replace(vars.DEFAULT_PATH_REG, "").length == 0) {
+        parent.setComponent(comp)
+      } else {
+        const finalPath = resolvePath(path.replace(vars.DEFAULT_PATH_REG, "").replace(vars.FILE_EXT_REG, ""))
+        const currentPath = resolvePath(finalPath, false)
+        // 路径: `{当前路径}`
+        const childNode = Node.create(currentPath)
+        // 路径映射:`/{绝对路径}/{当前路径}`
+        this.routes.set(resolvePath([parentAbsPath, currentPath]), childNode)
+        childNode.setComponent(comp)
+        parent.pushChild(childNode)
+        if (this.config.redirect) {
+          const child = parent.getChild()
+          const def = child.find(v => v.getPath() === vars.DEFAULT_PATH)
+          if (def) {
+            parent.setRedirect(resolvePath([parentAbsPath, def.getPath()]))
+          } else if (child.length > 0 && this.config.redirectToChild) {
+            parent.setRedirect(resolvePath([parentAbsPath, child[0].getPath()]))
+          }
         }
       }
-      if (!mapedNode) {
-        // 创建一个新的子节点
-        const childNode = Node.create(curPath)
-        childNode.updateMeta({
-          fullPath: resolvePath(pathArr),
-        })
-        child.push(childNode)
-        mapedNode = childNode
-      }
-    }
-    // mapedNode 为已存在的节点或新创建的节点
-    const nodes = [
-      { node: prevNode, path: resolvePath(prevPath) },
-      { node: mapedNode, path: curFullPath },
-    ]
-    nodes.forEach(val => {
-      this.setRedirect(val.node, val.path)
-      val.node.updateMeta({
-        fullPath: val.path,
-      })
-    })
-    if (pathArr.length === 0) {
-      mapedNode.setComponent(func)
-      return
-    }
-    this.push(mapedNode, resolvePath([prevPath, curPath]), pathArr, func)
-  }
-
-  private setRedirect(node: Node, curPath: string): void {
-    if (node.getPath() === this.config.index) {
-      return
-    }
-    const curChild = node.getChild()
-    const indexChild = curChild.find(val => {
-      return val.getPath() === "index"
-    })
-    if (node.getComponent()) {
-      if (node.getComponent() !== this.parent) {
-        node.setRedirect(undefined)
-        return
-      }
-    }
-    // todo: 某个文件夹还未加载子目录，此时redirect为undefined
-    if (indexChild) {
-      node.setRedirect(resolvePath([curPath, "index"]))
     } else {
-      node.setRedirect(curChild.length > 0 ? resolvePath([curPath, curChild[0].getPath()]) : undefined)
+      const paths = path.split(vars.SUBPAGE_REG)
+      const current = resolvePath([parentAbsPath, paths[0]])
+      let currentNode = this.routes.get(current)
+      if (!currentNode) {
+        currentNode = Node.create(paths[0])
+        this.routes.set(current, currentNode)
+        parent.pushChild(currentNode)
+      }
+      this.push(currentNode, current, paths.slice(1).join(vars.SEPARATOR), comp)
     }
   }
 }

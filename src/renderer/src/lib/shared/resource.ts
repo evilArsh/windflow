@@ -1,7 +1,7 @@
 /**
  * 将字符串组装为路径格式
  * @param path 路径或路径数组
- * @param withPrefix 是否需要 `/`前缀
+ * @param withPrefix 是否需要 `/`前缀,default: true
  * @example eg: ["foo","bar"] ==> "foo/bar"
  */
 export const resolvePath = (path: string | string[], withPrefix: boolean = true): string => {

@@ -18,6 +18,7 @@
 const {
   defaultLock = false,
   needLock = false,
+  stillLock = false,
   shadowColor = "rgba(0, 0, 0, 0.1)",
   activeShadowColor = "rgba(0, 0, 0, 0.2)",
   rippleSize = "3px",
@@ -28,9 +29,13 @@ const {
    */
   defaultLock?: boolean
   /**
-   * 当按下时是否需要保持
+   * 该模式下点击时会保持，再次点击取消保持
    */
   needLock?: boolean
+  /**
+   * 该模式下`needLock`模式失效，组件的保持状态和`defaultLock`状态一致
+   */
+  stillLock?: boolean
   /**
    * hover时显示描述
    */
@@ -62,7 +67,7 @@ const emit = defineEmits<{
 const wrapper = shallowRef<HTMLElement>() // 包裹元素
 const target = shallowRef<HTMLElement>() // 目标元素
 const data = reactive({
-  lock: false,
+  locked: false,
   isEnter: false,
   shadow: `0 0 0 ${rippleSize} ${shadowColor}`,
   shadowActive: `0 0 0 ${rippleSize} ${activeShadowColor}`,
@@ -70,10 +75,11 @@ const data = reactive({
 })
 
 const handle = {
-  lock: () => {
+  toggleLock: (toggle?: boolean) => {
+    if (stillLock) return
     if (!needLock) return
-    data.lock = !data.lock
-    emit("lock", data.lock)
+    data.locked = toggle ?? !data.locked
+    emit("lock", data.locked)
   },
   hover: () => {
     target.value?.style.setProperty("transition", data.transition)
@@ -86,7 +92,7 @@ const handle = {
     if (background) target.value?.style.removeProperty("background-color")
   },
   click: () => {
-    handle.lock()
+    handle.toggleLock()
   },
   mousedown: () => {
     target.value?.style.setProperty("box-shadow", data.shadowActive)
@@ -99,11 +105,15 @@ const event = {
     handle.hover()
   },
   mouseleave: () => {
-    data.isEnter = false
-    if (!data.lock) {
-      handle.leave()
-    }
     document.removeEventListener("mouseup", event.documentUp)
+    data.isEnter = false
+    if (stillLock) {
+      defaultLock ? handle.hover() : handle.leave()
+    } else {
+      if (!data.locked) {
+        handle.leave()
+      }
+    }
   },
   click: () => {
     handle.click()
@@ -116,16 +126,20 @@ const event = {
     event.documentUp()
   },
   documentUp: () => {
-    if (data.lock) {
-      handle.hover()
-    } else {
-      data.isEnter ? handle.hover() : handle.leave()
-    }
     document.removeEventListener("mouseup", event.documentUp)
+    if (stillLock) {
+      defaultLock ? handle.hover() : handle.leave()
+    } else {
+      if (data.locked) {
+        handle.hover()
+      } else {
+        data.isEnter ? handle.hover() : handle.leave()
+      }
+    }
   },
 }
 onMounted(() => {
-  emit("lock", data.lock)
+  emit("lock", data.locked)
   const ch = wrapper.value?.firstElementChild
   if (ch instanceof HTMLElement) {
     target.value = ch
@@ -134,11 +148,19 @@ onMounted(() => {
     target.value.addEventListener("mousedown", event.mousedown)
     target.value.addEventListener("mouseup", event.mouseup)
     target.value.addEventListener("click", event.click)
-    if (defaultLock) {
-      handle.hover()
-    }
+    defaultLock && handle.hover()
   }
 })
+watch(
+  () => defaultLock,
+  v => {
+    if (v) {
+      handle.hover()
+    } else {
+      handle.leave()
+    }
+  }
+)
 onBeforeUnmount(() => {
   target.value?.removeEventListener("mouseenter", event.mouseenter)
   target.value?.removeEventListener("mouseleave", event.mouseleave)
@@ -152,6 +174,8 @@ onBeforeUnmount(() => {
   display: contents;
   &--content {
     display: contents;
+    user-select: none;
+    cursor: pointer;
   }
 }
 </style>

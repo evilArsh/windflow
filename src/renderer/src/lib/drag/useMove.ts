@@ -1,5 +1,5 @@
 import type { Dir, MoveOptions, DragAttr, EventMap, MoveType, MoveParams } from "./types"
-import useEvent from "@renderer/lib/shared/useEvent"
+import useEvent from "@renderer/usable/useEvent"
 import { isUndefined } from "@renderer/lib/shared/is"
 import useTarget from "./useTarget"
 export default function (): MoveType {

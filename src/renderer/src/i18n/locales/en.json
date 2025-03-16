@@ -1,5 +1,9 @@
 {
   "app": {
     "name": "Candy Box"
+  },
+  "nav": {
+    "chat": "chat",
+    "modelSetting": "model config"
   }
 }

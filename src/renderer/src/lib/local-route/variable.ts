@@ -1,11 +1,39 @@
 /**
  *  文件名以及路径名
  */
-export const NAME_REG = /[\w\u4e00-\u9fa5]+/
+export const NAME_REG = /[^\\/:*?"<>|]+/
+/**
+ * 子页面标识
+ */
 export const SUBPAGE_REG = /\/subpage[s]?\//
+/**
+ * 组件标识
+ */
 export const COMPONENT_REG = /\/component[s]?\//
+/**
+ * 文件扩展名
+ */
 export const FILE_EXT_REG = /\.([jt]sx|vue)$/
-export const FILE_REG = new RegExp(`${NAME_REG.source}(${FILE_EXT_REG.source})$`)
+/**
+ * 文件名
+ */
+export const FILE_REG = new RegExp(`${NAME_REG.source}(${FILE_EXT_REG.source})`)
+/**
+ * 路径分隔符
+ */
+export const SEPARATOR_REG = /\//
+/**
+ * 路径分隔符
+ */
+export const SEPARATOR = "/"
+/**
+ * 默认路径
+ */
+export const DEFAULT_PATH_REG = new RegExp(`index${FILE_EXT_REG.source}`)
+/**
+ * 默认路径
+ */
+export const DEFAULT_PATH = "index"
 /**
  *  包含views一级子目录的文件
  */

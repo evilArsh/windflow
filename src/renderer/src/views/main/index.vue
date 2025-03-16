@@ -1,0 +1,54 @@
+<template>
+  <div class="main-container">
+    <div class="main-aside">
+      <Navbar></Navbar>
+    </div>
+    <div class="content-container">
+      <!-- <div class="content-header"></div> -->
+      <div class="content-main">
+        <router-view></router-view>
+      </div>
+    </div>
+  </div>
+</template>
+<script lang="ts" setup>
+import Navbar from "./components/nav.vue"
+onMounted(() => {})
+</script>
+<style lang="scss" scoped>
+.main-container {
+  --main-container-bg: #f1f1f1;
+
+  background-color: var(--main-container-bg);
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  gap: 1rem;
+  .main-aside {
+    width: 7rem;
+    overflow: hidden;
+    display: flex;
+  }
+  .content-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    .content-header {
+      height: 5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+    }
+    .content-main {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+    }
+  }
+}
+</style>

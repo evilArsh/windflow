@@ -1,5 +1,9 @@
 {
   "app": {
     "name": "糖果盒"
+  },
+  "nav": {
+    "chat": "聊天",
+    "modelSetting": "模型配置"
   }
 }
