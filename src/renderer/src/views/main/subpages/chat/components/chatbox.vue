@@ -6,7 +6,7 @@ import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 <template>
   <ContentLayout handler-height="20rem">
     <template #content>
-      <ChatItem v-for="item in 4" :key="item"></ChatItem>
+      <ChatItem></ChatItem>
     </template>
     <template #handler>
       <ChatInput></ChatInput>

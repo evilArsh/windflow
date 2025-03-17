@@ -9,6 +9,11 @@ const keyword = ref<string>("")
     <template #submenu>
       <div class="chat-provider-header">
         <el-input v-model="keyword" placeholder="搜索"></el-input>
+        <div>
+          <el-button size="small" type="primary" plain circle>
+            <i class="i-ep:plus"></i>
+          </el-button>
+        </div>
       </div>
       <div class="chat-provider-content">
         <el-scrollbar>
@@ -26,10 +31,10 @@ const keyword = ref<string>("")
   --chat-container-padding: 0.5rem;
 
   flex-shrink: 0;
+  flex-direction: column;
   display: flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--chat-container-padding);
+  gap: 0.5rem;
 }
 .chat-provider-content {
   flex: 1;

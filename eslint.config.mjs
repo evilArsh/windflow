@@ -122,6 +122,8 @@ export default [
   {
     name: "typescript rules",
     rules: {
+      "promise/catch-or-return": "off",
+      "promise/always-return": "off",
       "@typescript-eslint/no-unused-expressions": 0,
       "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/no-unused-vars": [

@@ -1,27 +1,43 @@
 <script lang="ts" setup>
-const content = ref("")
+import { storeToRefs } from "pinia"
+import useChatStore from "@renderer/pinia/chat.store"
+const charStore = useChatStore()
+const { content } = storeToRefs(charStore)
+const { t } = useI18n()
+
+function send() {
+  charStore.send()
+}
 </script>
 <template>
   <div class="chat-input-container">
     <div class="chat-input">
-      <el-scrollbar view-style="height: 100%">
-        <el-input autosize type="textarea" v-model="content"></el-input>
-      </el-scrollbar>
+      <el-input
+        input-style="border: none;height: 100%"
+        style="display: flex"
+        :autosize="false"
+        clearable
+        autofocus
+        resize="none"
+        type="textarea"
+        v-model="content"
+        :placeholder="t('tip.inputPlaceholder')"></el-input>
     </div>
     <div class="chat-input-actions">
-      <el-button type="primary">发送</el-button>
+      <el-button type="primary" @click="send">发送</el-button>
     </div>
   </div>
 </template>
 <style lang="scss" scoped>
 .chat-input-container {
-  --chat-input-actions-bg-color: #06d3d3;
+  --chat-input-actions-bg-color: transparent;
   flex: 1;
   display: flex;
   flex-direction: column;
   .chat-input {
     flex: 1;
     overflow: hidden;
+    display: flex;
   }
   .chat-input-actions {
     padding: 0.5rem;

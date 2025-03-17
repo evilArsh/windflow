@@ -5,11 +5,14 @@
   "en": "English",
   "model": {
     "apiKey": "API Key",
-    "apiUrl": "API地址"
+    "apiUrl": "API 地址"
   },
   "nav": {
     "chat": "聊天",
     "modelSetting": "模型"
+  },
+  "tip": {
+    "inputPlaceholder": "输入你的问题"
   },
   "zh": "简体中文"
 }

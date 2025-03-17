@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 import navStore from "@renderer/pinia/nav.store"
+import useIconStore from "@renderer/pinia/icon.store"
 import { storeToRefs } from "pinia"
 import I18n from "./i18n.vue"
 const { page, defaultRoute } = storeToRefs(navStore())
 const route = useRoute()
+const { loadIcon } = useIconStore()
 const menuEv = {
   onSelect: (key: string) => {
     defaultRoute.value = key
@@ -31,7 +33,7 @@ onMounted(() => {
               <Hover background still-lock :default-lock="defaultRoute == item.index">
                 <div class="nav-menu-item-inner">
                   <i class="nav-menu-item-icon">
-                    <component :is="item.icon"></component>
+                    <component :is="loadIcon(item.icon)"></component>
                   </i>
                   <el-text class="nav-menu-item-text">{{ item.label }}</el-text>
                 </div>

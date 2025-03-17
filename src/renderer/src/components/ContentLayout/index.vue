@@ -5,7 +5,9 @@ const { handlerHeight = 0 } = defineProps<{
 </script>
 <template>
   <div class="content-container">
-    <div class="content-header"></div>
+    <div v-if="$slots.header" class="content-header">
+      <slot name="header"></slot>
+    </div>
     <div class="content">
       <el-scrollbar>
         <div class="content--inner">
@@ -13,17 +15,17 @@ const { handlerHeight = 0 } = defineProps<{
         </div>
       </el-scrollbar>
     </div>
-    <div class="content-handler" :style="{ height: handlerHeight }">
+    <div v-if="$slots.handler" class="content-handler" :style="{ height: handlerHeight }">
       <slot name="handler"></slot>
     </div>
   </div>
 </template>
 <style lang="scss" scoped>
 .content-container {
-  --content-header-height: 4rem;
-  --content-header-bg-color: #06d3d3;
-  --content-bg-color: #1b8ae4;
-  --content-handler-bg-color: #2d51f0;
+  // --content-header-height: 4rem;
+  --content-header-bg-color: transparent;
+  --content-bg-color: transparent;
+  --content-handler-bg-color: #ebebeb;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -32,7 +34,7 @@ const { handlerHeight = 0 } = defineProps<{
     flex-shrink: 0;
     display: flex;
     padding: 0.5rem;
-    height: var(--content-header-height);
+    // height: var(--content-header-height);
     background-color: var(--content-header-bg-color);
   }
   .content {
@@ -43,7 +45,7 @@ const { handlerHeight = 0 } = defineProps<{
     &--inner {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 2.5rem;
     }
   }
   .content-handler {
@@ -51,6 +53,9 @@ const { handlerHeight = 0 } = defineProps<{
     display: flex;
     background-color: var(--content-handler-bg-color);
     padding: 0.5rem;
+    margin: 0.5rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
   }
 }
 </style>

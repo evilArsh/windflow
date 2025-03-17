@@ -7,5 +7,8 @@
     "chat": "chat",
     "modelSetting": "model"
   },
+  "tip": {
+    "inputPlaceholder": "say something and enter"
+  },
   "zh": "简体中文"
 }
