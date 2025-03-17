@@ -8,10 +8,11 @@ export interface NavMenuBase {
 }
 export type NavPage = NavMenuBase
 
-export type ChatGroup = {
+export type ChatTopic = {
+  id: string
   label: string
-  logo: string
+  icon: string
   topic: string
   providers: Provider[]
-  children: ChatGroup[]
+  children: ChatTopic[]
 }

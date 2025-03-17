@@ -2,6 +2,9 @@
   "app": {
     "name": "糖果盒"
   },
+  "chat": {
+    "addChat": "新增聊天"
+  },
   "en": "English",
   "model": {
     "apiKey": "API Key",

@@ -1,10 +1,3 @@
-import { RequestConfig } from "."
-
-export type DSRequestConfig = {
-  "/chat/completions": RequestConfig<"POST", DsChatCompletionRequest, DsChatCompletionResponse>
-  "/models": RequestConfig<"GET", null, DSModelsResponse>
-  "/user/balance": RequestConfig<"GET", null, DSUserBalanceResponse>
-}
 export interface DSModelsResponse {
   object: "list"
   data: {

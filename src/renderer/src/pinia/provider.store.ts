@@ -1,42 +1,55 @@
-import { Provider } from "@renderer/types"
+import { Provider, ProviderName } from "@renderer/types"
 import { defineStore } from "pinia"
 import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { useStorage } from "@vueuse/core"
-
 export default defineStore("provider", () => {
-  const providers = useStorage<Provider[]>("setting.providers", [
+  // const providers = reactive<Provider[]>([
+  const providers = useStorage<Provider[]>("chat.providers", [
     {
       id: uniqueId(),
-      name: "DeepSeek",
+      name: ProviderName.DeepSeek,
       alias: "",
       logo: ds,
       apiUrl: "https://api.deepseek.com",
       apiKey: "",
+      apiModelList: {
+        method: "GET",
+        url: "/models",
+      },
+      apiLLMChat: {
+        method: "POST",
+        url: "/chat/completions",
+      },
+      apiBalance: {
+        method: "GET",
+        url: "/user/balance",
+      },
     },
   ])
-  const editForm = ref<Provider>(defaultProvider()) // 正在编辑的provider
+  // 正在编辑的provider
+  const editProvider = ref<Provider>({
+    id: "",
+    name: "",
+    alias: "",
+    logo: "",
+    apiUrl: "",
+    apiKey: "",
+    apiModelList: {
+      method: "",
+      url: "",
+    },
+    apiLLMChat: {
+      method: "",
+      url: "",
+    },
+    apiBalance: {
+      method: "",
+      url: "",
+    },
+  })
 
-  function addProvider(provider: Provider) {
-    providers.value.push(provider)
-  }
-  function removeProvider(provider: Provider) {
-    providers.value = providers.value.filter(p => p.name !== provider.name)
-  }
-
-  function defaultProvider(): Provider {
-    return {
-      id: uniqueId(),
-      name: "",
-      alias: "",
-      logo: "",
-      apiUrl: "",
-      apiKey: "",
-    }
-  }
   return {
     providers,
-    editForm,
-    addProvider,
-    removeProvider,
+    editProvider,
   }
 })

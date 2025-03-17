@@ -2,7 +2,7 @@
 import useProviderStore from "@renderer/pinia/provider.store"
 import { storeToRefs } from "pinia"
 const providerStore = useProviderStore()
-const { editForm } = storeToRefs(providerStore)
+const { editProvider } = storeToRefs(providerStore)
 const { t } = useI18n()
 </script>
 <template>
@@ -10,22 +10,22 @@ const { t } = useI18n()
     <template #content>
       <MsgBubble>
         <template #head>
-          <el-avatar :src="editForm.logo" size="default" />
+          <el-avatar :src="editProvider.logo" size="default" />
         </template>
         <template #content>
           <ContentLayout handler-height="0">
             <template #header>
-              <el-text type="primary">{{ editForm.name }}</el-text>
+              <el-text type="primary">{{ editProvider.name }}</el-text>
             </template>
             <template #content>
               <div class="model-setting">
                 <el-scrollbar class="w-full">
-                  <el-form :model="editForm" label-width="10rem" class="w-full">
+                  <el-form :model="editProvider" label-width="10rem" class="w-full">
                     <el-form-item :label="t('model.apiUrl')" class="w-full">
-                      <el-input v-model="editForm.apiUrl" />
+                      <el-input v-model="editProvider.apiUrl" />
                     </el-form-item>
                     <el-form-item :label="t('model.apiKey')" class="w-full">
-                      <el-input v-model="editForm.apiKey" show-password />
+                      <el-input v-model="editProvider.apiKey" show-password />
                     </el-form-item>
                   </el-form>
                 </el-scrollbar>

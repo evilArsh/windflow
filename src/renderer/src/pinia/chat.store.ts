@@ -1,20 +1,28 @@
-import { defineStore } from "pinia"
-import { ChatGroup } from "@renderer/types"
+import { defineStore, storeToRefs } from "pinia"
+import { ChatTopic, Provider } from "@renderer/types"
+import { useStorage } from "@vueuse/core"
+import useProviderStore from "@renderer/pinia/provider.store"
+import { useLLMChat } from "@renderer/lib/http"
 export default defineStore("chat", () => {
-  const groups = ref<ChatGroup[]>([])
-
+  const providerStore = useProviderStore()
+  const { providers } = storeToRefs(providerStore)
   const content = ref("") // 聊天框输入内容
-  // const providers = ref<Provider[]>([]) // 当前选择的服务提供商
+  const topicList = useStorage<ChatTopic[]>("chat.topicList", []) // 聊天组列表
+  const currentProvider = ref<Provider>(providers.value[0]) // 当前选择的服务提供商
+  const requestHandler = useLLMChat(currentProvider.value)
   function send() {
-    // TODO: 发送请求
+    const responseHandler = requestHandler.request(content.value)
+    responseHandler.onData(data => {
+      console.log(data)
+    })
     content.value = ""
   }
-  function addGroup(group: ChatGroup) {
-    groups.value.push(group)
+  function addGroup(group: ChatTopic) {
+    topicList.value.push(group)
   }
   return {
     content,
-    groups,
+    topicList,
     send,
     addGroup,
   }

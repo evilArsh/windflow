@@ -1,7 +1,7 @@
 <template>
   <div class="provider-container">
     <Hover v-for="item in providers" :key="item.name">
-      <el-card class="card" shadow="never" @click="editForm = item">
+      <el-card class="card" shadow="never" @click="editProvider = item">
         <div class="card-body">
           <el-image class="icon" :src="item.logo" />
           <el-text class="name">{{ item.name }}</el-text>
@@ -14,7 +14,7 @@
 import useProviderStore from "@renderer/pinia/provider.store"
 import { storeToRefs } from "pinia"
 const providerStore = useProviderStore()
-const { providers, editForm } = storeToRefs(providerStore)
+const { providers, editProvider } = storeToRefs(providerStore)
 </script>
 <style lang="scss" scoped>
 .provider-container {

@@ -2,6 +2,9 @@
   "app": {
     "name": "Candy Box"
   },
+  "chat": {
+    "addChat": "New Chat"
+  },
   "en": "English",
   "nav": {
     "chat": "chat",

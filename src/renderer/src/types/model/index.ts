@@ -1,5 +1,8 @@
-import { AxiosRequestConfig } from "axios"
+import { Method } from "axios"
 
+export enum ProviderName {
+  DeepSeek = "DeepSeek",
+}
 /**
  * 服务提供商
  */
@@ -10,20 +13,26 @@ export interface Provider {
   alias?: string
   apiUrl: string
   apiKey: string
-}
-
-export interface RequestConfig<M extends string, Q = any, S = any> {
-  config: AxiosRequestConfig<Q> & { method: M }
-  response: S
-}
-export interface ResponseHandler<T> {
-  getRequestId: () => string
-  getProvider: () => Provider
-  restart: () => void
-  terminate: () => void
-  onData: (callback: (message: T) => void) => void
-}
-export interface RequestHandler<T extends Record<string, RequestConfig<string, any, any>>> {
-  setProvider: (provider: Provider) => void
-  request: <K extends keyof T>(key: K, config: T[K]["config"]) => ResponseHandler<T[K]["response"]>
+  /**
+   * @description 平台模型列表接口
+   */
+  apiModelList: {
+    method: Method | string
+    url: string
+  }
+  /**
+   * @description 平台LLM聊天接口
+   */
+  apiLLMChat: {
+    method: Method | string
+    url: string
+  }
+  /**
+   * @description 平台账户信息接口
+   */
+  apiBalance: {
+    method: Method | string
+    url: string
+  }
+  disabled?: boolean
 }
