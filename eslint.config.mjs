@@ -117,6 +117,7 @@ export default [
       "vue/require-prop-types": 0,
       "vue/one-component-per-file": 0,
       "vue/attributes-order": 0,
+      "vue/no-v-html": 0,
     },
   },
   {

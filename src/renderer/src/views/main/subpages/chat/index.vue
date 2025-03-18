@@ -1,8 +1,18 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import Provider from "./components/provider.vue"
-import Chatbox from "./components/chatbox.vue"
+import TopicList from "./components/topicList.vue"
+import { ChatTopic } from "@renderer/types"
+import ChatContent from "./components/chat-content.vue"
+// import useChatStore from "@renderer/pinia/chat.store"
+// import { storeToRefs } from "pinia"
+// const charStore = useChatStore()
+// const { topicList } = storeToRefs(charStore)
 const keyword = ref<string>("")
+const currentTopic = ref<ChatTopic>()
+
+const onTopicSelect = (topic: ChatTopic) => {
+  currentTopic.value = topic
+}
 </script>
 <template>
   <SubNavLayout>
@@ -12,12 +22,12 @@ const keyword = ref<string>("")
       </div>
       <div class="chat-provider-content">
         <el-scrollbar>
-          <Provider></Provider>
+          <TopicList @select="onTopicSelect"></TopicList>
         </el-scrollbar>
       </div>
     </template>
     <template #content>
-      <Chatbox></Chatbox>
+      <ChatContent v-if="currentTopic" v-model="currentTopic" />
     </template>
   </SubNavLayout>
 </template>

@@ -1,4 +1,3 @@
-import { Provider } from "./model/index"
 export interface NavMenuBase {
   index: string
   label: string
@@ -7,12 +6,3 @@ export interface NavMenuBase {
   children?: NavMenuBase[]
 }
 export type NavPage = NavMenuBase
-
-export type ChatTopic = {
-  id: string
-  label: string
-  icon: string
-  topic: string
-  providers: Provider[]
-  children: ChatTopic[]
-}

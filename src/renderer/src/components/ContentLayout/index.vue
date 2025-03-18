@@ -1,7 +1,35 @@
 <script lang="ts" setup>
+import { useElementBounding, useScroll } from "@vueuse/core"
+
 const { handlerHeight = 0 } = defineProps<{
   handlerHeight?: string | number
 }>()
+
+const scrollView = shallowRef<HTMLElement | null>()
+const scrollViewParent = shallowRef<HTMLElement | null>()
+const { height } = useElementBounding(scrollView)
+const { y, isScrolling, arrivedState } = useScroll(scrollViewParent, {
+  behavior: "smooth",
+})
+
+watchEffect(() => {
+  if (!isScrolling.value && arrivedState.bottom) {
+    y.value = height.value
+  }
+})
+const scrollToBottom = () => {
+  setTimeout(() => {
+    y.value = height.value * 2 // gurantee
+  }, 0)
+}
+onMounted(() => {
+  const el = document.getElementById("scroll-view")
+  scrollView.value = el
+  scrollViewParent.value = el?.parentElement
+})
+defineExpose({
+  scrollToBottom,
+})
 </script>
 <template>
   <div class="content-container">
@@ -9,8 +37,8 @@ const { handlerHeight = 0 } = defineProps<{
       <slot name="header"></slot>
     </div>
     <div class="content">
-      <el-scrollbar>
-        <div class="content--inner">
+      <el-scrollbar id="scroll-view">
+        <div class="content--inner" ref="scroll">
           <slot name="content"></slot>
         </div>
       </el-scrollbar>

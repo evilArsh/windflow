@@ -1,12 +1,26 @@
-import { DsChatCompletionRequest, ProviderName, ChatRequestHandler, ChatResponseHandler } from "@renderer/types"
-import { Provider } from "@renderer/types"
-import { useEventBus } from "@vueuse/core"
-import axios, { AxiosInstance } from "axios"
+import {
+  DsChatCompletionRequest,
+  ProviderName,
+  LLMChatRequestHandler,
+  LLMChatResponseHandler,
+  DsChatCompletionResponseStreamBase,
+  Provider,
+  LLMChatResponse,
+} from "@renderer/types"
+import useProviderStore from "@renderer/pinia/provider.store"
+import { useEventBus, EventBusKey } from "@vueuse/core"
+import axios, { AxiosInstance, Method } from "axios"
 import JSON5 from "json5"
 
-export const useLLMChat = (provider: Provider): ChatRequestHandler => {
+export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
+  const providerStore = useProviderStore()
+  const provider = providerStore.findById(providerId)
+  if (!provider) {
+    throw new Error("Provider not found")
+  }
   const instance = shallowRef<AxiosInstance>(createInstance(provider))
-  const reqMap = new Map<string, ChatResponseHandler>()
+  const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol("message")
+  const eventBus = useEventBus(eventBusKey)
 
   function createInstance(provider: Provider) {
     return axios.create({
@@ -24,55 +38,106 @@ export const useLLMChat = (provider: Provider): ChatRequestHandler => {
         stream_options: {
           include_usage: true,
         },
-        model: "deepseek-reasoner",
+        model: "deepseek-chat",
         logprobs: false,
       }
       return body
     }
     return ""
   }
-  const parseResponseText = (text: string) => {
+  const parseResponseText = (text: string): LLMChatResponse => {
     if (provider.name === ProviderName.DeepSeek) {
-      return text
+      const data: DsChatCompletionResponseStreamBase[] = text
+        .replace(/data: |\[DONE\]|: keep-alive/g, "")
         .split("\n")
         .filter(item => !!item)
-        .map(item => JSON5.parse(item.replace("data: ", "")))
+        .map(item => JSON5.parse(item))
+      return {
+        status: 200,
+        msg: "",
+        data: data.map(v => ({
+          reasoning: v.object === "chat.completion.chunk",
+          content: v.choices[0].delta.content ?? "",
+          reasoningContent: v.choices[0].delta.reasoning_content ?? "",
+        })),
+      }
     }
-    return []
+    return {
+      status: 200,
+      msg: "",
+      data: [],
+    }
   }
 
-  function request(message: string): ChatResponseHandler {
-    const id = uniqueId()
-    const abortController = new AbortController()
-    instance.value.request({
-      url: provider.apiLLMChat.url,
-      method: provider.apiLLMChat.method,
-      signal: abortController.signal,
-      responseType: "text",
-      data: messageBody(message),
-      onDownloadProgress: progressEvent => {
-        const res = parseResponseText(progressEvent.event.currentTarget.responseText)
-        res.forEach(item => {
-          console.log(item.choices[0].delta.reasoning_content ?? item.choices[0].delta.content)
-        })
-      },
-    })
-    const event = useEventBus<string>("message")
-    let callback: (message: string) => void = () => {}
-    const handler: ChatResponseHandler = {
-      restart: () => {},
-      terminate: () => {
-        abortController.abort()
-        reqMap.delete(id)
-      },
-      onData: (cb: (message: string) => void) => {
-        callback = cb
-      },
+  function request(message: string, callback: (message: LLMChatResponse) => void): LLMChatResponseHandler {
+    const reqId = uniqueId()
+    let abortController = new AbortController()
+    const messageHandler = (event: { reqId: string; message: LLMChatResponse }) => {
+      if (event.reqId === reqId) {
+        callback(event.message)
+      }
     }
-    reqMap.set(id, handler)
-    event.on(data => {
-      callback(data)
-    })
+    const doRequest = (signal: AbortSignal, url: string, method: Method | string) => {
+      let prevLen = 0 // 已接收到的字符长度
+      instance.value
+        .request({
+          url: url,
+          method: method,
+          signal: signal,
+          data: messageBody(message),
+          onDownloadProgress: event => {
+            const status = event.event?.target?.status
+            if (status == 200) {
+              const currentText: string = event.event?.target?.responseText ?? ""
+              const newText = currentText.slice(prevLen)
+              prevLen = currentText.length
+              const res = parseResponseText(newText)
+              eventBus.emit({
+                reqId,
+                message: res,
+              })
+            } else {
+              eventBus.emit({
+                reqId,
+                message: { status, msg: "", data: [] },
+              })
+            }
+          },
+        })
+        .then(() => {
+          eventBus.emit({ reqId, message: { status: 200, msg: "finish", data: [] } })
+          eventBus.off(messageHandler)
+        })
+        .catch(err => {
+          eventBus.emit({ reqId, message: { status: 500, msg: err.toString(), data: [] } })
+          eventBus.off(messageHandler)
+        })
+    }
+    eventBus.on(messageHandler)
+    const provider = providerStore.findById(providerId)
+    if (provider) {
+      doRequest(abortController.signal, provider.apiLLMChat.url, provider.apiLLMChat.method)
+    } else {
+      console.warn("[request] cannot find provider ", providerId)
+    }
+    function restart() {
+      abortController.abort()
+      abortController = new AbortController()
+      const provider = providerStore.findById(providerId)
+      if (provider) {
+        doRequest(abortController.signal, provider.apiLLMChat.url, provider.apiLLMChat.method)
+      } else {
+        console.warn("[restart] cannot find provider ", providerId)
+      }
+    }
+    function terminate() {
+      abortController.abort()
+      eventBus.off(messageHandler)
+    }
+    const handler: LLMChatResponseHandler = {
+      restart,
+      terminate,
+    }
     return handler
   }
   return {

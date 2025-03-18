@@ -35,7 +35,6 @@ const { t } = useI18n()
         </template>
       </MsgBubble>
     </template>
-    <template #handler> </template>
   </ContentLayout>
 </template>
 <style lang="scss" scoped>
