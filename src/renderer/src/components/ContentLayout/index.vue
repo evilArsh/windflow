@@ -7,17 +7,20 @@ const { handlerHeight = 0 } = defineProps<{
 
 const scrollView = shallowRef<HTMLElement | null>()
 const scrollViewParent = shallowRef<HTMLElement | null>()
+const behavior = ref<ScrollBehavior>("smooth")
 const { height } = useElementBounding(scrollView)
 const { y, isScrolling, arrivedState } = useScroll(scrollViewParent, {
-  behavior: "smooth",
+  behavior: () => behavior.value,
 })
 
 watchEffect(() => {
   if (!isScrolling.value && arrivedState.bottom) {
     y.value = height.value
+    scrollToBottom("smooth")
   }
 })
-const scrollToBottom = () => {
+const scrollToBottom = (be: ScrollBehavior) => {
+  behavior.value = be
   setTimeout(() => {
     y.value = height.value * 2 // gurantee
   }, 0)

@@ -32,7 +32,7 @@ const layoutReverse = computed(() => {
 const llmChats = shallowReactive<Record<string, LLMChatRequestHandler>>({})
 
 const send = async () => {
-  contentLayout.value?.scrollToBottom()
+  contentLayout.value?.scrollToBottom("smooth")
   topic.value.chatMessages.push({
     id: uniqueId(),
     time: formatSecond(new Date()),
@@ -64,6 +64,9 @@ const send = async () => {
   }
   topic.value.content = ""
 }
+onMounted(() => {
+  contentLayout.value?.scrollToBottom("instant")
+})
 </script>
 <template>
   <ContentLayout handler-height="20rem" ref="contentLayout">
