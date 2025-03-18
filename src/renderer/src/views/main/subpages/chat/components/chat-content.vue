@@ -79,7 +79,7 @@ onMounted(() => {
         </template>
         <template #content>
           <div class="chat-item-container">
-            <div class="chat-item-header">
+            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.providerId) }">
               <el-text class="name">{{ providerStore.findById(item.providerId)?.name }}</el-text>
               <el-text class="time">{{ item.time }}</el-text>
             </div>
@@ -143,6 +143,9 @@ onMounted(() => {
     .time {
       align-self: unset;
       font-size: 1.2rem;
+    }
+    &.reverse {
+      flex-direction: row-reverse;
     }
   }
   .chat-item-content {

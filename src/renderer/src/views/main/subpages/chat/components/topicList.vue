@@ -28,6 +28,12 @@ const onItemSelect = (topic: ChatTopic) => {
   currentTopic.value = topic
   emit("select", topic)
 }
+onMounted(() => {
+  // 默认点击
+  if (topicList.value.length > 0) {
+    onItemSelect(topicList.value[0])
+  }
+})
 </script>
 <template>
   <div class="provider-container">
