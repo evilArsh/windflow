@@ -21,7 +21,7 @@ const topic = computed({
   },
 })
 
-const contentLayout = ref<InstanceType<typeof ContentLayout>>()
+const contentLayout = useTemplateRef("contentLayout")
 const providerStore = useProviderStore()
 const { t } = useI18n()
 const layoutReverse = computed(() => {
@@ -36,7 +36,11 @@ const send = async () => {
   topic.value.chatMessages.push({
     id: uniqueId(),
     time: formatSecond(new Date()),
-    content: { content: topic.value.content, reasoningContent: "" },
+    content: {
+      status: 200,
+      msg: "",
+      data: [{ content: topic.value.content, reasoningContent: "" }],
+    },
     providerId: ProviderName.System,
   })
   for (const providerId of topic.value.providers) {
@@ -45,7 +49,7 @@ const send = async () => {
       const message = reactive<ChatTopic["chatMessages"][number]>({
         id: uniqueId(),
         time: formatSecond(new Date()),
-        content: { content: "", reasoningContent: "" },
+        content: { status: 206, msg: "", data: [] },
         providerId,
       })
       topic.value.chatMessages.push(message)
@@ -53,17 +57,26 @@ const send = async () => {
         llmChats[providerId] = useLLMChat(providerId)
       }
       llmChats[providerId].request(topic.value.content, async msg => {
-        if (msg.status == 200) {
-          message.content.content += msg.data.map(item => item.content).join("")
-          message.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
+        if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
+          contentLayout.value?.scrollToBottom("smooth")
+        }
+        message.content.status = msg.status
+        if (msg.status == 206) {
+          message.content.data.push(...msg.data)
+        } else if (msg.status == 200) {
+          console.log("done")
+          contentLayout.value?.scrollToBottom("instant")
         } else {
-          message.content.content = t("request.failed")
+          message.content.msg = t("request.failed")
         }
       })
     }
   }
   topic.value.content = ""
 }
+watch(topic, () => {
+  contentLayout.value?.scrollToBottom("instant")
+})
 onMounted(() => {
   contentLayout.value?.scrollToBottom("instant")
 })
@@ -84,10 +97,7 @@ onMounted(() => {
               <el-text class="time">{{ item.time }}</el-text>
             </div>
             <div class="chat-item-content" :class="{ reverse: layoutReverse(item.providerId) }">
-              <Markdown :content="item.content.reasoningContent" />
-            </div>
-            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.providerId) }">
-              <Markdown :content="item.content.content" />
+              <Markdown :id="item.id" :content="item.content" />
             </div>
             <div class="chat-item-footer"></div>
           </div>

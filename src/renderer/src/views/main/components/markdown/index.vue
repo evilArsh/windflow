@@ -4,68 +4,48 @@ import { full as emoji } from "markdown-it-emoji"
 import markdownitAnchor from "markdown-it-anchor"
 import markdownItCode from "./plugins/code"
 import MarkdownIt from "markdown-it"
+import { CodePluginOptions } from "./plugins/code"
+import { LLMChatResponse } from "@renderer/types"
+import { render, cloneVNode } from "vue"
 const props = defineProps<{
-  content: string
+  id: string
+  content: LLMChatResponse
 }>()
 const md: MarkdownIt = markRaw(markdownit())
+const idxMap = shallowReactive<Record<string, CodePluginOptions>>({})
 md.use(emoji)
 md.use(markdownitAnchor)
-md.use(markdownItCode)
+md.use(markdownItCode, props.id, idxMap)
 const html = ref("")
-const parse = async () => {
-  // html.value = DOMPurify.sanitize(
-  html.value = md.render(props.content, {
-    html: true,
-    linkify: true,
-    typographer: true,
-  })
+const parse = (val: LLMChatResponse, oldVal: LLMChatResponse | undefined) => {
+  if (val.status == 206) {
+    html.value = md.render(val.data.map(item => item.content).join(""), {
+      html: true,
+      linkify: true,
+      typographer: true,
+    })
+  } else if (val.status == 200) {
+    if (!oldVal) {
+      html.value = md.render(val.data.map(item => item.content).join(""), {
+        html: true,
+        linkify: true,
+        typographer: true,
+      })
+    }
+    nextTick(() => {
+      Object.values(idxMap).forEach(item => {
+        const el = document.getElementById(item.elId)
+        if (el) {
+          el.innerHTML = ""
+          item.vnode = cloneVNode(item.vnode, { status: val.status })
+          render(item.vnode, el)
+        }
+      })
+    })
+  }
 }
-watch(() => props.content, parse, { immediate: true })
+watch(() => props.content, parse, { immediate: true, deep: true })
 </script>
 <template>
   <div class="line-height-2.5rem" v-html="html"></div>
 </template>
-
-<!-- <script setup lang="ts">
-import markdownit from "markdown-it"
-import { full as emoji } from "markdown-it-emoji"
-import markdownitAnchor from "markdown-it-anchor"
-import markdownItCode from "./plugins/code"
-import MarkdownIt from "markdown-it"
-import CodeBlock from "./plugins/code/codeBlock.vue"
-import { App } from "vue"
-const props = defineProps<{
-  content: string
-}>()
-const md: MarkdownIt = markRaw(markdownit())
-const dynamicApps = shallowRef<App<Element>[]>([])
-md.use(emoji)
-md.use(markdownitAnchor)
-md.use(markdownItCode, (elId: string, code: string, content: string, lang: string) => {
-  const app = createApp({
-    render() {
-      return h(CodeBlock, { code, content: content, lang })
-    },
-  })
-  dynamicApps.value.push(app)
-  app.mount(`#${elId}`)
-})
-const html = ref("")
-const parse = async () => {
-  // html.value = DOMPurify.sanitize(
-  html.value = md.render(props.content, {
-    html: true,
-    linkify: true,
-    typographer: true,
-  })
-}
-watch(() => props.content, parse, { immediate: true })
-onUnmounted(() => {
-  dynamicApps.value.forEach(app => {
-    app.unmount()
-  })
-})
-</script>
-<template>
-  <div class="line-height-2.5rem" v-html="html"></div>
-</template> -->

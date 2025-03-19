@@ -20,7 +20,7 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
   }
   const instance = shallowRef<AxiosInstance>(createInstance(provider))
   const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol("message")
-  const eventBus = useEventBus(eventBusKey)
+  const bus = useEventBus(eventBusKey)
 
   function createInstance(provider: Provider) {
     return axios.create({
@@ -53,7 +53,7 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
         .filter(item => !!item)
         .map(item => JSON5.parse(item))
       return {
-        status: 200,
+        status: 206,
         msg: "",
         data: data.map(v => ({
           reasoning: v.object === "chat.completion.chunk",
@@ -92,12 +92,12 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
               const newText = currentText.slice(prevLen)
               prevLen = currentText.length
               const res = parseResponseText(newText)
-              eventBus.emit({
+              bus.emit({
                 reqId,
                 message: res,
               })
             } else {
-              eventBus.emit({
+              bus.emit({
                 reqId,
                 message: { status, msg: "", data: [] },
               })
@@ -105,15 +105,19 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
           },
         })
         .then(() => {
-          eventBus.emit({ reqId, message: { status: 200, msg: "finish", data: [] } })
-          eventBus.off(messageHandler)
+          bus.emit({ reqId, message: { status: 200, msg: "finish", data: [] } })
+          bus.off(messageHandler)
         })
         .catch(err => {
-          eventBus.emit({ reqId, message: { status: 500, msg: err.toString(), data: [] } })
-          eventBus.off(messageHandler)
+          bus.emit({ reqId, message: { status: 500, msg: err.toString(), data: [] } })
+          bus.off(messageHandler)
         })
     }
-    eventBus.on(messageHandler)
+    bus.emit({
+      reqId,
+      message: { status: 100, msg: "", data: [] },
+    })
+    bus.on(messageHandler)
     const provider = providerStore.findById(providerId)
     if (provider) {
       doRequest(abortController.signal, provider.apiLLMChat.url, provider.apiLLMChat.method)
@@ -132,7 +136,7 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
     }
     function terminate() {
       abortController.abort()
-      eventBus.off(messageHandler)
+      bus.off(messageHandler)
     }
     const handler: LLMChatResponseHandler = {
       restart,

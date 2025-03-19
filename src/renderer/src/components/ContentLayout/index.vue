@@ -13,12 +13,6 @@ const { y, isScrolling, arrivedState } = useScroll(scrollViewParent, {
   behavior: () => behavior.value,
 })
 
-watchEffect(() => {
-  if (!isScrolling.value && arrivedState.bottom) {
-    y.value = height.value
-    scrollToBottom("smooth")
-  }
-})
 const scrollToBottom = (be: ScrollBehavior) => {
   behavior.value = be
   setTimeout(() => {
@@ -32,6 +26,8 @@ onMounted(() => {
 })
 defineExpose({
   scrollToBottom,
+  isScrolling: () => !!isScrolling.value,
+  arrivedState: () => arrivedState,
 })
 </script>
 <template>

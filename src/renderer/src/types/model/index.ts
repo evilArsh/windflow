@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMChatMessage } from "../index"
+import { LLMChatResponse } from "../index"
 
 export enum ProviderName {
   System = "System",
@@ -76,7 +76,7 @@ export type ChatTopic = {
     /**
      * @description 消息内容
      */
-    content: LLMChatMessage
+    content: LLMChatResponse
     /**
      * @description 消息提供商ID
      */

@@ -1,67 +1,40 @@
 import MarkdownIt from "markdown-it"
-import hljs from "highlight.js"
-import "highlight.js/styles/github-dark.css"
+import { cloneVNode, render, VNode } from "vue"
+import CodeBlock from "./codeBlock.vue"
+import { UseEventBusReturn } from "@vueuse/core"
 
-// import DOMPurify from "dompurify"
-export default (md: MarkdownIt) => {
+export type CodePluginOptions = {
+  mdId: string
+  idx: number
+  elId: string
+  vnode: VNode
+  code?: string
+  status?: number
+}
+export type ProvideMsg = { code: string; lang: string }
+export type CodePluginProvideKey = UseEventBusReturn<ProvideMsg, any>
+
+const vnodeToHtml = (vnode: VNode): string => {
+  const container = document.createElement("div")
+  render(vnode, container)
+  return container.innerHTML
+}
+export default (md: MarkdownIt, mdId: string, opt: Record<string, CodePluginOptions>) => {
   md.renderer.rules.fence = (tokens, idx) => {
     const token = tokens[idx]
     const content = token.content
     const lang = token.info
-    console.log(token.content, idx)
-
-    let finalContent = ""
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        finalContent = hljs.highlight(content, { language: lang, ignoreIllegals: true }).value
-      } catch (_) {
-        finalContent = md.utils.escapeHtml(content)
-      }
+    if (!opt[idx]) {
+      const elId = "id-" + uniqueId()
+      const vnode = h(CodeBlock, { code: content, lang, status: 206 })
+      opt[idx] = { mdId, idx, elId, vnode, code: content }
+      const html = vnodeToHtml(vnode)
+      return `<div id='${elId}'>${html}</div>`
     } else {
-      finalContent = md.utils.escapeHtml(content)
+      opt[idx].vnode = cloneVNode(opt[idx].vnode, { code: content, lang, status: 206 })
+      opt[idx].code = content
+      const html = vnodeToHtml(opt[idx].vnode)
+      return `<div id='${opt[idx].elId}'>${html}</div>`
     }
-    const id = "id-" + uniqueId()
-    return `
-    <div class="el-card is-hover-shadow code-block" id='${id}'>
-      <div class="el-card__header" style="display: flex;justify-content: space-between;align-items: center;">
-        <span class="el-text el-text--primary">${lang}</span>
-        <elbutton type="primary" @click="onCopy" size="small" round plain circle>
-          <i-ic:outline-check v-if="copied"></i-ic:outline-check>
-          <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>
-        </elbutton>
-      </div>
-      <pre>
-        <code class='hljs language-${lang}'>${finalContent}</code>
-      </pre>
-    </div>`
   }
 }
-
-// import MarkdownIt from "markdown-it"
-// import hljs from "highlight.js"
-// import "highlight.js/styles/github-dark.css"
-
-// // import DOMPurify from "dompurify"
-// export default (md: MarkdownIt, callback: (elId: string, code: string, content: string, lang: string) => void) => {
-//   md.renderer.rules.fence = (tokens, idx) => {
-//     const token = tokens[idx]
-//     const content = token.content
-//     const lang = token.info
-
-//     let finalContent = ""
-//     if (lang && hljs.getLanguage(lang)) {
-//       try {
-//         finalContent = hljs.highlight(content, { language: lang, ignoreIllegals: true }).value
-//       } catch (_) {
-//         finalContent = md.utils.escapeHtml(content)
-//       }
-//     } else {
-//       finalContent = md.utils.escapeHtml(content)
-//     }
-//     const id = "id-" + uniqueId()
-//     setTimeout(() => {
-//       callback(id, content, finalContent, lang)
-//     }, 0)
-//     return `<div id='${id}'></div>`
-//   }
-// }
