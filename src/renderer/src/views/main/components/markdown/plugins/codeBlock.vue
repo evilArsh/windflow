@@ -3,7 +3,6 @@ import { useClipboard } from "@vueuse/core"
 import hljs from "highlight.js"
 import DOMPurify from "dompurify"
 import "highlight.js/styles/github-dark.css"
-import mermaid from "mermaid"
 const props = defineProps<{
   partial?: boolean
   code?: string
@@ -36,17 +35,6 @@ const hilight = (code?: string, lang?: string) => {
   }
   return content
 }
-
-function renderMermaid() {
-  if (!props.partial && props.lang === "mermaid") {
-    nextTick(() => {
-      mermaid.run()
-    })
-  }
-}
-watchEffect(() => {
-  renderMermaid()
-})
 </script>
 <template>
   <div>
@@ -60,10 +48,7 @@ watchEffect(() => {
           </el-button>
         </div>
       </template>
-      <pre v-if="lang === 'mermaid'" class="mermaid" v-html="code"></pre>
-      <pre v-else>
-        <code :class="`hljs language-${lang}`" v-html="hilight(code, lang)"></code>
-      </pre>
+      <code :class="`hljs language-${lang}`" v-html="hilight(code, lang)"></code>
     </el-card>
   </div>
 </template>
