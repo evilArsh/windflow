@@ -6,6 +6,7 @@ import { useLLMChat } from "@renderer/lib/http"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
+import useScrollHook from "./useScrollHook"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
 }>()
@@ -21,7 +22,7 @@ const topic = computed({
   },
 })
 
-const contentLayout = useTemplateRef("contentLayout")
+const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const providerStore = useProviderStore()
 const { t } = useI18n()
 const layoutReverse = computed(() => {
@@ -32,7 +33,7 @@ const layoutReverse = computed(() => {
 const llmChats = shallowReactive<Record<string, LLMChatRequestHandler>>({})
 
 const send = async () => {
-  contentLayout.value?.scrollToBottom("smooth")
+  if (!topic.value.content.trim()) return
   topic.value.chatMessages.push({
     id: uniqueId(),
     status: 200,
@@ -85,40 +86,11 @@ const send = async () => {
     }
   }
   topic.value.content = ""
+  nextTick(() => {
+    contentLayout.value?.scrollToBottom("smooth")
+  })
 }
-const useScrollHook = () => {
-  const scrollY = ref(0)
-  function scrollTo(topic: ChatTopic) {
-    if (topic.scrollY) {
-      contentLayout.value?.scrollTo("instant", topic.scrollY)
-    } else {
-      contentLayout.value?.scrollToBottom("instant")
-    }
-  }
-  function onScroll(_x: number, y: number) {
-    scrollY.value = y
-  }
-  function setOldScrollY(topic: ChatTopic) {
-    if (topic.scrollY) {
-      topic.scrollY = scrollY.value
-    }
-  }
-  return {
-    scrollY,
-    scrollTo,
-    onScroll,
-    setOldScrollY,
-  }
-}
-const { scrollTo, onScroll, setOldScrollY } = useScrollHook()
-watch(topic, (val, old) => {
-  // switch tab
-  nextTick(() => scrollTo(val))
-  if (old) setOldScrollY(old)
-})
-onMounted(() => {
-  scrollTo(topic.value)
-})
+const { onScroll } = useScrollHook(contentLayout, topic)
 </script>
 <template>
   <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
@@ -136,6 +108,7 @@ onMounted(() => {
               <el-text class="time">{{ item.time }}</el-text>
             </div>
             <div class="chat-item-content" :class="{ reverse: layoutReverse(item.providerId) }">
+              <el-button v-if="item.status == 100" type="primary" loading circle size="small"></el-button>
               <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
             </div>
             <div class="chat-item-footer"></div>
@@ -158,7 +131,11 @@ onMounted(() => {
             :placeholder="t('tip.inputPlaceholder')"></el-input>
         </div>
         <div class="chat-input-actions">
-          <el-button type="primary" @click="send">发送</el-button>
+          <Hover>
+            <el-button size="small" type="primary" @click="send" circle>
+              <i-ic:baseline-file-upload class="text-1.6rem"></i-ic:baseline-file-upload>
+            </el-button>
+          </Hover>
         </div>
       </div>
     </template>
@@ -227,6 +204,7 @@ onMounted(() => {
     flex-shrink: 0;
     display: flex;
     background-color: var(--chat-input-actions-bg-color);
+    justify-content: flex-end;
   }
 }
 </style>

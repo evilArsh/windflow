@@ -3,7 +3,8 @@
     "name": "糖果盒"
   },
   "chat": {
-    "addChat": "新增聊天"
+    "addChat": "新增聊天",
+    "search": "搜索"
   },
   "en": "English",
   "model": {
@@ -25,7 +26,8 @@
     "status401": "身份验证失败，请检查配置信息"
   },
   "tip": {
-    "inputPlaceholder": "输入你的问题"
+    "inputPlaceholder": "输入你的问题",
+    "loading": "加载中"
   },
   "zh": "简体中文"
 }

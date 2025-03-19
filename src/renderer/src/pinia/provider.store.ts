@@ -8,7 +8,6 @@ export default defineStore("provider", () => {
     {
       id: `provider-${ProviderName.DeepSeek}`,
       name: ProviderName.DeepSeek,
-      // alias: t("provider.name.deepseek"),
       logo: ds,
       apiUrl: "https://api.deepseek.com",
       apiKey: "",
@@ -26,9 +25,27 @@ export default defineStore("provider", () => {
       },
     },
     {
+      id: `provider-${ProviderName.SiliconFlow}`,
+      name: ProviderName.SiliconFlow,
+      logo: ds,
+      apiUrl: "https://api.siliconflow.cn/v1",
+      apiKey: "",
+      apiModelList: {
+        method: "GET",
+        url: "/models",
+      },
+      apiLLMChat: {
+        method: "POST",
+        url: "/chat/completions",
+      },
+      apiBalance: {
+        method: "GET",
+        url: "/user/info",
+      },
+    },
+    {
       id: `provider-${ProviderName.System}`,
       name: ProviderName.System,
-      // alias: t("provider.name.system"),
       logo: ds,
       apiUrl: "",
       apiKey: "",
@@ -46,27 +63,6 @@ export default defineStore("provider", () => {
       },
     },
   ])
-  // 正在编辑的provider
-  const editProvider = ref<Provider>({
-    id: "",
-    name: "",
-    alias: "",
-    logo: "",
-    apiUrl: "",
-    apiKey: "",
-    apiModelList: {
-      method: "",
-      url: "",
-    },
-    apiLLMChat: {
-      method: "",
-      url: "",
-    },
-    apiBalance: {
-      method: "",
-      url: "",
-    },
-  })
 
   function findById(id: string) {
     return providers.value.find(v => v.id === id)
@@ -74,7 +70,6 @@ export default defineStore("provider", () => {
 
   return {
     providers,
-    editProvider,
     defaultProviderId,
     findById,
   }

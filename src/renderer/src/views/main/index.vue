@@ -1,3 +1,7 @@
+<script lang="ts" setup>
+import Navbar from "./components/nav.vue"
+onMounted(() => {})
+</script>
 <template>
   <div class="main-container">
     <div class="main-aside">
@@ -11,10 +15,6 @@
     </div>
   </div>
 </template>
-<script lang="ts" setup>
-import Navbar from "./components/nav.vue"
-onMounted(() => {})
-</script>
 <style lang="scss" scoped>
 .main-container {
   --main-container-bg: #f1f1f1;

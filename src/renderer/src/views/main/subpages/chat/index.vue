@@ -3,10 +3,7 @@ import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import TopicList from "./components/topicList.vue"
 import { ChatTopic } from "@renderer/types"
 import ChatContent from "./components/chat-content.vue"
-// import useChatStore from "@renderer/pinia/chat.store"
-// import { storeToRefs } from "pinia"
-// const charStore = useChatStore()
-// const { topicList } = storeToRefs(charStore)
+const { t } = useI18n()
 const keyword = ref<string>("")
 const currentTopic = ref<ChatTopic>()
 
@@ -18,7 +15,7 @@ const onTopicSelect = (topic: ChatTopic) => {
   <SubNavLayout>
     <template #submenu>
       <div class="chat-provider-header">
-        <el-input v-model="keyword" placeholder="搜索"></el-input>
+        <el-input v-model="keyword" :placeholder="t('chat.search')" />
       </div>
       <div class="chat-provider-content">
         <el-scrollbar>

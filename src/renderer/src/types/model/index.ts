@@ -1,4 +1,4 @@
-import { Method } from "axios"
+import { HttpStatusCode, Method } from "axios"
 import { LLMChatMessage } from "../index"
 
 export enum ProviderName {
@@ -11,11 +11,15 @@ export enum ProviderName {
  */
 export interface Provider {
   id: string
-  name: string
+  name: ProviderName
   logo: string
   alias?: string
   apiUrl: string
   apiKey: string
+  /**
+   * @description 是否是默认提供商
+   */
+  default?: boolean
   /**
    * @description 平台模型列表接口
    */
@@ -39,7 +43,18 @@ export interface Provider {
   }
   disabled?: boolean
 }
-
+export enum ModelType {
+  LLM_CHAT = "LLM_CHAT",
+  LLM_REASONER = "LLM_REASONER",
+  Embedding = "Embedding",
+}
+export interface Model {
+  id: string
+  name: string
+  type: ModelType
+  providerId: string
+  description?: string
+}
 export type ChatTopic = {
   /**
    * @description 会话ID
@@ -84,7 +99,7 @@ export type ChatTopic = {
     /**
      * @description 消息状态码
      */
-    status: number
+    status: HttpStatusCode
     /**
      * @description 消息错误信息
      */
