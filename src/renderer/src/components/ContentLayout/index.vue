@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { useElementBounding, useScroll } from "@vueuse/core"
-
+const emit = defineEmits<{
+  (e: "scroll", x: number, y: number): void
+}>()
 const { handlerHeight = 0 } = defineProps<{
   handlerHeight?: string | number
 }>()
@@ -9,7 +11,7 @@ const scrollView = shallowRef<HTMLElement | null>()
 const scrollViewParent = shallowRef<HTMLElement | null>()
 const behavior = ref<ScrollBehavior>("smooth")
 const { height } = useElementBounding(scrollView)
-const { y, isScrolling, arrivedState } = useScroll(scrollViewParent, {
+const { x, y, isScrolling, arrivedState } = useScroll(scrollViewParent, {
   behavior: () => behavior.value,
 })
 
@@ -19,6 +21,9 @@ const scrollToBottom = (be: ScrollBehavior) => {
     y.value = height.value * 2 // gurantee
   }, 0)
 }
+watchEffect(() => {
+  emit("scroll", x.value, y.value)
+})
 onMounted(() => {
   const el = document.getElementById("scroll-view")
   scrollView.value = el
@@ -28,6 +33,11 @@ defineExpose({
   scrollToBottom,
   isScrolling: () => !!isScrolling.value,
   arrivedState: () => arrivedState,
+  currentY: () => y.value,
+  scrollTo: (be: ScrollBehavior, newY: number) => {
+    behavior.value = be
+    y.value = newY
+  },
 })
 </script>
 <template>

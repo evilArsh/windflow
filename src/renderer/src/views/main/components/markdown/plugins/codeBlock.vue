@@ -3,8 +3,9 @@ import { useClipboard } from "@vueuse/core"
 import hljs from "highlight.js"
 import DOMPurify from "dompurify"
 import "highlight.js/styles/github-dark.css"
+import mermaid from "mermaid"
 const props = defineProps<{
-  status?: number
+  partial?: boolean
   code?: string
   lang?: string
 }>()
@@ -35,6 +36,17 @@ const hilight = (code?: string, lang?: string) => {
   }
   return content
 }
+
+function renderMermaid() {
+  if (!props.partial && props.lang === "mermaid") {
+    nextTick(() => {
+      mermaid.run()
+    })
+  }
+}
+watchEffect(() => {
+  renderMermaid()
+})
 </script>
 <template>
   <div>
@@ -42,13 +54,14 @@ const hilight = (code?: string, lang?: string) => {
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang || "plaintext" }}</el-tag>
-          <el-button :disabled="status != 200" type="primary" @click="onCopy" size="small" round plain circle>
+          <el-button :disabled="partial" type="primary" @click="onCopy" size="small" round plain circle>
             <i-ic:outline-check v-if="copied"></i-ic:outline-check>
             <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>
           </el-button>
         </div>
       </template>
-      <pre>
+      <pre v-if="lang === 'mermaid'" class="mermaid" v-html="code"></pre>
+      <pre v-else>
         <code :class="`hljs language-${lang}`" v-html="hilight(code, lang)"></code>
       </pre>
     </el-card>

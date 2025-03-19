@@ -3,25 +3,41 @@ export interface LLMChatResponseHandler {
   terminate: () => void
 }
 export interface LLMChatRequestHandler {
-  request: (message: string, callback: (message: LLMChatResponse) => void) => LLMChatResponseHandler
+  request: (
+    message: LLMChatMessage | LLMChatMessage[],
+    callback: (message: LLMChatResponse) => void
+  ) => LLMChatResponseHandler
 }
 
 export interface LLMChatMessage {
   /**
-   * 是否是推理对话
+   * 消息类型
    */
-  reasoning?: boolean
+  role: "user" | "assistant" | "system"
   /**
-   * 对话内容
+   * 消息内容
    */
   content: string
   /**
    * 推理内容
    */
-  reasoningContent: string
+  reasoningContent?: string
 }
 export interface LLMChatResponse {
+  /**
+   * 当前消息对应的状态码
+   */
   status: number
+  /**
+   * 状态码对应的提示信息
+   */
   msg: string
+  /**
+   * 消息内容
+   */
   data: LLMChatMessage[]
+  /**
+   * 是否是推理对话
+   */
+  reasoning?: boolean
 }

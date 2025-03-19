@@ -35,54 +35,93 @@ const send = async () => {
   contentLayout.value?.scrollToBottom("smooth")
   topic.value.chatMessages.push({
     id: uniqueId(),
+    status: 200,
     time: formatSecond(new Date()),
+    finish: true,
+    reasoning: false,
     content: {
-      status: 200,
-      msg: "",
-      data: [{ content: topic.value.content, reasoningContent: "" }],
+      role: "user",
+      content: topic.value.content,
     },
     providerId: ProviderName.System,
-  })
+  } as ChatTopic["chatMessages"][number])
   for (const providerId of topic.value.providers) {
     const provider = providerStore.findById(providerId)
     if (provider) {
       const message = reactive<ChatTopic["chatMessages"][number]>({
         id: uniqueId(),
+        finish: false,
+        status: 200,
         time: formatSecond(new Date()),
-        content: { status: 206, msg: "", data: [] },
+        content: {
+          role: "assistant",
+          content: "",
+        },
         providerId,
       })
       topic.value.chatMessages.push(message)
       if (!llmChats[providerId]) {
         llmChats[providerId] = useLLMChat(providerId)
       }
-      llmChats[providerId].request(topic.value.content, async msg => {
+      const context = topic.value.chatMessages.filter(item => item.finish).map(item => item.content)
+
+      llmChats[providerId].request(context, async msg => {
         if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
           contentLayout.value?.scrollToBottom("smooth")
         }
-        message.content.status = msg.status
+        message.status = msg.status
         if (msg.status == 206) {
-          message.content.data.push(...msg.data)
+          message.finish = false
+          message.content.content += msg.data.map(item => item.content).join("")
+          message.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
         } else if (msg.status == 200) {
-          console.log("done")
           contentLayout.value?.scrollToBottom("instant")
+          message.finish = true
+          console.log("done")
         } else {
-          message.content.msg = t("request.failed")
+          message.finish = true
         }
       })
     }
   }
   topic.value.content = ""
 }
-watch(topic, () => {
-  contentLayout.value?.scrollToBottom("instant")
+const useScrollHook = () => {
+  const scrollY = ref(0)
+  function scrollTo(topic: ChatTopic) {
+    if (topic.scrollY) {
+      contentLayout.value?.scrollTo("instant", topic.scrollY)
+    } else {
+      contentLayout.value?.scrollToBottom("instant")
+    }
+  }
+  function onScroll(_x: number, y: number) {
+    scrollY.value = y
+  }
+  function setOldScrollY(topic: ChatTopic) {
+    if (topic.scrollY) {
+      topic.scrollY = scrollY.value
+    }
+  }
+  return {
+    scrollY,
+    scrollTo,
+    onScroll,
+    setOldScrollY,
+  }
+}
+const { scrollTo, onScroll, setOldScrollY } = useScrollHook()
+watch(topic, (val, old) => {
+  // switch tab
+  nextTick(() => scrollTo(val))
+  if (old) setOldScrollY(old)
 })
 onMounted(() => {
-  contentLayout.value?.scrollToBottom("instant")
+  scrollTo(topic.value)
 })
 </script>
 <template>
-  <ContentLayout handler-height="20rem" ref="contentLayout">
+  <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
     <template #content>
       <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.providerId)">
         <template #head>
@@ -97,7 +136,7 @@ onMounted(() => {
               <el-text class="time">{{ item.time }}</el-text>
             </div>
             <div class="chat-item-content" :class="{ reverse: layoutReverse(item.providerId) }">
-              <Markdown :id="item.id" :content="item.content" />
+              <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
             </div>
             <div class="chat-item-footer"></div>
           </div>

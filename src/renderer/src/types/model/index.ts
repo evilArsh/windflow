@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMChatResponse } from "../index"
+import { LLMChatMessage } from "../index"
 
 export enum ProviderName {
   System = "System",
@@ -66,17 +66,37 @@ export type ChatTopic = {
    */
   children: ChatTopic[]
   /**
+   * @description 会话滚动位置
+   */
+  scrollY?: number
+  /**
    * @description 会话聊天记录
    */
   chatMessages: {
+    /**
+     * @description 请求是否完成，不管是否成功
+     */
+    finish?: boolean
     /**
      * @description 消息ID
      */
     id: string
     /**
-     * @description 消息内容
+     * @description 消息状态码
      */
-    content: LLMChatResponse
+    status: number
+    /**
+     * @description 消息错误信息
+     */
+    msg?: string
+    /**
+     * @description 是否是推理对话
+     */
+    reasoning?: boolean
+    /**
+     * @description 消息内容,包含用户消息和模型返回的消息
+     */
+    content: LLMChatMessage
     /**
      * @description 消息提供商ID
      */
