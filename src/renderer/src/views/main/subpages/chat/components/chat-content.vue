@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { ChatTopic, LLMChatRequestHandler, ModelType, ProviderName } from "@renderer/types"
+import { ChatTopic, LLMProvider, ModelType, ProviderName } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider.store"
-import { useLLMChat } from "@renderer/lib/http"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
@@ -30,7 +29,7 @@ const layoutReverse = computed(() => {
     return id === ProviderName.System
   }
 })
-const llmChats = shallowReactive<Record<string, LLMChatRequestHandler>>({})
+const llmChats = shallowReactive<Record<string, LLMProvider>>({})
 
 const send = async () => {
   if (!topic.value.content.trim()) return
@@ -69,7 +68,7 @@ const send = async () => {
       if (!llmChats[model.providerId]) {
         const provider = providerStore.providerManager.getProvider(model.providerId)
         if (provider) {
-          llmChats[model.providerId] = useLLMChat(provider)
+          llmChats[model.providerId] = provider
         } else {
           console.warn("[init llmChats] provider not found", model.providerId)
         }
