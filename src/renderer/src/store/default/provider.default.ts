@@ -50,15 +50,15 @@ export const providerDefault = (): ProviderConfig[] => {
       apiUrl: "",
       apiKey: "",
       apiModelList: {
-        method: "",
+        method: "GET",
         url: "",
       },
       apiLLMChat: {
-        method: "",
+        method: "GET",
         url: "",
       },
       apiBalance: {
-        method: "",
+        method: "GET",
         url: "",
       },
     },

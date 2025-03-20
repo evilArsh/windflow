@@ -55,10 +55,6 @@ export type ModelConfig = {
   providerId: string
   description?: string
 }
-export type ProviderModelPair = {
-  modelId: string
-  providerId: string
-}
 export type ChatTopic = {
   /**
    * @description 会话ID
@@ -76,10 +72,10 @@ export type ChatTopic = {
    * @description 当前会话聊天框输入内容
    */
   content: string
-  // /**
-  //  * @description 当前会话服务模型配置id
-  //  */
-  // modelIds: string[]
+  /**
+   * @description 当前会话选择的模型配置id
+   */
+  models: ModelConfig[]
   /**
    * @description 会话子会话
    */
@@ -117,9 +113,9 @@ export type ChatTopic = {
      */
     content: LLMChatMessage
     /**
-     * @description 消息模型配置ID
+     * @description 当前消息使用的模型配置id
      */
-    modelId: string
+    model: ModelConfig
     /**
      * @description 消息时间
      */

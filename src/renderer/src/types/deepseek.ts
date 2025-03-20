@@ -147,7 +147,7 @@ export type DsChatCompletionRequest = {
   /**
    * @description 是否返回所输出 token 的对数概率。如果为 true，则在 message 的 content 中返回每个输出 token 的对数概率。
    */
-  logprobs: false
+  logprobs?: boolean
   /**
    * @description 一个介于 0 到 20 之间的整数 N，指定每个输出位置返回输出概率 top N 的 token，且返回这些 token 的对数概率。指定此参数时，logprobs 必须为 true。
    */

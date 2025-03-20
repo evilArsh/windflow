@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { ChatTopic, LLMChatRequestHandler, ProviderName } from "@renderer/types"
+import { ChatTopic, LLMChatRequestHandler, ModelType, ProviderName } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider.store"
 import { useLLMChat } from "@renderer/lib/http"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   modelValue: ChatTopic
 }>()
-const topic = computed({
+const topic = computed<ChatTopic>({
   get() {
     return props.modelValue
   },
@@ -44,10 +44,15 @@ const send = async () => {
       role: "user",
       content: topic.value.content,
     },
-    providerId: ProviderName.System,
+    model: {
+      id: "",
+      name: "",
+      type: ModelType.LLM_CHAT,
+      providerId: "",
+    },
   } as ChatTopic["chatMessages"][number])
-  for (const providerId of topic.value.providers) {
-    const provider = providerStore.findById(providerId)
+  for (const model of topic.value.models) {
+    const provider = providerStore.findById(model.providerId)
     if (provider) {
       const message = reactive<ChatTopic["chatMessages"][number]>({
         id: uniqueId(),
@@ -58,15 +63,20 @@ const send = async () => {
           role: "assistant",
           content: "",
         },
-        providerId,
+        model,
       })
       topic.value.chatMessages.push(message)
-      if (!llmChats[providerId]) {
-        llmChats[providerId] = useLLMChat(providerId)
+      if (!llmChats[model.providerId]) {
+        const provider = providerStore.providerManager.getProvider(model.providerId)
+        if (provider) {
+          llmChats[model.providerId] = useLLMChat(provider)
+        } else {
+          console.warn("[init llmChats] provider not found", model.providerId)
+        }
       }
       const context = topic.value.chatMessages.filter(item => item.finish).map(item => item.content)
 
-      llmChats[providerId].request(context, async msg => {
+      llmChats[model.providerId].request(context, async msg => {
         if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
           contentLayout.value?.scrollToBottom("smooth")
         }
@@ -95,7 +105,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
 <template>
   <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
     <template #content>
-      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.providerId)">
+      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.model.providerId)">
         <template #head>
           <Hover>
             <el-avatar :src="ds" size="default" />
@@ -103,11 +113,11 @@ const { onScroll } = useScrollHook(contentLayout, topic)
         </template>
         <template #content>
           <div class="chat-item-container">
-            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.providerId) }">
-              <el-text class="name">{{ providerStore.findById(item.providerId)?.name }}</el-text>
+            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.model.providerId) }">
+              <el-text class="name">{{ providerStore.findById(item.model.providerId)?.name }}</el-text>
               <el-text class="time">{{ item.time }}</el-text>
             </div>
-            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.providerId) }">
+            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.model.providerId) }">
               <el-button v-if="item.status == 100" type="primary" loading circle size="small"></el-button>
               <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
             </div>

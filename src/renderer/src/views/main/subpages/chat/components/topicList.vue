@@ -2,26 +2,26 @@
 import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
-import useProviderStore from "@renderer/store/provider.store"
+// import useProviderStore from "@renderer/store/provider.store"
 import { ChatTopic } from "@renderer/types"
 import TopicItem from "./topicItem.vue"
 const emit = defineEmits<{
   (e: "select", topic: ChatTopic): void
 }>()
 const charStore = useChatStore()
-const providerStore = useProviderStore()
+// const providerStore = useProviderStore()
 const { topicList } = storeToRefs(charStore)
-const { defaultProviderId } = storeToRefs(providerStore)
+// const { defaultProviderId } = storeToRefs(providerStore)
 const currentTopic = shallowRef<ChatTopic>()
 const onAddNewChat = () => {
   charStore.addGroup({
     id: uniqueId(),
-    label: "DeepSeek",
+    label: "#新对话",
     icon: ds,
-    providers: [defaultProviderId.value],
     children: [],
     content: "",
     chatMessages: [],
+    models: [],
   })
 }
 const onItemSelect = (topic: ChatTopic) => {

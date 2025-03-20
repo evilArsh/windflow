@@ -13,10 +13,10 @@ export default defineStore("chat", () => {
     topicList.push(group)
   }
 
-  onBeforeMount(async () => {
+  const init = async () => {
     const data = await get<ChatTopic[]>(SAVE_KEY)
-    merge(topicList, chatDefault(), data)
-  })
+    topicList.push(...merge(chatDefault(), data))
+  }
   watch(
     topicList,
     useThrottleFn(
@@ -27,6 +27,7 @@ export default defineStore("chat", () => {
       true
     )
   )
+  init()
   return {
     topicList,
     addGroup,
