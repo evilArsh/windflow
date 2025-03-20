@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import useProviderStore from "@renderer/pinia/provider.store"
+import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
 import { ProviderName } from "@renderer/types"
 import CnfDeepseek from "./components/cnf-deepseek.vue"
 import CnfSilicon from "./components/cnf-silicon.vue"
 import { ElEmpty } from "element-plus"
 const providerStore = useProviderStore()
-const { providers } = storeToRefs(providerStore)
+const { providersConfig } = storeToRefs(providerStore)
 const currentProviderId = ref("")
+const { t } = useI18n()
 const useConfigComponent = () => {
   const componentsMap = shallowReactive({
     [ProviderName.DeepSeek]: CnfDeepseek,
@@ -36,14 +37,14 @@ const { getComponent } = useConfigComponent()
         <div class="provider-container">
           <Hover
             background
-            v-for="item in providers"
+            v-for="item in providersConfig"
             :key="item.name"
             still-lock
             :default-lock="currentProviderId == item.id">
             <el-card class="card" shadow="never" @click="currentProviderId = item.id">
               <div class="card-body">
                 <el-image class="icon" :src="item.logo" />
-                <el-text class="name">{{ item.name }}</el-text>
+                <el-text class="name">{{ t(item.alias || "") }}</el-text>
               </div>
             </el-card>
           </Hover>
@@ -53,7 +54,11 @@ const { getComponent } = useConfigComponent()
     <template #content>
       <ContentLayout>
         <template #content>
-          <component v-for="item in providers" :key="item.name" :is="getComponent(item.name)" :model-value="item" />
+          <component
+            v-for="item in providersConfig"
+            :key="item.name"
+            :is="getComponent(item.name)"
+            :model-value="item" />
         </template>
       </ContentLayout>
     </template>

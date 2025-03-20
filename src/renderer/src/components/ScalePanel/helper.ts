@@ -5,7 +5,7 @@ import { MoveType } from "@renderer/lib/drag/types"
 import { ShallowRef } from "vue"
 import { uniqueId } from "@renderer/lib/shared/is"
 import { z } from "@renderer/lib/shared/zindex"
-import { merge } from "lodash"
+import { merge } from "lodash-es"
 import type { Ref, MaybeRef } from "vue"
 export const values = (style?: CSSProperties): Record<string, string | number | undefined> => {
   if (!style) return {}

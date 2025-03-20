@@ -1,6 +1,6 @@
 import { NavPage } from "@renderer/types"
 import { defineStore } from "pinia"
-import useIconStore from "@renderer/pinia/icon.store"
+import useIconStore from "@renderer/store/icon.store"
 import useI18nWatcher from "@renderer/usable/useI18nWatcher"
 
 import IMdiChatProcessing from "~icons/mdi/chat-processing"

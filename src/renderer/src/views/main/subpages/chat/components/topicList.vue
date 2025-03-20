@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { storeToRefs } from "pinia"
-import useChatStore from "@renderer/pinia/chat.store"
-import useProviderStore from "@renderer/pinia/provider.store"
+import useChatStore from "@renderer/store/chat.store"
+import useProviderStore from "@renderer/store/provider.store"
 import { ChatTopic } from "@renderer/types"
 import TopicItem from "./topicItem.vue"
 const emit = defineEmits<{

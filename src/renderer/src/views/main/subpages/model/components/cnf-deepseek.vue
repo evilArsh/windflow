@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { Provider } from "@renderer/types"
+import { ProviderConfig } from "@renderer/types"
 const { t } = useI18n()
 const props = defineProps<{
-  modelValue: Provider
+  modelValue: ProviderConfig
 }>()
 const emit = defineEmits<{
-  (e: "update:modelValue", value: Provider): void
+  (e: "update:modelValue", value: ProviderConfig): void
 }>()
 const data = computed({
   get() {
     return props.modelValue
   },
-  set(value: Provider) {
+  set(value: ProviderConfig) {
     emit("update:modelValue", value)
   },
 })

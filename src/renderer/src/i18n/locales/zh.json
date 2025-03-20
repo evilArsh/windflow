@@ -18,7 +18,8 @@
   "provider": {
     "name": {
       "deepseek": "深度求索",
-      "system": "系统"
+      "siliconflow": "硅基流动",
+      "system": "你"
     }
   },
   "request": {

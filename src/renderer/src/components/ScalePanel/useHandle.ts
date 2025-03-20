@@ -6,7 +6,7 @@ import { AsyncCallBackFn, CallBackFn, FixedArray } from "@renderer/lib/shared/ty
 import { useElementBounding } from "@vueuse/core"
 import useEvent from "@renderer/usable/useEvent"
 import { isNumber } from "@renderer/lib/shared/is"
-import { merge } from "lodash"
+import { merge } from "lodash-es"
 import { useDragOffset, useStyleHandler } from "./helper"
 import { type Ref } from "vue"
 export enum Status {

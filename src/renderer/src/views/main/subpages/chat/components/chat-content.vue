@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { ChatTopic, LLMChatRequestHandler, ProviderName } from "@renderer/types"
-import useProviderStore from "@renderer/pinia/provider.store"
+import useProviderStore from "@renderer/store/provider.store"
 import { useLLMChat } from "@renderer/lib/http"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"

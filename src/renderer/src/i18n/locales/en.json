@@ -10,6 +10,13 @@
     "chat": "chat",
     "modelSetting": "model"
   },
+  "provider": {
+    "name": {
+      "deepseek": "DeepSeek",
+      "siliconflow": "SiliconFlow",
+      "system": "you"
+    }
+  },
   "tip": {
     "inputPlaceholder": "say something and enter"
   },

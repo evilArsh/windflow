@@ -1,5 +1,5 @@
 import { HttpStatusCode, Method } from "axios"
-import { LLMChatMessage } from "../index"
+import { LLMChatMessage } from "./index"
 
 export enum ProviderName {
   System = "System",
@@ -9,7 +9,7 @@ export enum ProviderName {
 /**
  * 服务提供商
  */
-export interface Provider {
+export type ProviderConfig = {
   id: string
   name: ProviderName
   logo: string
@@ -24,21 +24,21 @@ export interface Provider {
    * @description 平台模型列表接口
    */
   apiModelList: {
-    method: Method | string
+    method: Method
     url: string
   }
   /**
    * @description 平台LLM聊天接口
    */
   apiLLMChat: {
-    method: Method | string
+    method: Method
     url: string
   }
   /**
    * @description 平台账户信息接口
    */
   apiBalance: {
-    method: Method | string
+    method: Method
     url: string
   }
   disabled?: boolean
@@ -48,12 +48,16 @@ export enum ModelType {
   LLM_REASONER = "LLM_REASONER",
   Embedding = "Embedding",
 }
-export interface Model {
+export type ModelConfig = {
   id: string
   name: string
   type: ModelType
   providerId: string
   description?: string
+}
+export type ProviderModelPair = {
+  modelId: string
+  providerId: string
 }
 export type ChatTopic = {
   /**
@@ -72,10 +76,10 @@ export type ChatTopic = {
    * @description 当前会话聊天框输入内容
    */
   content: string
-  /**
-   * @description 当前会话服务提供商id
-   */
-  providers: string[]
+  // /**
+  //  * @description 当前会话服务模型配置id
+  //  */
+  // modelIds: string[]
   /**
    * @description 会话子会话
    */
@@ -113,9 +117,9 @@ export type ChatTopic = {
      */
     content: LLMChatMessage
     /**
-     * @description 消息提供商ID
+     * @description 消息模型配置ID
      */
-    providerId: string
+    modelId: string
     /**
      * @description 消息时间
      */

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import navStore from "@renderer/pinia/nav.store"
-import useIconStore from "@renderer/pinia/icon.store"
+import navStore from "@renderer/store/nav.store"
+import useIconStore from "@renderer/store/icon.store"
 import { storeToRefs } from "pinia"
 import I18n from "./i18n.vue"
 const { page, defaultRoute } = storeToRefs(navStore())

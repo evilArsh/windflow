@@ -1,6 +1,6 @@
 import { createApp } from "vue"
 import App from "./index.vue"
-import pinia from "@renderer/pinia/index"
+import pinia from "@renderer/store/index"
 import router from "@renderer/routes/index"
 import useI18n from "./usable/useI18n"
 import useSize from "./usable/useSize"

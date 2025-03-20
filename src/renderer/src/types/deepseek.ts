@@ -1,4 +1,4 @@
-export interface DSModelsResponse {
+export type DSModelsResponse = {
   object: "list"
   data: {
     /**
@@ -15,7 +15,7 @@ export interface DSModelsResponse {
     owned_by: string
   }[]
 }
-export interface DSUserBalanceResponse {
+export type DSUserBalanceResponse = {
   /**
    * @description 当前账户是否有余额可供 API 调用
    */
@@ -39,36 +39,36 @@ export interface DSUserBalanceResponse {
     topped_up_balance: string
   }[]
 }
-export interface DSMessageBase {
+export type DSMessageBase = {
   content: string
 }
-export interface DSMessageSystem extends DSMessageBase {
+export type DSMessageSystem = DSMessageBase & {
   role: "system"
   name?: string
 }
-export interface DSMessageUser extends DSMessageBase {
+export type DSMessageUser = DSMessageBase & {
   role: "user"
   name?: string
 }
-export interface DSMessageAssistant extends DSMessageBase {
+export type DSMessageAssistant = DSMessageBase & {
   role: "assistant"
   name?: string
   prefix?: boolean
   reasoning_content?: string
 }
-export interface DSMessageAssistantTool extends DSMessageBase {
+export type DSMessageAssistantTool = DSMessageBase & {
   role: "tool"
   tool_call_id: string
 }
 
 export type DSMessage = DSMessageSystem | DSMessageUser | DSMessageAssistant | DSMessageAssistantTool
 export type DSChatCompletionToolChoice = "none" | "auto" | "required"
-export interface DSChatCompletionNamedToolChoice {
+export type DSChatCompletionNamedToolChoice = {
   type: "tool"
   function: Record<string, string>
 }
 export type DSToolChoice = DSChatCompletionToolChoice | DSChatCompletionNamedToolChoice
-export interface DsChatCompletionRequest {
+export type DsChatCompletionRequest = {
   messages: DSMessage[]
   model: "deepseek-reasoner" | "deepseek-chat"
   /**
@@ -154,7 +154,7 @@ export interface DsChatCompletionRequest {
   top_logprobs?: number
 }
 
-export interface DsChatCompletionResponse {
+export type DsChatCompletionResponse = {
   id: string
   choices: {
     finish_reason: "stop" | "length" | "content_filter" | "tool_calls" | "insufficient_system_resource"
@@ -203,7 +203,7 @@ export interface DsChatCompletionResponse {
   }
 }
 
-export interface DsChatCompletionResponseStreamBase {
+export type DsChatCompletionResponseStreamBase = {
   id: string
   choices: {
     delta: {

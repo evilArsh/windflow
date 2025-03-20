@@ -4,17 +4,17 @@ import {
   LLMChatRequestHandler,
   LLMChatResponseHandler,
   DsChatCompletionResponseStreamBase,
-  Provider,
+  ProviderConfig,
   LLMChatResponse,
   LLMChatMessage,
 } from "@renderer/types"
-import useProviderStore from "@renderer/pinia/provider.store"
+import useProviderStore from "@renderer/store/provider.store"
 import { useEventBus, EventBusKey } from "@vueuse/core"
 import axios, { AxiosInstance, Method } from "axios"
 import JSON5 from "json5"
 
 // TODO: refactor
-const getLLMRequestConfig = (provider: Provider, message: LLMChatMessage | LLMChatMessage[]) => {
+const getLLMRequestConfig = (providerConfig: ProviderConfig, message: LLMChatMessage | LLMChatMessage[]) => {
   const config = {
     body: {} as Record<string, any>,
     reasoning: false,
@@ -26,7 +26,7 @@ const getLLMRequestConfig = (provider: Provider, message: LLMChatMessage | LLMCh
       }
     },
   }
-  if (provider.name === ProviderName.DeepSeek) {
+  if (providerConfig.name === ProviderName.DeepSeek) {
     config.body = {
       messages: Array.isArray(message) ? message : [message],
       stream: true,
@@ -38,7 +38,7 @@ const getLLMRequestConfig = (provider: Provider, message: LLMChatMessage | LLMCh
     } as DsChatCompletionRequest
     config.reasoning = config.body.model === "deepseek-reasoner"
     config.responseParser = (text: string): LLMChatResponse => {
-      if (provider.name === ProviderName.DeepSeek) {
+      if (providerConfig.name === ProviderName.DeepSeek) {
         const data: DsChatCompletionResponseStreamBase[] = text
           .replace(/data: |\[DONE\]|: keep-alive/g, "")
           .split("\n")
@@ -73,11 +73,11 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
   const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol("message")
   const bus = useEventBus(eventBusKey)
 
-  function createInstance(provider: Provider) {
+  function createInstance(providerConfig: ProviderConfig) {
     return axios.create({
-      baseURL: provider.apiUrl,
+      baseURL: providerConfig.apiUrl,
       headers: {
-        Authorization: `Bearer ${provider.apiKey}`,
+        Authorization: `Bearer ${providerConfig.apiKey}`,
       },
     })
   }
@@ -93,7 +93,7 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
         callback(event.message)
       }
     }
-    const doRequest = (signal: AbortSignal, provider?: Provider) => {
+    const doRequest = (signal: AbortSignal, provider?: ProviderConfig) => {
       if (!provider) {
         console.warn("[request] cannot find provider ", providerId)
         bus.emit({
@@ -109,7 +109,7 @@ export const useLLMChat = (providerId: string): LLMChatRequestHandler => {
         message: { reasoning: config.reasoning, status: 100, msg: "", data: [] },
       })
       const url: string = provider.apiLLMChat.url
-      const method: Method | string = provider.apiLLMChat.method
+      const method: Method = provider.apiLLMChat.method
       let prevLen = 0 // 已接收到的字符长度
       instance.value
         .request({

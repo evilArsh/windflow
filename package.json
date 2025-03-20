@@ -39,7 +39,7 @@
     "element-plus": "^2.9.6",
     "highlight.js": "^11.11.1",
     "json5": "^2.2.3",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-emoji": "^3.0.0",

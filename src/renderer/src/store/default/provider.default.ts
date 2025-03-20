@@ -1,13 +1,11 @@
-import { Provider, ProviderName } from "@renderer/types"
-import { defineStore } from "pinia"
+import { ProviderConfig, ProviderName } from "@renderer/types/model"
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { useStorage } from "@vueuse/core"
-export default defineStore("provider", () => {
-  const defaultProviderId = shallowRef<string>(`provider-${ProviderName.DeepSeek}`) // 默认提供商
-  const providers = useStorage<Provider[]>("chat.providers", [
+export const providerDefault = (): ProviderConfig[] => {
+  return [
     {
       id: `provider-${ProviderName.DeepSeek}`,
       name: ProviderName.DeepSeek,
+      alias: "provider.name.deepseek",
       logo: ds,
       apiUrl: "https://api.deepseek.com",
       apiKey: "",
@@ -27,6 +25,7 @@ export default defineStore("provider", () => {
     {
       id: `provider-${ProviderName.SiliconFlow}`,
       name: ProviderName.SiliconFlow,
+      alias: "provider.name.siliconflow",
       logo: ds,
       apiUrl: "https://api.siliconflow.cn/v1",
       apiKey: "",
@@ -46,6 +45,7 @@ export default defineStore("provider", () => {
     {
       id: `provider-${ProviderName.System}`,
       name: ProviderName.System,
+      alias: "provider.name.system",
       logo: ds,
       apiUrl: "",
       apiKey: "",
@@ -62,15 +62,5 @@ export default defineStore("provider", () => {
         url: "",
       },
     },
-  ])
-
-  function findById(id: string) {
-    return providers.value.find(v => v.id === id)
-  }
-
-  return {
-    providers,
-    defaultProviderId,
-    findById,
-  }
-})
+  ]
+}
