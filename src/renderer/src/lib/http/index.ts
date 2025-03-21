@@ -12,7 +12,7 @@ import axios from "axios"
 export const useLLMChat = (provider: LLMProvider): LLMChatRequestHandler => {
   const instance = createInstance(provider.getConfig())
   const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol(
-    `message-${provider.getConfig().id}`
+    `message-${provider.getConfig().name}`
   )
   let cacheMessage: LLMChatMessage | LLMChatMessage[]
   const bus = useEventBus(eventBusKey)

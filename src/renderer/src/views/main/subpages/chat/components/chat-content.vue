@@ -25,8 +25,8 @@ const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("conten
 const providerStore = useProviderStore()
 const { t } = useI18n()
 const layoutReverse = computed(() => {
-  return (id: string) => {
-    return id === ProviderName.System
+  return (name: ProviderName) => {
+    return providerStore.find(name)?.name === ProviderName.System
   }
 })
 const llmChats = shallowReactive<Record<string, LLMProvider>>({})
@@ -47,11 +47,11 @@ const send = async () => {
       id: "",
       name: "",
       type: ModelType.LLM_CHAT,
-      providerId: "",
+      providerName: ProviderName.System,
     },
   } as ChatTopic["chatMessages"][number])
   for (const model of topic.value.models) {
-    const provider = providerStore.findById(model.providerId)
+    const provider = providerStore.find(model.providerName)
     if (provider) {
       const message = reactive<ChatTopic["chatMessages"][number]>({
         id: uniqueId(),
@@ -65,17 +65,16 @@ const send = async () => {
         model,
       })
       topic.value.chatMessages.push(message)
-      if (!llmChats[model.providerId]) {
-        const provider = providerStore.providerManager.getProvider(model.providerId)
+      if (!llmChats[model.providerName]) {
+        const provider = providerStore.providerManager.getLLMProvider(model.providerName)
         if (provider) {
-          llmChats[model.providerId] = provider
+          llmChats[model.providerName] = provider
         } else {
-          console.warn("[init llmChats] provider not found", model.providerId)
+          console.warn("[init llmChats] provider not found", model.providerName)
         }
       }
       const context = topic.value.chatMessages.filter(item => item.finish).map(item => item.content)
-
-      llmChats[model.providerId].request(context, async msg => {
+      llmChats[model.providerName].chat(context, async msg => {
         if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
           contentLayout.value?.scrollToBottom("smooth")
         }
@@ -104,7 +103,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
 <template>
   <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
     <template #content>
-      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.model.providerId)">
+      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.model.providerName)">
         <template #head>
           <Hover>
             <el-avatar :src="ds" size="default" />
@@ -112,11 +111,11 @@ const { onScroll } = useScrollHook(contentLayout, topic)
         </template>
         <template #content>
           <div class="chat-item-container">
-            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.model.providerId) }">
-              <el-text class="name">{{ providerStore.findById(item.model.providerId)?.name }}</el-text>
+            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.model.providerName) }">
+              <el-text class="name">{{ providerStore.find(item.model.providerName)?.name }}</el-text>
               <el-text class="time">{{ item.time }}</el-text>
             </div>
-            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.model.providerId) }">
+            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.model.providerName) }">
               <el-button v-if="item.status == 100" type="primary" loading circle size="small"></el-button>
               <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
             </div>
@@ -180,7 +179,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
       font-size: 1.2rem;
     }
     &.reverse {
-      flex-direction: row-reverse;
+      align-items: flex-end;
     }
   }
   .chat-item-content {
@@ -189,7 +188,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
     background-color: var(--chat-item-content-bg-color);
     font-size: 1.4rem;
     &.reverse {
-      flex-direction: row-reverse;
+      justify-content: flex-end;
     }
   }
   .chat-item-footer {

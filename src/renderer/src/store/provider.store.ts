@@ -11,20 +11,20 @@ const PROVIDER_NAME_MAP = {
 export default defineStore("provider", () => {
   const { save, get } = useDataStorage()
   const SAVE_KEY = "chat.providers"
-  const defaultProviderId = shallowRef<string>(`provider-${ProviderName.DeepSeek}`) // 默认提供商
+  // const defaultProviderId = shallowRef<ProviderName>(ProviderName.DeepSeek) // 默认提供商
   const providersConfig = reactive<ProviderConfig[]>([])
   const providerManager = markRaw<ProviderManager>(new ProviderManager())
 
-  function findById(id: string): ProviderConfig | undefined {
-    return providersConfig.find(v => v.id === id)
+  function find(name: ProviderName): ProviderConfig | undefined {
+    return providersConfig.find(v => v.name === name)
   }
   const init = async () => {
     const data = await get<ProviderConfig[]>(SAVE_KEY)
     providersConfig.push(...merge(providerDefault(), data))
     providersConfig.forEach(v => {
       if (PROVIDER_NAME_MAP[v.name]) {
-        if (!providerManager.getProvider(v.id)) {
-          providerManager.setProvider(v.id, new PROVIDER_NAME_MAP[v.name](v))
+        if (!providerManager.getLLMProvider(v.name)) {
+          providerManager.setLLMProvider(v.name, new PROVIDER_NAME_MAP[v.name](v))
         } else {
           console.warn("[init provider] duplicate provider, already exists", v)
         }
@@ -37,8 +37,7 @@ export default defineStore("provider", () => {
   init()
   return {
     providersConfig,
-    defaultProviderId,
-    findById,
+    find,
     providerManager,
   }
 })

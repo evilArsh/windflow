@@ -5,7 +5,7 @@
     </template>
     <div class="flex flex-col gap0.2rem">
       <div v-for="i in i18n.availableLocales" :key="i">
-        <el-button @click="switchLang(i)" class="w100%">{{ i18n.t(i) }}</el-button>
+        <el-button @click="switchLang(i)" class="w100%">{{ i18n.t(`lang.${i}`) }}</el-button>
       </div>
     </div>
   </el-popover>

@@ -6,21 +6,27 @@
     "addChat": "新增聊天",
     "search": "搜索"
   },
-  "en": "English",
-  "model": {
-    "apiKey": "API Key",
-    "apiUrl": "API 地址"
+  "lang": {
+    "en": "English",
+    "zh": "简体中文"
   },
   "nav": {
     "chat": "聊天",
     "modelSetting": "模型"
   },
   "provider": {
+    "apiKey": "API Key",
+    "apiUrl": "API 地址",
+    "model": {
+      "name": "模型",
+      "type": "类型"
+    },
     "name": {
-      "deepseek": "深度求索",
-      "siliconflow": "硅基流动",
-      "system": "你"
-    }
+      "DeepSeek": "深度求索",
+      "SiliconFlow": "硅基流动",
+      "System": "你"
+    },
+    "providerName": "提供商"
   },
   "request": {
     "failed": "请求失败",
@@ -29,6 +35,5 @@
   "tip": {
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中"
-  },
-  "zh": "简体中文"
+  }
 }

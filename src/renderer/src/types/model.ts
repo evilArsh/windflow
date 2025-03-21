@@ -6,11 +6,18 @@ export enum ProviderName {
   DeepSeek = "DeepSeek",
   SiliconFlow = "SiliconFlow",
 }
+export enum ModelType {
+  LLM_CHAT = "LLM_CHAT",
+  LLM_REASONER = "LLM_REASONER",
+  Embedding = "Embedding",
+}
 /**
  * 服务提供商
  */
 export type ProviderConfig = {
-  id: string
+  /**
+   * @description 提供商名称,unique
+   */
   name: ProviderName
   logo: string
   alias?: string
@@ -42,18 +49,15 @@ export type ProviderConfig = {
     url: string
   }
   disabled?: boolean
-}
-export enum ModelType {
-  LLM_CHAT = "LLM_CHAT",
-  LLM_REASONER = "LLM_REASONER",
-  Embedding = "Embedding",
+  modelIds: string[]
 }
 export type ModelConfig = {
   id: string
   name: string
   type: ModelType
-  providerId: string
+  providerName: ProviderName
   description?: string
+  group?: string
 }
 export type ChatTopic = {
   /**

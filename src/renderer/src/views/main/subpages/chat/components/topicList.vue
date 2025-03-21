@@ -2,16 +2,13 @@
 import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
-// import useProviderStore from "@renderer/store/provider.store"
 import { ChatTopic } from "@renderer/types"
 import TopicItem from "./topicItem.vue"
 const emit = defineEmits<{
   (e: "select", topic: ChatTopic): void
 }>()
 const charStore = useChatStore()
-// const providerStore = useProviderStore()
 const { topicList } = storeToRefs(charStore)
-// const { defaultProviderId } = storeToRefs(providerStore)
 const currentTopic = shallowRef<ChatTopic>()
 const onAddNewChat = () => {
   charStore.addGroup({
@@ -28,7 +25,8 @@ const onItemSelect = (topic: ChatTopic) => {
   currentTopic.value = topic
   emit("select", topic)
 }
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   // 默认点击
   if (topicList.value.length > 0) {
     onItemSelect(topicList.value[0])

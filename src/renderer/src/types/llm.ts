@@ -38,28 +38,27 @@ export interface LLMChatResponseHandler {
   terminate: () => void
 }
 export interface LLMChatRequestHandler {
-  request: (
+  chat: (
     message: LLMChatMessage | LLMChatMessage[],
     callback: (message: LLMChatResponse) => void
   ) => LLMChatResponseHandler
 }
 
-export interface LLMProvider<T = unknown> {
-  request(
-    message: LLMChatMessage | LLMChatMessage[],
-    callback: (message: LLMChatResponse) => void
-  ): LLMChatResponseHandler
+export interface LLMProvider<Message = unknown> {
+  chat(message: LLMChatMessage | LLMChatMessage[], callback: (message: LLMChatResponse) => void): LLMChatResponseHandler
   /**
    * @description 覆盖设置请求参数
    */
-  setMessageConfig(config: T): void
+  setMessageConfig(config: Message): void
   /**
    * @description 更新请求参数
    */
-  updateMessageConfig(config: T): void
-  getMessageConfig(): T
+  updateMessageConfig(config: Message): void
+  getMessageConfig(): Message
   parseResponse(text: string): LLMChatResponse
   isReasoning(): boolean
   getRequestBody(message: LLMChatMessage | LLMChatMessage[]): Record<string, unknown>
   getConfig(): ProviderConfig
+  getModels(): string[]
+  setModel(modelId: string): void
 }

@@ -3,9 +3,8 @@ import ds from "@renderer/assets/images/provider/deepseek.svg"
 export const providerDefault = (): ProviderConfig[] => {
   return [
     {
-      id: `provider-${ProviderName.DeepSeek}`,
       name: ProviderName.DeepSeek,
-      alias: "provider.name.deepseek",
+      alias: `provider.name.${ProviderName.DeepSeek}`,
       logo: ds,
       apiUrl: "https://api.deepseek.com",
       apiKey: "",
@@ -21,11 +20,11 @@ export const providerDefault = (): ProviderConfig[] => {
         method: "GET",
         url: "/user/balance",
       },
+      modelIds: ["deepseek-chat", "deepseek-reasoner"],
     },
     {
-      id: `provider-${ProviderName.SiliconFlow}`,
       name: ProviderName.SiliconFlow,
-      alias: "provider.name.siliconflow",
+      alias: `provider.name.${ProviderName.SiliconFlow}`,
       logo: ds,
       apiUrl: "https://api.siliconflow.cn/v1",
       apiKey: "",
@@ -41,11 +40,11 @@ export const providerDefault = (): ProviderConfig[] => {
         method: "GET",
         url: "/user/info",
       },
+      modelIds: [],
     },
     {
-      id: `provider-${ProviderName.System}`,
       name: ProviderName.System,
-      alias: "provider.name.system",
+      alias: `provider.name.${ProviderName.System}`,
       logo: ds,
       apiUrl: "",
       apiKey: "",
@@ -61,6 +60,7 @@ export const providerDefault = (): ProviderConfig[] => {
         method: "GET",
         url: "",
       },
+      modelIds: [],
     },
   ]
 }

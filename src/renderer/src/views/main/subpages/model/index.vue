@@ -2,46 +2,44 @@
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
-import { ProviderName } from "@renderer/types"
+import { ProviderName, ProviderConfig } from "@renderer/types"
 import CnfDeepseek from "./components/cnf-deepseek.vue"
-import CnfSilicon from "./components/cnf-silicon.vue"
 import { ElEmpty } from "element-plus"
 const providerStore = useProviderStore()
 const { providersConfig } = storeToRefs(providerStore)
-const currentProviderId = ref("")
+const current = ref<ProviderConfig>()
 const { t } = useI18n()
 const useConfigComponent = () => {
   const componentsMap = shallowReactive({
     [ProviderName.DeepSeek]: CnfDeepseek,
-    [ProviderName.SiliconFlow]: CnfSilicon,
-    [ProviderName.System]: h("div", "系统"),
+    // [ProviderName.SiliconFlow]: CnfSilicon,
+    [ProviderName.System]: h(ElEmpty),
   })
-  function getComponent(name: ProviderName) {
+  function getComponent(name?: ProviderName) {
+    if (!name) return h(ElEmpty)
     const component = componentsMap[name]
-    if (!component) {
-      return h(ElEmpty)
-    }
+    if (!component) return h(ElEmpty)
     return h(component)
   }
   return {
-    componentsMap: toRef(componentsMap),
+    componentsMap,
     getComponent,
   }
 }
 const { getComponent } = useConfigComponent()
+async function init() {
+  await nextTick()
+  current.value = providersConfig.value.length > 0 ? providersConfig.value[0] : undefined
+}
+onMounted(init)
 </script>
 <template>
   <SubNavLayout>
     <template #submenu>
       <el-scrollbar>
         <div class="provider-container">
-          <Hover
-            background
-            v-for="item in providersConfig"
-            :key="item.name"
-            still-lock
-            :default-lock="currentProviderId == item.id">
-            <el-card class="card" shadow="never" @click="currentProviderId = item.id">
+          <Hover background v-for="item in providersConfig" :key="item.name" still-lock :default-lock="current == item">
+            <el-card class="card" shadow="never" @click="current = item">
               <div class="card-body">
                 <el-image class="icon" :src="item.logo" />
                 <el-text class="name">{{ t(item.alias || "") }}</el-text>
@@ -54,11 +52,7 @@ const { getComponent } = useConfigComponent()
     <template #content>
       <ContentLayout>
         <template #content>
-          <component
-            v-for="item in providersConfig"
-            :key="item.name"
-            :is="getComponent(item.name)"
-            :model-value="item" />
+          <component :key="current" :is="getComponent(current?.name)" :model-value="current" />
         </template>
       </ContentLayout>
     </template>

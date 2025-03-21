@@ -5,20 +5,27 @@
   "chat": {
     "addChat": "New Chat"
   },
-  "en": "English",
+  "lang": {
+    "en": "English",
+    "zh": "简体中文"
+  },
   "nav": {
     "chat": "chat",
     "modelSetting": "model"
   },
   "provider": {
+    "apiKey": "API KEY",
+    "apiUrl": "API URL",
+    "model": {
+      "name": "models"
+    },
     "name": {
-      "deepseek": "DeepSeek",
-      "siliconflow": "SiliconFlow",
-      "system": "you"
+      "DeepSeek": "DeepSeek",
+      "SiliconFlow": "SiliconFlow",
+      "System": "you"
     }
   },
   "tip": {
     "inputPlaceholder": "say something and enter"
-  },
-  "zh": "简体中文"
+  }
 }

@@ -1,18 +1,18 @@
-import { LLMProvider, ModelConfig } from "@renderer/types"
+import { LLMProvider, ModelConfig, ProviderName } from "@renderer/types"
 
 export class ProviderManager {
-  #llmProviders: Map<string, LLMProvider<unknown>>
+  #llmProviders: Map<ProviderName, LLMProvider<unknown>>
   constructor() {
     this.#llmProviders = new Map()
   }
-  getProvider(providerId: string): LLMProvider<unknown> | undefined {
-    return this.#llmProviders.get(providerId)
+  getLLMProvider(providerName: ProviderName): LLMProvider<unknown> | undefined {
+    return this.#llmProviders.get(providerName)
   }
-  getProviderByModel(model: ModelConfig): LLMProvider<unknown> | undefined {
-    return this.#llmProviders.get(model.providerId)
+  getLLMProviderByModel(model: ModelConfig): LLMProvider<unknown> | undefined {
+    return this.#llmProviders.get(model.providerName)
   }
-  setProvider(providerId: string, provider: LLMProvider<unknown>) {
-    this.#llmProviders.set(providerId, provider)
+  setLLMProvider(providerName: ProviderName, provider: LLMProvider<unknown>) {
+    this.#llmProviders.set(providerName, provider)
   }
 }
 

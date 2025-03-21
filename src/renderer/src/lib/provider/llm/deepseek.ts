@@ -75,10 +75,18 @@ export class LLMDeepSeek implements LLMProvider {
     this.#messageConfig.messages = Array.isArray(message) ? message : [message]
     return this.#messageConfig
   }
-  request(
+  getModels(): string[] {
+    return this.#providerConfig.modelIds
+  }
+  setModel(modelId: string): void {
+    if (!this.#providerConfig.modelIds.includes(modelId)) {
+      this.#providerConfig.modelIds.push(modelId)
+    }
+  }
+  chat(
     message: LLMChatMessage | LLMChatMessage[],
     callback: (message: LLMChatResponse) => void
   ): LLMChatResponseHandler {
-    return this.#http.request(message, callback)
+    return this.#http.chat(message, callback)
   }
 }
