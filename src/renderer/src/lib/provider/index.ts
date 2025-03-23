@@ -1,19 +1,34 @@
-import { LLMProvider, ModelConfig, ProviderName } from "@renderer/types"
-
+import { LLMProvider, Provider, ProviderName } from "@renderer/types"
+import { LLMDeepSeek } from "./deepseek"
+import { SiliconFlow } from "./siliconflow"
 export class ProviderManager {
-  #llmProviders: Map<ProviderName, LLMProvider<unknown>>
+  #providers: Map<ProviderName, Provider>
+  #llmProviders: WeakSet<LLMProvider>
   constructor() {
-    this.#llmProviders = new Map()
+    this.#providers = new Map()
+    this.#llmProviders = new WeakSet()
+
+    const deepseek = new LLMDeepSeek()
+    const siliconflow = new SiliconFlow()
+
+    this.#providers.set(ProviderName.DeepSeek, deepseek)
+    this.#providers.set(ProviderName.SiliconFlow, siliconflow)
+
+    this.#llmProviders.add(deepseek)
+    this.#llmProviders.add(siliconflow)
   }
-  getLLMProvider(providerName: ProviderName): LLMProvider<unknown> | undefined {
-    return this.#llmProviders.get(providerName)
+  getLLMProvider(providerName: ProviderName): LLMProvider | undefined {
+    const provider = this.#providers.get(providerName)
+    if (!provider) return
+    if (this.#llmProviders.has(provider as LLMProvider)) {
+      return provider as LLMProvider
+    }
+    return undefined
   }
-  getLLMProviderByModel(model: ModelConfig): LLMProvider<unknown> | undefined {
-    return this.#llmProviders.get(model.providerName)
-  }
-  setLLMProvider(providerName: ProviderName, provider: LLMProvider<unknown>) {
-    this.#llmProviders.set(providerName, provider)
+  setLLMProvider(providerName: ProviderName, provider: LLMProvider) {
+    this.#providers.set(providerName, provider)
+    this.#llmProviders.add(provider)
   }
 }
 
-export * from "./llm/deepseek"
+export * from "./deepseek"

@@ -36,6 +36,7 @@ const props = defineProps<{
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
     &.reverse {
       flex-direction: row-reverse;
     }

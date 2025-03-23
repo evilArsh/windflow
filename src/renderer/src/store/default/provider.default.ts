@@ -1,6 +1,6 @@
-import { ProviderConfig, ProviderName } from "@renderer/types/model"
+import { ProviderMeta, ProviderName } from "@renderer/types"
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-export const providerDefault = (): ProviderConfig[] => {
+export const providerDefault = (): ProviderMeta[] => {
   return [
     {
       name: ProviderName.DeepSeek,
@@ -20,7 +20,6 @@ export const providerDefault = (): ProviderConfig[] => {
         method: "GET",
         url: "/user/balance",
       },
-      modelIds: ["deepseek-chat", "deepseek-reasoner"],
     },
     {
       name: ProviderName.SiliconFlow,
@@ -40,27 +39,6 @@ export const providerDefault = (): ProviderConfig[] => {
         method: "GET",
         url: "/user/info",
       },
-      modelIds: [],
-    },
-    {
-      name: ProviderName.System,
-      alias: `provider.name.${ProviderName.System}`,
-      logo: ds,
-      apiUrl: "",
-      apiKey: "",
-      apiModelList: {
-        method: "GET",
-        url: "",
-      },
-      apiLLMChat: {
-        method: "GET",
-        url: "",
-      },
-      apiBalance: {
-        method: "GET",
-        url: "",
-      },
-      modelIds: [],
     },
   ]
 }

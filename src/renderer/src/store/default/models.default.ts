@@ -1,17 +1,17 @@
-import { ModelConfig, ModelType, ProviderName } from "@renderer/types"
+import { ModelMeta, ModelType, ProviderName } from "@renderer/types"
 
-export const modelsDefault = (): ModelConfig[] => {
+export const modelsDefault = (): ModelMeta[] => {
   return [
     {
-      id: "deepseek-chat",
-      name: "deepseek-chat",
-      type: ModelType.LLM_CHAT,
+      id: `${ProviderName.DeepSeek}_deepseek-chat`,
+      modelName: "deepseek-chat",
+      type: ModelType.Chat,
       providerName: ProviderName.DeepSeek,
     },
     {
-      id: "deepseek-reasoner",
-      name: "deepseek-reasoner",
-      type: ModelType.LLM_REASONER,
+      id: `${ProviderName.DeepSeek}_deepseek-reasoner`,
+      modelName: "deepseek-reasoner",
+      type: ModelType.ChatReasoner,
       providerName: ProviderName.DeepSeek,
     },
   ]

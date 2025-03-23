@@ -1,43 +1,37 @@
-import { ProviderConfig, ProviderName } from "@renderer/types"
+import { ProviderMeta, ProviderName } from "@renderer/types"
 import { defineStore } from "pinia"
 import useDataStorage from "@renderer/usable/useDataStorage"
-import { merge } from "lodash-es"
 import { providerDefault } from "./default/provider.default"
 import { ProviderManager } from "@renderer/lib/provider"
-import { LLMDeepSeek } from "@renderer/lib/provider/llm/deepseek"
-const PROVIDER_NAME_MAP = {
-  [ProviderName.DeepSeek]: LLMDeepSeek,
-}
+import { useDebounceFn } from "@vueuse/core"
+
 export default defineStore("provider", () => {
   const { save, get } = useDataStorage()
   const SAVE_KEY = "chat.providers"
-  // const defaultProviderId = shallowRef<ProviderName>(ProviderName.DeepSeek) // 默认提供商
-  const providersConfig = reactive<ProviderConfig[]>([])
-  const providerManager = markRaw<ProviderManager>(new ProviderManager())
+  const config = reactive<ProviderMeta[]>([])
+  const manager = markRaw<ProviderManager>(new ProviderManager())
 
-  function find(name: ProviderName): ProviderConfig | undefined {
-    return providersConfig.find(v => v.name === name)
+  function find(name?: ProviderName): ProviderMeta | undefined {
+    if (!name) return
+    return config.find(v => v.name === name)
   }
+
   const init = async () => {
-    const data = await get<ProviderConfig[]>(SAVE_KEY)
-    providersConfig.push(...merge(providerDefault(), data))
-    providersConfig.forEach(v => {
-      if (PROVIDER_NAME_MAP[v.name]) {
-        if (!providerManager.getLLMProvider(v.name)) {
-          providerManager.setLLMProvider(v.name, new PROVIDER_NAME_MAP[v.name](v))
-        } else {
-          console.warn("[init provider] duplicate provider, already exists", v)
-        }
-      }
-    })
+    const data = await get<ProviderMeta[]>(SAVE_KEY)
+    if (data) {
+      config.push(...data)
+    } else {
+      config.push(...providerDefault())
+    }
   }
-  watch(providersConfig, () => {
-    save<ProviderConfig[]>(SAVE_KEY, toRaw(providersConfig))
-  })
+  watch(
+    config,
+    useDebounceFn((val: ProviderMeta[]) => save<ProviderMeta[]>(SAVE_KEY, toRaw(val)), 2000)
+  )
   init()
   return {
-    providersConfig,
     find,
-    providerManager,
+    providerConfigs: config,
+    providerManager: manager,
   }
 })

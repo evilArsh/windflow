@@ -48,7 +48,7 @@ defineExpose({
     <div class="content">
       <el-scrollbar id="scroll-view">
         <div class="content--inner" ref="scroll">
-          <slot name="content"></slot>
+          <slot></slot>
         </div>
       </el-scrollbar>
     </div>

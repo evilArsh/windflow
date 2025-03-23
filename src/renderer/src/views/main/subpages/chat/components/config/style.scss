@@ -1,0 +1,17 @@
+.wrapper {
+  display: flex;
+  height: 100%;
+  .tool {
+    color: rgb(134, 134, 134);
+    display: flex;
+    border-left: solid 1px #f5f5f5;
+    flex-direction: column;
+    position: relative;
+    padding: 0.5rem;
+    gap: 1rem;
+    .move {
+      cursor: pointer;
+      flex: 1;
+    }
+  }
+}

@@ -1,2 +1,2 @@
-import { ChatTopic } from "@renderer/types/model"
+import { ChatTopic } from "@renderer/types"
 export const chatDefault = (): ChatTopic[] => []

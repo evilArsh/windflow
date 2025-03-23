@@ -2,17 +2,17 @@
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
-import { ProviderName, ProviderConfig } from "@renderer/types"
-import CnfDeepseek from "./components/cnf-deepseek.vue"
+import { ProviderName } from "@renderer/types"
+import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
 const providerStore = useProviderStore()
-const { providersConfig } = storeToRefs(providerStore)
-const current = ref<ProviderConfig>()
+const { providerConfigs } = storeToRefs(providerStore)
+const current = ref<ProviderName>()
 const { t } = useI18n()
 const useConfigComponent = () => {
   const componentsMap = shallowReactive({
     [ProviderName.DeepSeek]: CnfDeepseek,
-    // [ProviderName.SiliconFlow]: CnfSilicon,
+    [ProviderName.SiliconFlow]: CnfDeepseek,
     [ProviderName.System]: h(ElEmpty),
   })
   function getComponent(name?: ProviderName) {
@@ -27,9 +27,12 @@ const useConfigComponent = () => {
   }
 }
 const { getComponent } = useConfigComponent()
+function onCardClick(name: ProviderName) {
+  current.value = name
+}
 async function init() {
   await nextTick()
-  current.value = providersConfig.value.length > 0 ? providersConfig.value[0] : undefined
+  current.value = providerConfigs.value.length > 0 ? providerConfigs.value[0].name : undefined
 }
 onMounted(init)
 </script>
@@ -38,8 +41,13 @@ onMounted(init)
     <template #submenu>
       <el-scrollbar>
         <div class="provider-container">
-          <Hover background v-for="item in providersConfig" :key="item.name" still-lock :default-lock="current == item">
-            <el-card class="card" shadow="never" @click="current = item">
+          <Hover
+            background
+            v-for="item in providerConfigs"
+            :key="item.name"
+            still-lock
+            :default-lock="current == item.name">
+            <el-card class="card" shadow="never" @click="onCardClick(item.name)">
               <div class="card-body">
                 <el-image class="icon" :src="item.logo" />
                 <el-text class="name">{{ t(item.alias || "") }}</el-text>
@@ -51,9 +59,7 @@ onMounted(init)
     </template>
     <template #content>
       <ContentLayout>
-        <template #content>
-          <component :key="current" :is="getComponent(current?.name)" :model-value="current" />
-        </template>
+        <component :key="current" :is="getComponent(current)" :provider-name="current" />
       </ContentLayout>
     </template>
   </SubNavLayout>

@@ -18,7 +18,7 @@ const onAddNewChat = () => {
     children: [],
     content: "",
     chatMessages: [],
-    models: [],
+    modelIds: [],
   })
 }
 const onItemSelect = (topic: ChatTopic) => {
@@ -38,7 +38,7 @@ onMounted(async () => {
     <div class="flex flex-col gap-1rem">
       <TopicItem :topic-list="topicList" :level="0" @select="onItemSelect" :current-topic="currentTopic"></TopicItem>
     </div>
-    <Hover>
+    <Hover ripple-size="1px">
       <el-card shadow="never" @click="onAddNewChat" style="--el-card-padding: 0.3rem">
         <div class="flex items-center b-rd-0.5rem">
           <el-button size="small" type="primary" plain circle text>

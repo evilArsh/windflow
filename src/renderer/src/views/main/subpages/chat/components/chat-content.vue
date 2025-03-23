@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { ChatTopic, LLMProvider, ModelType, ProviderName } from "@renderer/types"
+import { ChatTopic, ChatTopicMessage, LLMProvider } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider.store"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
 import useScrollHook from "./useScrollHook"
+import useModelsStore from "@renderer/store/model.store"
+import ConfigPanel from "./config/index.vue"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
 }>()
@@ -23,17 +25,18 @@ const topic = computed<ChatTopic>({
 
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const providerStore = useProviderStore()
+const modelsStore = useModelsStore()
 const { t } = useI18n()
-const layoutReverse = computed(() => {
-  return (name: ProviderName) => {
-    return providerStore.find(name)?.name === ProviderName.System
-  }
-})
+
+// 没有modelId的为用户发出的消息
+const layoutReverse = (modelId: string) => {
+  return !modelId
+}
 const llmChats = shallowReactive<Record<string, LLMProvider>>({})
 
 const send = async () => {
   if (!topic.value.content.trim()) return
-  topic.value.chatMessages.push({
+  const user: ChatTopicMessage = {
     id: uniqueId(),
     status: 200,
     time: formatSecond(new Date()),
@@ -43,17 +46,15 @@ const send = async () => {
       role: "user",
       content: topic.value.content,
     },
-    model: {
-      id: "",
-      name: "",
-      type: ModelType.LLM_CHAT,
-      providerName: ProviderName.System,
-    },
-  } as ChatTopic["chatMessages"][number])
-  for (const model of topic.value.models) {
-    const provider = providerStore.find(model.providerName)
-    if (provider) {
-      const message = reactive<ChatTopic["chatMessages"][number]>({
+    modelId: "",
+  }
+  topic.value.chatMessages.push(user)
+
+  for (const modelId of topic.value.modelIds) {
+    const model = modelsStore.find(modelId)
+    const providerMeta = providerStore.find(model?.providerName)
+    if (model && providerMeta) {
+      const message = reactive<ChatTopicMessage>({
         id: uniqueId(),
         finish: false,
         status: 200,
@@ -61,8 +62,9 @@ const send = async () => {
         content: {
           role: "assistant",
           content: "",
+          reasoningContent: "",
         },
-        model,
+        modelId,
       })
       topic.value.chatMessages.push(message)
       if (!llmChats[model.providerName]) {
@@ -74,11 +76,12 @@ const send = async () => {
         }
       }
       const context = topic.value.chatMessages.filter(item => item.finish).map(item => item.content)
-      llmChats[model.providerName].chat(context, async msg => {
+      llmChats[model.providerName].chat(context, model, providerMeta, async msg => {
         if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
           contentLayout.value?.scrollToBottom("smooth")
         }
         message.status = msg.status
+        message.reasoning = msg.reasoning
         if (msg.status == 206) {
           message.finish = false
           message.content.content += msg.data.map(item => item.content).join("")
@@ -101,9 +104,13 @@ const send = async () => {
 const { onScroll } = useScrollHook(contentLayout, topic)
 </script>
 <template>
-  <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
-    <template #content>
-      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.model.providerName)">
+  <div class="flex flex-1 overflow-hidden">
+    <ConfigPanel v-model="topic.modelIds"></ConfigPanel>
+    <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
+      <template #header>
+        <div class="flex p-1rem justify-end flex-1"></div>
+      </template>
+      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.modelId)">
         <template #head>
           <Hover>
             <el-avatar :src="ds" size="default" />
@@ -111,43 +118,49 @@ const { onScroll } = useScrollHook(contentLayout, topic)
         </template>
         <template #content>
           <div class="chat-item-container">
-            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.model.providerName) }">
-              <el-text class="name">{{ providerStore.find(item.model.providerName)?.name }}</el-text>
+            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.modelId) }">
+              <el-text class="name">{{ modelsStore.find(item.modelId)?.providerName }}</el-text>
               <el-text class="time">{{ item.time }}</el-text>
             </div>
-            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.model.providerName) }">
-              <el-button v-if="item.status == 100" type="primary" loading circle size="small"></el-button>
+            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.modelId) }">
+              <el-button v-show="item.status == 100 && item.reasoning" type="warning" loading size="small">
+                深度思考中
+              </el-button>
+              <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
+                {{ item.content.reasoningContent }}
+              </el-text>
+              <el-button v-if="item.status == 100" type="primary" loading size="small"> 加载中 </el-button>
               <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
             </div>
             <div class="chat-item-footer"></div>
           </div>
         </template>
       </MsgBubble>
-    </template>
-    <template #handler>
-      <div class="chat-input-container">
-        <div class="chat-input">
-          <el-input
-            input-style="border: none;height: 100%"
-            style="display: flex"
-            :autosize="false"
-            clearable
-            autofocus
-            resize="none"
-            type="textarea"
-            v-model="topic.content"
-            :placeholder="t('tip.inputPlaceholder')"></el-input>
+      <template #handler>
+        <div class="chat-input-container">
+          <div class="chat-input">
+            <el-input
+              input-style="border: none;height: 100%"
+              style="display: flex"
+              :autosize="false"
+              clearable
+              autofocus
+              resize="none"
+              type="textarea"
+              v-model="topic.content"
+              :placeholder="t('tip.inputPlaceholder')"></el-input>
+          </div>
+          <div class="chat-input-actions">
+            <Hover>
+              <el-button size="small" type="primary" @click="send" circle>
+                <i-ic:baseline-file-upload class="text-1.6rem"></i-ic:baseline-file-upload>
+              </el-button>
+            </Hover>
+          </div>
         </div>
-        <div class="chat-input-actions">
-          <Hover>
-            <el-button size="small" type="primary" @click="send" circle>
-              <i-ic:baseline-file-upload class="text-1.6rem"></i-ic:baseline-file-upload>
-            </el-button>
-          </Hover>
-        </div>
-      </div>
-    </template>
-  </ContentLayout>
+      </template>
+    </ContentLayout>
+  </div>
 </template>
 <style lang="scss" scoped>
 .chat-item-container {
@@ -187,6 +200,8 @@ const { onScroll } = useScrollHook(contentLayout, topic)
     display: flex;
     background-color: var(--chat-item-content-bg-color);
     font-size: 1.4rem;
+    flex-direction: column;
+    gap: 1rem;
     &.reverse {
       justify-content: flex-end;
     }
@@ -213,6 +228,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
     display: flex;
     background-color: var(--chat-input-actions-bg-color);
     justify-content: flex-end;
+    gap: 1rem;
   }
 }
 </style>

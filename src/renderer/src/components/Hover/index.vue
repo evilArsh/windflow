@@ -139,7 +139,6 @@ const event = {
   },
 }
 onMounted(() => {
-  emit("lock", data.locked)
   const ch = wrapper.value?.firstElementChild
   if (ch instanceof HTMLElement) {
     target.value = ch
@@ -148,7 +147,9 @@ onMounted(() => {
     target.value.addEventListener("mousedown", event.mousedown)
     target.value.addEventListener("mouseup", event.mouseup)
     target.value.addEventListener("click", event.click)
+    data.locked = defaultLock
     defaultLock && handle.hover()
+    emit("lock", data.locked)
   }
 })
 watch(

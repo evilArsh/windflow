@@ -1,35 +1,48 @@
 import {
   LLMChatRequestHandler,
   LLMChatResponseHandler,
-  ProviderConfig,
+  ProviderMeta,
   LLMChatResponse,
-  LLMChatMessage,
   LLMProvider,
+  LLMBaseRequest,
 } from "@renderer/types"
 import { useEventBus, EventBusKey } from "@vueuse/core"
-import axios from "axios"
+import axios, { AxiosInstance, HttpStatusCode } from "axios"
 
-export const useLLMChat = (provider: LLMProvider): LLMChatRequestHandler => {
-  const instance = createInstance(provider.getConfig())
-  const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol(
-    `message-${provider.getConfig().name}`
+export const createInstance = (): AxiosInstance => {
+  const instance = axios.create()
+  instance.interceptors.request.use(
+    config => {
+      return config
+    },
+    error => {
+      console.log("[request error]", error)
+      return Promise.reject(error)
+    }
   )
-  let cacheMessage: LLMChatMessage | LLMChatMessage[]
+  instance.interceptors.response.use(
+    response => {
+      console.log("[response]", response)
+      return response
+    },
+    error => {
+      console.log("[response error]", error)
+      return Promise.reject(error)
+    }
+  )
+  return instance
+}
+export const useLLMChat = (
+  instance: AxiosInstance,
+  provider: LLMProvider,
+  providerMeta: ProviderMeta
+): LLMChatRequestHandler => {
+  const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol(`message-${providerMeta.name}`)
+  let cacheMessage: LLMBaseRequest = {}
   const bus = useEventBus(eventBusKey)
 
-  function createInstance(providerConfig: ProviderConfig) {
-    return axios.create({
-      baseURL: providerConfig.apiUrl,
-      headers: {
-        Authorization: `Bearer ${providerConfig.apiKey}`,
-      },
-    })
-  }
-  function request(
-    message: LLMChatMessage | LLMChatMessage[],
-    callback: (message: LLMChatResponse) => void
-  ): LLMChatResponseHandler {
-    cacheMessage = message //TODO: deep clone
+  function chat(message: LLMBaseRequest, callback: (message: LLMChatResponse) => void): LLMChatResponseHandler {
+    cacheMessage = message
     const reqId = uniqueId()
     let abortController = new AbortController()
     const messageHandler = (event: { reqId: string; message: LLMChatResponse }) => {
@@ -41,19 +54,19 @@ export const useLLMChat = (provider: LLMProvider): LLMChatRequestHandler => {
     const doRequest = (signal: AbortSignal, provider: LLMProvider) => {
       bus.emit({
         reqId,
-        message: { reasoning: provider.isReasoning(), status: 100, msg: "", data: [] },
+        message: { status: HttpStatusCode.Continue, msg: "", data: [] },
       })
-      const { url, method } = provider.getConfig().apiLLMChat
+      const { url, method } = providerMeta.apiLLMChat
       let prevLen = 0 // 已接收到的字符长度
       instance
         .request({
           url: url,
           method: method,
           signal: signal,
-          data: provider.getRequestBody(cacheMessage),
+          data: cacheMessage,
           onDownloadProgress: event => {
             const status = event.event?.target?.status
-            if (status == 200) {
+            if (status == HttpStatusCode.Ok) {
               const currentText: string = event.event?.target?.responseText ?? ""
               const newText = currentText.slice(prevLen)
               prevLen = currentText.length
@@ -65,19 +78,19 @@ export const useLLMChat = (provider: LLMProvider): LLMChatRequestHandler => {
             } else {
               bus.emit({
                 reqId,
-                message: { reasoning: provider.isReasoning(), status, msg: "", data: [] },
+                message: { status, msg: "", data: [] },
               })
             }
           },
         })
         .then(() => {
-          bus.emit({ reqId, message: { reasoning: provider.isReasoning(), status: 200, msg: "finish", data: [] } })
+          bus.emit({ reqId, message: { status: HttpStatusCode.Ok, msg: "finish", data: [] } })
           bus.off(messageHandler)
         })
         .catch(err => {
           bus.emit({
             reqId,
-            message: { reasoning: provider.isReasoning(), status: 500, msg: err.toString(), data: [] },
+            message: { status: HttpStatusCode.InternalServerError, msg: err.toString(), data: [] },
           })
           bus.off(messageHandler)
         })
@@ -100,6 +113,6 @@ export const useLLMChat = (provider: LLMProvider): LLMChatRequestHandler => {
     } as LLMChatResponseHandler
   }
   return {
-    request,
+    chat,
   }
 }

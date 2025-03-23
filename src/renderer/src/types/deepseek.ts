@@ -1,3 +1,5 @@
+import { LLMBaseRequest } from "./chat"
+
 export type DSModelsResponse = {
   object: "list"
   data: {
@@ -68,9 +70,9 @@ export type DSChatCompletionNamedToolChoice = {
   function: Record<string, string>
 }
 export type DSToolChoice = DSChatCompletionToolChoice | DSChatCompletionNamedToolChoice
-export type DsChatCompletionRequest = {
+export interface DSChatCompletionRequest extends LLMBaseRequest {
   messages: DSMessage[]
-  model: "deepseek-reasoner" | "deepseek-chat"
+  model: "deepseek-reasoner" | "deepseek-chat" | string
   /**
    * @default 0
    * @description 介于 -2.0 和 2.0 之间的数字。如果该值为正，那么新 token 会根据其在已有文本中的出现频率受到相应的惩罚，降低模型重复相同内容的可能性。
@@ -154,7 +156,7 @@ export type DsChatCompletionRequest = {
   top_logprobs?: number
 }
 
-export type DsChatCompletionResponse = {
+export type DSChatCompletionResponse = {
   id: string
   choices: {
     finish_reason: "stop" | "length" | "content_filter" | "tool_calls" | "insufficient_system_resource"
@@ -203,7 +205,7 @@ export type DsChatCompletionResponse = {
   }
 }
 
-export type DsChatCompletionResponseStreamBase = {
+export type DSChatCompletionResponseStream = {
   id: string
   choices: {
     delta: {
@@ -226,7 +228,3 @@ export type DsChatCompletionResponseStreamBase = {
   system_fingerprint: string
   object: "chat.completion.chunk"
 }
-
-export type DsChatCompletionResponseStreamEnd = "[DONE]"
-
-export type DsChatCompletionResponseStream = DsChatCompletionResponseStreamBase | DsChatCompletionResponseStreamEnd
