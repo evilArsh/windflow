@@ -79,25 +79,20 @@ export class LLMDeepSeek implements LLMProvider {
     })
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    try {
-      if (!this.#axios) {
-        this.#axios = createInstance()
-      }
-      this.#axios.defaults.baseURL = provider.apiUrl
-      this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
-      const res = await this.#axios.request<DSModelsResponse>({
-        method: provider.apiModelList.method,
-        url: provider.apiModelList.url,
-      })
-      return res.data.data.map<ModelMeta>((v: DSModelsResponse["data"][number]) => ({
-        id: `${provider.name}_${v.id}`,
-        type: v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner,
-        modelName: v.id,
-        providerName: provider.name,
-      }))
-    } catch (error) {
-      console.log(`[error fetchModels] provider: ${provider.name}`, error)
-      return []
+    if (!this.#axios) {
+      this.#axios = createInstance()
     }
+    this.#axios.defaults.baseURL = provider.apiUrl
+    this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
+    const res = await this.#axios.request<DSModelsResponse>({
+      method: provider.apiModelList.method,
+      url: provider.apiModelList.url,
+    })
+    return res.data.data.map<ModelMeta>((v: DSModelsResponse["data"][number]) => ({
+      id: `${provider.name}_${v.id}`,
+      type: v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner,
+      modelName: v.id,
+      providerName: provider.name,
+    }))
   }
 }

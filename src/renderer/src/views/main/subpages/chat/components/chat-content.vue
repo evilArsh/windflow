@@ -5,9 +5,11 @@ import useProviderStore from "@renderer/store/provider.store"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
-import useScrollHook from "./useScrollHook"
+import useScrollHook from "./usable/useScrollHook"
+import useShortcut from "./usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
-import ConfigPanel from "./config/index.vue"
+import { ElMessage } from "element-plus"
+import ModelTool from "./toolbox/model/index.vue"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
 }>()
@@ -36,6 +38,10 @@ const llmChats = shallowReactive<Record<string, LLMProvider>>({})
 
 const send = async () => {
   if (!topic.value.content.trim()) return
+  if (topic.value.modelIds.length == 0) {
+    ElMessage.warning("请选择模型")
+    return
+  }
   const user: ChatTopicMessage = {
     id: uniqueId(),
     status: 200,
@@ -54,38 +60,37 @@ const send = async () => {
     const model = modelsStore.find(modelId)
     const providerMeta = providerStore.find(model?.providerName)
     if (model && providerMeta) {
-      const message = reactive<ChatTopicMessage>({
-        id: uniqueId(),
-        finish: false,
-        status: 200,
-        time: formatSecond(new Date()),
-        content: {
-          role: "assistant",
-          content: "",
-          reasoningContent: "",
-        },
-        modelId,
-      })
-      topic.value.chatMessages.push(message)
       if (!llmChats[model.providerName]) {
         const provider = providerStore.providerManager.getLLMProvider(model.providerName)
         if (provider) {
           llmChats[model.providerName] = provider
         } else {
           console.warn("[init llmChats] provider not found", model.providerName)
+          continue
         }
       }
-      const context = topic.value.chatMessages.filter(item => item.finish).map(item => item.content)
+      const message = reactive<ChatTopicMessage>({
+        id: uniqueId(),
+        finish: false,
+        status: 200,
+        time: formatSecond(new Date()),
+        content: { role: "assistant", content: "", reasoningContent: "" },
+        modelId,
+      })
+      topic.value.chatMessages.push(message)
+      const context = topic.value.chatMessages
+        .filter(item => item.finish && item.status < 300)
+        .map(item => item.content)
       llmChats[model.providerName].chat(context, model, providerMeta, async msg => {
         if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
           contentLayout.value?.scrollToBottom("smooth")
         }
         message.status = msg.status
         message.reasoning = msg.reasoning
+        message.content.content += msg.data.map(item => item.content).join("")
+        message.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
         if (msg.status == 206) {
           message.finish = false
-          message.content.content += msg.data.map(item => item.content).join("")
-          message.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
         } else if (msg.status == 200) {
           contentLayout.value?.scrollToBottom("instant")
           message.finish = true
@@ -102,44 +107,57 @@ const send = async () => {
   })
 }
 const { onScroll } = useScrollHook(contentLayout, topic)
+const { sendShortcut } = useShortcut({
+  send,
+})
 </script>
 <template>
   <div class="flex flex-1 overflow-hidden">
-    <ConfigPanel v-model="topic.modelIds"></ConfigPanel>
     <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
       <template #header>
         <div class="flex p-1rem justify-end flex-1"></div>
       </template>
-      <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.modelId)">
-        <template #head>
-          <Hover>
-            <el-avatar :src="ds" size="default" />
-          </Hover>
-        </template>
-        <template #content>
-          <div class="chat-item-container">
-            <div class="chat-item-header" :class="{ reverse: layoutReverse(item.modelId) }">
-              <el-text class="name">{{ modelsStore.find(item.modelId)?.providerName }}</el-text>
-              <el-text class="time">{{ item.time }}</el-text>
-            </div>
-            <div class="chat-item-content" :class="{ reverse: layoutReverse(item.modelId) }">
-              <el-button v-show="item.status == 100 && item.reasoning" type="warning" loading size="small">
-                深度思考中
-              </el-button>
-              <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
-                {{ item.content.reasoningContent }}
-              </el-text>
-              <el-button v-if="item.status == 100" type="primary" loading size="small"> 加载中 </el-button>
-              <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
-            </div>
-            <div class="chat-item-footer"></div>
-          </div>
-        </template>
-      </MsgBubble>
+      <div class="flex">
+        <div class="w-5rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
+        <div class="flex flex-col gap2rem flex-1">
+          <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.modelId)">
+            <template #head>
+              <Hover>
+                <el-avatar :src="ds" size="default" />
+              </Hover>
+            </template>
+            <template #content>
+              <div class="chat-item-container">
+                <div class="chat-item-header" :class="{ reverse: layoutReverse(item.modelId) }">
+                  <el-text class="name">{{ modelsStore.find(item.modelId)?.providerName }}</el-text>
+                  <el-text class="time">{{ item.time }}</el-text>
+                </div>
+                <div class="chat-item-content" :class="{ reverse: layoutReverse(item.modelId) }">
+                  <el-button v-show="item.status == 100 && item.reasoning" type="warning" loading size="small">
+                    深度思考中
+                  </el-button>
+                  <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
+                    {{ item.content.reasoningContent }}
+                  </el-text>
+                  <el-button v-if="item.status == 100" type="primary" loading size="small"> 加载中 </el-button>
+                  <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
+                </div>
+                <div class="chat-item-footer"></div>
+              </div>
+            </template>
+          </MsgBubble>
+        </div>
+        <div class="w-4rem"></div>
+      </div>
+
       <template #handler>
         <div class="chat-input-container">
+          <div class="chat-input-header">
+            <ModelTool v-model="topic.modelIds" />
+          </div>
           <div class="chat-input">
             <el-input
+              class="textarea"
               input-style="border: none;height: 100%"
               style="display: flex"
               :autosize="false"
@@ -151,11 +169,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
               :placeholder="t('tip.inputPlaceholder')"></el-input>
           </div>
           <div class="chat-input-actions">
-            <Hover>
-              <el-button size="small" type="primary" @click="send" circle>
-                <i-ic:baseline-file-upload class="text-1.6rem"></i-ic:baseline-file-upload>
-              </el-button>
-            </Hover>
+            <el-button size="small" type="default" plain @click="send"> 发送({{ sendShortcut }}) </el-button>
           </div>
         </div>
       </template>
@@ -217,13 +231,24 @@ const { onScroll } = useScrollHook(contentLayout, topic)
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  .chat-input-header {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.5rem;
+  }
   .chat-input {
+    .textarea {
+      --el-input-border-color: transparent;
+      --el-input-hover-border-color: transparent;
+      --el-input-focus-border-color: transparent;
+      --el-input-bg-color: transparent;
+    }
     flex: 1;
     overflow: hidden;
     display: flex;
   }
   .chat-input-actions {
-    padding: 0.5rem;
     flex-shrink: 0;
     display: flex;
     background-color: var(--chat-input-actions-bg-color);

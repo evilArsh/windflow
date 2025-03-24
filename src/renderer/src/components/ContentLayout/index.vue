@@ -59,19 +59,21 @@ defineExpose({
 </template>
 <style lang="scss" scoped>
 .content-container {
-  // --content-header-height: 4rem;
-  --content-header-bg-color: transparent;
+  --content-container-bg-color: #ffffff;
   --content-bg-color: transparent;
-  --content-handler-bg-color: #ebebeb;
+  --content-header-bg-color: transparent;
+  --content-handler-bg-color: #f6f6f7;
+  --content-handler-border-color: #d9d9d9;
+
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-color: var(--content-container-bg-color);
   .content-header {
     flex-shrink: 0;
     display: flex;
     padding: 0.5rem;
-    // height: var(--content-header-height);
     background-color: var(--content-header-bg-color);
   }
   .content {
@@ -89,10 +91,10 @@ defineExpose({
     flex-shrink: 0;
     display: flex;
     background-color: var(--content-handler-bg-color);
-    padding: 0.5rem;
-    margin: 0.5rem;
-    border-top-left-radius: 1rem;
-    border-top-right-radius: 1rem;
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 1rem;
+    border: solid 1px var(--content-handler-border-color);
   }
 }
 </style>

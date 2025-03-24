@@ -19,7 +19,7 @@ export default () => {
         zIndex: z.FIXED_TOP,
         position: "fixed",
         width: 500,
-        height: 800,
+        height: "80vh",
       },
       contentStyle: {
         overflow: "hidden",

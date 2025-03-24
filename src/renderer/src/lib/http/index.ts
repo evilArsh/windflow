@@ -7,7 +7,7 @@ import {
   LLMBaseRequest,
 } from "@renderer/types"
 import { useEventBus, EventBusKey } from "@vueuse/core"
-import axios, { AxiosInstance, HttpStatusCode } from "axios"
+import axios, { AxiosError, AxiosInstance, HttpStatusCode } from "axios"
 
 export const createInstance = (): AxiosInstance => {
   const instance = axios.create()
@@ -15,17 +15,17 @@ export const createInstance = (): AxiosInstance => {
     config => {
       return config
     },
-    error => {
+    (error: AxiosError) => {
       console.log("[request error]", error)
       return Promise.reject(error)
     }
   )
   instance.interceptors.response.use(
     response => {
-      console.log("[response]", response)
+      // console.log("[response]", response)
       return response
     },
-    error => {
+    (error: AxiosError) => {
       console.log("[response error]", error)
       return Promise.reject(error)
     }
@@ -87,10 +87,14 @@ export const useLLMChat = (
           bus.emit({ reqId, message: { status: HttpStatusCode.Ok, msg: "finish", data: [] } })
           bus.off(messageHandler)
         })
-        .catch(err => {
+        .catch((err: AxiosError) => {
           bus.emit({
             reqId,
-            message: { status: HttpStatusCode.InternalServerError, msg: err.toString(), data: [] },
+            message: {
+              status: err.status ?? HttpStatusCode.InternalServerError,
+              msg: err.message,
+              data: [{ content: err.response?.data as string, role: "assistant" }],
+            },
           })
           bus.off(messageHandler)
         })

@@ -23,8 +23,8 @@ const onTopicSelect = (topic: ChatTopic) => {
         </el-scrollbar>
       </div>
     </template>
-    <template #content>
-      <ChatContent v-if="currentTopic" v-model="currentTopic" />
+    <template #content v-if="currentTopic">
+      <ChatContent v-model="currentTopic" />
     </template>
   </SubNavLayout>
 </template>

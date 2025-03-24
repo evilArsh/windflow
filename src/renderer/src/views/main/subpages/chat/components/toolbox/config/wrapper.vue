@@ -4,13 +4,6 @@ import ScalePanel from "@renderer/components/ScalePanel/index.vue"
 import { ScaleInstance, type BaseMountedParams } from "@renderer/components/ScalePanel/types"
 import useScale from "./useScale"
 import useStick from "./useStick"
-import Content from "./content.vue"
-defineProps<{
-  modelValue: string[]
-}>()
-const emit = defineEmits<{
-  (e: "update:modelValue", value: string[]): void
-}>()
 
 const moveRef = useTemplateRef("move")
 const panelRef = useTemplateRef<ScaleInstance>("panel")
@@ -18,33 +11,11 @@ const baseParams = ref<BaseMountedParams>()
 const toolWidth = ref(40)
 
 const { config } = useScale()
-const { lock, scaling, moving, hover, folded, fold, toggle, toggleLock, toggleHover, onMouseEnter, onMouseLeave } =
-  useStick(panelRef, toolWidth)
-
-const scaleEv = {
-  onScaleMounted: async (data: BaseMountedParams) => {
-    baseParams.value = data
-    await panelRef.value?.moveTo(false, "center")
-    await panelRef.value?.moveTo(false, "right")
-    panelRef.value?.show(false, "self")
-    fold()
-  },
-  onScaling: () => {
-    scaling.value = true
-  },
-  onMoving: () => {
-    moving.value = true
-  },
-  onAfterMove: async () => {
-    if (lock.value) return
-    await fold()
-  },
-  onAfterScale: async () => {
-    scaling.value = false
-    if (lock.value) return
-    await fold()
-  },
-}
+const { scaleEv, lock, hover, folded, toggle, toggleLock, toggleHover, onMouseEnter, onMouseLeave } = useStick(
+  panelRef,
+  toolWidth,
+  baseParams
+)
 </script>
 <template>
   <ScalePanel
@@ -88,7 +59,7 @@ const scaleEv = {
           </ToolBar>
           <div class="move" ref="move"></div>
         </div>
-        <Content :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)"></Content>
+        <slot></slot>
       </div>
     </template>
   </ScalePanel>

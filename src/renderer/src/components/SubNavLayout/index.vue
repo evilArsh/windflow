@@ -12,8 +12,9 @@
 <style lang="scss" scoped>
 .subnav-container {
   --subnav-container-bg-color: transparent;
-  --subnav-container-provider-bg-color: #efefef;
-  --subnav-container-provider-padding: 0.25rem;
+  --subnav-provider-bg-color: #efefef;
+  --subnav-provider-border-color: #d9d9d9;
+  --subnav-provider-padding: 0.25rem;
   --subnav-container-content-bg-color: #fdfdfd;
 
   flex: 1;
@@ -23,10 +24,11 @@
   .subnav-provider {
     overflow: hidden;
     width: 25rem;
-    background-color: var(--subnav-container-provider-bg-color);
+    background-color: var(--subnav-provider-bg-color);
     display: flex;
     flex-direction: column;
-    padding: var(--subnav-container-provider-padding);
+    padding: var(--subnav-provider-padding);
+    border-right: solid 1px var(--subnav-provider-border-color);
   }
   .subnav-content {
     flex-shrink: 0;

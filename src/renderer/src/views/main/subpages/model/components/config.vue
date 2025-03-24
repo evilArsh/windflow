@@ -3,6 +3,8 @@ import { ProviderMeta, ModelMeta, ProviderName, ModelType } from "@renderer/type
 import useModelStore from "@renderer/store/model.store"
 import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
+import { ElMessage } from "element-plus"
+import { errorToText } from "@renderer/lib/shared/error"
 const { t } = useI18n()
 const props = defineProps<{
   providerName: ProviderName
@@ -21,14 +23,19 @@ const dsModels = computed<ModelMeta[]>(() => {
   return models.value.filter(v => v.providerName === data.value?.name && filter.selectType.includes(v.type))
 })
 async function onRefreshModel(done: CallBackFn) {
-  if (data.value) {
-    const provider = providerStore.providerManager.getLLMProvider(data.value.name)
-    if (provider) {
-      const models = await provider.fetchModels(data.value)
-      modelStore.refresh(models)
+  try {
+    if (data.value) {
+      const provider = providerStore.providerManager.getLLMProvider(data.value.name)
+      if (provider) {
+        const models = await provider.fetchModels(data.value)
+        modelStore.refresh(models)
+      }
     }
+    done()
+  } catch (e) {
+    done()
+    ElMessage.error(errorToText(e))
   }
-  done()
 }
 watch(
   () => props.providerName,
@@ -80,24 +87,22 @@ watch(
                         </div>
                       </div>
                     </template>
-                    <template #content>
-                      <el-table
-                        :data="dsModels"
-                        border
-                        stripe
-                        row-key="id"
-                        default-expand-all
-                        table-layout="auto"
-                        max-height="50vh">
-                        <el-table-column prop="modelName" width="400rem" :label="t('provider.model.name')" />
-                        <el-table-column prop="type" width="200rem" :label="t('provider.model.type')" />
-                        <el-table-column label="使用">
-                          <template #default="{ row }">
-                            <el-switch v-model="row.active" />
-                          </template>
-                        </el-table-column>
-                      </el-table>
-                    </template>
+                    <el-table
+                      :data="dsModels"
+                      border
+                      stripe
+                      row-key="id"
+                      default-expand-all
+                      table-layout="auto"
+                      max-height="50vh">
+                      <el-table-column prop="modelName" width="300" :label="t('provider.model.name')" />
+                      <el-table-column prop="type" width="200" :label="t('provider.model.type')" />
+                      <el-table-column label="使用">
+                        <template #default="{ row }">
+                          <el-switch v-model="row.active" />
+                        </template>
+                      </el-table-column>
+                    </el-table>
                   </ContentLayout>
                 </el-card>
               </el-form-item>
