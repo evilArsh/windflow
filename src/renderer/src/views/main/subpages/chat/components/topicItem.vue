@@ -26,9 +26,17 @@ const onItemSelect = (topic: ChatTopic) => {
     <Hover background still-lock :default-lock="currentTopic?.id === topic.id">
       <div class="group-item" @click="onItemSelect(topic)">
         <div class="group-item-icon">
-          <Svg :src="topic.icon" class="text-25px"></Svg>
+          <Svg :src="topic.icon" class="text-18px"></Svg>
         </div>
-        <el-text class="group-item-name">{{ topic.label }}</el-text>
+        <el-text line-clamp="2" class="group-item-name">{{ topic.label }}</el-text>
+        <div class="group-item-handle">
+          <el-button circle size="small">
+            <i-ic:outline-settings></i-ic:outline-settings>
+          </el-button>
+          <el-button circle type="danger" size="small">
+            <i-ep:delete></i-ep:delete>
+          </el-button>
+        </div>
       </div>
     </Hover>
     <RecursiveTopicItem
@@ -50,6 +58,7 @@ const onItemSelect = (topic: ChatTopic) => {
   gap: 0.5rem;
 
   .group-item-icon {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -58,6 +67,12 @@ const onItemSelect = (topic: ChatTopic) => {
   }
   .group-item-name {
     font-size: 1.2rem;
+    flex: 1;
+  }
+  .group-item-handle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 }
 </style>
