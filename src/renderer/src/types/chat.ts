@@ -15,6 +15,11 @@ export enum ModelType {
   TextToVideo = "TextToVideo",
   SpeechToText = "SpeechToText",
 }
+export enum ModelActiveStatus {
+  All = "All",
+  Active = "Active",
+  Inactive = "Inactive",
+}
 export interface LLMBaseRequest {
   [x: string]: unknown
 }
@@ -90,6 +95,18 @@ export type ProviderMeta = {
     method: Method
     url: string
   }
+  /**
+   * @description 模型列表中需要展示的模型类型
+   */
+  selectedTypes: string[]
+  /**
+   * @description 模型列表中需要展示的子提供商
+   */
+  selectedSubProviders: string[]
+  /**
+   * @description 模型列表中展示激活状态的模型
+   */
+  activeStatus?: ModelActiveStatus
 }
 export type ModelMeta = {
   id: string
@@ -105,6 +122,10 @@ export type ModelMeta = {
    * @description 提供商名称
    */
   providerName: ProviderName
+  /**
+   * @description 子提供商名称
+   */
+  subProviderName: string
   /**
    * @description 是否启用
    */

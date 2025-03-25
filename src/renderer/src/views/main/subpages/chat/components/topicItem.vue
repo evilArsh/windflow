@@ -5,7 +5,6 @@ export default {
 </script>
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
-import ds from "@renderer/assets/images/provider/deepseek.svg"
 defineProps<{
   topicList: ChatTopic[]
   level: number
@@ -26,7 +25,9 @@ const onItemSelect = (topic: ChatTopic) => {
     :key="topic.id">
     <Hover background still-lock :default-lock="currentTopic?.id === topic.id">
       <div class="group-item" @click="onItemSelect(topic)">
-        <el-image class="group-item-icon" :src="ds" />
+        <div class="group-item-icon">
+          <Svg :src="topic.icon" class="text-25px"></Svg>
+        </div>
         <el-text class="group-item-name">{{ topic.label }}</el-text>
       </div>
     </Hover>
@@ -40,13 +41,18 @@ const onItemSelect = (topic: ChatTopic) => {
 
 <style lang="scss" scoped>
 .group-item {
-  --provider-container-icon-size: 3rem;
+  --provider-container-icon-size: 2.5rem;
 
   display: flex;
   align-items: center;
   border-radius: 0.5rem;
+  padding: 0.5rem;
+  gap: 0.5rem;
 
   .group-item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: var(--provider-container-icon-size);
     height: var(--provider-container-icon-size);
   }

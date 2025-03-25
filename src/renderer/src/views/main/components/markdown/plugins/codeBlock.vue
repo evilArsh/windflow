@@ -48,7 +48,9 @@ const hilight = (code?: string, lang?: string) => {
           </el-button>
         </div>
       </template>
-      <code :class="`hljs language-${lang}`" v-html="hilight(code, lang)"></code>
+      <pre>
+        <code :class="`hljs language-${lang}`" v-html="hilight(code, lang)"></code>
+      </pre>
     </el-card>
   </div>
 </template>

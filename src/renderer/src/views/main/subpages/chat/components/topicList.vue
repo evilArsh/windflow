@@ -1,29 +1,25 @@
 <script lang="ts" setup>
-import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { ChatTopic } from "@renderer/types"
 import TopicItem from "./topicItem.vue"
+import NewTopic from "./toolbox/newTopic/index.vue"
 const emit = defineEmits<{
   (e: "select", topic: ChatTopic): void
 }>()
 const charStore = useChatStore()
 const { topicList } = storeToRefs(charStore)
 const currentTopic = shallowRef<ChatTopic>()
-const onAddNewChat = () => {
-  charStore.addGroup({
-    id: uniqueId(),
-    label: "#新对话",
-    icon: ds,
-    children: [],
-    content: "",
-    chatMessages: [],
-    modelIds: [],
-  })
-}
+
 const onItemSelect = (topic: ChatTopic) => {
   currentTopic.value = topic
   emit("select", topic)
+}
+const onNewTopicCreate = (id: string) => {
+  const topic = charStore.find(id)
+  if (topic) {
+    onItemSelect(topic)
+  }
 }
 onMounted(async () => {
   await nextTick()
@@ -38,16 +34,7 @@ onMounted(async () => {
     <div class="flex flex-col gap-1rem">
       <TopicItem :topic-list="topicList" :level="0" @select="onItemSelect" :current-topic="currentTopic"></TopicItem>
     </div>
-    <Hover ripple-size="1px">
-      <el-card shadow="never" @click="onAddNewChat" style="--el-card-padding: 0.3rem">
-        <div class="flex items-center b-rd-0.5rem">
-          <el-button size="small" type="primary" plain circle text>
-            <i class="text-1.5rem i-ep:plus"></i>
-          </el-button>
-          <el-text class="text-1.2rem">{{ $t("chat.addChat") }}</el-text>
-        </div>
-      </el-card>
-    </Hover>
+    <NewTopic @create="onNewTopicCreate"></NewTopic>
   </div>
 </template>
 

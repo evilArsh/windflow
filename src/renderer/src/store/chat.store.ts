@@ -9,8 +9,12 @@ export default defineStore("chat", () => {
   const SAVE_KEY = "chat.topicList"
   const topicList = reactive<ChatTopic[]>([]) // 聊天组列表
 
-  function addGroup(group: ChatTopic) {
+  function add(group: ChatTopic) {
     topicList.push(group)
+  }
+
+  function find(id: string) {
+    return topicList.find(v => v.id === id)
   }
 
   const init = async () => {
@@ -23,13 +27,14 @@ export default defineStore("chat", () => {
       () => {
         save<ChatTopic[]>(SAVE_KEY, toRaw(topicList))
       },
-      3000,
+      300,
       true
     )
   )
   init()
   return {
     topicList,
-    addGroup,
+    add,
+    find,
   }
 })

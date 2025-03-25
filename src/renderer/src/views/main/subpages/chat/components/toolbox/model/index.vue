@@ -1,25 +1,39 @@
 <script setup lang="ts">
-import ModelList from "./list.vue"
+import useModelStore from "@renderer/store/model.store"
+import { storeToRefs } from "pinia"
+import { ModelType, type ModelMeta } from "@renderer/types"
 const props = defineProps<{
   modelValue: string[]
 }>()
 const emit = defineEmits<{
   (e: "update:modelValue", value: string[]): void
 }>()
-const data = computed({
-  get() {
-    return props.modelValue
-  },
-  set(val: string[]) {
-    emit("update:modelValue", val)
-  },
+const data = computed<string[]>({
+  get: () => props.modelValue,
+  set: val => emit("update:modelValue", val),
 })
+const { t } = useI18n()
+const modelStore = useModelStore()
+const { models } = storeToRefs(modelStore)
 
 const pop = reactive({
   show: false,
   toggle: markRaw(() => {
     pop.show = !pop.show
   }),
+})
+
+const activeModels = computed<Record<string, ModelMeta[]>>(() => {
+  return models.value
+    .filter(v => v.active && (v.type === ModelType.Chat || v.type === ModelType.ChatReasoner))
+    .reduce((acc, cur) => {
+      if (acc[cur.providerName]) {
+        acc[cur.providerName].push(cur)
+      } else {
+        acc[cur.providerName] = [cur]
+      }
+      return acc
+    }, {})
 })
 </script>
 <template>
@@ -37,7 +51,22 @@ const pop = reactive({
         </el-badge>
       </template>
       <template #default>
-        <ModelList v-model="data" />
+        <el-scrollbar max-height="500px">
+          <el-checkbox-group v-model="data" class="line-height-unset! text-inherit">
+            <div class="flex flex-col gap-0.5rem">
+              <div v-for="(item, provider) in activeModels" :key="provider">
+                <el-card shadow="never" style="--el-card-padding: 1rem">
+                  <template #header>
+                    <el-text>{{ t(`provider.name.${provider}`) }}</el-text>
+                  </template>
+                  <div class="flex flex-col gap5px">
+                    <el-checkbox v-for="model in item" :key="model.id" :value="model.id" :label="model.modelName" />
+                  </div>
+                </el-card>
+              </div>
+            </div>
+          </el-checkbox-group>
+        </el-scrollbar>
       </template>
     </el-popover>
   </div>

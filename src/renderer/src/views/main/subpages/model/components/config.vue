@@ -1,10 +1,12 @@
 <script lang="ts" setup>
-import { ProviderMeta, ModelMeta, ProviderName, ModelType } from "@renderer/types"
+import { ProviderMeta, ModelMeta, ProviderName, ModelType, ModelActiveStatus } from "@renderer/types"
 import useModelStore from "@renderer/store/model.store"
 import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
 import { ElMessage } from "element-plus"
 import { errorToText } from "@renderer/lib/shared/error"
+import ModelCard from "./model-card.vue"
+import type { CheckboxValueType } from "element-plus"
 const { t } = useI18n()
 const props = defineProps<{
   providerName: ProviderName
@@ -13,14 +15,61 @@ const modelStore = useModelStore()
 const providerStore = useProviderStore()
 const { models } = storeToRefs(modelStore)
 
+const scopeModels = computed<ModelMeta[]>(() =>
+  models.value.filter(v => data.value && v.providerName === data.value.name)
+)
+
+const filteredModels = computed<ModelMeta[]>(() => {
+  return scopeModels.value.filter(
+    meta =>
+      data.value &&
+      data.value.selectedTypes.includes(meta.type) &&
+      data.value.selectedSubProviders.includes(meta.subProviderName) &&
+      (data.value.activeStatus === ModelActiveStatus.All ||
+        (data.value.activeStatus === ModelActiveStatus.Active && meta.active) ||
+        (data.value.activeStatus === ModelActiveStatus.Inactive && !meta.active))
+  )
+})
+
 const data = ref<ProviderMeta>()
 const filter = reactive({
   typeKeys: markRaw(Object.keys(ModelType)),
-  selectType: Object.keys(ModelType),
+  subProviders: computed(() => {
+    return scopeModels.value.reduce<string[]>((acc, cur) => {
+      if (!acc.includes(cur.subProviderName)) {
+        acc.push(cur.subProviderName)
+      }
+      return acc
+    }, [])
+  }),
 })
 
-const dsModels = computed<ModelMeta[]>(() => {
-  return models.value.filter(v => v.providerName === data.value?.name && filter.selectType.includes(v.type))
+const check = reactive({
+  allModelTypes: false,
+  isIndeterminateModelTypes: true,
+  onAllModelTypesChange: markRaw((val: CheckboxValueType) => {
+    check.isIndeterminateModelTypes = false
+    if (data.value) {
+      data.value.selectedTypes = val ? filter.typeKeys : []
+    }
+  }),
+  onModelTypesChange: markRaw((val: CheckboxValueType[]) => {
+    check.allModelTypes = val.length === filter.typeKeys.length
+    check.isIndeterminateModelTypes = val.length > 0 && val.length < filter.typeKeys.length
+  }),
+
+  allSubProviders: false,
+  isIndeterminateSubProviders: true,
+  onAllSubProvidersChange: markRaw((val: CheckboxValueType) => {
+    check.isIndeterminateSubProviders = false
+    if (data.value) {
+      data.value.selectedSubProviders = val ? filter.subProviders : []
+    }
+  }),
+  onSubProvidersChange: markRaw((val: CheckboxValueType[]) => {
+    check.allSubProviders = val.length === filter.subProviders.length
+    check.isIndeterminateSubProviders = val.length > 0 && val.length < filter.subProviders.length
+  }),
 })
 async function onRefreshModel(done: CallBackFn) {
   try {
@@ -58,56 +107,74 @@ watch(
           </div>
         </template>
         <div class="model-setting">
-          <el-scrollbar class="w-full">
-            <el-form :model="data" label-width="10rem" class="w-full" label-position="top">
-              <el-form-item :label="t('provider.apiUrl')" class="w-full">
-                <el-input v-model="data.apiUrl" />
-              </el-form-item>
-              <el-form-item :label="t('provider.apiKey')" class="w-full">
-                <el-input v-model="data.apiKey" show-password />
-              </el-form-item>
-              <el-form-item :label="t('provider.model.name')" class="w-full">
-                <el-card shadow="never" class="w-full">
-                  <ContentLayout>
-                    <template #header>
-                      <div class="flex flex-col gap1rem w-full">
-                        <div class="w-full">
-                          <el-form-item label="模型类型" label-width="5rem">
-                            <el-select v-model="filter.selectType" multiple clearable>
-                              <el-option v-for="item in filter.typeKeys" :key="item" :label="item" :value="item" />
-                            </el-select>
-                          </el-form-item>
-                        </div>
-                        <div>
-                          <el-form-item>
-                            <Button size="small" type="primary" plain @click="onRefreshModel">
-                              <i-ep:refresh></i-ep:refresh>
-                            </Button>
-                          </el-form-item>
-                        </div>
-                      </div>
-                    </template>
-                    <el-table
-                      :data="dsModels"
-                      border
-                      stripe
-                      row-key="id"
-                      default-expand-all
-                      table-layout="auto"
-                      max-height="50vh">
-                      <el-table-column prop="modelName" width="300" :label="t('provider.model.name')" />
-                      <el-table-column prop="type" width="200" :label="t('provider.model.type')" />
-                      <el-table-column label="使用">
-                        <template #default="{ row }">
-                          <el-switch v-model="row.active" />
-                        </template>
-                      </el-table-column>
-                    </el-table>
-                  </ContentLayout>
-                </el-card>
-              </el-form-item>
-            </el-form>
-          </el-scrollbar>
+          <el-form :model="data" label-width="10rem" class="w-full" label-position="top">
+            <el-form-item :label="t('provider.apiUrl')" class="w-full">
+              <el-input v-model="data.apiUrl" />
+            </el-form-item>
+            <el-form-item :label="t('provider.apiKey')" class="w-full">
+              <el-input v-model="data.apiKey" show-password />
+            </el-form-item>
+            <el-form-item :label="t('provider.model.name')" class="w-full">
+              <el-card shadow="never" class="w-full">
+                <div class="flex flex-col gap-2rem w-full">
+                  <el-form-item label="模型类型" label-width="5rem">
+                    <el-checkbox
+                      style="margin-right: 2rem"
+                      size="small"
+                      v-model="check.allModelTypes"
+                      :indeterminate="check.isIndeterminateModelTypes"
+                      @change="check.onAllModelTypesChange">
+                      {{ t("tip.selectAll") }}
+                    </el-checkbox>
+                    <el-checkbox-group v-model="data.selectedTypes" @change="check.onModelTypesChange" size="small">
+                      <el-checkbox
+                        border
+                        v-for="item in filter.typeKeys"
+                        :key="item"
+                        :label="t(`modelType.${item}`)"
+                        :value="item" />
+                    </el-checkbox-group>
+                  </el-form-item>
+                  <el-form-item label="模型标识" label-width="5rem">
+                    <el-checkbox
+                      style="margin-right: 2rem"
+                      size="small"
+                      v-model="check.allSubProviders"
+                      :indeterminate="check.isIndeterminateSubProviders"
+                      @change="check.onAllSubProvidersChange">
+                      {{ t("tip.selectAll") }}
+                    </el-checkbox>
+                    <el-checkbox-group
+                      class="flex flex-wrap gap-1rem"
+                      v-model="data.selectedSubProviders"
+                      @change="check.onSubProvidersChange"
+                      size="small">
+                      <el-checkbox
+                        style="margin-right: 0"
+                        border
+                        v-for="item in filter.subProviders"
+                        :key="item"
+                        :label="item"
+                        :value="item" />
+                    </el-checkbox-group>
+                  </el-form-item>
+                  <el-form-item label="激活状态" label-width="5rem">
+                    <el-radio-group v-model="data.activeStatus" size="small">
+                      <el-radio-button :value="ModelActiveStatus.All">全部</el-radio-button>
+                      <el-radio-button :value="ModelActiveStatus.Active">激活</el-radio-button>
+                      <el-radio-button :value="ModelActiveStatus.Inactive">未激活</el-radio-button>
+                    </el-radio-group>
+                  </el-form-item>
+                  <el-form-item>
+                    <Button size="small" type="primary" plain @click="onRefreshModel">
+                      <i-ep:refresh></i-ep:refresh>
+                    </Button>
+                  </el-form-item>
+                  <ModelCard :data="filteredModels" :provider-name="data.name" />
+                </div>
+              </el-card>
+            </el-form-item>
+          </el-form>
         </div>
       </ContentLayout>
     </template>

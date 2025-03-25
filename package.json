@@ -7,6 +7,7 @@
   "homepage": "https://vivcode.cn",
   "type": "module",
   "scripts": {
+    "postinstall": "electron-builder install-app-deps",
     "format": "prettier --write .",
     "prepare": "husky",
     "commitlint": "commitlint -e -V",
@@ -19,7 +20,6 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
-    "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
@@ -28,6 +28,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
+    "@iconify/utils": "^2.3.0",
     "@unocss/reset": "66.1.0-beta.3",
     "@vueuse/core": "^13.0.0",
     "@vueuse/motion": "^3.0.3",

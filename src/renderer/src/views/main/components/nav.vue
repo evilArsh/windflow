@@ -24,7 +24,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <div class="nav-container">
+  <div class="nav-container el-card">
     <div class="nav-menu">
       <el-scrollbar>
         <el-menu :default-active="defaultRoute" @select="menuEv.onSelect" router>
@@ -74,7 +74,7 @@ onMounted(() => {
   --el-menu-active-color: transparent;
   --el-menu-hover-bg-color: transparent;
   --nav-container-nav-menu-item-icon-color: #333;
-  --nav-container-bg-color: #fff;
+  --nav-container-bg-color: var(--el-card-bg-color);
   --nav-container-nav-menu-item-inner-width: 80%;
   --nav-container-nav-menu-item-inner-height: 80%;
 

@@ -10,6 +10,7 @@ import useShortcut from "./usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
 import { ElMessage } from "element-plus"
 import ModelTool from "./toolbox/model/index.vue"
+import useInitial from "./usable/useInitial"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
 }>()
@@ -30,10 +31,6 @@ const providerStore = useProviderStore()
 const modelsStore = useModelsStore()
 const { t } = useI18n()
 
-// 没有modelId的为用户发出的消息
-const layoutReverse = (modelId: string) => {
-  return !modelId
-}
 const llmChats = shallowReactive<Record<string, LLMProvider>>({})
 
 const send = async () => {
@@ -110,6 +107,7 @@ const { onScroll } = useScrollHook(contentLayout, topic)
 const { sendShortcut } = useShortcut({
   send,
 })
+useInitial(topic)
 </script>
 <template>
   <div class="flex flex-1 overflow-hidden">
@@ -120,7 +118,7 @@ const { sendShortcut } = useShortcut({
       <div class="flex">
         <div class="w-5rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
         <div class="flex flex-col gap2rem flex-1">
-          <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="layoutReverse(item.modelId)">
+          <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="!item.modelId">
             <template #head>
               <Hover>
                 <el-avatar :src="ds" size="default" />
@@ -128,19 +126,26 @@ const { sendShortcut } = useShortcut({
             </template>
             <template #content>
               <div class="chat-item-container">
-                <div class="chat-item-header" :class="{ reverse: layoutReverse(item.modelId) }">
+                <div class="chat-item-header" :class="{ reverse: !item.modelId }">
                   <el-text class="name">{{ modelsStore.find(item.modelId)?.providerName }}</el-text>
                   <el-text class="time">{{ item.time }}</el-text>
                 </div>
-                <div class="chat-item-content" :class="{ reverse: layoutReverse(item.modelId) }">
-                  <el-button v-show="item.status == 100 && item.reasoning" type="warning" loading size="small">
-                    深度思考中
-                  </el-button>
-                  <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
-                    {{ item.content.reasoningContent }}
+                <div class="chat-item-content" :class="{ reverse: !item.modelId }">
+                  <div v-if="item.modelId" class="flex flex-col">
+                    <el-button v-show="item.status == 100 && item.reasoning" type="info" loading size="small">
+                      深度思考中
+                    </el-button>
+                    <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
+                      {{ item.content.reasoningContent }}
+                    </el-text>
+                    <el-text v-show="item.status == 100" type="primary" size="small">
+                      <i-eos-icons:three-dots-loading class="text-4rem"></i-eos-icons:three-dots-loading>
+                    </el-text>
+                    <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
+                  </div>
+                  <el-text v-else type="primary" class="self-end!">
+                    {{ item.content.content }}
                   </el-text>
-                  <el-button v-if="item.status == 100" type="primary" loading size="small"> 加载中 </el-button>
-                  <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
                 </div>
                 <div class="chat-item-footer"></div>
               </div>

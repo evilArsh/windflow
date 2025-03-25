@@ -93,54 +93,50 @@ export class SiliconFlow implements LLMProvider {
   }
 
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    try {
-      if (!this.#axios) {
-        this.#axios = createInstance()
-      }
-      const res: ModelMeta[][] = []
-      this.#axios.defaults.baseURL = provider.apiUrl
-      this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
-      const req = types.reduce(
-        (acc, v) => {
-          if (this.#axios) {
-            acc.push(
-              this.#axios
-                .request<SFModelsResponse>({
-                  method: provider.apiModelList.method,
-                  url: provider.apiModelList.url,
-                  params: { sub_type: v.name },
-                })
-                .then(res => ({
-                  type: v.type,
-                  data: res.data.data,
-                }))
-            )
-          }
-          return acc
-        },
-        [] as Promise<{ type: ModelType; data: SFModelsResponse["data"] }>[]
-      )
-      const dataRes = await Promise.all(req)
-
-      dataRes.forEach(items => {
-        res.push(
-          items.data.map(v => ({
-            id: `${provider.name}_${v.id}`,
-            type:
-              items.type === ModelType.Chat
-                ? reasonerPattern.test(v.id.toLowerCase())
-                  ? ModelType.ChatReasoner
-                  : ModelType.Chat
-                : items.type,
-            modelName: v.id,
-            providerName: provider.name,
-          }))
-        )
-      })
-      return res.flat()
-    } catch (error) {
-      console.log(`[error fetchModels] provider: ${provider.name}`, error)
-      return []
+    if (!this.#axios) {
+      this.#axios = createInstance()
     }
+    const res: ModelMeta[][] = []
+    this.#axios.defaults.baseURL = provider.apiUrl
+    this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
+    const req = types.reduce(
+      (acc, v) => {
+        if (this.#axios) {
+          acc.push(
+            this.#axios
+              .request<SFModelsResponse>({
+                method: provider.apiModelList.method,
+                url: provider.apiModelList.url,
+                params: { sub_type: v.name },
+              })
+              .then(res => ({
+                type: v.type,
+                data: res.data.data,
+              }))
+          )
+        }
+        return acc
+      },
+      [] as Promise<{ type: ModelType; data: SFModelsResponse["data"] }>[]
+    )
+    const dataRes = await Promise.all(req)
+
+    dataRes.forEach(items => {
+      res.push(
+        items.data.map(v => ({
+          id: `${provider.name}_${v.id}`,
+          type:
+            items.type === ModelType.Chat
+              ? reasonerPattern.test(v.id.toLowerCase())
+                ? ModelType.ChatReasoner
+                : ModelType.Chat
+              : items.type,
+          modelName: v.id,
+          providerName: provider.name,
+          subProviderName: v.id.indexOf("/") > 0 ? v.id.slice(0, v.id.indexOf("/")) : provider.name,
+        }))
+      )
+    })
+    return res.flat()
   }
 }

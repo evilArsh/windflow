@@ -23,7 +23,7 @@
   background-color: var(--subnav-container-bg-color);
   .subnav-provider {
     overflow: hidden;
-    width: 25rem;
+    width: 30rem;
     background-color: var(--subnav-provider-bg-color);
     display: flex;
     flex-direction: column;

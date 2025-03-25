@@ -26,6 +26,7 @@
     }
   },
   "tip": {
-    "inputPlaceholder": "say something and enter"
+    "inputPlaceholder": "say something and enter",
+    "selectAll": "select all"
   }
 }

@@ -26,7 +26,8 @@ export default defineStore("provider", () => {
   }
   watch(
     config,
-    useDebounceFn((val: ProviderMeta[]) => save<ProviderMeta[]>(SAVE_KEY, toRaw(val)), 2000)
+    useDebounceFn((val: ProviderMeta[]) => save<ProviderMeta[]>(SAVE_KEY, toRaw(val)), 300),
+    { deep: true }
   )
   init()
   return {

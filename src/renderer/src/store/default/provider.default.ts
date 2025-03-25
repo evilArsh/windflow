@@ -1,4 +1,4 @@
-import { ProviderMeta, ProviderName } from "@renderer/types"
+import { ModelType, ProviderMeta, ProviderName, ModelActiveStatus } from "@renderer/types"
 import ds from "@renderer/assets/images/provider/deepseek.svg"
 export const providerDefault = (): ProviderMeta[] => {
   return [
@@ -20,6 +20,9 @@ export const providerDefault = (): ProviderMeta[] => {
         method: "GET",
         url: "/user/balance",
       },
+      selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
+      selectedSubProviders: [ProviderName.DeepSeek],
+      activeStatus: ModelActiveStatus.All,
     },
     {
       name: ProviderName.SiliconFlow,
@@ -39,6 +42,9 @@ export const providerDefault = (): ProviderMeta[] => {
         method: "GET",
         url: "/user/info",
       },
+      selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
+      selectedSubProviders: [],
+      activeStatus: ModelActiveStatus.All,
     },
   ]
 }

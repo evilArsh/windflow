@@ -88,5 +88,5 @@ onMounted(() => {
 })
 </script>
 <template>
-  <div class="line-height-2rem" v-html="html"></div>
+  <div style="line-height: 1.5" v-html="html"></div>
 </template>

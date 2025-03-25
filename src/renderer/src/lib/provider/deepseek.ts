@@ -93,6 +93,7 @@ export class LLMDeepSeek implements LLMProvider {
       type: v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner,
       modelName: v.id,
       providerName: provider.name,
+      subProviderName: provider.name,
     }))
   }
 }

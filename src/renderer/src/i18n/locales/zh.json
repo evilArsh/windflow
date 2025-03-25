@@ -3,12 +3,22 @@
     "name": "糖果盒"
   },
   "chat": {
-    "addChat": "新增聊天",
+    "addChat": "新的聊天",
     "search": "搜索"
   },
   "lang": {
     "en": "English",
     "zh": "简体中文"
+  },
+  "modelType": {
+    "Chat": "对话",
+    "ChatReasoner": "推理对话",
+    "Embedding": "嵌入",
+    "ImageToImage": "图片转图片",
+    "Reranker": "重排序",
+    "SpeechToText": "语音转文本",
+    "TextToImage": "文本转图片",
+    "TextToVideo": "文本转视频"
   },
   "nav": {
     "chat": "聊天",
@@ -34,6 +44,7 @@
   },
   "tip": {
     "inputPlaceholder": "输入你的问题",
-    "loading": "加载中"
+    "loading": "加载中",
+    "selectAll": "全选"
   }
 }

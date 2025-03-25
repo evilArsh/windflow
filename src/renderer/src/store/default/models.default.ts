@@ -7,12 +7,16 @@ export const modelsDefault = (): ModelMeta[] => {
       modelName: "deepseek-chat",
       type: ModelType.Chat,
       providerName: ProviderName.DeepSeek,
+      subProviderName: ProviderName.DeepSeek,
+      active: true,
     },
     {
       id: `${ProviderName.DeepSeek}_deepseek-reasoner`,
       modelName: "deepseek-reasoner",
       type: ModelType.ChatReasoner,
       providerName: ProviderName.DeepSeek,
+      subProviderName: ProviderName.DeepSeek,
+      active: true,
     },
   ]
 }
