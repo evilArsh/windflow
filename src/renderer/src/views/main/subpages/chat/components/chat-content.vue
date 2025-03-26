@@ -10,7 +10,8 @@ import useShortcut from "./usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
 import { ElMessage } from "element-plus"
 import ModelTool from "./toolbox/model/index.vue"
-import useInitial from "./usable/useInitial"
+import useSync from "./usable/useSync"
+import { storeToRefs } from "pinia"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
 }>()
@@ -18,9 +19,7 @@ const props = defineProps<{
   modelValue: ChatTopic
 }>()
 const topic = computed<ChatTopic>({
-  get() {
-    return props.modelValue
-  },
+  get: () => props.modelValue,
   set(value) {
     emit("update:modelValue", value)
   },
@@ -28,10 +27,14 @@ const topic = computed<ChatTopic>({
 
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const providerStore = useProviderStore()
+const { providerMetas } = storeToRefs(providerStore)
 const modelsStore = useModelsStore()
 const { t } = useI18n()
 
 const llmChats = shallowReactive<Record<string, LLMProvider>>({})
+
+const { onScroll } = useScrollHook(contentLayout, topic)
+const { message } = useSync(topic)
 
 const send = async () => {
   if (!topic.value.content.trim()) return
@@ -39,7 +42,7 @@ const send = async () => {
     ElMessage.warning("请选择模型")
     return
   }
-  const user: ChatMessage = {
+  message.value.data.push({
     id: uniqueId(),
     status: 200,
     time: formatSecond(new Date()),
@@ -50,12 +53,12 @@ const send = async () => {
       content: topic.value.content,
     },
     modelId: "",
-  }
-  topic.value.chatMessages.push(user)
+  })
 
   for (const modelId of topic.value.modelIds) {
+    if (modelId.length == 0) continue
     const model = modelsStore.find(modelId)
-    const providerMeta = providerStore.find(model?.providerName)
+    const providerMeta = providerMetas.value.find(item => item.name == model?.providerName)
     if (model && providerMeta) {
       if (!llmChats[model.providerName]) {
         const provider = providerStore.providerManager.getLLMProvider(model.providerName)
@@ -66,7 +69,7 @@ const send = async () => {
           continue
         }
       }
-      const message = reactive<ChatMessage>({
+      const newMsg = reactive<ChatMessage["data"][number]>({
         id: uniqueId(),
         finish: false,
         status: 200,
@@ -74,26 +77,26 @@ const send = async () => {
         content: { role: "assistant", content: "", reasoningContent: "" },
         modelId,
       })
-      topic.value.chatMessages.push(message)
-      const context = topic.value.chatMessages
-        .filter(item => item.finish && item.status < 300)
-        .map(item => item.content)
+      message.value.data.push(newMsg)
+      // TODO: 消息上下文
+      const context = message.value.data.filter(item => item.finish && item.status < 300).map(item => item.content)
+
       llmChats[model.providerName].chat(context, model, providerMeta, async msg => {
         if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
           contentLayout.value?.scrollToBottom("smooth")
         }
-        message.status = msg.status
-        message.reasoning = msg.reasoning
-        message.content.content += msg.data.map(item => item.content).join("")
-        message.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
+        newMsg.status = msg.status
+        newMsg.reasoning = msg.reasoning
+        newMsg.content.content += msg.data.map(item => item.content).join("")
+        newMsg.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
         if (msg.status == 206) {
-          message.finish = false
+          newMsg.finish = false
         } else if (msg.status == 200) {
           contentLayout.value?.scrollToBottom("instant")
-          message.finish = true
+          newMsg.finish = true
           console.log("done")
         } else {
-          message.finish = true
+          newMsg.finish = true
         }
       })
     }
@@ -103,11 +106,9 @@ const send = async () => {
     contentLayout.value?.scrollToBottom("smooth")
   })
 }
-const { onScroll } = useScrollHook(contentLayout, topic)
 const { sendShortcut } = useShortcut({
   send,
 })
-useInitial(topic)
 </script>
 <template>
   <div class="flex flex-1 overflow-hidden">
@@ -118,7 +119,7 @@ useInitial(topic)
       <div class="flex">
         <div class="w-5rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
         <div class="flex flex-col gap2rem flex-1">
-          <MsgBubble v-for="item in topic.chatMessages" :key="item.id" :reverse="!item.modelId">
+          <MsgBubble v-for="item in message.data" :key="item.id" :reverse="!item.modelId">
             <template #head>
               <Hover>
                 <el-avatar :src="ds" size="default" />

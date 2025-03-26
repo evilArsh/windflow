@@ -1,2 +1,17 @@
-import { ChatTopic } from "@renderer/types"
-export const chatDefault = (): ChatTopic[] => []
+import { ChatTopic, ChatMessage } from "@renderer/types"
+export const chatTopicDefault = (): ChatTopic[] => []
+export const chatMessageDefault = (): ChatMessage => ({
+  id: uniqueId(),
+  data: [
+    {
+      finish: true,
+      status: 200,
+      time: formatSecond(new Date()),
+      content: {
+        role: "system",
+        content: "you are a helpful assistant",
+      },
+      modelId: "",
+    },
+  ],
+})

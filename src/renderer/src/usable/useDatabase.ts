@@ -59,7 +59,7 @@ export const useDatabase = () => {
     })
   }
 
-  async function del<K extends keyof typeof storeKey>(storeName: K, query: IDBValidKey | IDBKeyRange) {
+  async function del(storeName: keyof typeof storeKey, query: IDBValidKey | IDBKeyRange) {
     return new Promise<boolean>(resolve => {
       open().then(() => {
         if (!db.value) {
@@ -79,7 +79,7 @@ export const useDatabase = () => {
     })
   }
 
-  async function get<K extends keyof typeof storeKey, T>(storeName: K, query: IDBValidKey | IDBKeyRange) {
+  async function get<T>(storeName: keyof typeof storeKey, query: IDBValidKey | IDBKeyRange) {
     return new Promise<T | null>(resolve => {
       open().then(() => {
         if (!db.value) {

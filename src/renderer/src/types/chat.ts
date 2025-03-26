@@ -139,6 +139,10 @@ export type ChatMessage = {
   id: string
   data: Array<{
     /**
+     * @description 单个消息ID
+     */
+    id: string
+    /**
      * @description 请求是否完成，不管是否成功
      */
     finish?: boolean

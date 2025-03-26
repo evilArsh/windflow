@@ -12,10 +12,14 @@ const charStore = useChatStore()
 const { topicList } = storeToRefs(charStore)
 
 const onNewTopicCreate = (data: ChatTopic) => {
-  charStore.add(data)
+  topicList.value.push(data)
   currentTopic.value = data
+  charStore.dbAddChatTopic(data)
 }
-
+const onCurrentTopicChange = (data: ChatTopic) => {
+  currentTopic.value = data
+  charStore.dbUpdateChatTopic(data)
+}
 const tree = reactive({
   props: {
     label: "label",
@@ -51,7 +55,7 @@ const tree = reactive({
                       </el-button>
                     </template>
                     <div class="flex flex-col gap-0.5rem">
-                      <EditTopic v-model="currentTopic">
+                      <EditTopic :model-value="currentTopic" @update:model-value="onCurrentTopicChange">
                         <template #default="{ pop }">
                           <el-button @click="pop.toggle">
                             <template #icon>
@@ -71,7 +75,7 @@ const tree = reactive({
       </div>
     </template>
     <template #content v-if="currentTopic">
-      <ChatContent v-model="currentTopic" />
+      <ChatContent :model-value="currentTopic" @update:model-value="onCurrentTopicChange" />
     </template>
   </SubNavLayout>
 </template>

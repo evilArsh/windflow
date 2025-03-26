@@ -6,10 +6,10 @@ import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
 import { useDebounceFn } from "@vueuse/core"
 export default defineStore(storeKey.provider, () => {
   const { getAll, add, put } = useDatabase()
-  const config = reactive<ProviderMeta[]>([])
+  const metas = reactive<ProviderMeta[]>([])
   const manager = markRaw<ProviderManager>(new ProviderManager())
 
-  const dbUpdate = useDebounceFn(async (data: ProviderMeta) => await put("provider", data.name, toRaw(data)), 500, {
+  const dbUpdate = useDebounceFn(async (data: ProviderMeta) => await put("provider", data.name, toRaw(data)), 300, {
     maxWait: 1000,
   })
 
@@ -17,10 +17,10 @@ export default defineStore(storeKey.provider, () => {
     try {
       const data = await getAll<ProviderMeta>("provider")
       if (data.length > 0) {
-        config.push(...data)
+        metas.push(...data)
       } else {
         const data = providerDefault()
-        config.push(...data)
+        metas.push(...data)
         for (const item of data) {
           await add("provider", item)
         }
@@ -33,7 +33,7 @@ export default defineStore(storeKey.provider, () => {
   fetch()
   return {
     dbUpdate,
-    providerConfigs: config,
+    providerMetas: metas,
     providerManager: manager,
   }
 })

@@ -44,10 +44,10 @@ const pop = reactive({
 
 const onConfirm = () => {
   if (props.modelValue) {
-    emit("update:modelValue", form.value)
+    emit("update:modelValue", cloneDeep(form.value))
   } else {
     form.value.id = uniqueId()
-    emit("change", form.value)
+    emit("change", cloneDeep(form.value))
   }
   pop.toggle()
 }

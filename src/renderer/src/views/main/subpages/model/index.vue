@@ -6,7 +6,7 @@ import { ProviderName } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
 const providerStore = useProviderStore()
-const { providerConfigs } = storeToRefs(providerStore)
+const { providerMetas } = storeToRefs(providerStore)
 const current = ref<ProviderName>()
 const { t } = useI18n()
 const useConfigComponent = () => {
@@ -32,10 +32,10 @@ function onCardClick(name: ProviderName) {
 }
 async function init() {
   if (!current.value) {
-    current.value = providerConfigs.value.length > 0 ? providerConfigs.value[0].name : undefined
+    current.value = providerMetas.value.length > 0 ? providerMetas.value[0].name : undefined
   }
 }
-watch(providerConfigs, init)
+watch(providerMetas, init)
 onMounted(init)
 </script>
 <template>
@@ -45,7 +45,7 @@ onMounted(init)
         <div class="provider-container">
           <Hover
             background
-            v-for="item in providerConfigs"
+            v-for="item in providerMetas"
             :key="item.name"
             still-lock
             :default-lock="current == item.name">

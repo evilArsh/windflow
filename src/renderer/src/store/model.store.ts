@@ -30,7 +30,7 @@ export default defineStore(storeKey.model, () => {
     return models.filter(v => v.providerName === name)
   }
 
-  const dbUpdate = useDebounceFn(async (data: ModelMeta) => await put("model", data.id, toRaw(data)), 500, {
+  const dbUpdate = useDebounceFn(async (data: ModelMeta) => await put("model", data.id, toRaw(data)), 300, {
     maxWait: 1000,
   })
 

@@ -14,7 +14,7 @@ const props = defineProps<{
 const modelStore = useModelStore()
 const providerStore = useProviderStore()
 const { models } = storeToRefs(modelStore)
-const { providerConfigs } = storeToRefs(providerStore)
+const { providerMetas } = storeToRefs(providerStore)
 
 const scopeModels = computed<ModelMeta[]>(() =>
   models.value.filter(v => data.value && v.providerName === data.value.name)
@@ -91,7 +91,7 @@ async function onRefreshModel(done: CallBackFn) {
 watch(
   () => props.providerName,
   name => {
-    data.value = providerConfigs.value.find(v => v.name === name)
+    data.value = providerMetas.value.find(v => v.name === name)
   },
   { immediate: true }
 )
