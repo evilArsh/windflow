@@ -4,6 +4,7 @@ export const chatMessageDefault = (): ChatMessage => ({
   id: uniqueId(),
   data: [
     {
+      id: uniqueId(),
       finish: true,
       status: 200,
       time: formatSecond(new Date()),
