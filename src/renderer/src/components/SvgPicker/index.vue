@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import openmoji from "@iconify/json/json/openmoji.json"
-import twemoji from "@iconify/json/json/twemoji.json"
 import noto from "@iconify/json/json/noto.json"
-// import fluentEmojiFlat from "@iconify/json/json/fluent-emoji-flat.json"
-// import fluentEmoji from "@iconify/json/json/fluent-emoji.json"
+import fluentEmojiFlat from "@iconify/json/json/fluent-emoji-flat.json"
 import emojione from "@iconify/json/json/emojione.json"
-import emojionev1 from "@iconify/json/json/emojione-v1.json"
-import fxemoji from "@iconify/json/json/fxemoji.json"
 import streamline from "@iconify/json/json/streamline-emojis.json"
-import flagCircle from "@iconify/json/json/circle-flags.json"
+import flag from "@iconify/json/json/circle-flags.json"
 import type { IconifyJSON } from "@iconify/types"
 import SvgPanel from "./panel.vue"
 import Svg from "@renderer/components/Svg/index.vue"
+import openmojiDefault from "~icons/openmoji/1st-place-medal"
+import notoDefault from "~icons/noto/1st-place-medal"
+import fluentEmojiFlatDefault from "~icons/fluent-emoji-flat/basketball"
+import emojioneDefault from "~icons/emojione/flushed-face"
+import streamlineDefault from "~icons/streamline-emojis/boar-1"
+import flagDefault from "~icons/circle-flags/cn"
+import type { Component } from "vue"
+
 defineProps<{
   modelValue: string
 }>()
@@ -24,17 +28,13 @@ const tabs = reactive({
   active: "openmoji",
 })
 
-const iconMap: Record<string, IconifyJSON> = {
-  openmoji: openmoji as IconifyJSON,
-  twemoji: twemoji as IconifyJSON,
-  noto: noto as IconifyJSON,
-  // fluentEmojiFlat: fluentEmojiFlat as IconifyJSON,
-  // fluentEmoji: fluentEmoji as IconifyJSON,
-  emojione: emojione as IconifyJSON,
-  emojionev1: emojionev1 as IconifyJSON,
-  fxemoji: fxemoji as IconifyJSON,
-  streamline: streamline as IconifyJSON,
-  flagCircle: flagCircle as IconifyJSON,
+const iconMap: Record<string, { title: Component; icons: IconifyJSON }> = {
+  openmoji: { title: openmojiDefault, icons: openmoji as IconifyJSON },
+  noto: { title: notoDefault, icons: noto as IconifyJSON },
+  fluentEmojiFlat: { title: fluentEmojiFlatDefault, icons: fluentEmojiFlat as IconifyJSON },
+  emojione: { title: emojioneDefault, icons: emojione as IconifyJSON },
+  streamline: { title: streamlineDefault, icons: streamline as IconifyJSON },
+  flag: { title: flagDefault, icons: flag as IconifyJSON },
 }
 
 onMounted(() => {
@@ -49,9 +49,22 @@ onMounted(() => {
       </el-button>
       <el-input v-model="key"></el-input>
     </div>
-    <el-tabs v-model="tabs.active">
-      <el-tab-pane v-for="(_, name) in iconMap" :label="name" :name="name" :key="name"> </el-tab-pane>
+    <el-tabs class="emoji-tabs" v-model="tabs.active">
+      <el-tab-pane v-for="(item, name) in iconMap" :label="name" :name="name" :key="name">
+        <template #label>
+          <el-button>
+            <component class="text-20px" :is="item.title"></component>
+          </el-button>
+        </template>
+      </el-tab-pane>
     </el-tabs>
-    <SvgPanel :icon-map="iconMap[tabs.active]" @change="emit('update:modelValue', $event)"></SvgPanel>
+    <SvgPanel :icon-map="iconMap[tabs.active].icons" @change="emit('update:modelValue', $event)"></SvgPanel>
   </div>
 </template>
+<style lang="scss" scoped>
+.emoji-tabs.el-tabs {
+  :deep(.el-tabs__item) {
+    padding: 0 5px;
+  }
+}
+</style>

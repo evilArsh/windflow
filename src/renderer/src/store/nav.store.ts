@@ -5,10 +5,11 @@ import useI18nWatcher from "@renderer/usable/useI18nWatcher"
 
 import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
+const SAVE_KEY = "nav"
 /**
  * 侧边菜单数据
  */
-export default defineStore("nav-data", () => {
+export default defineStore(SAVE_KEY, () => {
   const { t } = useI18n()
   const iconStore = useIconStore()
   const defaultRoute = ref("/main/chat")

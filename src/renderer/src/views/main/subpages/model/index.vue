@@ -31,9 +31,11 @@ function onCardClick(name: ProviderName) {
   current.value = name
 }
 async function init() {
-  await nextTick()
-  current.value = providerConfigs.value.length > 0 ? providerConfigs.value[0].name : undefined
+  if (!current.value) {
+    current.value = providerConfigs.value.length > 0 ? providerConfigs.value[0].name : undefined
+  }
 }
+watch(providerConfigs, init)
 onMounted(init)
 </script>
 <template>

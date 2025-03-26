@@ -14,6 +14,7 @@ const props = defineProps<{
 const modelStore = useModelStore()
 const providerStore = useProviderStore()
 const { models } = storeToRefs(modelStore)
+const { providerConfigs } = storeToRefs(providerStore)
 
 const scopeModels = computed<ModelMeta[]>(() =>
   models.value.filter(v => data.value && v.providerName === data.value.name)
@@ -77,7 +78,7 @@ async function onRefreshModel(done: CallBackFn) {
       const provider = providerStore.providerManager.getLLMProvider(data.value.name)
       if (provider) {
         const models = await provider.fetchModels(data.value)
-        modelStore.refresh(models)
+        await modelStore.refresh(models)
       }
     }
     done()
@@ -86,12 +87,22 @@ async function onRefreshModel(done: CallBackFn) {
     ElMessage.error(errorToText(e))
   }
 }
+
 watch(
   () => props.providerName,
   name => {
-    data.value = providerStore.find(name)
+    data.value = providerConfigs.value.find(v => v.name === name)
   },
   { immediate: true }
+)
+
+watch(
+  () => data.value,
+  val => {
+    // 保存到indexedDB
+    val && providerStore.dbUpdate(val)
+  },
+  { deep: true }
 )
 </script>
 <template>

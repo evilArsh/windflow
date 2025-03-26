@@ -1,37 +1,38 @@
-import { ProviderMeta, ProviderName } from "@renderer/types"
+import { ProviderMeta } from "@renderer/types"
 import { defineStore } from "pinia"
-import useDataStorage from "@renderer/usable/useDataStorage"
 import { providerDefault } from "./default/provider.default"
 import { ProviderManager } from "@renderer/lib/provider"
+import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
 import { useDebounceFn } from "@vueuse/core"
-
-export default defineStore("provider", () => {
-  const { save, get } = useDataStorage()
-  const SAVE_KEY = "chat.providers"
+export default defineStore(storeKey.provider, () => {
+  const { getAll, add, put } = useDatabase()
   const config = reactive<ProviderMeta[]>([])
   const manager = markRaw<ProviderManager>(new ProviderManager())
 
-  function find(name?: ProviderName): ProviderMeta | undefined {
-    if (!name) return
-    return config.find(v => v.name === name)
-  }
+  const dbUpdate = useDebounceFn(async (data: ProviderMeta) => await put("provider", data.name, toRaw(data)), 500, {
+    maxWait: 1000,
+  })
 
-  const init = async () => {
-    const data = await get<ProviderMeta[]>(SAVE_KEY)
-    if (data) {
-      config.push(...data)
-    } else {
-      config.push(...providerDefault())
+  const fetch = async () => {
+    try {
+      const data = await getAll<ProviderMeta>("provider")
+      if (data.length > 0) {
+        config.push(...data)
+      } else {
+        const data = providerDefault()
+        config.push(...data)
+        for (const item of data) {
+          await add("provider", item)
+        }
+      }
+    } catch (error) {
+      console.error(`[fetch providers] ${(error as Error).message}`)
     }
   }
-  watch(
-    config,
-    useDebounceFn((val: ProviderMeta[]) => save<ProviderMeta[]>(SAVE_KEY, toRaw(val)), 300),
-    { deep: true }
-  )
-  init()
+
+  fetch()
   return {
-    find,
+    dbUpdate,
     providerConfigs: config,
     providerManager: manager,
   }

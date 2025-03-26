@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ModelMeta, ProviderName } from "@renderer/types"
+import useModelStore from "@renderer/store/model.store"
 const props = defineProps<{
   providerName: ProviderName
   data: ModelMeta[]
 }>()
 const { t } = useI18n()
+const modelStore = useModelStore()
 const handledData = computed<Record<string, ModelMeta[]>>(() => {
   return props.data.reduce((acc, cur) => {
     if (acc[cur.subProviderName]) {
@@ -15,6 +17,10 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
     return acc
   }, {})
 })
+
+const onModelChange = (row: ModelMeta) => {
+  modelStore.dbUpdate(row)
+}
 </script>
 <template>
   <el-timeline>
@@ -32,7 +38,7 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
           </el-table-column>
           <el-table-column label="使用">
             <template #default="{ row }">
-              <el-switch v-model="row.active" />
+              <el-switch v-model="row.active" @change="onModelChange(row)" />
             </template>
           </el-table-column>
         </el-table>

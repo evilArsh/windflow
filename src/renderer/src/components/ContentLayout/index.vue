@@ -7,14 +7,12 @@ const { handlerHeight = 0 } = defineProps<{
   handlerHeight?: string | number
 }>()
 
-const scrollView = shallowRef<HTMLElement | null>()
-const scrollViewParent = shallowRef<HTMLElement | null>()
+const scrollRef = useTemplateRef("scroll")
 const behavior = ref<ScrollBehavior>("smooth")
-const { height } = useElementBounding(scrollView)
-const { x, y, isScrolling, arrivedState } = useScroll(scrollViewParent, {
+const { height } = useElementBounding(() => scrollRef.value?.wrapRef?.firstChild as HTMLElement)
+const { x, y, isScrolling, arrivedState } = useScroll(() => scrollRef.value?.wrapRef, {
   behavior: () => behavior.value,
 })
-
 const scrollToBottom = (be: ScrollBehavior) => {
   behavior.value = be
   setTimeout(() => {
@@ -23,11 +21,6 @@ const scrollToBottom = (be: ScrollBehavior) => {
 }
 watchEffect(() => {
   emit("scroll", x.value, y.value)
-})
-onMounted(() => {
-  const el = document.getElementById("scroll-view")
-  scrollView.value = el
-  scrollViewParent.value = el?.parentElement
 })
 defineExpose({
   scrollToBottom,
@@ -46,8 +39,8 @@ defineExpose({
       <slot name="header"></slot>
     </div>
     <div class="content">
-      <el-scrollbar id="scroll-view">
-        <div class="content--inner" ref="scroll">
+      <el-scrollbar ref="scroll" id="scroll-view">
+        <div class="content--inner">
           <slot></slot>
         </div>
       </el-scrollbar>

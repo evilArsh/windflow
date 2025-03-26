@@ -1,67 +1,68 @@
 <script lang="ts" setup>
-import useChatStore from "@renderer/store/chat.store"
 import { ChatTopic } from "@renderer/types"
 import type { FormInstance } from "element-plus"
 import ModelSelect from "../model/index.vue"
-import { cloneDeep } from "lodash-es"
-import { HttpStatusCode } from "axios"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
-// import ds from "@renderer/assets/images/provider/deepseek.svg"
+import { cloneDeep } from "lodash-es"
 const { t } = useI18n()
-const charStore = useChatStore()
+const props = defineProps<{
+  modelValue?: ChatTopic
+}>()
 const emit = defineEmits<{
-  (e: "create", id: string): void
+  (e: "change", data: ChatTopic): void
+  (e: "update:modelValue", value: ChatTopic): void
 }>()
 
-const form = reactive<ChatTopic>({
+const form = ref<ChatTopic>({
   id: "",
   label: "新的聊天",
   icon: "",
   content: "",
   modelIds: [],
   children: [],
-  chatMessages: [
-    {
-      content: {
-        role: "system",
-        content: "you are a helpful assistant",
-      },
-      id: uniqueId(),
-      status: HttpStatusCode.Ok,
-      modelId: "",
-      time: formatSecond(new Date()),
-    },
-  ],
 })
+
+watch(
+  () => props.modelValue,
+  v => {
+    if (v) form.value = cloneDeep(v)
+  },
+  { immediate: true }
+)
+
 const formRef = useTemplateRef<FormInstance>("formRef")
 
 const pop = reactive({
   show: false,
   toggle: markRaw(() => {
     pop.show = !pop.show
-    if (pop.show) {
-      form.id = uniqueId()
-    } else {
+    if (!pop.show) {
       formRef.value?.resetFields()
     }
   }),
 })
 
-const onAddNewChat = () => {
-  charStore.add(cloneDeep(toRaw(form)))
-  emit("create", form.id)
+const onConfirm = () => {
+  if (props.modelValue) {
+    emit("update:modelValue", form.value)
+  } else {
+    form.value.id = uniqueId()
+    emit("change", form.value)
+  }
   pop.toggle()
 }
 </script>
 <template>
   <el-popover placement="right" :width="600" :visible="pop.show">
     <template #reference>
-      <el-button @click="pop.toggle">
-        <template #icon>
-          <i class="text-1.4rem i-ep:plus"></i>
-        </template>
-        <el-text>{{ t("chat.addChat") }}</el-text>
-      </el-button>
+      <slot :pop>
+        <el-button @click="pop.toggle">
+          <template #icon>
+            <i class="text-1.4rem i-ep:plus"></i>
+          </template>
+          <el-text>{{ t("chat.addChat") }}</el-text>
+        </el-button>
+      </slot>
     </template>
     <template #default>
       <el-form ref="formRef" :model="form">
@@ -80,7 +81,7 @@ const onAddNewChat = () => {
       </el-form>
       <el-form-item>
         <div class="flex flex-1">
-          <el-button size="small" type="primary" @click="onAddNewChat"> 创建 </el-button>
+          <el-button size="small" type="primary" @click="onConfirm"> 确定 </el-button>
           <el-button size="small" @click="pop.toggle"> 取消 </el-button>
         </div>
       </el-form-item>

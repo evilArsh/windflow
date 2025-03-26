@@ -132,39 +132,41 @@ export type ModelMeta = {
   active?: boolean
   children?: ModelMeta[]
 }
-export type ChatTopicMessage = {
-  /**
-   * @description 请求是否完成，不管是否成功
-   */
-  finish?: boolean
+export type ChatMessage = {
   /**
    * @description 消息ID
    */
   id: string
-  /**
-   * @description 消息状态码
-   */
-  status: HttpStatusCode
-  /**
-   * @description 消息错误信息
-   */
-  msg?: string
-  /**
-   * @description 是否是推理对话
-   */
-  reasoning?: boolean
-  /**
-   * @description 消息内容,包含用户消息和模型返回的消息
-   */
-  content: LLMChatMessage
-  /**
-   * @description 当前消息使用的模型配置id
-   */
-  modelId: string
-  /**
-   * @description 消息时间
-   */
-  time: string
+  data: Array<{
+    /**
+     * @description 请求是否完成，不管是否成功
+     */
+    finish?: boolean
+    /**
+     * @description 消息状态码
+     */
+    status: HttpStatusCode
+    /**
+     * @description 消息错误信息
+     */
+    msg?: string
+    /**
+     * @description 是否是推理对话
+     */
+    reasoning?: boolean
+    /**
+     * @description 消息内容,包含用户消息和模型返回的消息
+     */
+    content: LLMChatMessage
+    /**
+     * @description 当前消息使用的模型配置id
+     */
+    modelId: string
+    /**
+     * @description 消息时间
+     */
+    time: string
+  }>
 }
 export type ChatTopic = {
   /**
@@ -198,7 +200,7 @@ export type ChatTopic = {
   /**
    * @description 会话聊天记录
    */
-  chatMessages: ChatTopicMessage[]
+  chatMessageId?: string
 }
 
 export interface LLMChatResponseHandler {

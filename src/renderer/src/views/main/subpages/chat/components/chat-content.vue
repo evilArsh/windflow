@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { ChatTopic, ChatTopicMessage, LLMProvider } from "@renderer/types"
+import { ChatTopic, ChatMessage, LLMProvider } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider.store"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
@@ -39,7 +39,7 @@ const send = async () => {
     ElMessage.warning("请选择模型")
     return
   }
-  const user: ChatTopicMessage = {
+  const user: ChatMessage = {
     id: uniqueId(),
     status: 200,
     time: formatSecond(new Date()),
@@ -66,7 +66,7 @@ const send = async () => {
           continue
         }
       }
-      const message = reactive<ChatTopicMessage>({
+      const message = reactive<ChatMessage>({
         id: uniqueId(),
         finish: false,
         status: 200,
