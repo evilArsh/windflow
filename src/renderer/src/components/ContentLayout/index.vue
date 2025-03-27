@@ -1,11 +1,15 @@
 <script lang="ts" setup>
 import { useElementBounding, useScroll } from "@vueuse/core"
+
+import { CSSProperties } from "@renderer/lib/shared/types"
 const emit = defineEmits<{
   (e: "scroll", x: number, y: number): void
 }>()
 const { handlerHeight = 0 } = defineProps<{
   handlerHeight?: string | number
 }>()
+
+const scaleRef = useTemplateRef("scale")
 
 const scrollRef = useTemplateRef("scroll")
 const behavior = ref<ScrollBehavior>("smooth")
@@ -19,9 +23,18 @@ const scrollToBottom = (be: ScrollBehavior) => {
     y.value = height.value * 2 // gurantee
   }, 0)
 }
+
+const handlerStyle = ref<CSSProperties>({
+  height: px(toNumber(handlerHeight)),
+})
+const onAfterScale = () => {
+  scrollRef.value?.update()
+}
+
 watchEffect(() => {
   emit("scroll", x.value, y.value)
 })
+
 defineExpose({
   scrollToBottom,
   isScrolling: () => !!isScrolling.value,
@@ -45,7 +58,8 @@ defineExpose({
         </div>
       </el-scrollbar>
     </div>
-    <div v-if="$slots.handler" class="content-handler" :style="{ height: handlerHeight }">
+    <div v-if="$slots.handler" ref="scale" class="content-handler" :style="handlerStyle">
+      <Resize v-model="handlerStyle" @after-scale="onAfterScale" size="8px" direction="t" :target="scaleRef" />
       <slot name="handler"></slot>
     </div>
   </div>
@@ -82,12 +96,14 @@ defineExpose({
   }
   .content-handler {
     flex-shrink: 0;
+    position: relative;
     display: flex;
     background-color: var(--content-handler-bg-color);
     padding: 1rem;
     margin: 1rem;
     border-radius: 1rem;
     border: solid 1px var(--content-handler-border-color);
+    min-height: 15rem;
   }
 }
 </style>

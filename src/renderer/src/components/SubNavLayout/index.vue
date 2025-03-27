@@ -1,8 +1,15 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const scaleRef = useTemplateRef("scale")
+
+const handlerStyle = ref<CSSProperties>({
+  width: "300px",
+})
+</script>
 <template>
   <div class="subnav-container">
-    <div class="subnav-provider">
+    <div class="subnav-provider" ref="scale" :style="handlerStyle">
       <slot name="submenu"></slot>
+      <Resize v-model="handlerStyle" size="8px" direction="r" :target="scaleRef" />
     </div>
     <div class="subnav-content">
       <slot name="content"></slot>
@@ -23,12 +30,13 @@
   background-color: var(--subnav-container-bg-color);
   .subnav-provider {
     overflow: hidden;
-    width: 30rem;
+    min-width: 20rem;
     background-color: var(--subnav-provider-bg-color);
     display: flex;
     flex-direction: column;
     padding: var(--subnav-provider-padding);
     border-right: solid 1px var(--subnav-provider-border-color);
+    position: relative;
   }
   .subnav-content {
     flex-shrink: 0;

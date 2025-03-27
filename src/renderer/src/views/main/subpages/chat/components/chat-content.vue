@@ -157,7 +157,7 @@ const { sendShortcut } = useShortcut({
       </div>
 
       <template #handler>
-        <div class="chat-input-container">
+        <div class="chat-input-container" ref="scale">
           <div class="chat-input-header">
             <ModelTool v-model="topic.modelIds" />
           </div>

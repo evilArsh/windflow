@@ -1,4 +1,4 @@
-import type { Ref, ShallowRef } from "vue"
+import type { Ref } from "vue"
 import { type ScaleConfig } from "./types"
 import { toNumber } from "@renderer/lib/shared/styles"
 import useEvent from "@renderer/usable/useEvent"
@@ -15,7 +15,7 @@ export enum ScaleEv {
   SCALING = "scaling",
   AFTER_SCALE = "after_scale",
 }
-export default (data: { config: Ref<ScaleConfig>; targetEle: Readonly<ShallowRef<HTMLDivElement | null>> }) => {
+export default (data: { config: Ref<ScaleConfig>; targetEle: Readonly<Ref<HTMLElement | null | undefined>> }) => {
   const containerStyle = toRef(data.config.value, "containerStyle")
   const { set: setContainer, sets: setContainers } = useStyleHandler(containerStyle)
 
@@ -124,7 +124,7 @@ export default (data: { config: Ref<ScaleConfig>; targetEle: Readonly<ShallowRef
   function dispose() {
     ev.removeAllListeners()
   }
-  function getTarget(): HTMLElement | null {
+  function getTarget(): HTMLElement | null | undefined {
     return data.targetEle.value
   }
   return {

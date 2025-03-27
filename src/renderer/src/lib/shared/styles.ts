@@ -168,5 +168,10 @@ export function toNumber(value: string | number | undefined): number {
   if (typeof value === "undefined") {
     return 0
   }
-  return isNumber(value) ? value : parseFloat(value)
+  if (isNumber(value)) {
+    return value
+  } else {
+    const num = parseFloat(value)
+    return isNaN(num) ? 0 : num
+  }
 }
