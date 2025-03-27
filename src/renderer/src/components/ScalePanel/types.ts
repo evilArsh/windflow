@@ -88,6 +88,14 @@ export interface ScaleConfig {
    * 头部样式
    */
   headerStyle?: ScaleStyleProps
+  /**
+   * 是否显示遮罩层
+   */
+  mask?: boolean
+  /**
+   * 遮罩层样式
+   */
+  maskStyle?: ScaleStyleProps
 }
 export interface ScaleProps {
   modelValue: ScaleConfig

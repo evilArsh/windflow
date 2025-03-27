@@ -15,14 +15,30 @@ export default (topic: Ref<ChatTopic>) => {
 
   const newMessage = async () => {
     message.value = chatMessageDefault()
+    refreshPrompt()
     chatMessage.value[message.value.id] = message.value
     topic.value.chatMessageId = message.value.id
     await chatStore.dbAddChatMessage(message.value)
   }
 
+  // 刷新prompt
+  const refreshPrompt = () => {
+    if (message.value.data.length == 0) {
+      message.value.data.push({
+        id: uniqueId(),
+        finish: true,
+        status: 200,
+        time: formatSecond(new Date()),
+        content: { role: "system", content: "" },
+        modelId: "",
+      })
+    }
+    message.value.data[0].content.content = topic.value.prompt
+  }
   watch(
     topic,
     async () => {
+      // 筛选可用modelId
       topic.value.modelIds = topic.value.modelIds.filter(val => {
         return models.value.find(v => v.id === val)?.active
       })
@@ -30,11 +46,13 @@ export default (topic: Ref<ChatTopic>) => {
         const cached = chatMessage.value[topic.value.chatMessageId]
         if (cached) {
           message.value = cached
+          refreshPrompt()
         } else {
           const data = await chatStore.dbFindChatMessage(topic.value.chatMessageId)
           if (data) {
             chatMessage.value[topic.value.chatMessageId] = data
             message.value = data
+            refreshPrompt()
           } else {
             await newMessage()
           }

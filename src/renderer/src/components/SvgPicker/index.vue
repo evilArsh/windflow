@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import openmoji from "@iconify/json/json/openmoji.json"
-import noto from "@iconify/json/json/noto.json"
+// import noto from "@iconify/json/json/noto.json"
 import fluentEmojiFlat from "@iconify/json/json/fluent-emoji-flat.json"
 import emojione from "@iconify/json/json/emojione.json"
 import streamline from "@iconify/json/json/streamline-emojis.json"
@@ -9,7 +9,7 @@ import type { IconifyJSON } from "@iconify/types"
 import SvgPanel from "./panel.vue"
 import Svg from "@renderer/components/Svg/index.vue"
 import openmojiDefault from "~icons/openmoji/1st-place-medal"
-import notoDefault from "~icons/noto/1st-place-medal"
+// import notoDefault from "~icons/noto/1st-place-medal"
 import fluentEmojiFlatDefault from "~icons/fluent-emoji-flat/basketball"
 import emojioneDefault from "~icons/emojione/flushed-face"
 import streamlineDefault from "~icons/streamline-emojis/boar-1"
@@ -30,7 +30,7 @@ const tabs = reactive({
 
 const iconMap: Record<string, { title: Component; icons: IconifyJSON }> = {
   openmoji: { title: openmojiDefault, icons: openmoji as IconifyJSON },
-  noto: { title: notoDefault, icons: noto as IconifyJSON },
+  // noto: { title: notoDefault, icons: noto as IconifyJSON },
   fluentEmojiFlat: { title: fluentEmojiFlatDefault, icons: fluentEmojiFlat as IconifyJSON },
   emojione: { title: emojioneDefault, icons: emojione as IconifyJSON },
   streamline: { title: streamlineDefault, icons: streamline as IconifyJSON },

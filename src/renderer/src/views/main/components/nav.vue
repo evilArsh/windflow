@@ -35,7 +35,7 @@ onMounted(() => {
                   <i class="nav-menu-item-icon">
                     <component :is="loadIcon(item.icon)"></component>
                   </i>
-                  <el-text class="nav-menu-item-text">{{ item.label }}</el-text>
+                  <el-text style="--el-text-font-size: 1.2rem">{{ item.label }}</el-text>
                 </div>
               </Hover>
             </div>

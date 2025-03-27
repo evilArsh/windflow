@@ -19,6 +19,9 @@
     <div ref="scales" class="scaleContent" :style="useContentStyle">
       <slot></slot>
     </div>
+    <Teleport to="body" :disabled="!config.mask">
+      <div class="dragMask" :style="useMaskStyle" @click="emit('maskClick')"></div>
+    </Teleport>
   </div>
 </template>
 <script lang="ts" setup>
@@ -36,6 +39,7 @@ const emit = defineEmits<{
   afterScale: [scaleEl: HTMLElement]
   scaling: [scaleEl: HTMLElement]
   mounted: [data: BaseMountedParams]
+  maskClick: []
   "update:modelValue": [data: ScaleConfig]
 }>()
 const props = defineProps<ScalePropsBase>()
@@ -85,6 +89,7 @@ const useContainerTranslate = computed<CSSProperties>(() => {
     ${px(parseFloat((translateY + toNumber(height) / 2).toFixed(2)))}`,
   }
 })
+const useMaskStyle = computed<CSSProperties>(() => values(config.value.maskStyle))
 const { setTarget, onMovableChange, onNormalChange } = useStatusListener(
   config,
   move,
@@ -168,5 +173,13 @@ onBeforeUnmount(() => {
     flex: 1;
     overflow: auto;
   }
+}
+.dragMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
 }
 </style>

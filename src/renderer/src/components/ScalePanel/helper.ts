@@ -233,6 +233,10 @@ export function defaultProps(mergeProps?: ScaleConfig): Required<ScaleConfig> {
       zIndex: z.FIXED,
       position: "fixed",
     },
+    mask: false,
+    maskStyle: {
+      backgroundColor: "rgba(0, 0, 0, 0.05)",
+    },
   }
   return mergeProps ? merge(dst, mergeProps) : dst
 }

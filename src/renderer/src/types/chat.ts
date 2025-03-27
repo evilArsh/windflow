@@ -190,6 +190,10 @@ export type ChatTopic = {
    */
   content: string
   /**
+   * @description 当前会话提示词
+   */
+  prompt: string
+  /**
    * @description 当前会话选择的模型配置id
    */
   modelIds: string[]

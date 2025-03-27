@@ -9,8 +9,8 @@ export const chatMessageDefault = (): ChatMessage => ({
       status: 200,
       time: formatSecond(new Date()),
       content: {
-        role: "system",
-        content: "you are a helpful assistant",
+        role: "",
+        content: "",
       },
       modelId: "",
     },
