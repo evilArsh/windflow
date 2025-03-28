@@ -1,11 +1,8 @@
 import { ChatTopic, ChatMessage } from "@renderer/types"
-import useModelStore from "@renderer/store/model.store"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
 export default (topic: Ref<ChatTopic>) => {
-  const modelStore = useModelStore()
-  const { models } = storeToRefs(modelStore)
   const chatStore = useChatStore()
   const { chatMessage } = storeToRefs(chatStore)
   const message = ref<ChatMessage>({
@@ -15,7 +12,8 @@ export default (topic: Ref<ChatTopic>) => {
 
   const newMessage = async () => {
     message.value = chatMessageDefault()
-    refreshPrompt()
+    message.value.data[0].content.content = topic.value.prompt
+    message.value.data[0].content.role = "system"
     chatMessage.value[message.value.id] = message.value
     topic.value.chatMessageId = message.value.id
     await chatStore.dbAddChatMessage(message.value)
@@ -29,39 +27,43 @@ export default (topic: Ref<ChatTopic>) => {
         finish: true,
         status: 200,
         time: formatSecond(new Date()),
-        content: { role: "system", content: "" },
+        content: { role: "system", content: topic.value.prompt },
         modelId: "",
       })
     }
-    message.value.data[0].content.content = topic.value.prompt
+    const system = message.value.data.find(item => item.content.role == "system")
+    if (system) {
+      system.content.content = topic.value.prompt
+    }
   }
+
   watch(
     topic,
-    async () => {
-      // 筛选可用modelId
-      topic.value.modelIds = topic.value.modelIds.filter(val => {
-        return models.value.find(v => v.id === val)?.active
-      })
-      if (topic.value.chatMessageId) {
-        const cached = chatMessage.value[topic.value.chatMessageId]
-        if (cached) {
-          message.value = cached
-          refreshPrompt()
-        } else {
-          const data = await chatStore.dbFindChatMessage(topic.value.chatMessageId)
-          if (data) {
-            chatMessage.value[topic.value.chatMessageId] = data
-            message.value = data
-            refreshPrompt()
+    async (val, oldVal) => {
+      if (val === oldVal) {
+        refreshPrompt()
+      }
+      // 切换聊天时触发
+      else {
+        if (val.chatMessageId) {
+          const cached = chatMessage.value[val.chatMessageId]
+          if (cached) {
+            message.value = cached
           } else {
-            await newMessage()
+            const data = await chatStore.dbFindChatMessage(val.chatMessageId)
+            if (data) {
+              chatMessage.value[val.chatMessageId] = data
+              message.value = data
+            } else {
+              await newMessage()
+            }
           }
+        } else {
+          await newMessage()
         }
-      } else {
-        await newMessage()
       }
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   )
 
   watch(

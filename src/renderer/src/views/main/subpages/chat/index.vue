@@ -7,12 +7,14 @@ import { storeToRefs } from "pinia"
 import EditTopic from "./components/toolbox/editTopic/index.vue"
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/toolbox/menuHandle/index.vue"
+import useModelStore from "@renderer/store/model.store"
 const { t } = useI18n()
 const keyword = ref<string>("") // 搜索关键字
 const currentTopic = ref<ChatTopic>() // 当前选中的聊天
 const charStore = useChatStore()
 const { topicList } = storeToRefs(charStore)
-
+const modelStore = useModelStore()
+const { models } = storeToRefs(modelStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
 const scrollRef = useTemplateRef("scroll")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
@@ -75,7 +77,7 @@ const dlg = reactive({
   }),
   // 新增聊天
   openEditTopic: markRaw(() => {
-    currentTopic.value = {
+    const newTopic: ChatTopic = {
       id: uniqueId(),
       label: "新的聊天",
       icon: "",
@@ -84,8 +86,9 @@ const dlg = reactive({
       children: [],
       prompt: "you are a helpful assistant",
     }
-    topicList.value.push(currentTopic.value)
-    charStore.dbAddChatTopic(currentTopic.value)
+    charStore.dbAddChatTopic(newTopic)
+    topicList.value.push(newTopic)
+    currentTopic.value = newTopic
     setTimeout(() => {
       scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight)
     }, 0)
@@ -107,6 +110,10 @@ const tree = reactive({
   },
   // 节点点击
   onNodeClick: markRaw((data: ChatTopic) => {
+    // 筛选可用modelId
+    data.modelIds = data.modelIds.filter(val => {
+      return models.value.find(v => v.id === val)?.active
+    })
     currentTopic.value = data
   }),
   // 鼠标移动过的节点
