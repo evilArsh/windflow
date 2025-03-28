@@ -3,8 +3,9 @@ import { ChatTopic, ChatTopicTree } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
-import type { TreeInstance } from "element-plus"
+import type { TreeData, TreeInstance } from "element-plus"
 import { cloneDeep } from "lodash-es"
+import type Node from "element-plus/es/components/tree/src/model/node.mjs"
 function newTopic(parentId: string): ChatTopic {
   return {
     id: uniqueId(),
@@ -22,6 +23,7 @@ function cloneTopic(topic: ChatTopic): ChatTopic {
     ...topic,
     children: [],
     id: uniqueId(),
+    isLeaf: true,
     label: "新的聊天",
   })
 }
@@ -110,6 +112,7 @@ export default (
             id: newTopic.id,
             node: newTopic,
             children: [],
+            isLeaf: true,
           }
           currentTopic.value = newNode // 选中聊天
           treeRef.value?.append(newNode, selectedTopic.value)
@@ -181,6 +184,27 @@ export default (
     }),
     // 鼠标移动过的节点
     currentHover: "",
+    onLoad: markRaw(async (node: Node, resolve: (data: TreeData) => void, reject: () => void) => {
+      const data = await chatStore.dbFindChildChatTopic(Array.isArray(node.data) ? undefined : (node.data.id as string))
+      if (data) {
+        for (const item of data) {
+          const childCount = await chatStore.dbChildCount(item.id)
+          item.isLeaf = childCount == 0
+        }
+        resolve(
+          data.map(item => {
+            return {
+              id: item.id,
+              node: item,
+              children: [],
+              isLeaf: item.isLeaf,
+            }
+          })
+        )
+      } else {
+        reject()
+      }
+    }),
     onMouseEnter: markRaw((data: ChatTopicTree) => {
       tree.currentHover = data.id
     }),
@@ -190,5 +214,10 @@ export default (
       }
     }),
   })
-  return { dlg, tree, currentTopic, selectedTopic }
+  return {
+    dlg,
+    tree,
+    currentTopic,
+    selectedTopic,
+  }
 }

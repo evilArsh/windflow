@@ -23,6 +23,51 @@ export default defineStore(storeKey.chat_topic, () => {
   )
   const dbFindChatMessage = async (id: string) => await get<ChatMessage>("chat_message", id)
   /**
+   * @description 获取子节点数量
+   */
+  const dbChildCount = async (parentId: string) =>
+    (await request<number>(async db => {
+      return wrapRequest<number>(
+        db
+          .transaction(storeKey.chat_topic, "readonly")
+          .objectStore("chat_topic")
+          .index(indexKey.chatTopic_parentId_idx)
+          .count(IDBKeyRange.only(parentId))
+      )
+    })) ?? 0
+  const dbFindChildChatTopic = async (parentId: string | undefined) => {
+    // 初始加载
+    if (!parentId) {
+      const total = await count("chat_topic")
+      if (total > 0) {
+        return await request<ChatTopic[]>(async db => {
+          return wrapRequest<ChatTopic[]>(
+            db
+              .transaction(storeKey.chat_topic, "readonly")
+              .objectStore("chat_topic")
+              .index(indexKey.chatTopic_parentId_idx)
+              .getAll(IDBKeyRange.only(""))
+          )
+        })
+      } else {
+        const data = chatTopicDefault()
+        for (const item of data) {
+          await dbAdd("chat_topic", item)
+        }
+        return data
+      }
+    }
+    return await request<ChatTopic[]>(async db => {
+      return wrapRequest<ChatTopic[]>(
+        db
+          .transaction(storeKey.chat_topic, "readonly")
+          .objectStore("chat_topic")
+          .index(indexKey.chatTopic_parentId_idx)
+          .getAll(IDBKeyRange.only(parentId))
+      )
+    })
+  }
+  /**
    * @description 删除对应的聊天组和聊天消息
    */
   const dbDelChatTopic = async (data: ChatTopic) =>
@@ -40,43 +85,44 @@ export default defineStore(storeKey.chat_topic, () => {
       }
       return 1
     })
-  const fetch = async () => {
-    try {
-      const total = await count("chat_topic")
-      if (total > 0) {
-        const data = await request<ChatTopic[]>(async db => {
-          return wrapRequest<ChatTopic[]>(
-            db
-              .transaction(storeKey.chat_topic, "readonly")
-              .objectStore("chat_topic")
-              .index(indexKey.chatTopic_parentId_idx)
-              .getAll(IDBKeyRange.only(""))
-          )
-        })
-        if (Array.isArray(data)) {
-          topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
-        }
-      } else {
-        const data = chatTopicDefault()
-        topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
-        for (const item of data) {
-          await dbAdd("chat_topic", item)
-        }
-      }
-    } catch (error) {
-      console.error(`[fetch chat topic] ${(error as Error).message}`)
-    }
-  }
-
-  fetch()
+  // const fetch = async () => {
+  //   try {
+  //     const total = await count("chat_topic")
+  //     if (total > 0) {
+  //       const data = await request<ChatTopic[]>(async db => {
+  //         return wrapRequest<ChatTopic[]>(
+  //           db
+  //             .transaction(storeKey.chat_topic, "readonly")
+  //             .objectStore("chat_topic")
+  //             .index(indexKey.chatTopic_parentId_idx)
+  //             .getAll(IDBKeyRange.only(""))
+  //         )
+  //       })
+  //       if (Array.isArray(data)) {
+  //         topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
+  //       }
+  //     } else {
+  //       const data = chatTopicDefault()
+  //       topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
+  //       for (const item of data) {
+  //         await dbAdd("chat_topic", item)
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(`[fetch chat topic] ${(error as Error).message}`)
+  //   }
+  // }
+  // fetch()
   return {
     topicList,
+    chatMessage,
     dbUpdateChatTopic,
     dbAddChatTopic,
     dbFindChatMessage,
     dbAddChatMessage,
     dbUpdateChatMessage,
-    chatMessage,
     dbDelChatTopic,
+    dbFindChildChatTopic,
+    dbChildCount,
   }
 })

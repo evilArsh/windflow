@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import { ChatTopicTree } from "@renderer/types"
-import ChatContent from "./components/chat-content.vue"
+import ChatContent from "./components/chatContent/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
-import EditTopic from "./components/toolbox/editTopic/index.vue"
+import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
-import MenuHandle from "./components/toolbox/menuHandle/index.vue"
+import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "./usable/useMenu"
 const { t } = useI18n()
 const keyword = ref<string>("") // 搜索关键字
@@ -61,10 +61,13 @@ onBeforeUnmount(() => {
         <el-scrollbar ref="scroll">
           <el-tree
             ref="treeRef"
+            :expand-on-click-node="false"
+            lazy
             highlight-current
             :current-node-key="currentTopic?.id"
             @node-click="tree.onNodeClick"
             :data="topicList"
+            :load="tree.onLoad"
             node-key="id"
             :props="tree.props">
             <template #default="{ data }: { data: ChatTopicTree }">

@@ -213,11 +213,16 @@ export type ChatTopic = {
    * @description 会话聊天记录
    */
   chatMessageId?: string
+  /**
+   * @description 是否是叶子节点，优化树结构
+   */
+  isLeaf?: boolean
 }
 
 export type ChatTopicTree = {
   id: string
   node: ChatTopic
+  isLeaf?: boolean
   children: ChatTopicTree[]
 }
 
