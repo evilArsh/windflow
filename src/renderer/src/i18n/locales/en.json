@@ -3,7 +3,9 @@
     "name": "Candy Box"
   },
   "chat": {
-    "addChat": "New Chat"
+    "addChat": "New Chat",
+    "addFailed": "add failed",
+    "deleteFailed": "delete failed"
   },
   "lang": {
     "en": "English",

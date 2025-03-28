@@ -4,6 +4,8 @@
   },
   "chat": {
     "addChat": "新的聊天",
+    "addFailed": "添加失败",
+    "deleteFailed": "删除失败",
     "editChat": "编辑",
     "search": "搜索"
   },

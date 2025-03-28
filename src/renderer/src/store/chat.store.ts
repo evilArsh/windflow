@@ -1,44 +1,64 @@
 import { defineStore } from "pinia"
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatMessage, ChatTopic, ChatTopicTree } from "@renderer/types"
 import { chatTopicDefault } from "./default/chat.default"
-import { useDebounceFn } from "@vueuse/core"
-import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
+import { useDebounceFn, useThrottleFn } from "@vueuse/core"
+import { indexKey, storeKey, useDatabase } from "@renderer/usable/useDatabase"
 export default defineStore(storeKey.chat_topic, () => {
-  const { getAll, add: dbAdd, put, get } = useDatabase()
+  const { add: dbAdd, put, get, request, wrapRequest, count } = useDatabase()
 
-  const topicList = reactive<ChatTopic[]>([]) // 聊天组列表
+  const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
   const chatMessage = reactive<Record<string, ChatMessage>>({}) // 聊天信息缓存
 
-  const dbUpdateChatTopic = useDebounceFn(
+  const dbUpdateChatTopic = useThrottleFn(
     async (data: ChatTopic) => await put("chat_topic", data.id, toRaw(data)),
     300,
-    { maxWait: 1000 }
+    true
   )
-
-  const dbAddChatTopic = useDebounceFn(async (data: ChatTopic) => await dbAdd("chat_topic", toRaw(data)), 300, {
-    maxWait: 1000,
-  })
-
-  const dbAddChatMessage = useDebounceFn(async (data: ChatMessage) => await dbAdd("chat_message", toRaw(data)), 300, {
-    maxWait: 1000,
-  })
-
+  const dbAddChatTopic = async (data: ChatTopic) => await dbAdd("chat_topic", toRaw(data))
+  const dbAddChatMessage = async (data: ChatMessage) => await dbAdd("chat_message", toRaw(data))
   const dbUpdateChatMessage = useDebounceFn(
     async (data: ChatMessage) => await put("chat_message", data.id, toRaw(data)),
     300,
     { maxWait: 1000 }
   )
-
   const dbFindChatMessage = async (id: string) => await get<ChatMessage>("chat_message", id)
-
+  /**
+   * @description 删除对应的聊天组和聊天消息
+   */
+  const dbDelChatTopic = async (data: ChatTopic) =>
+    await request(async db => {
+      const ts = db.transaction([storeKey.chat_message, storeKey.chat_topic], "readwrite")
+      const res = await wrapRequest(ts.objectStore(storeKey.chat_topic).delete(data.id))
+      if (res === null) {
+        return 0
+      }
+      if (data.chatMessageId) {
+        const res = await wrapRequest(ts.objectStore(storeKey.chat_message).delete(data.chatMessageId))
+        if (res === null) {
+          return 0
+        }
+      }
+      return 1
+    })
   const fetch = async () => {
     try {
-      const data = await getAll<ChatTopic>("chat_topic")
-      if (data.length > 0) {
-        topicList.push(...data)
+      const total = await count("chat_topic")
+      if (total > 0) {
+        const data = await request<ChatTopic[]>(async db => {
+          return wrapRequest<ChatTopic[]>(
+            db
+              .transaction(storeKey.chat_topic, "readonly")
+              .objectStore("chat_topic")
+              .index(indexKey.chatTopic_parentId_idx)
+              .getAll(IDBKeyRange.only(""))
+          )
+        })
+        if (Array.isArray(data)) {
+          topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
+        }
       } else {
         const data = chatTopicDefault()
-        topicList.push(...data)
+        topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
         for (const item of data) {
           await dbAdd("chat_topic", item)
         }
@@ -57,5 +77,6 @@ export default defineStore(storeKey.chat_topic, () => {
     dbAddChatMessage,
     dbUpdateChatMessage,
     chatMessage,
+    dbDelChatTopic,
   }
 })

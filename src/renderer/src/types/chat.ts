@@ -178,6 +178,10 @@ export type ChatTopic = {
    */
   id: string
   /**
+   * @description 父会话id
+   */
+  parentId: string
+  /**
    * @description 会话名称
    */
   label: string
@@ -198,17 +202,23 @@ export type ChatTopic = {
    */
   modelIds: string[]
   /**
-   * @description 会话子会话
-   */
-  children: ChatTopic[]
-  /**
    * @description 会话滚动位置
    */
   scrollY?: number
   /**
+   * @description 会话输入框高度
+   */
+  inputHeight?: number
+  /**
    * @description 会话聊天记录
    */
   chatMessageId?: string
+}
+
+export type ChatTopicTree = {
+  id: string
+  node: ChatTopic
+  children: ChatTopicTree[]
 }
 
 export interface LLMChatResponseHandler {
