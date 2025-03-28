@@ -15,9 +15,10 @@ function newTopic(parentId: string): ChatTopic {
     content: "",
     modelIds: [],
     prompt: "you are a helpful assistant",
+    isLeaf: true,
+    chatMessageId: "",
   }
 }
-
 function cloneTopic(topic: ChatTopic): ChatTopic {
   return cloneDeep({
     ...topic,
@@ -25,9 +26,17 @@ function cloneTopic(topic: ChatTopic): ChatTopic {
     id: uniqueId(),
     isLeaf: true,
     label: "新的聊天",
+    chatMessageId: "",
   })
 }
-
+function newChatTopicTree(topic: ChatTopic): ChatTopicTree {
+  return {
+    id: topic.id,
+    node: topic,
+    children: [],
+    isLeaf: true,
+  }
+}
 export default (
   scaleRef: Readonly<Ref<ScaleInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -108,12 +117,7 @@ export default (
           if (res != 1) {
             throw new Error(t("chat.addFailed"))
           }
-          const newNode: ChatTopicTree = {
-            id: newTopic.id,
-            node: newTopic,
-            children: [],
-            isLeaf: true,
-          }
+          const newNode: ChatTopicTree = newChatTopicTree(newTopic)
           currentTopic.value = newNode // 选中聊天
           treeRef.value?.append(newNode, selectedTopic.value)
           treeRef.value?.setCurrentKey(newNode.id)
@@ -145,16 +149,12 @@ export default (
     openEditTopic: markRaw(async (done: CallBackFn) => {
       try {
         const topic = newTopic("")
-        const newNode: ChatTopicTree = {
-          id: topic.id,
-          node: topic,
-          children: [],
-        }
-        currentTopic.value = newNode
         const res = await chatStore.dbAddChatTopic(topic)
         if (res != 1) {
           throw new Error(t("chat.addFailed"))
         }
+        const newNode: ChatTopicTree = newChatTopicTree(topic)
+        currentTopic.value = newNode
         topicList.value.push(newNode)
         setTimeout(() => scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight), 0)
         done()
