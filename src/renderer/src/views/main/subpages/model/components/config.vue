@@ -98,9 +98,11 @@ watch(
 
 watch(
   () => data.value,
-  val => {
-    // 保存到indexedDB
-    val && providerStore.dbUpdate(val)
+  (val, old) => {
+    if (val && val === old) {
+      // 保存到indexedDB
+      providerStore.dbUpdate(val)
+    }
   },
   { deep: true }
 )

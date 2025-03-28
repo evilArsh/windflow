@@ -15,11 +15,14 @@ export const storeKey = {
   chat_message: "chat_message",
 }
 
+export type StoreKey = keyof typeof storeKey
+
 export const indexKey = {
   model_providerName_idx: "model_providerName_idx",
   model_type_idx: "model_type_idx",
   model_active_idx: "model_active_idx",
   chatTopic_chatMessageId_idx: "chatTopic_chatMessageId_idx",
+  chatTopic_parentId_idx: "chatTopic_parentId_idx",
 }
 
 export const name = "db-candy-box"
@@ -39,47 +42,38 @@ export const useDatabase = () => {
     db.value = undefined
   }
 
-  async function add<K extends keyof typeof storeKey, T>(storeName: K, data: T) {
-    return new Promise<boolean>(resolve => {
+  async function add<T>(storeName: StoreKey, data: T) {
+    return new Promise<number>(resolve => {
       open().then(() => {
         if (!db.value) {
-          resolve(false)
+          resolve(0)
           return
         }
         const ts = db.value.transaction(storeName, "readwrite")
         const store = ts.objectStore(storeName)
         const req = store.add(data)
-        req.onsuccess = () => {
-          resolve(true)
-        }
-        req.onerror = () => {
-          resolve(false)
-        }
+        req.onsuccess = () => resolve(1)
+        req.onerror = () => resolve(0)
       })
     })
   }
 
-  async function del(storeName: keyof typeof storeKey, query: IDBValidKey | IDBKeyRange) {
-    return new Promise<boolean>(resolve => {
+  async function del(storeName: StoreKey, query: IDBValidKey | IDBKeyRange) {
+    return new Promise<number>(resolve => {
       open().then(() => {
         if (!db.value) {
-          resolve(false)
+          resolve(0)
           return
         }
         const ts = db.value.transaction(storeName, "readwrite")
         const store = ts.objectStore(storeName)
         const req = store.delete(query)
-        req.onsuccess = () => {
-          resolve(true)
-        }
-        req.onerror = () => {
-          resolve(false)
-        }
+        req.onsuccess = () => resolve(1)
+        req.onerror = () => resolve(0)
       })
     })
   }
-
-  async function get<T>(storeName: keyof typeof storeKey, query: IDBValidKey | IDBKeyRange) {
+  async function get<T>(storeName: StoreKey, query: IDBValidKey | IDBKeyRange) {
     return new Promise<T | null>(resolve => {
       open().then(() => {
         if (!db.value) {
@@ -99,11 +93,11 @@ export const useDatabase = () => {
     })
   }
 
-  async function put<K extends keyof typeof storeKey, T>(storeName: K, id: string, newData: T) {
-    return new Promise<boolean>(resolve => {
+  async function put<T>(storeName: StoreKey, id: string, newData: T) {
+    return new Promise<number>(resolve => {
       open().then(() => {
         if (!db.value) {
-          resolve(false)
+          resolve(0)
           return
         }
         const ts = db.value.transaction(storeName, "readwrite")
@@ -114,24 +108,20 @@ export const useDatabase = () => {
           if (oldData) {
             const data = { ...oldData, ...newData }
             const putReq = store.put(data)
-            putReq.onsuccess = () => {
-              resolve(true)
-            }
-            putReq.onerror = () => {
-              resolve(false)
-            }
+            putReq.onsuccess = () => resolve(1)
+            putReq.onerror = () => resolve(0)
           } else {
             resolve(await add(storeName, newData))
           }
         }
         oldReq.onerror = () => {
-          resolve(false)
+          resolve(0)
         }
       })
     })
   }
 
-  async function count<K extends keyof typeof storeKey>(storeName: K) {
+  async function count<K extends StoreKey>(storeName: K) {
     return new Promise<number>(resolve => {
       open().then(() => {
         if (!db.value) {
@@ -151,7 +141,7 @@ export const useDatabase = () => {
     })
   }
 
-  async function getAll<T>(storeName: keyof typeof storeKey): Promise<T[]> {
+  async function getAll<T>(storeName: StoreKey): Promise<T[]> {
     return new Promise<T[]>(resolve => {
       open().then(() => {
         if (!db.value) {
@@ -185,6 +175,13 @@ export const useDatabase = () => {
     })
   }
 
+  async function wrapRequest<T>(req: IDBRequest<T>) {
+    return new Promise<T | null>(resolve => {
+      req.onsuccess = e => resolve((e.target as IDBRequest<T>).result)
+      req.onerror = () => resolve(null)
+    })
+  }
+
   return {
     close,
     add,
@@ -194,6 +191,7 @@ export const useDatabase = () => {
     getAll,
     count,
     request,
+    wrapRequest,
   }
 }
 
@@ -244,6 +242,7 @@ export function initDB() {
       if (!db.objectStoreNames.contains(storeKey.chat_topic)) {
         const store = db.createObjectStore(storeKey.chat_topic, { keyPath: "id", autoIncrement: false })
         store.createIndex(indexKey.chatTopic_chatMessageId_idx, "chatMessageId", { unique: false })
+        store.createIndex(indexKey.chatTopic_parentId_idx, "parentId", { unique: false })
       }
       if (!db.objectStoreNames.contains(storeKey.chat_message)) {
         db.createObjectStore(storeKey.chat_message, { keyPath: "id", autoIncrement: false })

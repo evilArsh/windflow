@@ -4,6 +4,7 @@ import { useElementBounding, useScroll } from "@vueuse/core"
 import { CSSProperties } from "@renderer/lib/shared/types"
 const emit = defineEmits<{
   (e: "scroll", x: number, y: number): void
+  (e: "update:handlerHeight", height: number): void
 }>()
 const { handlerHeight = 0 } = defineProps<{
   handlerHeight?: string | number
@@ -34,6 +35,24 @@ const onAfterScale = () => {
 watchEffect(() => {
   emit("scroll", x.value, y.value)
 })
+
+watch(
+  () => handlerHeight,
+  v => {
+    if (v) {
+      handlerStyle.value.height = px(toNumber(v))
+    }
+  }
+)
+
+watch(
+  () => handlerStyle.value.height,
+  v => {
+    if (v) {
+      emit("update:handlerHeight", toNumber(v))
+    }
+  }
+)
 
 defineExpose({
   scrollToBottom,

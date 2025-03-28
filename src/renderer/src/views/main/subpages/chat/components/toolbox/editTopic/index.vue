@@ -16,10 +16,6 @@ const form = computed({
   },
 })
 const cardRef = useTemplateRef<HTMLElement>("card")
-const onClose = () => {
-  emit("close")
-}
-
 defineExpose({
   bounding: () => {
     return cardRef.value?.getBoundingClientRect()
@@ -41,11 +37,6 @@ defineExpose({
         </el-form-item>
         <el-form-item prop="modelIds" label="模型">
           <ModelSelect v-model="form.modelIds"></ModelSelect>
-        </el-form-item>
-        <el-form-item label="操作">
-          <div class="flex flex-1 gap-1rem">
-            <el-button size="small" type="warning" @click="onClose"> 关闭 </el-button>
-          </div>
         </el-form-item>
       </el-form>
     </el-card>

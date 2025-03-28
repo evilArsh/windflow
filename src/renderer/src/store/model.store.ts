@@ -2,7 +2,7 @@ import { ModelMeta, ProviderName } from "@renderer/types"
 import { defineStore } from "pinia"
 import { modelsDefault } from "./default/models.default"
 import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
-import { useDebounceFn } from "@vueuse/core"
+import { useThrottleFn } from "@vueuse/core"
 
 export default defineStore(storeKey.model, () => {
   const { getAll, add, get, put } = useDatabase()
@@ -30,9 +30,7 @@ export default defineStore(storeKey.model, () => {
     return models.filter(v => v.providerName === name)
   }
 
-  const dbUpdate = useDebounceFn(async (data: ModelMeta) => await put("model", data.id, toRaw(data)), 300, {
-    maxWait: 1000,
-  })
+  const dbUpdate = useThrottleFn(async (data: ModelMeta) => await put("model", data.id, toRaw(data)), 300, true)
 
   async function refresh(newModels: ModelMeta[]) {
     for (const v of newModels) {

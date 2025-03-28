@@ -68,9 +68,9 @@ export default (topic: Ref<ChatTopic>) => {
 
   watch(
     message,
-    async val => {
-      if (val.id) {
-        await chatStore.dbUpdateChatMessage(message.value)
+    async (val, old) => {
+      if (val.id && val === old) {
+        await chatStore.dbUpdateChatMessage(val)
       }
     },
     { deep: true }

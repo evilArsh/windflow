@@ -1,144 +1,40 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import { ChatTopic } from "@renderer/types"
+import { ChatTopicTree } from "@renderer/types"
 import ChatContent from "./components/chat-content.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
 import EditTopic from "./components/toolbox/editTopic/index.vue"
-import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
+import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/toolbox/menuHandle/index.vue"
-import useModelStore from "@renderer/store/model.store"
+import useMenu from "./usable/useMenu"
 const { t } = useI18n()
 const keyword = ref<string>("") // 搜索关键字
-const currentTopic = ref<ChatTopic>() // 当前选中的聊天
 const charStore = useChatStore()
 const { topicList } = storeToRefs(charStore)
-const modelStore = useModelStore()
-const { models } = storeToRefs(modelStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
 const scrollRef = useTemplateRef("scroll")
+const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-const dlg = reactive({
-  data: {
-    hideFirst: true,
-    containerStyle: {
-      zIndex: z.FIXED,
-      position: "fixed",
-      width: 100,
-      left: 0,
-      top: 0,
-      maxHeight: "100vh",
-      overflow: "auto",
-    },
-    mask: false,
-    maskStyle: {
-      backgroundColor: "rgba(0, 0, 0, 0)",
-      zIndex: z.FIXED - 1,
-    },
-  } as ScaleConfig,
-  is: "" as "menu" | "editTopic",
 
-  selectedTopic: null as ChatTopic | null,
-  moveDlg: markRaw(
-    async (x: number, y: number, target: Readonly<Ref<{ bounding: () => DOMRect | undefined } | null>>) => {
-      await scaleRef.value?.show(false, "self")
-      const rect = target.value?.bounding()
-      let fy = y + toNumber(rect?.height) > window.innerHeight ? window.innerHeight - toNumber(rect?.height) : y
-      fy = fy < 0 ? 0 : fy
-      scaleRef.value?.moveTo(false, { x, y: fy })
-    }
-  ),
-  // 菜单编辑按钮
-  onMenuEdit: markRaw((event: MouseEvent) => {
-    if (dlg.selectedTopic) {
-      dlg.is = "editTopic"
-      dlg.data.containerStyle!.width = "600px"
-      dlg.moveDlg(event.clientX, event.clientY, editTopicRef)
-    }
-  }),
-  // 菜单删除按钮
-  onMenuDelete: markRaw(() => {}),
-  // 新增子聊天
-  onMenuAdd: markRaw(() => {}),
-  // 打开菜单
-  openMenu: markRaw((event: MouseEvent, data: ChatTopic) => {
-    dlg.is = "menu"
-    dlg.data.containerStyle!.width = "100px"
-    dlg.selectedTopic = data
-    dlg.data.mask = true
-    dlg.moveDlg(event.clientX, event.clientY, menuRef) // 弹出菜单框
-  }),
-  // 点击icon快速编辑
-  openQuickEdit: markRaw((event: MouseEvent, data: ChatTopic) => {
-    dlg.selectedTopic = data
-    dlg.data.mask = true
-    dlg.onMenuEdit(event) // 弹出编辑框
-  }),
-  // 新增聊天
-  openEditTopic: markRaw(() => {
-    const newTopic: ChatTopic = {
-      id: uniqueId(),
-      label: "新的聊天",
-      icon: "",
-      content: "",
-      modelIds: [],
-      children: [],
-      prompt: "you are a helpful assistant",
-    }
-    charStore.dbAddChatTopic(newTopic)
-    topicList.value.push(newTopic)
-    currentTopic.value = newTopic
-    setTimeout(() => {
-      scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight)
-    }, 0)
-  }),
-  // 点击菜单遮罩层
-  clickMask: markRaw(() => {
-    dlg.data.mask = false
-    scaleRef.value?.hideTo("self", false)
-    tree.currentHover = ""
-  }),
-})
-
-const tree = reactive({
-  // 树属性
-  props: {
-    label: "label",
-    children: "children",
-    isLeaf: "isLeaf",
-  },
-  // 节点点击
-  onNodeClick: markRaw((data: ChatTopic) => {
-    // 筛选可用modelId
-    data.modelIds = data.modelIds.filter(val => {
-      return models.value.find(v => v.id === val)?.active
-    })
-    currentTopic.value = data
-  }),
-  // 鼠标移动过的节点
-  currentHover: "",
-  onMouseEnter: markRaw((data: ChatTopic) => {
-    tree.currentHover = data.id
-  }),
-  onMouseLeave: markRaw(() => {
-    if (!dlg.data.mask) {
-      tree.currentHover = ""
-    }
-  }),
-})
+const { dlg, tree, currentTopic, selectedTopic } = useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 
 watch(
   currentTopic,
-  data => {
-    data && charStore.dbUpdateChatTopic(data)
+  (val, old) => {
+    if (val && val === old) {
+      charStore.dbUpdateChatTopic(val.node)
+    }
   },
   { deep: true }
 )
 watch(
-  () => dlg.selectedTopic,
-  data => {
-    data && charStore.dbUpdateChatTopic(data)
+  selectedTopic,
+  (val, old) => {
+    if (val && val === old) {
+      charStore.dbUpdateChatTopic(val.node)
+    }
   },
   { deep: true }
 )
@@ -154,28 +50,29 @@ onBeforeUnmount(() => {
     <template #submenu>
       <div class="chat-provider-header">
         <el-input v-model="keyword" :placeholder="t('chat.search')" />
-        <el-button @click="dlg.openEditTopic">
+        <Button @click="dlg.openEditTopic">
           <template #icon>
             <i class="text-1.4rem i-ep:plus"></i>
           </template>
           <el-text>{{ t("chat.addChat") }}</el-text>
-        </el-button>
+        </Button>
       </div>
       <div class="chat-provider-content">
         <el-scrollbar ref="scroll">
           <el-tree
+            ref="treeRef"
             highlight-current
             :current-node-key="currentTopic?.id"
             @node-click="tree.onNodeClick"
             :data="topicList"
             node-key="id"
             :props="tree.props">
-            <template #default="{ data }: { data: ChatTopic }">
+            <template #default="{ data }: { data: ChatTopicTree }">
               <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
                 <div class="chat-tree-icon" @click.stop="dlg.openQuickEdit($event, data)">
-                  <Svg :src="data.icon" class="text-18px"></Svg>
+                  <Svg :src="data.node.icon" class="text-18px"></Svg>
                 </div>
-                <el-text line-clamp="2" class="chat-tree-label">{{ data.label }}</el-text>
+                <el-text line-clamp="2" class="chat-tree-label">{{ data.node.label }}</el-text>
                 <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
                   <el-button @click.stop="dlg.openMenu($event, data)" circle size="small">
                     <i-ep:more-filled></i-ep:more-filled>
@@ -196,13 +93,13 @@ onBeforeUnmount(() => {
           @add="dlg.onMenuAdd"></MenuHandle>
         <EditTopic
           ref="editTopicRef"
-          v-else-if="dlg.is === 'editTopic' && dlg.selectedTopic"
-          v-model="dlg.selectedTopic"
+          v-else-if="dlg.is === 'editTopic' && selectedTopic"
+          v-model="selectedTopic.node"
           @close="dlg.clickMask"></EditTopic>
       </ScalePanel>
     </template>
     <template #content v-if="currentTopic">
-      <ChatContent v-model="currentTopic" />
+      <ChatContent v-model="currentTopic.node" />
     </template>
   </SubNavLayout>
 </template>

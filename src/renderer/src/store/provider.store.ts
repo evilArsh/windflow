@@ -3,15 +3,13 @@ import { defineStore } from "pinia"
 import { providerDefault } from "./default/provider.default"
 import { ProviderManager } from "@renderer/lib/provider"
 import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
-import { useDebounceFn } from "@vueuse/core"
+import { useThrottleFn } from "@vueuse/core"
 export default defineStore(storeKey.provider, () => {
   const { getAll, add, put } = useDatabase()
   const metas = reactive<ProviderMeta[]>([])
   const manager = markRaw<ProviderManager>(new ProviderManager())
 
-  const dbUpdate = useDebounceFn(async (data: ProviderMeta) => await put("provider", data.name, toRaw(data)), 300, {
-    maxWait: 1000,
-  })
+  const dbUpdate = useThrottleFn(async (data: ProviderMeta) => await put("provider", data.name, toRaw(data)), 300, true)
 
   const fetch = async () => {
     try {

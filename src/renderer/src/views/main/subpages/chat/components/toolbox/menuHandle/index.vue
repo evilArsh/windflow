@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { type CallBackFn } from "@renderer/lib/shared/types"
 const emit = defineEmits<{
   (e: "edit", event: MouseEvent): void
-  (e: "delete", event: MouseEvent): void
-  (e: "add", event: MouseEvent): void
+  (e: "delete", done: CallBackFn, event: MouseEvent): void
+  (e: "add", done: CallBackFn, event: MouseEvent): void
 }>()
 const props = defineProps<{
   /**
@@ -25,12 +26,12 @@ watch(
 const onEdit = (event: MouseEvent) => {
   emit("edit", event)
 }
-const onDelete = (event: MouseEvent) => {
-  emit("delete", event)
+const onDelete = (done: CallBackFn, event: MouseEvent) => {
+  emit("delete", done, event)
   deleteConfirm.value = false
 }
-const onAdd = (event: MouseEvent) => {
-  emit("add", event)
+const onAdd = (done: CallBackFn, event: MouseEvent) => {
+  emit("add", done, event)
 }
 defineExpose({
   bounding: () => {
@@ -48,21 +49,19 @@ defineExpose({
             <span>编辑</span>
           </div>
         </el-button>
-        <el-button text @click.stop="onAdd">
+        <Button text @click="(done, e) => onAdd(done, e)">
           <div class="handle-item">
             <i-ep:plus></i-ep:plus>
             <span>新增</span>
           </div>
-        </el-button>
-        <el-button text :type="deleteConfirm ? 'danger' : 'default'">
-          <div v-if="!deleteConfirm" @click.stop="deleteConfirm = true" class="handle-item">
+        </Button>
+        <el-button v-if="!deleteConfirm" @click.stop="deleteConfirm = true" text type="default">
+          <div class="handle-item">
             <i-ep:delete></i-ep:delete>
             <span>删除</span>
           </div>
-          <div v-else class="handle-item" @click.stop="onDelete">
-            <span>确认删除?</span>
-          </div>
         </el-button>
+        <Button v-else text type="danger" @click="(done, e) => onDelete(done, e)"> 确认删除? </Button>
       </div>
     </el-card>
   </div>

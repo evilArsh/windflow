@@ -5,12 +5,12 @@ import useProviderStore from "@renderer/store/provider.store"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
-import useScrollHook from "./usable/useScrollHook"
-import useShortcut from "./usable/useShortcut"
+import useScrollHook from "../usable/useScrollHook"
+import useShortcut from "../usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
 import { ElMessage } from "element-plus"
 import ModelTool from "./toolbox/model/index.vue"
-import useSync from "./usable/useSync"
+import useSync from "../usable/useSync"
 import { storeToRefs } from "pinia"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
@@ -112,7 +112,7 @@ const { sendShortcut } = useShortcut({
 </script>
 <template>
   <div class="flex flex-1 overflow-hidden">
-    <ContentLayout handler-height="20rem" ref="contentLayout" @scroll="onScroll">
+    <ContentLayout v-model:handler-height="topic.inputHeight" ref="contentLayout" @scroll="onScroll">
       <template #header>
         <div class="flex p-1rem justify-end flex-1"></div>
       </template>
