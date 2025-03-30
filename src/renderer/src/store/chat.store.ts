@@ -3,6 +3,28 @@ import { ChatMessage, ChatTopic, ChatTopicTree } from "@renderer/types"
 import { chatTopicDefault } from "./default/chat.default"
 import { useDebounceFn, useThrottleFn } from "@vueuse/core"
 import { indexKey, storeKey, useDatabase } from "@renderer/usable/useDatabase"
+
+function topicToTree(topic: ChatTopic): ChatTopicTree {
+  return { id: topic.id, node: topic, children: [] }
+}
+
+function assembleTopicTree(data: ChatTopic[]): ChatTopicTree[] {
+  const res: ChatTopicTree[] = []
+  const maps: Record<string, ChatTopicTree> = {}
+  data.forEach(item => {
+    maps[item.id] = topicToTree(item)
+  })
+  data.forEach(item => {
+    if (!item.parentId) {
+      res.push(maps[item.id])
+    } else {
+      if (maps[item.parentId]) {
+        maps[item.parentId].children.push(maps[item.id])
+      }
+    }
+  })
+  return res
+}
 export default defineStore(storeKey.chat_topic, () => {
   const { add: dbAdd, put, get, request, wrapRequest, count } = useDatabase()
 
@@ -27,46 +49,14 @@ export default defineStore(storeKey.chat_topic, () => {
    */
   const dbChildCount = async (parentId: string) =>
     (await request<number>(async db => {
-      return wrapRequest<number>(
+      return await wrapRequest<number>(
         db
           .transaction(storeKey.chat_topic, "readonly")
-          .objectStore("chat_topic")
+          .objectStore(storeKey.chat_topic)
           .index(indexKey.chatTopic_parentId_idx)
           .count(IDBKeyRange.only(parentId))
       )
     })) ?? 0
-  const dbFindChildChatTopic = async (parentId: string | undefined) => {
-    // 初始加载
-    if (!parentId) {
-      const total = await count("chat_topic")
-      if (total > 0) {
-        return await request<ChatTopic[]>(async db => {
-          return wrapRequest<ChatTopic[]>(
-            db
-              .transaction(storeKey.chat_topic, "readonly")
-              .objectStore("chat_topic")
-              .index(indexKey.chatTopic_parentId_idx)
-              .getAll(IDBKeyRange.only(""))
-          )
-        })
-      } else {
-        const data = chatTopicDefault()
-        for (const item of data) {
-          await dbAdd("chat_topic", item)
-        }
-        return data
-      }
-    }
-    return await request<ChatTopic[]>(async db => {
-      return wrapRequest<ChatTopic[]>(
-        db
-          .transaction(storeKey.chat_topic, "readonly")
-          .objectStore("chat_topic")
-          .index(indexKey.chatTopic_parentId_idx)
-          .getAll(IDBKeyRange.only(parentId))
-      )
-    })
-  }
   /**
    * @description 删除对应的聊天组和聊天消息
    */
@@ -85,34 +75,42 @@ export default defineStore(storeKey.chat_topic, () => {
       }
       return 1
     })
-  // const fetch = async () => {
-  //   try {
-  //     const total = await count("chat_topic")
-  //     if (total > 0) {
-  //       const data = await request<ChatTopic[]>(async db => {
-  //         return wrapRequest<ChatTopic[]>(
-  //           db
-  //             .transaction(storeKey.chat_topic, "readonly")
-  //             .objectStore("chat_topic")
-  //             .index(indexKey.chatTopic_parentId_idx)
-  //             .getAll(IDBKeyRange.only(""))
-  //         )
-  //       })
-  //       if (Array.isArray(data)) {
-  //         topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
-  //       }
-  //     } else {
-  //       const data = chatTopicDefault()
-  //       topicList.push(...(data.map(item => ({ id: item.id, node: item, children: [] })) ?? []))
-  //       for (const item of data) {
-  //         await dbAdd("chat_topic", item)
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error(`[fetch chat topic] ${(error as Error).message}`)
-  //   }
-  // }
-  // fetch()
+  const fetch = async () => {
+    try {
+      const total = await count("chat_topic")
+      if (total > 0) {
+        const data = await request<ChatTopic[]>(async db => {
+          const index = db
+            .transaction(storeKey.chat_topic, "readonly")
+            .objectStore(storeKey.chat_topic)
+            .index(indexKey.chatTopic_createAt_idx)
+          const res = await new Promise<ChatTopic[]>(resolve => {
+            const results: ChatTopic[] = []
+            index.openCursor(null, "next").onsuccess = e => {
+              const cursor = (e.target as IDBRequest<IDBCursorWithValue>).result
+              if (cursor) {
+                results.push(cursor.value as ChatTopic)
+                cursor.continue()
+              } else {
+                resolve(results)
+              }
+            }
+          })
+          return res
+        })
+        data && topicList.push(...assembleTopicTree(data))
+      } else {
+        const data = chatTopicDefault()
+        topicList.push(...assembleTopicTree(data))
+        for (const item of data) {
+          await dbAdd("chat_topic", item)
+        }
+      }
+    } catch (error) {
+      console.error(`[fetch chat topic] ${(error as Error).message}`)
+    }
+  }
+  fetch()
   return {
     topicList,
     chatMessage,
@@ -122,7 +120,6 @@ export default defineStore(storeKey.chat_topic, () => {
     dbAddChatMessage,
     dbUpdateChatMessage,
     dbDelChatTopic,
-    dbFindChildChatTopic,
     dbChildCount,
   }
 })

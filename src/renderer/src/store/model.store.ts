@@ -58,7 +58,6 @@ export default defineStore(storeKey.model, () => {
       console.error(`[fetch models] ${(error as Error).message}`)
     }
   }
-
   fetch()
   return {
     models,

@@ -3,38 +3,37 @@ import { ChatTopic, ChatTopicTree } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
-import type { TreeData, TreeInstance } from "element-plus"
+import type { TreeInstance } from "element-plus"
 import { cloneDeep } from "lodash-es"
-import type Node from "element-plus/es/components/tree/src/model/node.mjs"
-function newTopic(parentId: string): ChatTopic {
+import useSettingsStore from "@renderer/store/settings.store"
+
+function newTopic(parentId: string | null): ChatTopic {
   return {
     id: uniqueId(),
     label: "新的聊天",
-    parentId: parentId,
+    parentId,
     icon: "",
     content: "",
     modelIds: [],
     prompt: "you are a helpful assistant",
-    isLeaf: true,
     chatMessageId: "",
+    createAt: Date.now(),
   }
 }
-function cloneTopic(topic: ChatTopic): ChatTopic {
+function cloneTopic(topic: ChatTopic, parentId: string | null): ChatTopic {
   return cloneDeep({
     ...topic,
-    children: [],
     id: uniqueId(),
-    isLeaf: true,
     label: "新的聊天",
+    parentId,
     chatMessageId: "",
   })
 }
-function newChatTopicTree(topic: ChatTopic): ChatTopicTree {
+function topicToTree(topic: ChatTopic): ChatTopicTree {
   return {
     id: topic.id,
     node: topic,
     children: [],
-    isLeaf: true,
   }
 }
 export default (
@@ -46,6 +45,7 @@ export default (
 ) => {
   const chatStore = useChatStore()
   const { t } = useI18n()
+  const settingsStore = useSettingsStore()
   const { topicList } = storeToRefs(chatStore)
   const currentTopic = ref<ChatTopicTree>() // 当前选中的聊天
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
@@ -90,6 +90,7 @@ export default (
       try {
         if (selectedTopic.value) {
           const res = await chatStore.dbDelChatTopic(selectedTopic.value.node)
+          // TODO 删除defaultExpandedKeys
           if (res != 1) {
             throw new Error(t("chat.deleteFailed"))
           }
@@ -111,17 +112,7 @@ export default (
     onMenuAdd: markRaw(async (done: CallBackFn) => {
       try {
         if (selectedTopic.value) {
-          const newTopic = cloneTopic(selectedTopic.value.node)
-          newTopic.parentId = selectedTopic.value.id
-          const res = await chatStore.dbAddChatTopic(newTopic)
-          if (res != 1) {
-            throw new Error(t("chat.addFailed"))
-          }
-          const newNode: ChatTopicTree = newChatTopicTree(newTopic)
-          currentTopic.value = newNode // 选中聊天
-          treeRef.value?.append(newNode, selectedTopic.value)
-          treeRef.value?.setCurrentKey(newNode.id)
-          done()
+          await dlg.newTopic(done, selectedTopic.value.id)
         }
         dlg.clickMask()
         done()
@@ -146,17 +137,21 @@ export default (
       dlg.onMenuEdit(event) // 弹出编辑框
     }),
     // 新增聊天
-    openEditTopic: markRaw(async (done: CallBackFn) => {
+    newTopic: markRaw(async (done: CallBackFn, parentId?: string) => {
       try {
-        const topic = newTopic("")
+        const topic =
+          parentId && selectedTopic.value ? cloneTopic(selectedTopic.value.node, parentId) : newTopic(parentId ?? null)
+        if (parentId) tree.pushDefaultExpandedKeys(parentId)
         const res = await chatStore.dbAddChatTopic(topic)
-        if (res != 1) {
-          throw new Error(t("chat.addFailed"))
+        if (res != 1) throw new Error(t("chat.addFailed"))
+        const newNode: ChatTopicTree = topicToTree(topic)
+        if (parentId) {
+          treeRef.value?.append(newNode, parentId)
+        } else {
+          topicList.value.push(newNode)
+          setTimeout(() => scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight), 0)
         }
-        const newNode: ChatTopicTree = newChatTopicTree(topic)
         currentTopic.value = newNode
-        topicList.value.push(newNode)
-        setTimeout(() => scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight), 0)
         done()
       } catch (error) {
         ElMessage.error(errorToText(error))
@@ -172,6 +167,7 @@ export default (
   })
 
   const tree = reactive({
+    defaultExpandedKeys: [] as string[],
     // 树属性
     props: {
       label: "label",
@@ -184,27 +180,6 @@ export default (
     }),
     // 鼠标移动过的节点
     currentHover: "",
-    onLoad: markRaw(async (node: Node, resolve: (data: TreeData) => void, reject: () => void) => {
-      const data = await chatStore.dbFindChildChatTopic(Array.isArray(node.data) ? undefined : (node.data.id as string))
-      if (data) {
-        for (const item of data) {
-          const childCount = await chatStore.dbChildCount(item.id)
-          item.isLeaf = childCount == 0
-        }
-        resolve(
-          data.map(item => {
-            return {
-              id: item.id,
-              node: item,
-              children: [],
-              isLeaf: item.isLeaf,
-            }
-          })
-        )
-      } else {
-        reject()
-      }
-    }),
     onMouseEnter: markRaw((data: ChatTopicTree) => {
       tree.currentHover = data.id
     }),
@@ -213,6 +188,43 @@ export default (
         tree.currentHover = ""
       }
     }),
+    onNodeExpand: markRaw((node: ChatTopicTree) => tree.pushDefaultExpandedKeys(node.id)),
+    onNodeCollapse: markRaw((node: ChatTopicTree) => tree.removeDefaultExpandedKeys(node.id)),
+    pushDefaultExpandedKeys: markRaw((id: string) => {
+      if (!tree.defaultExpandedKeys.includes(id)) {
+        tree.defaultExpandedKeys.push(id)
+      }
+    }),
+    removeDefaultExpandedKeys: markRaw((id: string) => {
+      const index = tree.defaultExpandedKeys.findIndex(item => item === id)
+      if (index !== -1) {
+        tree.defaultExpandedKeys.splice(index, 1)
+      }
+    }),
+  })
+  watch(
+    currentTopic,
+    (val, old) => {
+      if (val && val === old) chatStore.dbUpdateChatTopic(val.node)
+    },
+    { deep: true }
+  )
+  watch(
+    selectedTopic,
+    (val, old) => {
+      if (val && val === old) chatStore.dbUpdateChatTopic(val.node)
+    },
+    { deep: true }
+  )
+
+  const watcher = settingsStore.dataWatcher<string[]>(
+    "chat.defaultExpandedKeys",
+    toRef(tree, "defaultExpandedKeys"),
+    []
+  )
+
+  onBeforeUnmount(() => {
+    watcher.stop()
   })
   return {
     dlg,

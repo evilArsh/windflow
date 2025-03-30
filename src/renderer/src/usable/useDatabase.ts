@@ -13,6 +13,7 @@ export const storeKey = {
   model: "model",
   chat_topic: "chat_topic",
   chat_message: "chat_message",
+  settings: "settings",
 }
 
 export type StoreKey = keyof typeof storeKey
@@ -23,6 +24,7 @@ export const indexKey = {
   model_active_idx: "model_active_idx",
   chatTopic_chatMessageId_idx: "chatTopic_chatMessageId_idx",
   chatTopic_parentId_idx: "chatTopic_parentId_idx",
+  chatTopic_createAt_idx: "chatTopic_createAt_idx",
 }
 
 export const name = "db-candy-box"
@@ -93,6 +95,9 @@ export const useDatabase = () => {
     })
   }
 
+  /**
+   * @description 更新数据,数据不存在时添加
+   */
   async function put<T>(storeName: StoreKey, id: string, newData: T) {
     return new Promise<number>(resolve => {
       open().then(() => {
@@ -121,7 +126,7 @@ export const useDatabase = () => {
     })
   }
 
-  async function count<K extends StoreKey>(storeName: K) {
+  async function count(storeName: StoreKey) {
     return new Promise<number>(resolve => {
       open().then(() => {
         if (!db.value) {
@@ -243,9 +248,13 @@ export function initDB() {
         const store = db.createObjectStore(storeKey.chat_topic, { keyPath: "id", autoIncrement: false })
         store.createIndex(indexKey.chatTopic_chatMessageId_idx, "chatMessageId", { unique: false })
         store.createIndex(indexKey.chatTopic_parentId_idx, "parentId", { unique: false })
+        store.createIndex(indexKey.chatTopic_createAt_idx, "createAt", { unique: false })
       }
       if (!db.objectStoreNames.contains(storeKey.chat_message)) {
         db.createObjectStore(storeKey.chat_message, { keyPath: "id", autoIncrement: false })
+      }
+      if (!db.objectStoreNames.contains(storeKey.settings)) {
+        db.createObjectStore(storeKey.settings, { keyPath: "id", autoIncrement: false })
       }
     },
   })

@@ -27,10 +27,9 @@ export default defineStore(storeKey.provider, () => {
       console.error(`[fetch providers] ${(error as Error).message}`)
     }
   }
-
-  fetch()
   return {
     dbUpdate,
+    fetch,
     providerMetas: metas,
     providerManager: manager,
   }

@@ -8,52 +8,38 @@ import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "./usable/useMenu"
+import useSettingsStore from "@renderer/store/settings.store"
+import { WatchHandle } from "vue"
 const { t } = useI18n()
+const settingsStore = useSettingsStore()
 const keyword = ref<string>("") // 搜索关键字
-const charStore = useChatStore()
-const { topicList } = storeToRefs(charStore)
+const chatStore = useChatStore()
+const { topicList } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
 const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-
+const subNavWidth = ref<string>("")
+const widthWacher = shallowRef<WatchHandle>()
 const { dlg, tree, currentTopic, selectedTopic } = useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 
-watch(
-  currentTopic,
-  (val, old) => {
-    if (val && val === old) {
-      charStore.dbUpdateChatTopic(val.node)
-    }
-  },
-  { deep: true }
-)
-watch(
-  selectedTopic,
-  (val, old) => {
-    if (val && val === old) {
-      charStore.dbUpdateChatTopic(val.node)
-    }
-  },
-  { deep: true }
-)
 onMounted(() => {
   window.addEventListener("resize", dlg.clickMask)
+  widthWacher.value = settingsStore.dataWatcher<string | number>("chat.subNavWidth", subNavWidth, "300px")
 })
 onBeforeUnmount(() => {
   window.removeEventListener("resize", dlg.clickMask)
+  widthWacher.value?.stop()
 })
 </script>
 <template>
-  <SubNavLayout>
+  <SubNavLayout v-model:width="subNavWidth">
     <template #submenu>
       <div class="chat-provider-header">
         <el-input v-model="keyword" :placeholder="t('chat.search')" />
-        <Button @click="dlg.openEditTopic">
-          <template #icon>
-            <i class="text-1.4rem i-ep:plus"></i>
-          </template>
+        <Button @click="done => dlg.newTopic(done)">
+          <i class="text-1.4rem i-ep:plus"></i>
           <el-text>{{ t("chat.addChat") }}</el-text>
         </Button>
       </div>
@@ -61,21 +47,25 @@ onBeforeUnmount(() => {
         <el-scrollbar ref="scroll">
           <el-tree
             ref="treeRef"
-            :expand-on-click-node="false"
-            lazy
-            highlight-current
+            :default-expanded-keys="tree.defaultExpandedKeys"
             :current-node-key="currentTopic?.id"
-            @node-click="tree.onNodeClick"
+            :expand-on-click-node="false"
+            :indent="18"
+            highlight-current
             :data="topicList"
-            :load="tree.onLoad"
             node-key="id"
-            :props="tree.props">
+            :props="tree.props"
+            @node-click="tree.onNodeClick"
+            @node-expand="tree.onNodeExpand"
+            @node-collapse="tree.onNodeCollapse">
             <template #default="{ data }: { data: ChatTopicTree }">
               <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
                 <div class="chat-tree-icon" @click.stop="dlg.openQuickEdit($event, data)">
                   <Svg :src="data.node.icon" class="text-18px"></Svg>
                 </div>
-                <el-text line-clamp="2" class="chat-tree-label">{{ data.node.label }}</el-text>
+                <div class="flex items-center flex-1">
+                  <el-text class="chat-tree-label" line-clamp="2">{{ data.node.label }}</el-text>
+                </div>
                 <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
                   <el-button @click.stop="dlg.openMenu($event, data)" circle size="small">
                     <i-ep:more-filled></i-ep:more-filled>
@@ -125,7 +115,6 @@ onBeforeUnmount(() => {
 .chat-tree-node {
   --chat-tree-icon-size: 2.5rem;
   display: flex;
-  align-items: center;
   gap: 0.5rem;
   width: 100%;
   padding: 0.5rem;
@@ -143,8 +132,7 @@ onBeforeUnmount(() => {
     }
   }
   .chat-tree-label {
-    font-size: 1.2rem;
-    flex: 1;
+    font-size: 14px;
   }
   .chat-tree-handle {
     flex-shrink: 0;

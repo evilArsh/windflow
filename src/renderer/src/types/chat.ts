@@ -180,7 +180,7 @@ export type ChatTopic = {
   /**
    * @description 父会话id
    */
-  parentId: string
+  parentId: string | null
   /**
    * @description 会话名称
    */
@@ -214,15 +214,14 @@ export type ChatTopic = {
    */
   chatMessageId?: string
   /**
-   * @description 是否是叶子节点，优化树结构
+   * @description 会话创建时间
    */
-  isLeaf?: boolean
+  createAt: number
 }
 
 export type ChatTopicTree = {
   id: string
   node: ChatTopic
-  isLeaf?: boolean
   children: ChatTopicTree[]
 }
 

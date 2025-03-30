@@ -1,9 +1,28 @@
 <script lang="ts" setup>
+import { getValue } from "@renderer/lib/shared/styles"
+const { width = "300px" } = defineProps<{
+  width?: string | number
+}>()
+const emit = defineEmits<{
+  (e: "update:width", val: string): void
+}>()
 const scaleRef = useTemplateRef("scale")
 
 const handlerStyle = ref<CSSProperties>({
-  width: "300px",
+  width,
 })
+watch(
+  () => width,
+  val => {
+    handlerStyle.value.width = val
+  }
+)
+watch(
+  () => handlerStyle.value.width,
+  val => {
+    emit("update:width", getValue("width", val))
+  }
+)
 </script>
 <template>
   <div class="subnav-container">
