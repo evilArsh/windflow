@@ -1,5 +1,11 @@
 import { HttpStatusCode, Method } from "axios"
 
+export enum Role {
+  System = "system",
+  User = "user",
+  Assistant = "assistant",
+  Tool = "tool",
+}
 export enum ProviderName {
   System = "System",
   DeepSeek = "DeepSeek",
@@ -130,6 +136,7 @@ export type ModelMeta = {
    * @description 是否启用
    */
   active?: boolean
+  // TODO:
   children?: ModelMeta[]
 }
 export type ChatMessage = {
@@ -257,3 +264,10 @@ export interface LLMProvider extends Provider {
 // video-to-text
 
 // video-to-video
+
+export interface ChatContext {
+  message: ChatMessage
+  modelId: string
+  provider?: LLMProvider
+  handler?: LLMChatResponseHandler
+}

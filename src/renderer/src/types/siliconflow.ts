@@ -1,4 +1,4 @@
-import { LLMBaseRequest } from "./chat"
+import { LLMBaseRequest, Role } from "./chat"
 
 export type SFModelsResponse = {
   object: "list"
@@ -29,7 +29,7 @@ export type SFUserBalanceResponse = {
 }
 export type SFMessage = {
   content: string
-  role: "system" | "user" | "assistant"
+  role: Role.System | Role.User | Role.Assistant
 }
 
 export interface SFChatCompletionRequest extends LLMBaseRequest {

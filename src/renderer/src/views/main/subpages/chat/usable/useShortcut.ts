@@ -1,5 +1,6 @@
 import useHotKey from "@renderer/usable/useHotKey"
-export default (options: { send: CallBackFn }) => {
+import { ChatMessage, ChatTopic } from "@renderer/types"
+export default (topic: Ref<ChatTopic>, message: Ref<ChatMessage>, options: { send: CallBackFn }) => {
   const { on: onHotKey, cleanAll, clean } = useHotKey()
   const sendShortcut = ref("ctrl+enter") // 发送快捷键
 
@@ -9,7 +10,7 @@ export default (options: { send: CallBackFn }) => {
       if (old) clean(old)
       onHotKey(val, res => {
         if (res.active) {
-          options.send()
+          options.send(topic.value, message.value)
         }
       })
     },

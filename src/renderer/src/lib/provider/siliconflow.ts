@@ -35,7 +35,7 @@ export class SiliconFlow implements LLMProvider {
       model: "",
       messages: [],
       stream: true,
-      max_tokens: 4096,
+      max_tokens: 16384,
       temperature: 0.7,
       // top_p: 0.7,
       top_k: 50,

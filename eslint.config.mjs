@@ -50,6 +50,7 @@ export default [
       "**/dist/",
       "**/h5/",
       "**/.vscode/",
+      "**/assets/",
       "eslint.config.{mjs,cjs,js}",
       "vite.config.{ts,mts,js,mjs}",
       "**/.prettierrc.{mjs,cjs,js}",

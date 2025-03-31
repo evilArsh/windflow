@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { ChatTopic, ChatMessage, LLMProvider } from "@renderer/types"
-import useProviderStore from "@renderer/store/provider.store"
+import { ChatMessage, ChatTopic } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
 import useScrollHook from "../../usable/useScrollHook"
 import useShortcut from "../../usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
-import { ElMessage } from "element-plus"
 import ModelTool from "../model/index.vue"
 import useSync from "../../usable/useSync"
-import { storeToRefs } from "pinia"
+import useChatStore from "@renderer/store/chat.store"
 const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
 }>()
@@ -26,87 +24,14 @@ const topic = computed<ChatTopic>({
 })
 
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
-const providerStore = useProviderStore()
-const { providerMetas } = storeToRefs(providerStore)
 const modelsStore = useModelsStore()
+const chatStore = useChatStore()
 const { t } = useI18n()
-
-const llmChats = shallowReactive<Record<string, LLMProvider>>({})
 
 const { onScroll } = useScrollHook(contentLayout, topic)
 const { message } = useSync(topic)
-
-const send = async () => {
-  if (!topic.value.content.trim()) return
-  if (topic.value.modelIds.length == 0) {
-    ElMessage.warning("请选择模型")
-    return
-  }
-  message.value.data.push({
-    id: uniqueId(),
-    status: 200,
-    time: formatSecond(new Date()),
-    finish: true,
-    reasoning: false,
-    content: {
-      role: "user",
-      content: topic.value.content,
-    },
-    modelId: "",
-  })
-
-  for (const modelId of topic.value.modelIds) {
-    if (modelId.length == 0) continue
-    const model = modelsStore.find(modelId)
-    const providerMeta = providerMetas.value.find(item => item.name == model?.providerName)
-    if (model && providerMeta) {
-      if (!llmChats[model.providerName]) {
-        const provider = providerStore.providerManager.getLLMProvider(model.providerName)
-        if (provider) {
-          llmChats[model.providerName] = provider
-        } else {
-          console.warn("[init llmChats] provider not found", model.providerName)
-          continue
-        }
-      }
-      const newMsg = reactive<ChatMessage["data"][number]>({
-        id: uniqueId(),
-        finish: false,
-        status: 200,
-        time: formatSecond(new Date()),
-        content: { role: "assistant", content: "", reasoningContent: "" },
-        modelId,
-      })
-      message.value.data.push(newMsg)
-      // TODO: 消息上下文
-      const context = message.value.data.filter(item => item.finish && item.status < 300).map(item => item.content)
-
-      llmChats[model.providerName].chat(context, model, providerMeta, async msg => {
-        if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
-          contentLayout.value?.scrollToBottom("smooth")
-        }
-        newMsg.status = msg.status
-        newMsg.reasoning = msg.reasoning
-        newMsg.content.content += msg.data.map(item => item.content).join("")
-        newMsg.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
-        if (msg.status == 206) {
-          newMsg.finish = false
-        } else if (msg.status == 200) {
-          contentLayout.value?.scrollToBottom("instant")
-          newMsg.finish = true
-          console.log("done")
-        } else {
-          newMsg.finish = true
-        }
-      })
-    }
-  }
-  topic.value.content = ""
-  nextTick(() => {
-    contentLayout.value?.scrollToBottom("smooth")
-  })
-}
-const { sendShortcut } = useShortcut({
+const send = (topic: ChatTopic, message: ChatMessage) => chatStore.send(topic, message)
+const { sendShortcut } = useShortcut(topic, message, {
   send,
 })
 </script>
@@ -133,7 +58,7 @@ const { sendShortcut } = useShortcut({
                 </div>
                 <div class="chat-item-content" :class="{ reverse: !item.modelId }">
                   <div v-if="item.modelId" class="flex flex-col">
-                    <el-button v-show="item.status == 100 && item.reasoning" type="info" loading size="small">
+                    <el-button v-show="item.status == 100 && item.reasoning" type="primary" loading size="small">
                       深度思考中
                     </el-button>
                     <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
@@ -175,7 +100,9 @@ const { sendShortcut } = useShortcut({
               :placeholder="t('tip.inputPlaceholder')"></el-input>
           </div>
           <div class="chat-input-actions">
-            <el-button size="small" type="default" plain @click="send"> 发送({{ sendShortcut }}) </el-button>
+            <el-button size="small" type="default" plain @click="send(topic, message)">
+              发送({{ sendShortcut }})
+            </el-button>
           </div>
         </div>
       </template>

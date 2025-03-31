@@ -1,4 +1,4 @@
-import { LLMBaseRequest } from "./chat"
+import { LLMBaseRequest, Role } from "./chat"
 
 export type DSModelsResponse = {
   object: "list"
@@ -45,21 +45,21 @@ export type DSMessageBase = {
   content: string
 }
 export type DSMessageSystem = DSMessageBase & {
-  role: "system"
+  role: Role.System
   name?: string
 }
 export type DSMessageUser = DSMessageBase & {
-  role: "user"
+  role: Role.User
   name?: string
 }
 export type DSMessageAssistant = DSMessageBase & {
-  role: "assistant"
+  role: Role.Assistant
   name?: string
   prefix?: boolean
   reasoning_content?: string
 }
 export type DSMessageAssistantTool = DSMessageBase & {
-  role: "tool"
+  role: Role.Tool
   tool_call_id: string
 }
 

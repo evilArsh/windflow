@@ -36,6 +36,16 @@ function topicToTree(topic: ChatTopic): ChatTopicTree {
     children: [],
   }
 }
+
+function getAllNodes(current: ChatTopicTree): ChatTopic[] {
+  const res: ChatTopic[] = []
+  res.push(current.node)
+  current.children.forEach(item => {
+    res.push(item.node)
+    res.push(...getAllNodes(item))
+  })
+  return res
+}
 export default (
   scaleRef: Readonly<Ref<ScaleInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -46,7 +56,7 @@ export default (
   const chatStore = useChatStore()
   const { t } = useI18n()
   const settingsStore = useSettingsStore()
-  const { topicList } = storeToRefs(chatStore)
+  const { topicList, chatMessage, llmChats } = storeToRefs(chatStore)
   const currentTopic = ref<ChatTopicTree>() // 当前选中的聊天
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   const dlg = reactive({
@@ -89,9 +99,22 @@ export default (
     onMenuDelete: markRaw(async (done: CallBackFn) => {
       try {
         if (selectedTopic.value) {
-          const res = await chatStore.dbDelChatTopic(selectedTopic.value.node)
-          // TODO 删除defaultExpandedKeys
-          if (res != 1) {
+          const nodes = getAllNodes(selectedTopic.value)
+          const res = await chatStore.dbDelChatTopic(nodes)
+          nodes.forEach(item => {
+            tree.removeDefaultExpandedKeys(item.id)
+            // 终止请求
+            if (llmChats.value[item.id]) {
+              llmChats.value[item.id].forEach(val => {
+                val.handler?.terminate()
+              })
+            }
+            // 删除消息缓存
+            if (item.chatMessageId) {
+              delete chatMessage.value[item.chatMessageId]
+            }
+          })
+          if (!res || res.code != 200) {
             throw new Error(t("chat.deleteFailed"))
           }
           treeRef.value?.remove(selectedTopic.value)

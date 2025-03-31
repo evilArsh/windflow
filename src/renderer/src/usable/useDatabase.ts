@@ -7,6 +7,11 @@ export interface DBResponse {
   data?: IDBDatabase
 }
 
+export interface TransactionResponse {
+  code: HttpStatusCode
+  msg: string
+}
+
 export const storeKey = {
   provider: "provider",
   nav: "nav",
@@ -187,6 +192,18 @@ export const useDatabase = () => {
     })
   }
 
+  async function wrapTransaction(ts: IDBTransaction): Promise<TransactionResponse> {
+    return new Promise<DBResponse>(resolve => {
+      ts.oncomplete = () => {
+        resolve({ code: 200, msg: "ok" })
+      }
+      ts.onerror = e => {
+        console.log("[transaction error]", e)
+        resolve({ code: 500, msg: "transaction error" })
+      }
+    })
+  }
+
   return {
     close,
     add,
@@ -197,6 +214,7 @@ export const useDatabase = () => {
     count,
     request,
     wrapRequest,
+    wrapTransaction,
   }
 }
 

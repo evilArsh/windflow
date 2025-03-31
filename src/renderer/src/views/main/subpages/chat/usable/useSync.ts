@@ -1,39 +1,37 @@
-import { ChatTopic, ChatMessage } from "@renderer/types"
+import { ChatTopic, ChatMessage, Role } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
 export default (topic: Ref<ChatTopic>) => {
   const chatStore = useChatStore()
   const { chatMessage } = storeToRefs(chatStore)
+  const { llmChats } = storeToRefs(chatStore)
   const message = ref<ChatMessage>({
     id: "",
     data: [],
   })
-
-  const newMessage = async () => {
-    message.value = chatMessageDefault()
-    message.value.data[0].content.content = topic.value.prompt
-    message.value.data[0].content.role = "system"
-    chatMessage.value[message.value.id] = message.value
-    topic.value.chatMessageId = message.value.id
-    await chatStore.dbAddChatMessage(message.value)
+  const newMessage = async (prompt: string) => {
+    const msg = chatMessageDefault()
+    msg.data[0].content.content = prompt
+    msg.data[0].content.role = "system"
+    await chatStore.dbAddChatMessage(msg)
+    return msg
   }
-
   // 刷新prompt
-  const refreshPrompt = () => {
-    if (message.value.data.length == 0) {
-      message.value.data.push({
+  const refreshPrompt = (message: ChatMessage, prompt: string) => {
+    const system = message.data.find(item => item.content.role == Role.System)
+    if (message.data.length == 0 || !system) {
+      const p = {
         id: uniqueId(),
         finish: true,
         status: 200,
         time: formatSecond(new Date()),
-        content: { role: "system", content: topic.value.prompt },
+        content: { role: Role.System, content: prompt },
         modelId: "",
-      })
-    }
-    const system = message.value.data.find(item => item.content.role == "system")
-    if (system) {
-      system.content.content = topic.value.prompt
+      }
+      message.data.unshift(p)
+    } else {
+      system.content.content = prompt
     }
   }
 
@@ -41,7 +39,7 @@ export default (topic: Ref<ChatTopic>) => {
     topic,
     async (val, oldVal) => {
       if (val === oldVal) {
-        refreshPrompt()
+        refreshPrompt(message.value, val.prompt)
       }
       // 切换聊天时触发
       else {
@@ -55,11 +53,27 @@ export default (topic: Ref<ChatTopic>) => {
               chatMessage.value[val.chatMessageId] = data
               message.value = data
             } else {
-              await newMessage()
+              message.value = await newMessage(val.prompt)
+              topic.value.chatMessageId = message.value.id
+              chatMessage.value[message.value.id] = message.value
             }
           }
         } else {
-          await newMessage()
+          message.value = await newMessage(val.prompt)
+          val.chatMessageId = message.value.id
+          chatMessage.value[message.value.id] = message.value
+        }
+        // 挂载上下文
+        if (!llmChats.value[val.id]) {
+          llmChats.value[val.id] = val.modelIds.map(modelId => {
+            const m = chatMessage.value[message.value.id]
+            return {
+              modelId,
+              message: m,
+              provider: undefined,
+              handler: undefined,
+            }
+          })
         }
       }
     },
@@ -77,5 +91,7 @@ export default (topic: Ref<ChatTopic>) => {
   )
   return {
     message,
+    // getMessageContext,
+    // send,
   }
 }
