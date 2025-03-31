@@ -67,8 +67,7 @@ export class LLMDeepSeek implements LLMProvider {
     if (reqConfig) {
       this.#messageConfig = reqConfig as DSChatCompletionRequest
     }
-    const msg = (Array.isArray(message) ? message : [message]) as DSMessage[]
-    this.#messageConfig.messages = this.#messageConfig.messages.concat(msg)
+    this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as DSMessage[]
 
     this.#messageConfig.model = modelMeta.modelName
     return request.chat(this.#messageConfig, cb => {

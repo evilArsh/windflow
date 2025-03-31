@@ -91,7 +91,5 @@ export default (topic: Ref<ChatTopic>) => {
   )
   return {
     message,
-    // getMessageContext,
-    // send,
   }
 }

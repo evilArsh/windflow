@@ -11,6 +11,7 @@ import {
   SFMessage,
   ModelType,
   SFModelsResponse,
+  ProviderName,
 } from "@renderer/types"
 import JSON5 from "json5"
 import { useLLMChat, createInstance } from "@renderer/lib/http"
@@ -80,10 +81,14 @@ export class SiliconFlow implements LLMProvider {
     if (reqConfig) {
       this.#messageConfig = reqConfig as SFChatCompletionRequest
     }
-    const msg = (Array.isArray(message) ? message : [message]) as SFMessage[]
-    this.#messageConfig.messages = this.#messageConfig.messages.concat(msg)
+    this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as SFMessage[]
 
     this.#messageConfig.model = modelMeta.modelName
+    if (modelMeta.providerName === ProviderName.DeepSeek) {
+      this.#messageConfig.max_tokens = 8192
+    } else {
+      this.#messageConfig.max_tokens = 16384
+    }
     return request.chat(this.#messageConfig, cb => {
       callback({
         ...cb,

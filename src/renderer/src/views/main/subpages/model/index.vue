@@ -52,7 +52,9 @@ onMounted(init)
             <el-card class="card" shadow="never" @click="onCardClick(item.name)">
               <div class="card-body">
                 <el-image class="icon" :src="item.logo" />
-                <el-text class="name">{{ t(item.alias || "") }}</el-text>
+                <div class="flex items-center">
+                  <el-text class="name">{{ t(item.alias || "") }}</el-text>
+                </div>
               </div>
             </el-card>
           </Hover>
@@ -88,7 +90,7 @@ onMounted(init)
         height: var(--provider-container-icon-size);
       }
       .name {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
       }
     }
   }

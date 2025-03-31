@@ -28,9 +28,14 @@ const modelsStore = useModelsStore()
 const chatStore = useChatStore()
 const { t } = useI18n()
 
-const { onScroll } = useScrollHook(contentLayout, topic)
 const { message } = useSync(topic)
-const send = (topic: ChatTopic, message: ChatMessage) => chatStore.send(topic, message)
+const { onScroll } = useScrollHook(contentLayout, topic, message)
+const send = (topic: ChatTopic, message: ChatMessage) => {
+  chatStore.send(topic, message)
+  nextTick(() => {
+    contentLayout.value?.scrollToBottom("smooth")
+  })
+}
 const { sendShortcut } = useShortcut(topic, message, {
   send,
 })

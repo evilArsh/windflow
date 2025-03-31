@@ -181,9 +181,6 @@ export default defineStore(storeKey.chat_topic, () => {
       chatContext.message.data.push(newMessage)
       chatContext.handler = markRaw(
         chatContext.provider.chat(context, model, providerMeta, async msg => {
-          // if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
-          //   contentLayout.value?.scrollToBottom("smooth")
-          // }
           newMessage.status = msg.status
           newMessage.reasoning = msg.reasoning
           newMessage.content.content += msg.data.map(item => item.content).join("")
@@ -191,7 +188,6 @@ export default defineStore(storeKey.chat_topic, () => {
           if (msg.status == 206) {
             newMessage.finish = false
           } else if (msg.status == 200) {
-            // contentLayout.value?.scrollToBottom("instant")
             newMessage.finish = true
             console.log("done")
           } else {
@@ -201,9 +197,6 @@ export default defineStore(storeKey.chat_topic, () => {
       )
     }
     topic.content = ""
-    // nextTick(() => {
-    //   contentLayout.value?.scrollToBottom("smooth")
-    // })
   }
   const fetch = async () => {
     try {

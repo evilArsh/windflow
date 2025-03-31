@@ -139,9 +139,14 @@ watch(
                       @change="check.onAllModelTypesChange">
                       {{ t("tip.selectAll") }}
                     </el-checkbox>
-                    <el-checkbox-group v-model="data.selectedTypes" @change="check.onModelTypesChange" size="small">
+                    <el-checkbox-group
+                      class="flex flex-wrap gap-1rem"
+                      v-model="data.selectedTypes"
+                      @change="check.onModelTypesChange"
+                      size="small">
                       <el-checkbox
                         border
+                        style="margin-right: 0"
                         v-for="item in filter.typeKeys"
                         :key="item"
                         :label="t(`modelType.${item}`)"

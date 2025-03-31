@@ -5,6 +5,7 @@ export class ProviderManager {
   #providers: Map<ProviderName, Provider>
   #llmProviders: WeakSet<LLMProvider>
   constructor() {
+    console.log("[ProviderManager init]")
     this.#providers = new Map()
     this.#llmProviders = new WeakSet()
 

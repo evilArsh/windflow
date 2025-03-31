@@ -1,7 +1,11 @@
-import { ChatTopic } from "@renderer/types"
+import { ChatMessage, ChatTopic } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 
-export default (contentLayout: Ref<InstanceType<typeof ContentLayout> | null>, topic: Ref<ChatTopic>) => {
+export default (
+  contentLayout: Ref<InstanceType<typeof ContentLayout> | null>,
+  topic: Ref<ChatTopic>,
+  message: Ref<ChatMessage>
+) => {
   const scrollY = ref(0)
   function scrollTo(topic: ChatTopic) {
     nextTick(() => {
@@ -23,6 +27,16 @@ export default (contentLayout: Ref<InstanceType<typeof ContentLayout> | null>, t
     if (old) setOldScrollY(old) // switch tab
     scrollTo(val)
   })
+  watch(
+    message,
+    () => {
+      if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
+        contentLayout.value?.scrollToBottom("smooth")
+      }
+    },
+    { deep: true }
+  )
+
   onMounted(() => {
     scrollTo(topic.value)
   })
