@@ -22,7 +22,14 @@ const props = defineProps<{
    */
   content: LLMChatMessage
 }>()
-const md: MarkdownIt = markRaw(markdownit())
+const md: MarkdownIt = markRaw(
+  markdownit({
+    html: true,
+    linkify: true,
+    typographer: true,
+    breaks: false,
+  }).disable(["hr"])
+)
 const idxMap = shallowReactive<Record<string, CodePluginOptions>>({})
 const compMap = shallowReactive<Record<string, VNode>>({
   mermaid: h(MermaidBlock),

@@ -38,7 +38,7 @@ const hilight = (code?: string, lang?: string) => {
 </script>
 <template>
   <div>
-    <el-card class="code-block" shadow="hover">
+    <el-card class="code-block" shadow="never">
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang || "plaintext" }}</el-tag>

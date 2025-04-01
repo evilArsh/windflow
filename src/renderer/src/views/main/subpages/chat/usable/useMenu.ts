@@ -7,10 +7,10 @@ import type { TreeInstance } from "element-plus"
 import { cloneDeep } from "lodash-es"
 import useSettingsStore from "@renderer/store/settings.store"
 
-function newTopic(parentId: string | null): ChatTopic {
+function newTopic(parentId: string | null, label: string): ChatTopic {
   return {
     id: uniqueId(),
-    label: "新的聊天",
+    label,
     parentId,
     icon: "",
     content: "",
@@ -20,11 +20,11 @@ function newTopic(parentId: string | null): ChatTopic {
     createAt: Date.now(),
   }
 }
-function cloneTopic(topic: ChatTopic, parentId: string | null): ChatTopic {
+function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
   return cloneDeep({
     ...topic,
     id: uniqueId(),
-    label: "新的聊天",
+    label,
     parentId,
     chatMessageId: "",
   })
@@ -56,8 +56,7 @@ export default (
   const chatStore = useChatStore()
   const { t } = useI18n()
   const settingsStore = useSettingsStore()
-  const { topicList, chatMessage, llmChats } = storeToRefs(chatStore)
-  const currentTopic = ref<ChatTopicTree>() // 当前选中的聊天
+  const { topicList, chatMessage, llmChats, currentTopic, currentNodeKey } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   const dlg = reactive({
     data: {
@@ -163,7 +162,9 @@ export default (
     newTopic: markRaw(async (done: CallBackFn, parentId?: string) => {
       try {
         const topic =
-          parentId && selectedTopic.value ? cloneTopic(selectedTopic.value.node, parentId) : newTopic(parentId ?? null)
+          parentId && selectedTopic.value
+            ? cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
+            : newTopic(parentId ?? null, t("chat.addChat"))
         if (parentId) tree.pushDefaultExpandedKeys(parentId)
         const res = await chatStore.dbAddChatTopic(topic)
         if (res != 1) throw new Error(t("chat.addFailed"))
@@ -228,7 +229,13 @@ export default (
   watch(
     currentTopic,
     (val, old) => {
-      if (val && val === old) chatStore.dbUpdateChatTopic(val.node)
+      if (val) {
+        if (val === old) {
+          chatStore.dbUpdateChatTopic(val.node)
+        } else {
+          currentNodeKey.value = val.id
+        }
+      }
     },
     { deep: true }
   )
@@ -239,20 +246,19 @@ export default (
     },
     { deep: true }
   )
-
-  const watcher = settingsStore.dataWatcher<string[]>(
+  const watchKeys = settingsStore.dataWatcher<string[]>(
     "chat.defaultExpandedKeys",
     toRef(tree, "defaultExpandedKeys"),
     []
   )
-
   onBeforeUnmount(() => {
-    watcher.stop()
+    watchKeys.stop()
   })
   return {
     dlg,
     tree,
     currentTopic,
+    currentNodeKey,
     selectedTopic,
   }
 }

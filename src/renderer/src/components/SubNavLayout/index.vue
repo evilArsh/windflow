@@ -1,28 +1,23 @@
 <script lang="ts" setup>
-import { getValue } from "@renderer/lib/shared/styles"
-const { width = "300px" } = defineProps<{
-  width?: string | number
+import { WatchHandle } from "vue"
+import useSettingsStore from "@renderer/store/settings.store"
+import { SettingsValue } from "@renderer/types"
+const props = defineProps<{
+  id: string
 }>()
-const emit = defineEmits<{
-  (e: "update:width", val: string): void
-}>()
+const settingsStore = useSettingsStore()
 const scaleRef = useTemplateRef("scale")
 
-const handlerStyle = ref<CSSProperties>({
-  width,
+const widthWacher = shallowRef<WatchHandle>()
+const handlerStyle = ref<CSSProperties>({})
+onMounted(() => {
+  widthWacher.value = settingsStore.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle, {
+    width: "300px",
+  })
 })
-watch(
-  () => width,
-  val => {
-    handlerStyle.value.width = val
-  }
-)
-watch(
-  () => handlerStyle.value.width,
-  val => {
-    emit("update:width", getValue("width", val))
-  }
-)
+onBeforeUnmount(() => {
+  widthWacher.value?.stop()
+})
 </script>
 <template>
   <div class="subnav-container">

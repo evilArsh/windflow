@@ -2,10 +2,10 @@ import { ChatTopic, ChatMessage, Role } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
+import { useThrottleFn } from "@vueuse/core"
 export default (topic: Ref<ChatTopic>) => {
   const chatStore = useChatStore()
   const { chatMessage } = storeToRefs(chatStore)
-  const { llmChats } = storeToRefs(chatStore)
   const message = ref<ChatMessage>({
     id: "",
     data: [],
@@ -18,27 +18,32 @@ export default (topic: Ref<ChatTopic>) => {
     return msg
   }
   // 刷新prompt
-  const refreshPrompt = (message: ChatMessage, prompt: string) => {
-    const system = message.data.find(item => item.content.role == Role.System)
-    if (message.data.length == 0 || !system) {
-      const p = {
-        id: uniqueId(),
-        finish: true,
-        status: 200,
-        time: formatSecond(new Date()),
-        content: { role: Role.System, content: prompt },
-        modelId: "",
+  const refreshPrompt = useThrottleFn(
+    (message: ChatMessage, prompt: string) => {
+      const system = message.data.find(item => item.content.role == Role.System)
+      if (message.data.length == 0 || !system) {
+        const p = {
+          id: uniqueId(),
+          finish: true,
+          status: 200,
+          time: formatSecond(new Date()),
+          content: { role: Role.System, content: prompt },
+          modelId: "",
+        }
+        message.data.unshift(p)
+      } else {
+        system.content.content = prompt
       }
-      message.data.unshift(p)
-    } else {
-      system.content.content = prompt
-    }
-  }
+    },
+    1000,
+    true
+  )
 
   watch(
     topic,
     async (val, oldVal) => {
       if (val === oldVal) {
+        // TODO: 当models改变需要刷新llmChats
         refreshPrompt(message.value, val.prompt)
       }
       // 切换聊天时触发
@@ -50,6 +55,10 @@ export default (topic: Ref<ChatTopic>) => {
           } else {
             const data = await chatStore.dbFindChatMessage(val.chatMessageId)
             if (data) {
+              data.data.forEach(item => {
+                item.finish = true
+                item.status = 200
+              })
               chatMessage.value[val.chatMessageId] = data
               message.value = data
             } else {
@@ -63,18 +72,7 @@ export default (topic: Ref<ChatTopic>) => {
           val.chatMessageId = message.value.id
           chatMessage.value[message.value.id] = message.value
         }
-        // 挂载上下文
-        if (!llmChats.value[val.id]) {
-          llmChats.value[val.id] = val.modelIds.map(modelId => {
-            const m = chatMessage.value[message.value.id]
-            return {
-              modelId,
-              message: m,
-              provider: undefined,
-              handler: undefined,
-            }
-          })
-        }
+        chatStore.mountContext(val, message.value)
       }
     },
     { immediate: true, deep: true }

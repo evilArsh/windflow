@@ -47,9 +47,9 @@ const { sendShortcut } = useShortcut(topic, message, {
         <div class="flex p-1rem justify-end flex-1"></div>
       </template>
       <div class="flex">
-        <div class="w-5rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
+        <div class="w-4rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
         <div class="flex flex-col gap2rem flex-1">
-          <MsgBubble v-for="item in message.data" :key="item.id" :reverse="!item.modelId">
+          <MsgBubble v-for="(msg, msgIndex) in message.data" :key="msg.id" :reverse="!msg.modelId">
             <template #head>
               <Hover>
                 <el-avatar :src="ds" size="default" />
@@ -57,26 +57,84 @@ const { sendShortcut } = useShortcut(topic, message, {
             </template>
             <template #content>
               <div class="chat-item-container">
-                <div class="chat-item-header" :class="{ reverse: !item.modelId }">
-                  <el-text class="name">{{ modelsStore.find(item.modelId)?.providerName }}</el-text>
-                  <el-text class="time">{{ item.time }}</el-text>
+                <div class="chat-item-header" :class="{ reverse: !msg.modelId }">
+                  <el-text class="name">{{ modelsStore.find(msg.modelId)?.providerName }}</el-text>
+                  <el-text class="time">{{ msg.time }}</el-text>
                 </div>
-                <div class="chat-item-content" :class="{ reverse: !item.modelId }">
-                  <div v-if="item.modelId" class="flex flex-col">
-                    <el-button v-show="item.status == 100 && item.reasoning" type="primary" loading size="small">
-                      深度思考中
-                    </el-button>
-                    <el-text v-show="item.content.reasoningContent" type="success" class="self-start!">
-                      {{ item.content.reasoningContent }}
+                <div class="chat-item-content" :class="{ reverse: !msg.modelId }">
+                  <el-card style="--el-card-padding: 1rem" shadow="never">
+                    <template #header v-if="msg.modelId">
+                      <div class="flex flex-col gap-0.5rem">
+                        <div>
+                          <el-button v-show="msg.status == 100 && msg.reasoning" type="primary" loading size="small">
+                            {{ t("chat.thinking") }}
+                          </el-button>
+                        </div>
+                        <div>
+                          <el-text v-show="msg.content.reasoningContent" type="success" class="self-start!">
+                            {{ msg.content.reasoningContent }}
+                          </el-text>
+                        </div>
+                        <div>
+                          <el-text v-show="msg.status == 100" type="primary" size="small">
+                            <i-eos-icons:three-dots-loading class="text-4rem"></i-eos-icons:three-dots-loading>
+                          </el-text>
+                        </div>
+                      </div>
+                    </template>
+                    <Markdown v-if="msg.modelId" :id="msg.id" :content="msg.content" :partial="!msg.finish" />
+                    <el-text v-else type="primary" class="self-end!">
+                      {{ msg.content.content }}
                     </el-text>
-                    <el-text v-show="item.status == 100" type="primary" size="small">
-                      <i-eos-icons:three-dots-loading class="text-4rem"></i-eos-icons:three-dots-loading>
-                    </el-text>
-                    <Markdown :id="item.id" :content="item.content" :partial="!item.finish" />
-                  </div>
-                  <el-text v-else type="primary" class="self-end!">
-                    {{ item.content.content }}
-                  </el-text>
+                    <template #footer>
+                      <div>
+                        <el-tooltip v-if="msg.modelId" :content="t('chat.terminate')" placement="top">
+                          <Button
+                            @click="done => chatStore.terminate(done, topic.id, msg.modelId)"
+                            size="small"
+                            :disabled="!(msg.status == 206 || msg.status == 100)"
+                            circle
+                            plain
+                            text
+                            type="primary">
+                            <i-solar:stop-circle-bold class="text-1.4rem"></i-solar:stop-circle-bold>
+                          </Button>
+                        </el-tooltip>
+                        <el-tooltip v-if="msg.modelId" :content="t('chat.regenerate')" placement="top">
+                          <Button
+                            @click="done => chatStore.restart(done, topic, message, msg)"
+                            size="small"
+                            :disabled="!msg.finish"
+                            circle
+                            plain
+                            text
+                            type="primary">
+                            <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
+                          </Button>
+                        </el-tooltip>
+                        <el-tooltip v-if="msg.modelId" :content="t('chat.editChat')" placement="top">
+                          <el-button size="small" :disabled="!msg.finish" circle plain text type="primary">
+                            <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
+                          </el-button>
+                        </el-tooltip>
+                        <el-popconfirm
+                          :title="t('tip.deleteConfirm')"
+                          @confirm="chatStore.deleteSubMessage(message, msgIndex)">
+                          <template #reference>
+                            <el-button size="small" :disabled="!msg.finish" circle plain text type="danger">
+                              <i-solar:trash-bin-trash-outline class="text-1.4rem"></i-solar:trash-bin-trash-outline>
+                            </el-button>
+                          </template>
+                          <template #actions="{ confirm, cancel }">
+                            <div class="flex justify-between">
+                              <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
+                              <el-button size="small" @click="cancel">{{ t("tip.cancel") }}</el-button>
+                            </div>
+                          </template>
+                        </el-popconfirm>
+                      </div>
+                    </template>
+                  </el-card>
                 </div>
                 <div class="chat-item-footer"></div>
               </div>

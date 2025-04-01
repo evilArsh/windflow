@@ -18,7 +18,7 @@ import { AxiosInstance, HttpStatusCode } from "axios"
 
 export class LLMDeepSeek implements LLMProvider {
   #messageConfig: DSChatCompletionRequest
-  #axios?: AxiosInstance
+  #axios: AxiosInstance
   constructor() {
     this.#messageConfig = {
       messages: [],
@@ -33,6 +33,7 @@ export class LLMDeepSeek implements LLMProvider {
       temperature: 0.7,
       // tool_choice: "none",
     }
+    this.#axios = createInstance()
   }
   parseResponse(text: string): LLMChatResponse {
     const data: DSChatCompletionResponseStream[] = text
@@ -57,9 +58,6 @@ export class LLMDeepSeek implements LLMProvider {
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): LLMChatResponseHandler {
-    if (!this.#axios) {
-      this.#axios = createInstance()
-    }
     this.#axios.defaults.baseURL = providerMeta.apiUrl
     this.#axios.defaults.headers.common["Authorization"] = `Bearer ${providerMeta.apiKey}`
 
@@ -78,9 +76,6 @@ export class LLMDeepSeek implements LLMProvider {
     })
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    if (!this.#axios) {
-      this.#axios = createInstance()
-    }
     this.#axios.defaults.baseURL = provider.apiUrl
     this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
     const res = await this.#axios.request<DSModelsResponse>({

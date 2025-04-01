@@ -1,21 +1,35 @@
 import { defineStore, storeToRefs } from "pinia"
-import { ChatContext, ChatMessage, ChatTopic, ChatTopicTree, LLMChatMessage, LLMProvider, Role } from "@renderer/types"
+import {
+  ChatContext,
+  ChatMessage,
+  ChatTopic,
+  ChatTopicTree,
+  LLMChatMessage,
+  LLMProvider,
+  ModelMeta,
+  ProviderMeta,
+  Role,
+  Settings,
+} from "@renderer/types"
 import { chatTopicDefault } from "./default/chat.default"
 import { useDebounceFn, useThrottleFn } from "@vueuse/core"
 import { indexKey, storeKey, useDatabase } from "@renderer/usable/useDatabase"
 import { ElMessage } from "element-plus"
 import useProviderStore from "./provider.store"
 import useModelsStore from "./model.store"
+import useSettingsStore from "./settings.store"
+import { CallBackFn } from "@renderer/lib/shared/types"
 
 function topicToTree(topic: ChatTopic): ChatTopicTree {
   return { id: topic.id, node: topic, children: [] }
 }
 
-function assembleTopicTree(data: ChatTopic[]): ChatTopicTree[] {
+function assembleTopicTree(data: ChatTopic[], cb: (item: ChatTopicTree) => void): ChatTopicTree[] {
   const res: ChatTopicTree[] = []
   const maps: Record<string, ChatTopicTree> = {}
   data.forEach(item => {
     maps[item.id] = topicToTree(item)
+    cb(maps[item.id])
   })
   data.forEach(item => {
     if (!item.parentId) {
@@ -33,44 +47,15 @@ export default defineStore(storeKey.chat_topic, () => {
   const { add: dbAdd, put, get, request, wrapTransaction, count } = useDatabase()
   const providerStore = useProviderStore()
   const modelsStore = useModelsStore()
+  const settingsStore = useSettingsStore()
   const { providerMetas } = storeToRefs(providerStore)
 
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
-  const chatMessage = reactive<Record<string, ChatMessage>>({}) // 聊天信息缓存
+  const chatMessage = reactive<Record<string, ChatMessage>>({}) // 聊天信息缓存,messageId作为key
   // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key
   const llmChats = reactive<Record<string, ChatContext[]>>({})
-
-  const dbUpdateChatTopic = useThrottleFn(
-    async (data: ChatTopic) => await put("chat_topic", data.id, toRaw(data)),
-    300,
-    true
-  )
-  const dbAddChatTopic = async (data: ChatTopic) => await dbAdd("chat_topic", toRaw(data))
-  const dbAddChatMessage = async (data: ChatMessage) => await dbAdd("chat_message", toRaw(data))
-  const dbUpdateChatMessage = useDebounceFn(
-    async (data: ChatMessage) => await put("chat_message", data.id, toRaw(data)),
-    300,
-    { maxWait: 1000 }
-  )
-  const dbFindChatMessage = async (id: string) => await get<ChatMessage>("chat_message", id)
-  /**
-   * @description 删除对应的聊天组和聊天消息
-   */
-  const dbDelChatTopic = async (data: ChatTopic[]) => {
-    return await request(async db => {
-      const ts = db.transaction([storeKey.chat_message, storeKey.chat_topic], "readwrite")
-      const storeTopic = ts.objectStore(storeKey.chat_topic)
-      const storeMessage = ts.objectStore(storeKey.chat_message)
-      data.forEach(item => {
-        storeTopic.delete(item.id)
-        if (item.chatMessageId) {
-          storeMessage.delete(item.chatMessageId)
-        }
-      })
-      return await wrapTransaction(ts)
-    })
-  }
-
+  const currentTopic = ref<ChatTopicTree>() // 选中的聊天
+  const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
   const getChatTopicContext = (topicId: string, modelId: string, provider: LLMProvider, message: ChatMessage) => {
     if (!llmChats[topicId]) {
       llmChats[topicId] = []
@@ -94,14 +79,14 @@ export default defineStore(storeKey.chat_topic, () => {
   }
 
   /**
-   * 获取消息上下文
-   * @description 最后一个消息必须是`Role.User`,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
+   * @description 获取消息上下文，最后一个消息必须是`Role.User`,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
+   * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
-  const getMessageContext = (topic: ChatTopic, message: ChatMessage) => {
+  const getMessageContext = (topic: ChatTopic, message: ChatMessage["data"]) => {
     const context: LLMChatMessage[] = []
     let sysTick = false
-    for (let i = message.data.length - 1; i >= 0; i--) {
-      const item = message.data[i]
+    for (let i = message.length - 1; i >= 0; i--) {
+      const item = message[i]
       if (!sysTick) {
         if (item.content.role == Role.User) {
           sysTick = !sysTick
@@ -130,7 +115,134 @@ export default defineStore(storeKey.chat_topic, () => {
     return context
   }
 
-  const send = async (topic: ChatTopic, message: ChatMessage) => {
+  /**
+   * @description 发送消息
+   */
+  const sendMessage = (
+    chatContext: ChatContext,
+    context: LLMChatMessage[],
+    model: ModelMeta,
+    providerMeta: ProviderMeta,
+    newMessage: ChatMessage["data"][number]
+  ) => {
+    if (!chatContext.provider) return
+    chatContext.handler = chatContext.provider.chat(context, model, providerMeta, async msg => {
+      newMessage.status = msg.status
+      newMessage.reasoning = msg.reasoning
+      newMessage.content.content += msg.data.map(item => item.content).join("")
+      newMessage.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
+      if (msg.status == 206) {
+        newMessage.finish = false
+      } else if (msg.status == 200) {
+        newMessage.finish = true
+        console.log(`[message done] ${msg.status}`)
+      } else {
+        newMessage.finish = true
+        console.log(`[message] ${msg.status}`)
+      }
+    })
+  }
+
+  const getMeta = (modelId: string) => {
+    if (modelId.length == 0) {
+      console.warn("[getMeta] modelId is empty")
+      return
+    }
+    const model = modelsStore.find(modelId) // 模型元数据
+    const providerMeta = providerMetas.value.find(item => item.name == model?.providerName) // 提供商元数据
+    if (!(model && providerMeta)) {
+      console.warn("[getMeta] model or providerMeta not found", modelId)
+      return
+    }
+    const provider = providerStore.providerManager.getLLMProvider(model.providerName)
+    if (!provider) {
+      console.warn("[getMeta] provider not found", model.providerName)
+      return
+    }
+    return { model, providerMeta, provider }
+  }
+  const dbUpdateChatTopic = useThrottleFn(
+    async (data: ChatTopic) => await put("chat_topic", data.id, toRaw(data)),
+    300,
+    true
+  )
+  async function dbAddChatTopic(data: ChatTopic) {
+    return await dbAdd("chat_topic", toRaw(data))
+  }
+  async function dbAddChatMessage(data: ChatMessage) {
+    return await dbAdd("chat_message", toRaw(data))
+  }
+  const dbUpdateChatMessage = useDebounceFn(
+    async (data: ChatMessage) => await put("chat_message", data.id, toRaw(data)),
+    300,
+    { maxWait: 1000 }
+  )
+  async function dbFindChatMessage(id: string) {
+    return await get<ChatMessage>("chat_message", id)
+  }
+  /**
+   * @description 删除对应的聊天组和聊天消息
+   */
+  async function dbDelChatTopic(data: ChatTopic[]) {
+    return await request(async db => {
+      const ts = db.transaction([storeKey.chat_message, storeKey.chat_topic], "readwrite")
+      const storeTopic = ts.objectStore(storeKey.chat_topic)
+      const storeMessage = ts.objectStore(storeKey.chat_message)
+      data.forEach(item => {
+        storeTopic.delete(item.id)
+        if (item.chatMessageId) {
+          storeMessage.delete(item.chatMessageId)
+        }
+      })
+      return await wrapTransaction(ts)
+    })
+  }
+
+  function terminate(done: CallBackFn, topicId: string, modelId: string) {
+    if (llmChats[topicId]) {
+      const chatContext = llmChats[topicId].find(item => item.modelId === modelId)
+      if (chatContext) {
+        chatContext.handler?.terminate()
+      }
+    }
+    done()
+  }
+
+  function restart(done: CallBackFn, topic: ChatTopic, message: ChatMessage, messageItem: ChatMessage["data"][number]) {
+    if (llmChats[topic.id]) {
+      const chatContext = llmChats[topic.id].find(item => item.modelId === messageItem.modelId)
+      const meta = getMeta(messageItem.modelId)
+      if (!meta) return
+      const { model, providerMeta, provider } = meta
+      const contextIndex = message.data.findIndex(item => item.id === messageItem.id)
+      const context = getMessageContext(topic, message.data.slice(0, contextIndex)) // 消息上下文
+      messageItem.content = { role: "assistant", content: "", reasoningContent: "" }
+      messageItem.finish = false
+      messageItem.status = 200
+      messageItem.time = formatSecond(new Date())
+      if (chatContext) {
+        if (chatContext.handler) {
+          chatContext.handler.restart()
+        } else {
+          if (!chatContext.provider) chatContext.provider = provider
+          sendMessage(chatContext, context, model, providerMeta, messageItem)
+        }
+      } else {
+        const chatContext = getChatTopicContext(topic.id, messageItem.modelId, provider, message) // 获取聊天信息上下文
+        sendMessage(chatContext, context, model, providerMeta, messageItem)
+      }
+    }
+    done()
+  }
+
+  /**
+   * @description 删除一条消息列表的消息
+   */
+  function deleteSubMessage(message: ChatMessage, msgIndex: number) {
+    message.data.splice(msgIndex, 1)
+  }
+
+  async function send(topic: ChatTopic, message: ChatMessage) {
     if (!topic.content.trim()) return
     if (topic.modelIds.length == 0) {
       ElMessage.warning("请选择模型")
@@ -150,24 +262,11 @@ export default defineStore(storeKey.chat_topic, () => {
     })
 
     for (const modelId of topic.modelIds) {
-      if (modelId.length == 0) {
-        console.warn("[send] modelId is empty")
-        continue
-      }
-      const model = modelsStore.find(modelId) // 模型元数据
-      const providerMeta = providerMetas.value.find(item => item.name == model?.providerName) // 提供商元数据
-      if (!(model && providerMeta)) {
-        console.warn("[send] model or providerMeta not found", modelId)
-        continue
-      }
-      const provider = providerStore.providerManager.getLLMProvider(model.providerName)
-      if (!provider) {
-        console.warn("[send] provider not found", model.providerName)
-        continue
-      }
+      const meta = getMeta(modelId)
+      if (!meta) continue
+      const { model, providerMeta, provider } = meta
       const chatContext = getChatTopicContext(topic.id, modelId, provider, message) // 获取聊天信息上下文
       if (!chatContext.provider) chatContext.provider = provider
-
       // 单个请求的消息
       const newMessage = reactive<ChatMessage["data"][number]>({
         id: uniqueId(),
@@ -177,26 +276,23 @@ export default defineStore(storeKey.chat_topic, () => {
         content: { role: "assistant", content: "", reasoningContent: "" },
         modelId,
       })
-      const context = getMessageContext(topic, message) // 消息上下文
+      const context = getMessageContext(topic, message.data) // 消息上下文
       chatContext.message.data.push(newMessage)
-      chatContext.handler = markRaw(
-        chatContext.provider.chat(context, model, providerMeta, async msg => {
-          newMessage.status = msg.status
-          newMessage.reasoning = msg.reasoning
-          newMessage.content.content += msg.data.map(item => item.content).join("")
-          newMessage.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
-          if (msg.status == 206) {
-            newMessage.finish = false
-          } else if (msg.status == 200) {
-            newMessage.finish = true
-            console.log("done")
-          } else {
-            newMessage.finish = true
-          }
-        })
-      )
+      sendMessage(chatContext, context, model, providerMeta, newMessage)
     }
     topic.content = ""
+  }
+  function mountContext(val: ChatTopic, message: ChatMessage) {
+    if (!llmChats[val.id]) {
+      llmChats[val.id] = val.modelIds.map(modelId => {
+        return {
+          modelId,
+          message: message,
+          provider: undefined,
+          handler: undefined,
+        }
+      })
+    }
   }
   const fetch = async () => {
     try {
@@ -221,10 +317,28 @@ export default defineStore(storeKey.chat_topic, () => {
           })
           return res
         })
-        data && topicList.push(...assembleTopicTree(data))
+        // --- 恢复状态
+        if (data) {
+          const nodeKeyData = await get<Settings<string>>("settings", "chat.currentNodeKey")
+          currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
+          currentTopic.value = topicList.find(item => item.id === currentNodeKey.value)
+          topicList.push(
+            ...assembleTopicTree(data, item => {
+              if (item.id === currentNodeKey.value) {
+                currentTopic.value = item
+              }
+            })
+          )
+        }
       } else {
         const data = chatTopicDefault()
-        topicList.push(...assembleTopicTree(data))
+        topicList.push(
+          ...assembleTopicTree(data, item => {
+            if (item.id === currentNodeKey.value) {
+              currentTopic.value = item
+            }
+          })
+        )
         for (const item of data) {
           await dbAdd("chat_topic", item)
         }
@@ -233,11 +347,19 @@ export default defineStore(storeKey.chat_topic, () => {
       console.error(`[fetch chat topic] ${(error as Error).message}`)
     }
   }
+  settingsStore.dataWatcher<string>("chat.currentNodeKey", currentNodeKey, "")
+
   fetch()
   return {
     topicList,
     chatMessage,
     llmChats,
+    currentTopic,
+    currentNodeKey,
+    mountContext,
+    terminate,
+    deleteSubMessage,
+    restart,
     dbUpdateChatTopic,
     dbAddChatTopic,
     dbFindChatMessage,

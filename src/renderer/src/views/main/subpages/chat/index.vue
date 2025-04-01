@@ -8,10 +8,7 @@ import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "./usable/useMenu"
-import useSettingsStore from "@renderer/store/settings.store"
-import { WatchHandle } from "vue"
 const { t } = useI18n()
-const settingsStore = useSettingsStore()
 const keyword = ref<string>("") // 搜索关键字
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
@@ -20,21 +17,22 @@ const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-const subNavWidth = ref<string>("")
-const widthWacher = shallowRef<WatchHandle>()
-const { dlg, tree, currentTopic, selectedTopic } = useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
-
+const { dlg, tree, currentTopic, selectedTopic, currentNodeKey } = useMenu(
+  scaleRef,
+  scrollRef,
+  editTopicRef,
+  menuRef,
+  treeRef
+)
 onMounted(() => {
   window.addEventListener("resize", dlg.clickMask)
-  widthWacher.value = settingsStore.dataWatcher<string | number>("chat.subNavWidth", subNavWidth, "300px")
 })
 onBeforeUnmount(() => {
   window.removeEventListener("resize", dlg.clickMask)
-  widthWacher.value?.stop()
 })
 </script>
 <template>
-  <SubNavLayout v-model:width="subNavWidth">
+  <SubNavLayout id="chat.subNav">
     <template #submenu>
       <div class="chat-provider-header">
         <el-input v-model="keyword" :placeholder="t('chat.search')" />
@@ -48,7 +46,7 @@ onBeforeUnmount(() => {
           <el-tree
             ref="treeRef"
             :default-expanded-keys="tree.defaultExpandedKeys"
-            :current-node-key="currentTopic?.id"
+            :current-node-key="currentNodeKey"
             :expand-on-click-node="false"
             :indent="18"
             highlight-current
@@ -60,10 +58,15 @@ onBeforeUnmount(() => {
             @node-collapse="tree.onNodeCollapse">
             <template #default="{ data }: { data: ChatTopicTree }">
               <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
-                <div class="chat-tree-icon" @click.stop="dlg.openQuickEdit($event, data)">
-                  <Svg :src="data.node.icon" class="text-18px"></Svg>
-                </div>
-                <div class="flex items-center flex-1">
+                <el-button text size="small" @click.stop="dlg.openQuickEdit($event, data)" circle>
+                  <div class="chat-tree-icon">
+                    <Svg :src="data.node.icon" class="text-18px"></Svg>
+                  </div>
+                </el-button>
+                <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
+                  <!-- <i-eos-icons:bubble-loading
+                    v-if="data.node.requestCount && data.node.requestCount > 0"
+                    class="text-1.2rem"></i-eos-icons:bubble-loading> -->
                   <el-text class="chat-tree-label" line-clamp="2">{{ data.node.label }}</el-text>
                 </div>
                 <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
@@ -116,7 +119,8 @@ onBeforeUnmount(() => {
   --chat-tree-icon-size: 2.5rem;
   display: flex;
   gap: 0.5rem;
-  width: 100%;
+  flex: 1;
+  overflow: hidden;
   padding: 0.5rem;
   .chat-tree-icon {
     transition: all 0.3s ease-in-out;

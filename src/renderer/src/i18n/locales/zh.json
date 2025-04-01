@@ -7,7 +7,10 @@
     "addFailed": "添加失败",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
-    "search": "搜索"
+    "regenerate": "重新生成",
+    "search": "搜索",
+    "terminate": "终止",
+    "thinking": "思考中"
   },
   "lang": {
     "en": "English",
@@ -46,8 +49,11 @@
     "status401": "身份验证失败，请检查配置信息"
   },
   "tip": {
+    "cancel": "取消",
+    "deleteConfirm": "要删除吗?",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中",
-    "selectAll": "全选"
+    "selectAll": "全选",
+    "yes": "是的"
   }
 }

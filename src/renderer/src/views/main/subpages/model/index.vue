@@ -39,7 +39,7 @@ watch(providerMetas, init)
 onMounted(init)
 </script>
 <template>
-  <SubNavLayout>
+  <SubNavLayout id="model.subNav">
     <template #submenu>
       <el-scrollbar>
         <div class="provider-container">

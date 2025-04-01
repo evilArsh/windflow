@@ -11,7 +11,6 @@ import {
   SFMessage,
   ModelType,
   SFModelsResponse,
-  ProviderName,
 } from "@renderer/types"
 import JSON5 from "json5"
 import { useLLMChat, createInstance } from "@renderer/lib/http"
@@ -30,7 +29,7 @@ const reasonerPattern = /deepseek-r1|qwq-32b/
 
 export class SiliconFlow implements LLMProvider {
   #messageConfig: SFChatCompletionRequest
-  #axios?: AxiosInstance
+  #axios: AxiosInstance
   constructor() {
     this.#messageConfig = {
       model: "",
@@ -46,6 +45,7 @@ export class SiliconFlow implements LLMProvider {
         type: "text",
       },
     }
+    this.#axios = createInstance()
   }
   parseResponse(text: string): LLMChatResponse {
     const data: SFChatCompletionResponse[] = text
@@ -71,9 +71,6 @@ export class SiliconFlow implements LLMProvider {
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): LLMChatResponseHandler {
-    if (!this.#axios) {
-      this.#axios = createInstance()
-    }
     this.#axios.defaults.baseURL = providerMeta.apiUrl
     this.#axios.defaults.headers.common["Authorization"] = `Bearer ${providerMeta.apiKey}`
 
@@ -84,7 +81,7 @@ export class SiliconFlow implements LLMProvider {
     this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as SFMessage[]
 
     this.#messageConfig.model = modelMeta.modelName
-    if (modelMeta.providerName === ProviderName.DeepSeek) {
+    if (modelMeta.modelName.toLocaleLowerCase().includes("deepseek")) {
       this.#messageConfig.max_tokens = 8192
     } else {
       this.#messageConfig.max_tokens = 16384
@@ -106,20 +103,18 @@ export class SiliconFlow implements LLMProvider {
     this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
     const req = types.reduce(
       (acc, v) => {
-        if (this.#axios) {
-          acc.push(
-            this.#axios
-              .request<SFModelsResponse>({
-                method: provider.apiModelList.method,
-                url: provider.apiModelList.url,
-                params: { sub_type: v.name },
-              })
-              .then(res => ({
-                type: v.type,
-                data: res.data.data,
-              }))
-          )
-        }
+        acc.push(
+          this.#axios
+            .request<SFModelsResponse>({
+              method: provider.apiModelList.method,
+              url: provider.apiModelList.url,
+              params: { sub_type: v.name },
+            })
+            .then(res => ({
+              type: v.type,
+              data: res.data.data,
+            }))
+        )
         return acc
       },
       [] as Promise<{ type: ModelType; data: SFModelsResponse["data"] }>[]

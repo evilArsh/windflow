@@ -41,7 +41,6 @@ export default defineStore(storeKey.settings, () => {
     300,
     true
   )
-
   /**
    * 配置数据监听，实时更新到数据库
    */

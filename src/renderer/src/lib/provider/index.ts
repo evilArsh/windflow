@@ -9,8 +9,8 @@ export class ProviderManager {
     this.#providers = new Map()
     this.#llmProviders = new WeakSet()
 
-    const deepseek = new LLMDeepSeek()
-    const siliconflow = new SiliconFlow()
+    const deepseek = markRaw(new LLMDeepSeek())
+    const siliconflow = markRaw(new SiliconFlow())
 
     this.#providers.set(ProviderName.DeepSeek, deepseek)
     this.#providers.set(ProviderName.SiliconFlow, siliconflow)

@@ -216,6 +216,10 @@ export type ChatTopic = {
    * @description 会话输入框高度
    */
   inputHeight?: number
+  // /**
+  //  * @description 正在请求的会话个数
+  //  */
+  // requestCount?: number
   /**
    * @description 会话聊天记录
    */
