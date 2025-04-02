@@ -1,1 +1,1 @@
-# Candy Box
+# AI-Mate

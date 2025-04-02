@@ -104,7 +104,7 @@ export const useLLMChat = (
               message: {
                 status: err.status ?? HttpStatusCode.InternalServerError,
                 msg: err.message,
-                data: [{ content: (err.response?.data as string) ?? "", role: "assistant" }],
+                data: [{ content: dataToText(err.response?.data), role: "assistant" }],
               },
             })
           } else {

@@ -2,6 +2,7 @@
 import markdownit from "markdown-it"
 import { full as emoji } from "markdown-it-emoji"
 import markdownitAnchor from "markdown-it-anchor"
+import mathjax3 from "markdown-it-mathjax3"
 import markdownItCode from "./plugins"
 import MarkdownIt from "markdown-it"
 import { CodePluginOptions } from "./plugins"
@@ -27,7 +28,7 @@ const md: MarkdownIt = markRaw(
     html: true,
     linkify: true,
     typographer: true,
-    breaks: false,
+    // breaks: true,
   }).disable(["hr"])
 )
 const idxMap = shallowReactive<Record<string, CodePluginOptions>>({})
@@ -38,12 +39,20 @@ const compMap = shallowReactive<Record<string, VNode>>({
 md.use(emoji)
 md.use(markdownitAnchor)
 md.use(markdownItCode, props.id, idxMap, compMap)
+md.use(mathjax3, {
+  tex: {
+    tags: "ams",
+  },
+  options: {
+    skipHtml: false,
+  },
+})
 mermaid.initialize({
   startOnLoad: true,
   securityLevel: "loose",
   flowchart: {
     useMaxWidth: true,
-    htmlLabels: false,
+    htmlLabels: true,
     // defaultRenderer: "dagre-wrapper",
   },
   theme: "default",

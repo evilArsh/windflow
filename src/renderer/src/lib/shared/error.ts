@@ -8,3 +8,12 @@ export function errorToText(error: unknown): string {
   }
   return String(error)
 }
+
+export function dataToText(data: unknown): string {
+  if (typeof data === "string") {
+    return data
+  } else if (isObject(data)) {
+    return JSON.stringify(data)
+  }
+  return String(data)
+}

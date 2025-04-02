@@ -48,19 +48,27 @@ export class SiliconFlow implements LLMProvider {
     this.#axios = createInstance()
   }
   parseResponse(text: string): LLMChatResponse {
-    const data: SFChatCompletionResponse[] = text
-      .replace(/data: |\[DONE\]|: keep-alive/g, "")
-      .split("\n")
-      .filter(item => !!item)
-      .map(item => JSON5.parse(item))
-    return {
-      status: HttpStatusCode.PartialContent,
-      msg: "",
-      data: data.map<LLMChatMessage>(v => ({
-        role: "assistant",
-        content: v.choices[0].delta.content ?? "",
-        reasoningContent: v.choices[0].delta.reasoning_content ?? "",
-      })),
+    try {
+      const data: SFChatCompletionResponse[] = text
+        .replace(/data: |\[DONE\]|: keep-alive/g, "")
+        .split("\n")
+        .filter(item => !!item)
+        .map(item => JSON5.parse(item))
+      return {
+        status: HttpStatusCode.PartialContent,
+        msg: "",
+        data: data.map<LLMChatMessage>(v => ({
+          role: "assistant",
+          content: v.choices[0].delta.content ?? "",
+          reasoningContent: v.choices[0].delta.reasoning_content ?? "",
+        })),
+      }
+    } catch (error) {
+      return {
+        status: HttpStatusCode.PartialContent,
+        msg: "",
+        data: [{ content: dataToText(error), role: "assistant" }],
+      }
     }
   }
 
@@ -81,10 +89,11 @@ export class SiliconFlow implements LLMProvider {
     this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as SFMessage[]
 
     this.#messageConfig.model = modelMeta.modelName
-    if (modelMeta.modelName.toLocaleLowerCase().includes("deepseek")) {
+    const mn = modelMeta.modelName.toLocaleLowerCase()
+    if (mn.includes("deepseek")) {
       this.#messageConfig.max_tokens = 8192
     } else {
-      this.#messageConfig.max_tokens = 16384
+      this.#messageConfig.max_tokens = 4096
     }
     return request.chat(this.#messageConfig, cb => {
       callback({

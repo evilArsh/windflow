@@ -1,5 +1,5 @@
 {
-  "name": "candybox",
+  "name": "ai-mate",
   "version": "0.0.1",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
@@ -44,6 +44,7 @@
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-emoji": "^3.0.0",
+    "markdown-it-mathjax3": "^4.3.2",
     "mermaid": "^11.5.0",
     "pinia": "^3.0.1",
     "sucrase": "^3.35.0",

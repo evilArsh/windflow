@@ -136,6 +136,7 @@ export default defineStore(storeKey.chat_topic, () => {
     providerMeta: ProviderMeta,
     newMessage: ChatMessage["data"][number]
   ) => {
+    topic.requestCount++
     if (!chatContext.provider) return
     chatContext.handler = chatContext.provider.chat(context, model, providerMeta, async msg => {
       newMessage.status = msg.status
@@ -351,7 +352,6 @@ export default defineStore(storeKey.chat_topic, () => {
       if (!chatContext.provider) chatContext.provider = provider
       const context = getMessageContext(topic, message.data) // 消息上下文
       chatContext.message.data.push(newMessage)
-      topic.requestCount++
       sendMessage(topic, chatContext, context, model, providerMeta, newMessage)
     }
     topic.content = ""
