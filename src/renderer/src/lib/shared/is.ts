@@ -24,3 +24,6 @@ export const isBoolean = (val: unknown): val is boolean => typeof val === "boole
 export const uniqueId = (seed?: number): string => {
   return ulid(seed)
 }
+export const isIndexOutOfRange = (index: number, length: number): boolean => {
+  return index < 0 || index > length
+}

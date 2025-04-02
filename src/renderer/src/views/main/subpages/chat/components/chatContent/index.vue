@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ds from "@renderer/assets/images/provider/deepseek.svg"
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatMessage, ChatTopic, Role } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/views/main/components/markdown/index.vue"
@@ -8,48 +8,48 @@ import useScrollHook from "../../usable/useScrollHook"
 import useShortcut from "../../usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
 import ModelTool from "../model/index.vue"
-import useSync from "../../usable/useSync"
 import useChatStore from "@renderer/store/chat.store"
-const emit = defineEmits<{
-  (e: "update:modelValue", value: ChatTopic): void
-}>()
-const props = defineProps<{
-  modelValue: ChatTopic
-}>()
-const topic = computed<ChatTopic>({
-  get: () => props.modelValue,
-  set(value) {
-    emit("update:modelValue", value)
-  },
-})
+import { storeToRefs } from "pinia"
+const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const modelsStore = useModelsStore()
 const chatStore = useChatStore()
 const { t } = useI18n()
 
-const { message } = useSync(topic)
-const { onScroll } = useScrollHook(contentLayout, topic, message)
-const send = (topic: ChatTopic, message: ChatMessage) => {
-  chatStore.send(topic, message)
-  nextTick(() => {
-    contentLayout.value?.scrollToBottom("smooth")
-  })
+const { onScroll } = useScrollHook(contentLayout, currentTopic, currentMessage)
+
+const send = (topic?: ChatTopic, message?: ChatMessage) => {
+  if (topic && message) {
+    chatStore.send(topic, message)
+    nextTick(() => {
+      contentLayout.value?.scrollToBottom("smooth")
+    })
+  }
 }
-const { sendShortcut } = useShortcut(topic, message, {
+const interactMsg = computed(() => {
+  return currentMessage.value?.data.filter(item => item.content.role !== Role.System) ?? []
+})
+const promptMsg = computed(() => {
+  return (currentMessage.value?.data.filter(item => item.content.role === Role.System) ?? [])
+    .map(item => item.content.content)
+    .join("\n")
+})
+const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
   send,
 })
 </script>
 <template>
-  <div class="flex flex-1 overflow-hidden">
-    <ContentLayout v-model:handler-height="topic.inputHeight" ref="contentLayout" @scroll="onScroll">
+  <div v-if="currentTopic" class="flex flex-1 overflow-hidden">
+    <ContentLayout v-model:handler-height="currentTopic.node.inputHeight" ref="contentLayout" @scroll="onScroll">
       <template #header>
         <div class="flex p-1rem justify-end flex-1"></div>
       </template>
       <div class="flex">
         <div class="w-4rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
         <div class="flex flex-col gap2rem flex-1">
-          <MsgBubble v-for="(msg, msgIndex) in message.data" :key="msg.id" :reverse="!msg.modelId">
+          <el-text line-clamp="7" class="text-1.2rem" type="info" size="small">{{ promptMsg }}</el-text>
+          <MsgBubble v-for="msg in interactMsg" :key="msg.id" :reverse="!msg.modelId">
             <template #head>
               <Hover>
                 <el-avatar :src="ds" size="default" />
@@ -58,7 +58,13 @@ const { sendShortcut } = useShortcut(topic, message, {
             <template #content>
               <div class="chat-item-container">
                 <div class="chat-item-header" :class="{ reverse: !msg.modelId }">
-                  <el-text class="name">{{ modelsStore.find(msg.modelId)?.providerName }}</el-text>
+                  <div v-if="msg.modelId" class="flex items-center gap-0.25rem">
+                    <el-text class="name">
+                      {{ modelsStore.find(msg.modelId)?.providerName }}
+                    </el-text>
+                    <el-text type="danger">|</el-text>
+                    <el-text type="primary">{{ modelsStore.find(msg.modelId)?.modelName }}</el-text>
+                  </div>
                   <el-text class="time">{{ msg.time }}</el-text>
                 </div>
                 <div class="chat-item-content" :class="{ reverse: !msg.modelId }">
@@ -90,7 +96,7 @@ const { sendShortcut } = useShortcut(topic, message, {
                       <div>
                         <el-tooltip v-if="msg.modelId" :content="t('chat.terminate')" placement="top">
                           <Button
-                            @click="done => chatStore.terminate(done, topic.id, msg.modelId)"
+                            @click="done => chatStore.terminate(done, currentTopic?.node.id, msg.id)"
                             size="small"
                             :disabled="!(msg.status == 206 || msg.status == 100)"
                             circle
@@ -102,7 +108,7 @@ const { sendShortcut } = useShortcut(topic, message, {
                         </el-tooltip>
                         <el-tooltip v-if="msg.modelId" :content="t('chat.regenerate')" placement="top">
                           <Button
-                            @click="done => chatStore.restart(done, topic, message, msg)"
+                            @click="done => chatStore.restart(done, currentTopic?.node, currentMessage, msg)"
                             size="small"
                             :disabled="!msg.finish"
                             circle
@@ -119,7 +125,7 @@ const { sendShortcut } = useShortcut(topic, message, {
                         </el-tooltip>
                         <el-popconfirm
                           :title="t('tip.deleteConfirm')"
-                          @confirm="chatStore.deleteSubMessage(message, msgIndex)">
+                          @confirm="chatStore.deleteSubMessage(currentTopic?.node, currentMessage, msg.id)">
                           <template #reference>
                             <el-button size="small" :disabled="!msg.finish" circle plain text type="danger">
                               <i-solar:trash-bin-trash-outline class="text-1.4rem"></i-solar:trash-bin-trash-outline>
@@ -147,7 +153,7 @@ const { sendShortcut } = useShortcut(topic, message, {
       <template #handler>
         <div class="chat-input-container" ref="scale">
           <div class="chat-input-header">
-            <ModelTool v-model="topic.modelIds" />
+            <ModelTool v-model="currentTopic.node.modelIds" />
           </div>
           <div class="chat-input">
             <el-input
@@ -159,17 +165,20 @@ const { sendShortcut } = useShortcut(topic, message, {
               autofocus
               resize="none"
               type="textarea"
-              v-model="topic.content"
+              v-model="currentTopic.node.content"
               :placeholder="t('tip.inputPlaceholder')"></el-input>
           </div>
           <div class="chat-input-actions">
-            <el-button size="small" type="default" plain @click="send(topic, message)">
+            <el-button size="small" type="default" plain @click="send(currentTopic.node, currentMessage)">
               发送({{ sendShortcut }})
             </el-button>
           </div>
         </div>
       </template>
     </ContentLayout>
+  </div>
+  <div v-else class="flex flex-1 items-center justify-center">
+    <el-empty />
   </div>
 </template>
 <style lang="scss" scoped>

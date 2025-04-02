@@ -28,6 +28,7 @@ function assembleTopicTree(data: ChatTopic[], cb: (item: ChatTopicTree) => void)
   const res: ChatTopicTree[] = []
   const maps: Record<string, ChatTopicTree> = {}
   data.forEach(item => {
+    item.requestCount = 0
     maps[item.id] = topicToTree(item)
     cb(maps[item.id])
   })
@@ -55,23 +56,32 @@ export default defineStore(storeKey.chat_topic, () => {
   // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key
   const llmChats = reactive<Record<string, ChatContext[]>>({})
   const currentTopic = ref<ChatTopicTree>() // 选中的聊天
+  const currentMessage = ref<ChatMessage>() // 选中的消息
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
-  const getChatTopicContext = (topicId: string, modelId: string, provider: LLMProvider, message: ChatMessage) => {
+  const getChatTopicContext = (
+    topicId: string,
+    modelId: string,
+    messageId: string,
+    provider: LLMProvider,
+    message: ChatMessage
+  ) => {
     if (!llmChats[topicId]) {
       llmChats[topicId] = []
       llmChats[topicId].push({
         modelId: modelId,
         provider: markRaw(provider),
         message: message,
+        messageId: messageId,
       })
       return llmChats[topicId][0]
     }
-    const res = llmChats[topicId].find(item => item.modelId === modelId)
+    const res = llmChats[topicId].find(item => item.messageId === messageId)
     if (!res) {
       llmChats[topicId].push({
         modelId: modelId,
         provider: markRaw(provider),
         message: message,
+        messageId: messageId,
       })
       return llmChats[topicId].slice(-1)[0]
     }
@@ -119,6 +129,7 @@ export default defineStore(storeKey.chat_topic, () => {
    * @description 发送消息
    */
   const sendMessage = (
+    topic: ChatTopic,
     chatContext: ChatContext,
     context: LLMChatMessage[],
     model: ModelMeta,
@@ -135,9 +146,13 @@ export default defineStore(storeKey.chat_topic, () => {
         newMessage.finish = false
       } else if (msg.status == 200) {
         newMessage.finish = true
+        topic.requestCount--
         console.log(`[message done] ${msg.status}`)
+      } else if (msg.status == 100) {
+        console.log(`[message pending] ${msg.status}`)
       } else {
         newMessage.finish = true
+        topic.requestCount--
         console.log(`[message] ${msg.status}`)
       }
     })
@@ -178,7 +193,14 @@ export default defineStore(storeKey.chat_topic, () => {
     { maxWait: 1000 }
   )
   async function dbFindChatMessage(id: string) {
-    return await get<ChatMessage>("chat_message", id)
+    const res = await get<ChatMessage>("chat_message", id)
+    if (res) {
+      res.data.forEach(item => {
+        item.finish = true
+        item.status = 200
+      })
+    }
+    return res
   }
   /**
    * @description 删除对应的聊天组和聊天消息
@@ -198,39 +220,55 @@ export default defineStore(storeKey.chat_topic, () => {
     })
   }
 
-  function terminate(done: CallBackFn, topicId: string, modelId: string) {
+  function terminate(done: CallBackFn, topicId?: string, messageId?: string) {
+    if (!(topicId && messageId)) {
+      console.warn(`[terminate] topicId or messageId is empty.${topicId} ${messageId}`)
+      return
+    }
     if (llmChats[topicId]) {
-      const chatContext = llmChats[topicId].find(item => item.modelId === modelId)
+      const chatContext = llmChats[topicId].find(item => item.messageId === messageId)
       if (chatContext) {
         chatContext.handler?.terminate()
       }
+    } else {
+      console.warn(`[terminate] chatContext not found.${topicId} ${messageId}`)
     }
     done()
   }
 
-  function restart(done: CallBackFn, topic: ChatTopic, message: ChatMessage, messageItem: ChatMessage["data"][number]) {
-    if (llmChats[topic.id]) {
-      const chatContext = llmChats[topic.id].find(item => item.modelId === messageItem.modelId)
-      const meta = getMeta(messageItem.modelId)
-      if (!meta) return
-      const { model, providerMeta, provider } = meta
-      const contextIndex = message.data.findIndex(item => item.id === messageItem.id)
-      const context = getMessageContext(topic, message.data.slice(0, contextIndex)) // 消息上下文
-      messageItem.content = { role: "assistant", content: "", reasoningContent: "" }
-      messageItem.finish = false
-      messageItem.status = 200
-      messageItem.time = formatSecond(new Date())
-      if (chatContext) {
-        if (chatContext.handler) {
-          chatContext.handler.restart()
-        } else {
-          if (!chatContext.provider) chatContext.provider = provider
-          sendMessage(chatContext, context, model, providerMeta, messageItem)
-        }
+  function restart(
+    done: CallBackFn,
+    topic?: ChatTopic,
+    message?: ChatMessage,
+    messageItem?: ChatMessage["data"][number]
+  ) {
+    if (!(topic && message && messageItem)) {
+      console.warn(`[restart] topic or message or messageItem is empty.${topic} ${message} ${messageItem}`)
+      return
+    }
+    if (!llmChats[topic.id]) {
+      llmChats[topic.id] = []
+    }
+    const chatContext = llmChats[topic.id].find(item => item.messageId === messageItem.id)
+    const meta = getMeta(messageItem.modelId)
+    if (!meta) return
+    const { model, providerMeta, provider } = meta
+    const contextIndex = message.data.findIndex(item => item.id === messageItem.id)
+    const context = getMessageContext(topic, message.data.slice(0, contextIndex)) // 消息上下文
+    messageItem.content = { role: "assistant", content: "", reasoningContent: "" }
+    messageItem.finish = false
+    messageItem.status = 200
+    messageItem.time = formatSecond(new Date())
+    if (chatContext) {
+      if (chatContext.handler) {
+        chatContext.handler.restart()
       } else {
-        const chatContext = getChatTopicContext(topic.id, messageItem.modelId, provider, message) // 获取聊天信息上下文
-        sendMessage(chatContext, context, model, providerMeta, messageItem)
+        if (!chatContext.provider) chatContext.provider = provider
+        sendMessage(topic, chatContext, context, model, providerMeta, messageItem)
       }
+    } else {
+      const chatContext = getChatTopicContext(topic.id, messageItem.modelId, messageItem.id, provider, message) // 获取聊天信息上下文
+      sendMessage(topic, chatContext, context, model, providerMeta, messageItem)
     }
     done()
   }
@@ -238,8 +276,43 @@ export default defineStore(storeKey.chat_topic, () => {
   /**
    * @description 删除一条消息列表的消息
    */
-  function deleteSubMessage(message: ChatMessage, msgIndex: number) {
-    message.data.splice(msgIndex, 1)
+  function deleteSubMessage(topic?: ChatTopic, message?: ChatMessage, currentId?: string) {
+    if (!(message && currentId && topic)) {
+      console.warn(`[deleteSubMessage] message or currentId or topic is empty.${message} ${currentId} ${topic}`)
+      return
+    }
+    const msgIndex = message.data.findIndex(item => item.id === currentId)
+    if (isIndexOutOfRange(msgIndex, message.data.length)) {
+      console.warn(`[deleteSubMessage] msgIndex is out of range.${msgIndex}`)
+      return
+    }
+    const current = message.data[msgIndex]
+    if (current.content.role === Role.System) {
+      console.warn(`[deleteSubMessage] system message cannot be deleted.${msgIndex}`)
+      return
+    } else if (current.content.role === Role.User) {
+      if (!isIndexOutOfRange(msgIndex + 1, message.data.length)) {
+        // 删除之前先终止
+        const chatContext = llmChats[topic.id].find(item => item.messageId === message.data[msgIndex + 1].id)
+        if (chatContext) {
+          chatContext.handler?.terminate()
+        }
+        message.data.splice(msgIndex, 2)
+      } else {
+        message.data.splice(msgIndex, 1)
+      }
+    } else if (current.content.role === Role.Assistant) {
+      if (!isIndexOutOfRange(msgIndex - 1, message.data.length)) {
+        const prev = message.data[msgIndex - 1]
+        if (prev.content.role === Role.User) {
+          message.data.splice(msgIndex - 1, 2)
+        } else {
+          message.data.splice(msgIndex, 1)
+        }
+      } else {
+        message.data.splice(msgIndex, 1)
+      }
+    }
   }
 
   async function send(topic: ChatTopic, message: ChatMessage) {
@@ -265,8 +338,6 @@ export default defineStore(storeKey.chat_topic, () => {
       const meta = getMeta(modelId)
       if (!meta) continue
       const { model, providerMeta, provider } = meta
-      const chatContext = getChatTopicContext(topic.id, modelId, provider, message) // 获取聊天信息上下文
-      if (!chatContext.provider) chatContext.provider = provider
       // 单个请求的消息
       const newMessage = reactive<ChatMessage["data"][number]>({
         id: uniqueId(),
@@ -276,9 +347,12 @@ export default defineStore(storeKey.chat_topic, () => {
         content: { role: "assistant", content: "", reasoningContent: "" },
         modelId,
       })
+      const chatContext = getChatTopicContext(topic.id, modelId, newMessage.id, provider, message) // 获取聊天信息上下文
+      if (!chatContext.provider) chatContext.provider = provider
       const context = getMessageContext(topic, message.data) // 消息上下文
       chatContext.message.data.push(newMessage)
-      sendMessage(chatContext, context, model, providerMeta, newMessage)
+      topic.requestCount++
+      sendMessage(topic, chatContext, context, model, providerMeta, newMessage)
     }
     topic.content = ""
   }
@@ -290,6 +364,7 @@ export default defineStore(storeKey.chat_topic, () => {
           message: message,
           provider: undefined,
           handler: undefined,
+          messageId: message.id,
         }
       })
     }
@@ -321,11 +396,17 @@ export default defineStore(storeKey.chat_topic, () => {
         if (data) {
           const nodeKeyData = await get<Settings<string>>("settings", "chat.currentNodeKey")
           currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
-          currentTopic.value = topicList.find(item => item.id === currentNodeKey.value)
           topicList.push(
-            ...assembleTopicTree(data, item => {
+            ...assembleTopicTree(data, async item => {
               if (item.id === currentNodeKey.value) {
                 currentTopic.value = item
+                if (item.node.chatMessageId) {
+                  const msg = await dbFindChatMessage(item.node.chatMessageId)
+                  if (msg) {
+                    chatMessage[msg.id] = msg
+                    currentMessage.value = msg
+                  }
+                }
               }
             })
           )
@@ -355,6 +436,7 @@ export default defineStore(storeKey.chat_topic, () => {
     chatMessage,
     llmChats,
     currentTopic,
+    currentMessage,
     currentNodeKey,
     mountContext,
     terminate,

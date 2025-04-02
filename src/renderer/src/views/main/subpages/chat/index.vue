@@ -9,7 +9,6 @@ import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "./usable/useMenu"
 const { t } = useI18n()
-const keyword = ref<string>("") // 搜索关键字
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
@@ -17,7 +16,7 @@ const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-const { dlg, tree, currentTopic, selectedTopic, currentNodeKey } = useMenu(
+const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, createNewTopic } = useMenu(
   scaleRef,
   scrollRef,
   editTopicRef,
@@ -35,8 +34,8 @@ onBeforeUnmount(() => {
   <SubNavLayout id="chat.subNav">
     <template #submenu>
       <div class="chat-provider-header">
-        <el-input v-model="keyword" :placeholder="t('chat.search')" />
-        <Button @click="done => dlg.newTopic(done)">
+        <el-input v-model="tree.searchKeyword" :placeholder="t('chat.search')" clearable />
+        <Button @click="done => createNewTopic(done)">
           <i class="text-1.4rem i-ep:plus"></i>
           <el-text>{{ t("chat.addChat") }}</el-text>
         </Button>
@@ -45,6 +44,7 @@ onBeforeUnmount(() => {
         <el-scrollbar ref="scroll">
           <el-tree
             ref="treeRef"
+            :filter-node-method="tree.filterNode"
             :default-expanded-keys="tree.defaultExpandedKeys"
             :current-node-key="currentNodeKey"
             :expand-on-click-node="false"
@@ -58,19 +58,19 @@ onBeforeUnmount(() => {
             @node-collapse="tree.onNodeCollapse">
             <template #default="{ data }: { data: ChatTopicTree }">
               <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
-                <el-button text size="small" @click.stop="dlg.openQuickEdit($event, data)" circle>
+                <el-button text size="small" @click.stop="menu.openQuickEdit($event, data)" circle>
                   <div class="chat-tree-icon">
                     <Svg :src="data.node.icon" class="text-18px"></Svg>
                   </div>
                 </el-button>
                 <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
-                  <!-- <i-eos-icons:bubble-loading
-                    v-if="data.node.requestCount && data.node.requestCount > 0"
-                    class="text-1.2rem"></i-eos-icons:bubble-loading> -->
+                  <i-eos-icons:bubble-loading
+                    v-show="data.node.requestCount > 0"
+                    class="text-1.2rem"></i-eos-icons:bubble-loading>
                   <el-text class="chat-tree-label" line-clamp="2">{{ data.node.label }}</el-text>
                 </div>
                 <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
-                  <el-button @click.stop="dlg.openMenu($event, data)" circle size="small">
+                  <el-button @click.stop="menu.open($event, data)" circle size="small">
                     <i-ep:more-filled></i-ep:more-filled>
                   </el-button>
                 </div>
@@ -79,14 +79,14 @@ onBeforeUnmount(() => {
           </el-tree>
         </el-scrollbar>
       </div>
-      <ScalePanel v-model="dlg.data" ref="scale" @mask-click="dlg.clickMask">
+      <ScalePanel v-model="panelConfig" ref="scale" @mask-click="dlg.clickMask">
         <MenuHandle
           v-if="dlg.is === 'menu'"
           ref="menuRef"
-          :focus="!!dlg.data.mask"
-          @edit="dlg.onMenuEdit"
-          @delete="dlg.onMenuDelete"
-          @add="dlg.onMenuAdd"></MenuHandle>
+          :focus="!!panelConfig.mask"
+          @edit="menu.onEdit"
+          @delete="menu.onDelete"
+          @add="menu.onAdd"></MenuHandle>
         <EditTopic
           ref="editTopicRef"
           v-else-if="dlg.is === 'editTopic' && selectedTopic"
@@ -94,8 +94,8 @@ onBeforeUnmount(() => {
           @close="dlg.clickMask"></EditTopic>
       </ScalePanel>
     </template>
-    <template #content v-if="currentTopic">
-      <ChatContent v-model="currentTopic.node" />
+    <template #content>
+      <ChatContent />
     </template>
   </SubNavLayout>
 </template>

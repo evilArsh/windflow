@@ -216,10 +216,10 @@ export type ChatTopic = {
    * @description 会话输入框高度
    */
   inputHeight?: number
-  // /**
-  //  * @description 正在请求的会话个数
-  //  */
-  // requestCount?: number
+  /**
+   * @description 正在请求的会话个数
+   */
+  requestCount: number
   /**
    * @description 会话聊天记录
    */
@@ -272,6 +272,10 @@ export interface LLMProvider extends Provider {
 export interface ChatContext {
   message: ChatMessage
   modelId: string
+  /**
+   * @description 当前消息ID 作为唯一key索引
+   */
+  messageId: string
   provider?: LLMProvider
   handler?: LLMChatResponseHandler
 }

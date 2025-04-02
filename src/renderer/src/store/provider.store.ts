@@ -20,7 +20,7 @@ export default defineStore(storeKey.provider, () => {
         const data = providerDefault()
         metas.push(...data)
         for (const item of data) {
-          await add("provider", item)
+          add("provider", item)
         }
       }
     } catch (error) {
