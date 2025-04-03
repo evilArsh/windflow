@@ -46,8 +46,8 @@ const un = unified()
   .use(remarkGfm)
   .use(remarkEmoji)
   .use(remarkRehype, { allowDangerousHtml: true, format: "html" })
-  .use(rehypeVueVnode, { mdId: props.id, idxMap, compMap })
   .use(rehypeMathjax)
+  .use(rehypeVueVnode, { mdId: props.id, idxMap, compMap })
   .use(rehypeHighlight)
   .use(rehypeHighlightCodeLines, {
     showLineNumbers: true,
