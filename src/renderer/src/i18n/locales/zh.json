@@ -50,6 +50,7 @@
   },
   "tip": {
     "cancel": "取消",
+    "confirm": "确定",
     "deleteConfirm": "要删除吗?",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中",

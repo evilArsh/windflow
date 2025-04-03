@@ -3,20 +3,21 @@ import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { ChatMessage, ChatTopic, Role } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
-import Markdown from "@renderer/views/main/components/markdown/index.vue"
+import MarkdownRe from "@renderer/views/main/components/markdown-re/index.vue"
 import useScrollHook from "../../usable/useScrollHook"
 import useShortcut from "../../usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
 import ModelTool from "../model/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
+import EditMsg from "./editMsg.vue"
+import { render } from "vue"
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const modelsStore = useModelsStore()
 const chatStore = useChatStore()
 const { t } = useI18n()
-
 const { onScroll } = useScrollHook(contentLayout, currentTopic, currentMessage)
 
 const send = (topic?: ChatTopic, message?: ChatMessage) => {
@@ -26,6 +27,21 @@ const send = (topic?: ChatTopic, message?: ChatMessage) => {
       contentLayout.value?.scrollToBottom("smooth")
     })
   }
+}
+const edit = (msg: ChatMessage["data"][number]) => {
+  render(
+    h(EditMsg, {
+      ts: Date.now(),
+      data: msg.content.content,
+      title: t("chat.editChat"),
+      confirm: t("tip.confirm"),
+      cancel: t("tip.cancel"),
+      onChange: (data: string) => {
+        msg.content.content = data
+      },
+    }),
+    document.body
+  )
 }
 const interactMsg = computed(() => {
   return currentMessage.value?.data.filter(item => item.content.role !== Role.System) ?? []
@@ -47,7 +63,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
       </template>
       <div class="flex">
         <div class="w-4rem flex-shrink-0 flex flex-col items-center py-1rem"></div>
-        <div class="flex flex-col gap2rem flex-1">
+        <div class="flex flex-col gap2rem flex-1 overflow-hidden">
           <el-text line-clamp="7" class="text-1.2rem" type="info" size="small">{{ promptMsg }}</el-text>
           <MsgBubble v-for="msg in interactMsg" :key="msg.id" :reverse="!msg.modelId">
             <template #head>
@@ -88,7 +104,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
                         </div>
                       </div>
                     </template>
-                    <Markdown v-if="msg.modelId" :id="msg.id" :content="msg.content" :partial="!msg.finish" />
+                    <MarkdownRe v-if="msg.modelId" :id="msg.id" :content="msg.content" :partial="!msg.finish" />
                     <el-text v-else type="primary" class="self-end!">
                       {{ msg.content.content }}
                     </el-text>
@@ -119,7 +135,14 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
                           </Button>
                         </el-tooltip>
                         <el-tooltip v-if="msg.modelId" :content="t('chat.editChat')" placement="top">
-                          <el-button size="small" :disabled="!msg.finish" circle plain text type="primary">
+                          <el-button
+                            size="small"
+                            :disabled="!msg.finish"
+                            circle
+                            plain
+                            text
+                            type="primary"
+                            @click="edit(msg)">
                             <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
                           </el-button>
                         </el-tooltip>

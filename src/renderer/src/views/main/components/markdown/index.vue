@@ -28,7 +28,6 @@ const md: MarkdownIt = markRaw(
     html: true,
     linkify: true,
     typographer: true,
-    // breaks: true,
   }).disable(["hr"])
 )
 const idxMap = shallowReactive<Record<string, CodePluginOptions>>({})
@@ -53,7 +52,6 @@ mermaid.initialize({
   flowchart: {
     useMaxWidth: true,
     htmlLabels: true,
-    // defaultRenderer: "dagre-wrapper",
   },
   theme: "default",
 })

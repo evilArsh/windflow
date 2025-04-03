@@ -335,6 +335,7 @@ export default defineStore(storeKey.chat_topic, () => {
       modelId: "",
     })
 
+    const context = getMessageContext(topic, message.data) // 消息上下文
     for (const modelId of topic.modelIds) {
       const meta = getMeta(modelId)
       if (!meta) continue
@@ -350,7 +351,6 @@ export default defineStore(storeKey.chat_topic, () => {
       })
       const chatContext = getChatTopicContext(topic.id, modelId, newMessage.id, provider, message) // 获取聊天信息上下文
       if (!chatContext.provider) chatContext.provider = provider
-      const context = getMessageContext(topic, message.data) // 消息上下文
       chatContext.message.data.push(newMessage)
       sendMessage(topic, chatContext, context, model, providerMeta, newMessage)
     }
