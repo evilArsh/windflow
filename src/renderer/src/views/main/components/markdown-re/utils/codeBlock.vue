@@ -4,7 +4,6 @@ import hljs from "highlight.js"
 import DOMPurify from "dompurify"
 import "highlight.js/styles/github-dark.css"
 const props = defineProps<{
-  partial?: boolean
   code?: string
   lang?: string
 }>()
@@ -42,7 +41,7 @@ const hilight = (code?: string, lang?: string) => {
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang || "plaintext" }}</el-tag>
-          <el-button :disabled="partial" type="primary" @click="onCopy" size="small" round plain circle>
+          <el-button type="primary" @click="onCopy" size="small" round plain circle>
             <i-ic:outline-check v-if="copied"></i-ic:outline-check>
             <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>
           </el-button>

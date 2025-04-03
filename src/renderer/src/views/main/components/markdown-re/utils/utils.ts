@@ -19,3 +19,19 @@ $$`
     }
   )
 }
+
+/**
+ * @description 获取代码块语言
+ */
+export const getLang = (node): string => {
+  if (!node) return ""
+  if (Array.isArray(node.children)) {
+    const code = node.children.find(item => item.tagName === "code")
+    if (code) {
+      return (
+        code.properties?.className?.find((item: string) => item.startsWith("language-"))?.replace("language-", "") ?? ""
+      )
+    }
+  }
+  return ""
+}

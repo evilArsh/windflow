@@ -1,17 +1,28 @@
 <script setup lang="ts">
 import "highlight.js/styles/github-dark.css"
 import mermaid from "mermaid"
+import { useClipboard } from "@vueuse/core"
 const props = defineProps<{
-  partial?: boolean
   code?: string
   lang?: string
 }>()
-
-async function renderMermaid() {
-  if (!props.partial) {
-    await nextTick()
-    mermaid.run()
+const { copy } = useClipboard({ source: props.code })
+const copied = ref(false)
+async function onCopy() {
+  try {
+    if (copied.value) return
+    await copy()
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch (_) {
+    copied.value = false
   }
+}
+async function renderMermaid() {
+  await nextTick()
+  mermaid.run()
 }
 watchEffect(() => {
   renderMermaid()
@@ -23,6 +34,10 @@ watchEffect(() => {
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang }}</el-tag>
+          <el-button type="primary" @click="onCopy" size="small" round plain circle>
+            <i-ic:outline-check v-if="copied"></i-ic:outline-check>
+            <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>
+          </el-button>
         </div>
       </template>
       <div class="mermaid-container">

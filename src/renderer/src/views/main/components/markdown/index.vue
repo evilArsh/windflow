@@ -63,19 +63,11 @@ const withPartialFirst = ref(false)
  */
 const parse = (val: LLMChatMessage) => {
   if (props.partial) {
-    html.value = md.render(val.content, {
-      html: true,
-      linkify: true,
-      typographer: true,
-    })
+    html.value = md.render(val.content)
   } else {
     // 完整数据第一次渲染，搜集所有code块
     if (!withPartialFirst.value) {
-      html.value = md.render(val.content, {
-        html: true,
-        linkify: true,
-        typographer: true,
-      })
+      html.value = md.render(val.content)
     }
     nextTick(() => {
       Object.values(idxMap).forEach(item => {

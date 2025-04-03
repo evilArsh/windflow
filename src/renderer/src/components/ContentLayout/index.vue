@@ -71,11 +71,13 @@ defineExpose({
       <slot name="header"></slot>
     </div>
     <div class="content">
-      <el-scrollbar ref="scroll" id="scroll-view">
+      <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
+      <el-scrollbar ref="scroll" style="flex: 1" id="scroll-view">
         <div class="content--inner">
           <slot></slot>
         </div>
       </el-scrollbar>
+      <slot v-if="$slots.contentRight" name="contentRight"></slot>
     </div>
     <div v-if="$slots.handler" ref="scale" class="content-handler" :style="handlerStyle">
       <Resize v-model="handlerStyle" @after-scale="onAfterScale" size="8px" direction="t" :target="scaleRef" />
@@ -107,6 +109,7 @@ defineExpose({
     background-color: var(--content-bg-color);
     overflow: hidden;
     padding: 0.5rem;
+    display: flex;
     &--inner {
       display: flex;
       flex-direction: column;
