@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { useClipboard } from "@vueuse/core"
-import hljs from "highlight.js"
-import DOMPurify from "dompurify"
 import "highlight.js/styles/github-dark.css"
 const props = defineProps<{
   code?: string
   lang?: string
+  html?: string
 }>()
 const { copy } = useClipboard({ source: props.code })
 const copied = ref(false)
@@ -21,19 +20,6 @@ async function onCopy() {
     copied.value = false
   }
 }
-const hilight = (code?: string, lang?: string) => {
-  let content = ""
-  if (lang && hljs.getLanguage(lang)) {
-    try {
-      content = hljs.highlight(code ?? "", { language: lang, ignoreIllegals: true }).value
-    } catch (_) {
-      content = DOMPurify.sanitize(code ?? "")
-    }
-  } else {
-    content = DOMPurify.sanitize(code ?? "")
-  }
-  return content
-}
 </script>
 <template>
   <div>
@@ -47,14 +33,25 @@ const hilight = (code?: string, lang?: string) => {
           </el-button>
         </div>
       </template>
-      <pre>
-        <code :class="`hljs language-${lang}`" v-html="hilight(code, lang)"></code>
-      </pre>
+      <div v-html="html"></div>
     </el-card>
   </div>
 </template>
 
-<style scoped>
+<style>
+pre {
+  counter-reset: line;
+}
+.code-line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2em;
+  margin-right: 1em;
+  color: #666;
+  text-align: right;
+  user-select: none;
+}
 .code-block {
   --el-card-padding: 1rem;
   border: solid 1px #dce0e5;

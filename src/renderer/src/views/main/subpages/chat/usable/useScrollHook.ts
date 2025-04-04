@@ -1,33 +1,30 @@
 import { ChatMessage, ChatTopicTree } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
-import useChatStore from "@renderer/store/chat.store"
+import { useDebounceFn } from "@vueuse/core"
 export default (
   contentLayout: Ref<InstanceType<typeof ContentLayout> | null>,
   topic: Ref<ChatTopicTree | undefined>,
   message: Ref<ChatMessage | undefined>
 ) => {
-  const chatStore = useChatStore()
-  const scrollY = ref(0)
   function scrollTo(topic: ChatTopicTree) {
-    nextTick(() => {
+    setTimeout(() => {
       if (topic.node.scrollY) {
         contentLayout.value?.scrollTo("instant", topic.node.scrollY)
       } else {
         contentLayout.value?.scrollToBottom("instant")
       }
-    })
+    }, 0)
   }
-  function onScroll(_x: number, y: number) {
-    scrollY.value = y
-  }
-  function setOldScrollY(topic: ChatTopicTree) {
-    topic.node.scrollY = scrollY.value
-    chatStore.dbUpdateChatTopic(topic.node)
-  }
+  const onScroll = useDebounceFn((_x: number, y: number) => {
+    if (topic.value) {
+      topic.value.node.scrollY = y
+    }
+  }, 1000)
 
   watch(topic, (val, old) => {
-    if (old) setOldScrollY(old) // switch tab
-    if (val) scrollTo(val)
+    if (val && val !== old) {
+      scrollTo(val)
+    }
   })
   watch(
     message,
@@ -44,12 +41,7 @@ export default (
   onMounted(() => {
     if (topic.value) scrollTo(topic.value)
   })
-  onBeforeUnmount(() => {
-    if (topic.value) setOldScrollY(topic.value)
-  })
   return {
-    scrollY,
-    scrollTo,
     onScroll,
   }
 }

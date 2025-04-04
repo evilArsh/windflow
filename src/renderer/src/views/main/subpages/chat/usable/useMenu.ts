@@ -8,14 +8,16 @@ import { cloneDeep } from "lodash-es"
 import useSettingsStore from "@renderer/store/settings.store"
 import { useThrottleFn } from "@vueuse/core"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
-function newTopic(parentId: string | null, label: string): ChatTopic {
+import { getDefaultIcon } from "@renderer/components/SvgPicker"
+import useModelStore from "@renderer/store/model.store"
+function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
   return {
     id: uniqueId(),
     label,
     parentId,
-    icon: "",
+    icon: getDefaultIcon(),
     content: "",
-    modelIds: [],
+    modelIds: cloneDeep(modelIds),
     prompt: "you are a helpful assistant",
     chatMessageId: "",
     createAt: Date.now(),
@@ -78,7 +80,9 @@ export default (
   treeRef: Readonly<Ref<TreeInstance | null>>
 ) => {
   const chatStore = useChatStore()
+  const modelStore = useModelStore()
   const { t } = useI18n()
+  const { models } = storeToRefs(modelStore)
   const settingsStore = useSettingsStore()
   const { topicList, chatMessage, llmChats, currentTopic, currentMessage, currentNodeKey } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
@@ -172,8 +176,8 @@ export default (
       try {
         if (selectedTopic.value) {
           const nodes = getAllNodes(selectedTopic.value)
-          const res = await chatStore.dbDelChatTopic(nodes)
           nodes.forEach(item => {
+            // 删除展开的节点key
             tree.removeDefaultExpandedKeys(item.id)
             // 终止请求
             if (llmChats.value[item.id]) {
@@ -186,11 +190,15 @@ export default (
               delete chatMessage.value[item.chatMessageId]
             }
           })
+          treeRef.value?.remove(selectedTopic.value)
+          const res = await chatStore.dbDelChatTopic(nodes)
           if (!res || res.code != 200) {
             throw new Error(t("chat.deleteFailed"))
           }
-          treeRef.value?.remove(selectedTopic.value)
-          selectedTopic.value = undefined
+          // 删除当前打开的消息
+          if (currentMessage.value?.id === selectedTopic.value?.node.chatMessageId) {
+            currentMessage.value = undefined
+          }
           if (selectedTopic.value === currentTopic.value) {
             setCurrentTopic(undefined)
           }
@@ -238,7 +246,11 @@ export default (
       const topic =
         parentId && selectedTopic.value
           ? cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
-          : newTopic(parentId ?? null, t("chat.addChat"))
+          : newTopic(
+              parentId ?? null,
+              models.value.filter(item => !!item.active).map(item => item.id),
+              t("chat.addChat")
+            )
       if (parentId) tree.pushDefaultExpandedKeys(parentId)
       const res = await chatStore.dbAddChatTopic(topic)
       if (res != 1) throw new Error(t("chat.addFailed"))

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { IconifyJSON } from "@iconify/types"
-import { getIconData, getIcons, iconToSVG, iconToHTML } from "@iconify/utils"
+import { getSubIconSet, getIconHTML } from "./index"
 import { useScroll } from "@vueuse/core"
 const props = defineProps<{
   iconMap: IconifyJSON
@@ -26,17 +26,9 @@ const query = reactive({
     query.onQuery()
   }),
   onQuery: markRaw(() => {
-    const subIconSet = getIcons(
-      props.iconMap as IconifyJSON,
-      allIconKeys.value.slice(query.from, query.from + query.length)
-    )
+    const subIconSet = getSubIconSet(props.iconMap, allIconKeys.value, query.from, query.length)
     if (subIconSet) {
-      iconList.value = iconList.value.concat(
-        Object.keys(subIconSet.icons).map(set => {
-          const svg = iconToSVG(getIconData(subIconSet, set)!)
-          return iconToHTML(svg.body, svg.attributes)
-        })
-      )
+      iconList.value = iconList.value.concat(Object.keys(subIconSet.icons).map(set => getIconHTML(props.iconMap, set)))
     }
   }),
   onList: markRaw(() => {

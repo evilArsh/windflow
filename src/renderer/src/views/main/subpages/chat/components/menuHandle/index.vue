@@ -27,8 +27,14 @@ const onEdit = (event: MouseEvent) => {
   emit("edit", event)
 }
 const onDelete = (done: CallBackFn, event: MouseEvent) => {
-  emit("delete", done, event)
-  deleteConfirm.value = false
+  emit(
+    "delete",
+    () => {
+      done()
+      deleteConfirm.value = false
+    },
+    event
+  )
 }
 const onAdd = (done: CallBackFn, event: MouseEvent) => {
   emit("add", done, event)

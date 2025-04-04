@@ -59,8 +59,14 @@ export const useDatabase = () => {
         const ts = db.value.transaction(storeName, "readwrite")
         const store = ts.objectStore(storeName)
         const req = store.add(data)
-        req.onsuccess = () => resolve(1)
-        req.onerror = () => resolve(0)
+        req.onsuccess = _e => {
+          // console.log("[add success]", e)
+          resolve(1)
+        }
+        req.onerror = e => {
+          console.log("[add error]", e)
+          resolve(0)
+        }
       })
     })
   }
@@ -75,8 +81,14 @@ export const useDatabase = () => {
         const ts = db.value.transaction(storeName, "readwrite")
         const store = ts.objectStore(storeName)
         const req = store.delete(query)
-        req.onsuccess = () => resolve(1)
-        req.onerror = () => resolve(0)
+        req.onsuccess = _e => {
+          // console.log("[del success]", e)
+          resolve(1)
+        }
+        req.onerror = e => {
+          console.log("[del error]", e)
+          resolve(0)
+        }
       })
     })
   }
@@ -91,9 +103,11 @@ export const useDatabase = () => {
         const store = ts.objectStore(storeName)
         const result = store.get(query)
         result.onsuccess = e => {
+          // console.log("[get success]", e)
           resolve((e.target as IDBRequest<any>).result)
         }
-        result.onerror = () => {
+        result.onerror = e => {
+          console.log("[get error]", e)
           resolve(null)
         }
       })
@@ -114,6 +128,7 @@ export const useDatabase = () => {
         const store = ts.objectStore(storeName)
         const oldReq = store.get(id)
         oldReq.onsuccess = async e => {
+          // console.log("[put success]", e)
           const oldData = (e.target as IDBRequest<any>).result
           if (oldData) {
             const data = { ...oldData, ...newData }
@@ -124,7 +139,8 @@ export const useDatabase = () => {
             resolve(await add(storeName, newData))
           }
         }
-        oldReq.onerror = () => {
+        oldReq.onerror = e => {
+          console.log("[put error]", e)
           resolve(0)
         }
       })
@@ -142,9 +158,11 @@ export const useDatabase = () => {
         const store = ts.objectStore(storeName)
         const count = store.count()
         count.onsuccess = e => {
+          // console.log("[count success]", e)
           resolve((e.target as IDBRequest<number>).result)
         }
-        count.onerror = () => {
+        count.onerror = e => {
+          console.log("[count error]", e)
           resolve(0)
         }
       })
@@ -162,9 +180,11 @@ export const useDatabase = () => {
         const store = ts.objectStore(storeName)
         const result = store.getAll()
         result.onsuccess = e => {
+          // console.log("[getAll success]", e)
           resolve((e.target as IDBRequest<any>).result as T[])
         }
-        result.onerror = () => {
+        result.onerror = e => {
+          console.log("[getAll error]", e)
           resolve([])
         }
       })
@@ -187,14 +207,21 @@ export const useDatabase = () => {
 
   async function wrapRequest<T>(req: IDBRequest<T>) {
     return new Promise<T | null>(resolve => {
-      req.onsuccess = e => resolve((e.target as IDBRequest<T>).result)
-      req.onerror = () => resolve(null)
+      req.onsuccess = e => {
+        // console.log("[wrapRequest success]", e)
+        resolve((e.target as IDBRequest<T>).result)
+      }
+      req.onerror = e => {
+        console.log("[wrapRequest error]", e)
+        resolve(null)
+      }
     })
   }
 
   async function wrapTransaction(ts: IDBTransaction): Promise<TransactionResponse> {
     return new Promise<DBResponse>(resolve => {
-      ts.oncomplete = () => {
+      ts.oncomplete = _e => {
+        // console.log("[transaction complete]", e)
         resolve({ code: 200, msg: "ok" })
       }
       ts.onerror = e => {

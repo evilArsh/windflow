@@ -1,19 +1,7 @@
 <script setup lang="ts">
-import openmoji from "@iconify/json/json/openmoji.json"
-import fluentEmojiFlat from "@iconify/json/json/fluent-emoji-flat.json"
-import emojione from "@iconify/json/json/emojione.json"
-import streamline from "@iconify/json/json/streamline-emojis.json"
-import flag from "@iconify/json/json/circle-flags.json"
-import type { IconifyJSON } from "@iconify/types"
 import SvgPanel from "./panel.vue"
 import Svg from "@renderer/components/Svg/index.vue"
-import openmojiDefault from "~icons/openmoji/1st-place-medal"
-import fluentEmojiFlatDefault from "~icons/fluent-emoji-flat/basketball"
-import emojioneDefault from "~icons/emojione/flushed-face"
-import streamlineDefault from "~icons/streamline-emojis/boar-1"
-import flagDefault from "~icons/circle-flags/cn"
-import type { Component } from "vue"
-
+import { iconMap } from "./index"
 defineProps<{
   modelValue: string
 }>()
@@ -24,18 +12,6 @@ const emit = defineEmits<{
 const key = ref("")
 const tabs = reactive({
   active: "fluentEmojiFlat",
-})
-
-const iconMap: Record<string, { title: Component; icons: IconifyJSON }> = {
-  fluentEmojiFlat: { title: fluentEmojiFlatDefault, icons: fluentEmojiFlat as IconifyJSON },
-  emojione: { title: emojioneDefault, icons: emojione as IconifyJSON },
-  streamline: { title: streamlineDefault, icons: streamline as IconifyJSON },
-  openmoji: { title: openmojiDefault, icons: openmoji as IconifyJSON },
-  flag: { title: flagDefault, icons: flag as IconifyJSON },
-}
-
-onMounted(() => {
-  // console.log(res)
 })
 </script>
 <template>

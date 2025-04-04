@@ -15,7 +15,6 @@ import rehypeStringify from "rehype-stringify"
 import rehypeHighlight from "rehype-highlight"
 import rehypeHighlightCodeLines from "rehype-highlight-code-lines"
 import { normalizeFormula } from "./utils/utils"
-import "highlight.js/styles/github-dark.css"
 import { rehypeVueVnode, rehypeHrToBr } from "./utils/rehypeCode"
 import { CodePluginOptions } from "./utils/types"
 import CodeBlock from "./utils/codeBlock.vue"
@@ -83,8 +82,13 @@ const parse = async (val: LLMChatMessage) => {
       Object.values(idxMap).forEach(item => {
         const el = document.getElementById(item.elId)
         if (el) {
+          item.vnode = cloneVNode(item.vnode, {
+            partial: false,
+            code: item.code,
+            html: el.innerHTML,
+            lang: item.lang,
+          })
           el.innerHTML = ""
-          item.vnode = cloneVNode(item.vnode, { partial: false, code: item.code, lang: item.lang })
           render(item.vnode, el)
         }
       })
@@ -107,18 +111,3 @@ onMounted(() => {
 <template>
   <div style="line-height: 1.5" v-html="html"></div>
 </template>
-<style>
-pre {
-  counter-reset: line;
-}
-.code-line::before {
-  counter-increment: line;
-  content: counter(line);
-  display: inline-block;
-  width: 2em;
-  margin-right: 1em;
-  color: #666;
-  text-align: right;
-  user-select: none;
-}
-</style>

@@ -29,7 +29,6 @@ export const rehypeVueVnode = ({
             idxMap[index] = { mdId, idx: index, elId, vnode, code, lang }
           } else {
             idxMap[index].code = code
-            idxMap[index].lang = lang
           }
           const wrap = parseSelector(`div#${idxMap[index].elId}`)
           wrap.children = [node]

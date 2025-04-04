@@ -211,12 +211,12 @@ export default defineStore(storeKey.chat_topic, () => {
       const ts = db.transaction([storeKey.chat_message, storeKey.chat_topic], "readwrite")
       const storeTopic = ts.objectStore(storeKey.chat_topic)
       const storeMessage = ts.objectStore(storeKey.chat_message)
-      data.forEach(item => {
+      for (const item of data) {
         storeTopic.delete(item.id)
         if (item.chatMessageId) {
           storeMessage.delete(item.chatMessageId)
         }
-      })
+      }
       return await wrapTransaction(ts)
     })
   }
