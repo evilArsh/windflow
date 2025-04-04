@@ -1,3 +1,5 @@
+import { VNode } from "vue"
+
 export interface NavMenuBase {
   /**
    * @description 唯一标识
@@ -10,7 +12,7 @@ export interface NavMenuBase {
   /**
    * @description 菜单图标
    */
-  icon: string
+  icon: VNode
   disabled?: boolean
   children?: NavMenuBase[]
 }

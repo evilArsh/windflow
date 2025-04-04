@@ -91,7 +91,7 @@ async function onRefreshModel(done: CallBackFn) {
 watch(
   () => props.providerName,
   name => {
-    data.value = providerMetas.value.find(v => v.name === name)
+    data.value = providerMetas.value[name]
   },
   { immediate: true }
 )
@@ -110,7 +110,9 @@ watch(
 <template>
   <MsgBubble v-if="data">
     <template #head>
-      <el-avatar :src="data.logo" size="default" />
+      <el-avatar style="--el-avatar-size: 5rem">
+        <Svg :src="data.logo" class="text-4.5rem"></Svg>
+      </el-avatar>
     </template>
     <template #content>
       <ContentLayout>

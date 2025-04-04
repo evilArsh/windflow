@@ -6,8 +6,7 @@ import { ProviderName } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
 const providerStore = useProviderStore()
-const { providerMetas } = storeToRefs(providerStore)
-const current = ref<ProviderName>()
+const { providerMetas, currentProvider } = storeToRefs(providerStore)
 const { t } = useI18n()
 const useConfigComponent = () => {
   const componentsMap = shallowReactive({
@@ -28,15 +27,8 @@ const useConfigComponent = () => {
 }
 const { getComponent } = useConfigComponent()
 function onCardClick(name: ProviderName) {
-  current.value = name
+  currentProvider.value = providerMetas.value[name] ?? undefined
 }
-async function init() {
-  if (!current.value) {
-    current.value = providerMetas.value.length > 0 ? providerMetas.value[0].name : undefined
-  }
-}
-watch(providerMetas, init)
-onMounted(init)
 </script>
 <template>
   <SubNavLayout id="model.subNav">
@@ -48,10 +40,10 @@ onMounted(init)
             v-for="item in providerMetas"
             :key="item.name"
             still-lock
-            :default-lock="current == item.name">
+            :default-lock="currentProvider?.name == item.name">
             <el-card class="card" shadow="never" @click="onCardClick(item.name)">
               <div class="card-body">
-                <el-image class="icon" :src="item.logo" />
+                <Svg :src="item.logo" class="icon"></Svg>
                 <div class="flex items-center">
                   <el-text class="name">{{ t(item.alias || "") }}</el-text>
                 </div>
@@ -63,7 +55,10 @@ onMounted(init)
     </template>
     <template #content>
       <ContentLayout>
-        <component :key="current" :is="getComponent(current)" :provider-name="current" />
+        <component
+          :key="currentProvider?.name"
+          :is="getComponent(currentProvider?.name)"
+          :provider-name="currentProvider?.name" />
       </ContentLayout>
     </template>
   </SubNavLayout>
@@ -86,8 +81,7 @@ onMounted(init)
       align-items: center;
       gap: 1rem;
       .icon {
-        width: var(--provider-container-icon-size);
-        height: var(--provider-container-icon-size);
+        font-size: var(--provider-container-icon-size);
       }
       .name {
         font-size: 1.4rem;

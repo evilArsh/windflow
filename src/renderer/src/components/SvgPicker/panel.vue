@@ -4,6 +4,7 @@ import { getSubIconSet, getIconHTML } from "./index"
 import { useScroll } from "@vueuse/core"
 const props = defineProps<{
   iconMap: IconifyJSON
+  iconsKeys: string[]
 }>()
 const emit = defineEmits<{
   (e: "change", value: string): void
@@ -14,7 +15,6 @@ const { arrivedState, y } = useScroll(() => scrollRef.value?.wrapRef, {
   behavior: "smooth",
 })
 
-const allIconKeys = shallowRef<string[]>([]) // icon key
 const iconList = shallowRef<string[]>([]) // icon data
 const query = reactive({
   from: 0,
@@ -26,7 +26,7 @@ const query = reactive({
     query.onQuery()
   }),
   onQuery: markRaw(() => {
-    const subIconSet = getSubIconSet(props.iconMap, allIconKeys.value, query.from, query.length)
+    const subIconSet = getSubIconSet(props.iconMap, props.iconsKeys, query.from, query.length)
     if (subIconSet) {
       iconList.value = iconList.value.concat(Object.keys(subIconSet.icons).map(set => getIconHTML(props.iconMap, set)))
     }
@@ -36,7 +36,6 @@ const query = reactive({
     query.onQuery()
   }),
   init: markRaw(() => {
-    allIconKeys.value = Object.keys(props.iconMap.icons)
     query.reset()
   }),
 })

@@ -1,11 +1,12 @@
+import { IconifyJSON } from "@iconify/types"
+import { getIconHTML } from "@renderer/components/SvgPicker"
 import { ModelType, ProviderMeta, ProviderName, ModelActiveStatus } from "@renderer/types"
-import ds from "@renderer/assets/images/provider/deepseek.svg"
-export const providerDefault = (): ProviderMeta[] => {
+export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] => {
   return [
     {
       name: ProviderName.DeepSeek,
       alias: `provider.name.${ProviderName.DeepSeek}`,
-      logo: ds,
+      logo: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek"),
       apiUrl: "https://api.deepseek.com",
       apiKey: "",
       apiModelList: {
@@ -27,7 +28,7 @@ export const providerDefault = (): ProviderMeta[] => {
     {
       name: ProviderName.SiliconFlow,
       alias: `provider.name.${ProviderName.SiliconFlow}`,
-      logo: ds,
+      logo: getIconHTML(providerSvgIcon as IconifyJSON, "siliconflow"),
       apiUrl: "https://api.siliconflow.cn/v1",
       apiKey: "",
       apiModelList: {

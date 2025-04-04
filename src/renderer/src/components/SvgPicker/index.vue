@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import SvgPanel from "./panel.vue"
-import Svg from "@renderer/components/Svg/index.vue"
 import { iconMap } from "./index"
+import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
+import Svg from "@renderer/components/Svg/index.vue"
+import { IconifyJSON } from "@iconify/types"
+import { getIconHTML } from "./index"
+const providerSvgIcon = inject(providerSvgIconKey)
 defineProps<{
   modelValue: string
 }>()
@@ -13,6 +17,11 @@ const key = ref("")
 const tabs = reactive({
   active: "fluentEmojiFlat",
 })
+iconMap.provider = {
+  title: h(Svg, { style: "font-size: 3rem", src: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek") }),
+  icons: providerSvgIcon as IconifyJSON,
+  iconsKeys: Object.keys((providerSvgIcon as IconifyJSON).icons),
+}
 </script>
 <template>
   <div class="flex flex-col gap-1rem w-full">
@@ -31,7 +40,10 @@ const tabs = reactive({
         </template>
       </el-tab-pane>
     </el-tabs>
-    <SvgPanel :icon-map="iconMap[tabs.active].icons" @change="emit('update:modelValue', $event)"></SvgPanel>
+    <SvgPanel
+      :icon-map="iconMap[tabs.active].icons"
+      :icons-keys="iconMap[tabs.active].iconsKeys"
+      @change="emit('update:modelValue', $event)"></SvgPanel>
   </div>
 </template>
 <style lang="scss" scoped>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ds from "@renderer/assets/images/provider/deepseek.svg"
 import { ChatMessage, ChatTopic, Role } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
@@ -12,6 +11,7 @@ import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
 import EditMsg from "./editMsg.vue"
 import { render } from "vue"
+import useProviderStore from "@renderer/store/provider.store"
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
@@ -19,7 +19,7 @@ const modelsStore = useModelsStore()
 const chatStore = useChatStore()
 const { t } = useI18n()
 const { onScroll } = useScrollHook(contentLayout, currentTopic, currentMessage)
-
+const providerStore = useProviderStore()
 const send = (topic?: ChatTopic, message?: ChatMessage) => {
   if (topic && message) {
     chatStore.send(topic, message)
@@ -66,7 +66,13 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
         <MsgBubble v-for="msg in interactMsg" :key="msg.id" :reverse="!msg.modelId">
           <template #head>
             <Hover>
-              <el-avatar :src="ds" size="default" />
+              <el-avatar style="--el-avatar-size: 4rem">
+                <Svg
+                  :src="
+                    providerStore.getProviderLogo(msg.modelId ? modelsStore.find(msg.modelId)?.providerName : 'user')
+                  "
+                  class="text-3rem"></Svg>
+              </el-avatar>
             </Hover>
           </template>
           <template #content>
@@ -122,7 +128,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
                       </el-tooltip>
                       <el-tooltip v-if="msg.modelId" :content="t('chat.regenerate')" placement="top">
                         <Button
-                          @click="done => chatStore.restart(done, currentTopic?.node, currentMessage, msg)"
+                          @click="done => chatStore.restart(done, currentTopic?.node, currentMessage?.id, msg.id)"
                           size="small"
                           :disabled="!msg.finish"
                           circle

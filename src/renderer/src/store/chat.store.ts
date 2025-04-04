@@ -165,7 +165,7 @@ export default defineStore(storeKey.chat_topic, () => {
       return
     }
     const model = modelsStore.find(modelId) // 模型元数据
-    const providerMeta = providerMetas.value.find(item => item.name == model?.providerName) // 提供商元数据
+    const providerMeta: ProviderMeta | undefined = providerMetas.value[model?.providerName ?? ""] // 提供商元数据
     if (!(model && providerMeta)) {
       console.warn("[getMeta] model or providerMeta not found", modelId)
       return
@@ -237,18 +237,25 @@ export default defineStore(storeKey.chat_topic, () => {
     done()
   }
 
-  function restart(
-    done: CallBackFn,
-    topic?: ChatTopic,
-    message?: ChatMessage,
-    messageItem?: ChatMessage["data"][number]
-  ) {
-    if (!(topic && message && messageItem)) {
-      console.warn(`[restart] topic or message or messageItem is empty.${topic} ${message} ${messageItem}`)
+  function restart(done: CallBackFn, topic?: ChatTopic, currentMessageId?: string, currentSubMessageId?: string) {
+    if (!(topic && currentMessageId && currentSubMessageId)) {
+      console.warn(
+        `[restart] topic or currentMessageId or currentSubMessageId is empty.${topic} ${currentMessageId} ${currentSubMessageId}`
+      )
       return
     }
     if (!llmChats[topic.id]) {
       llmChats[topic.id] = []
+    }
+    const message = chatMessage[currentMessageId]
+    if (!message) {
+      console.warn(`[restart] message not found.${currentMessageId}`)
+      return
+    }
+    const messageItem = message.data.find(item => item.id === currentSubMessageId)
+    if (!messageItem) {
+      console.warn(`[restart] messageItem not found.${currentSubMessageId}`)
+      return
     }
     const chatContext = llmChats[topic.id].find(item => item.messageId === messageItem.id)
     const meta = getMeta(messageItem.modelId)

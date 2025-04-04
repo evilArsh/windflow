@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import navStore from "@renderer/store/nav.store"
-import useIconStore from "@renderer/store/icon.store"
-import { storeToRefs } from "pinia"
 import I18n from "./i18n.vue"
-const { page, defaultRoute } = storeToRefs(navStore())
+import { NavPage } from "@renderer/types"
+import { useI18n } from "vue-i18n"
+import IMdiChatProcessing from "~icons/mdi/chat-processing"
+import ICardGiftcard from "~icons/ic/round-card-giftcard"
+const { t } = useI18n()
 const route = useRoute()
-const { loadIcon } = useIconStore()
 const menuEv = {
   onSelect: (key: string) => {
     defaultRoute.value = key
@@ -18,7 +18,19 @@ const status = reactive({
     document.documentElement.classList.toggle("dark", status.dark)
   },
 })
-
+const defaultRoute = ref("/main/chat")
+const pageNav: NavPage[] = [
+  {
+    index: "/main/chat",
+    label: t("nav.chat"),
+    icon: h(IMdiChatProcessing),
+  },
+  {
+    index: "/main/model",
+    label: t("nav.modelSetting"),
+    icon: h(ICardGiftcard),
+  },
+]
 onMounted(() => {
   defaultRoute.value = route.path
 })
@@ -28,12 +40,12 @@ onMounted(() => {
     <div class="nav-menu">
       <el-scrollbar>
         <el-menu :default-active="defaultRoute" @select="menuEv.onSelect" router>
-          <el-menu-item v-for="item in page" :key="item.index" :index="item.index" :disabled="item.disabled">
+          <el-menu-item v-for="item in pageNav" :key="item.index" :index="item.index" :disabled="item.disabled">
             <div class="nav-menu-item">
               <Hover background still-lock :default-lock="defaultRoute == item.index">
                 <div class="nav-menu-item-inner">
                   <i class="nav-menu-item-icon">
-                    <component :is="loadIcon(item.icon)"></component>
+                    <component :is="item.icon"></component>
                   </i>
                   <el-text style="--el-text-font-size: 1.2rem">{{ item.label }}</el-text>
                 </div>

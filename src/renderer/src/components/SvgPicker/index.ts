@@ -11,14 +11,7 @@ import streamlineDefault from "~icons/streamline-emojis/boar-1"
 import flagDefault from "~icons/circle-flags/cn"
 import type { Component } from "vue"
 import { getIcons, getIconData, iconToSVG, iconToHTML } from "@iconify/utils"
-
-export const iconMap: Record<string, { title: Component; icons: IconifyJSON }> = {
-  fluentEmojiFlat: { title: fluentEmojiFlatDefault, icons: fluentEmojiFlat as IconifyJSON },
-  emojione: { title: emojioneDefault, icons: emojione as IconifyJSON },
-  streamline: { title: streamlineDefault, icons: streamline as IconifyJSON },
-  openmoji: { title: openmojiDefault, icons: openmoji as IconifyJSON },
-  flag: { title: flagDefault, icons: flag as IconifyJSON },
-}
+import { sample } from "lodash-es"
 
 export const getSubIconSet = (iconMap: IconifyJSON, allIconKeys: string[], from: number, length: number) => {
   return getIcons(iconMap as IconifyJSON, allIconKeys.slice(from, from + length))
@@ -32,5 +25,33 @@ export const getIconHTML = (json: IconifyJSON, iconKey: string) => {
 }
 
 export const getDefaultIcon = (): string => {
-  return getIconHTML(iconMap.fluentEmojiFlat.icons, "plus")
+  return getIconHTML(iconMap.fluentEmojiFlat.icons, sample(iconMap.fluentEmojiFlat.iconsKeys) ?? "plus")
+}
+
+export const iconMap: Record<string, { title: Component; icons: IconifyJSON; iconsKeys: string[] }> = {
+  fluentEmojiFlat: {
+    title: fluentEmojiFlatDefault,
+    icons: fluentEmojiFlat as IconifyJSON,
+    iconsKeys: Object.keys((fluentEmojiFlat as IconifyJSON).icons),
+  },
+  emojione: {
+    title: emojioneDefault,
+    icons: emojione as IconifyJSON,
+    iconsKeys: Object.keys((emojione as IconifyJSON).icons),
+  },
+  streamline: {
+    title: streamlineDefault,
+    icons: streamline as IconifyJSON,
+    iconsKeys: Object.keys((streamline as IconifyJSON).icons),
+  },
+  openmoji: {
+    title: openmojiDefault,
+    icons: openmoji as IconifyJSON,
+    iconsKeys: Object.keys((openmoji as IconifyJSON).icons),
+  },
+  flag: {
+    title: flagDefault,
+    icons: flag as IconifyJSON,
+    iconsKeys: Object.keys((flag as IconifyJSON).icons),
+  },
 }
