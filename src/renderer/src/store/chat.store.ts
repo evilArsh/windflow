@@ -182,6 +182,18 @@ export default defineStore(storeKey.chat_topic, () => {
     300,
     true
   )
+  function refreshChatTopicModelIds(topic?: ChatTopic) {
+    if (!topic) return
+    // 刷新models
+    const modelsIds = topic.modelIds
+    topic.modelIds = modelsIds.reduce((acc, cur) => {
+      const model = modelsStore.find(cur)
+      if (model && model.active) {
+        acc.push(model.id)
+      }
+      return acc
+    }, [] as string[])
+  }
   async function dbAddChatTopic(data: ChatTopic) {
     return await dbAdd("chat_topic", toRaw(data))
   }
@@ -456,5 +468,6 @@ export default defineStore(storeKey.chat_topic, () => {
     dbUpdateChatMessage,
     dbDelChatTopic,
     send,
+    refreshChatTopicModelIds,
   }
 })

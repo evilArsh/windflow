@@ -9,7 +9,6 @@ import useSettingsStore from "@renderer/store/settings.store"
 import { useThrottleFn } from "@vueuse/core"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
-// import useModelStore from "@renderer/store/model.store"
 function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
   return {
     id: uniqueId(),
@@ -80,7 +79,6 @@ export default (
   treeRef: Readonly<Ref<TreeInstance | null>>
 ) => {
   const chatStore = useChatStore()
-  // const modelStore = useModelStore()
   const { t } = useI18n()
   // const { models } = storeToRefs(modelStore)
   const settingsStore = useSettingsStore()
@@ -158,6 +156,7 @@ export default (
         chatStore.mountContext(topic.node, currentMessage.value)
       }
       currentTopic.value = topic
+      chatStore.refreshChatTopicModelIds(topic?.node)
     } catch (error) {
       console.log("[setCurrentTopic] error", error)
     }

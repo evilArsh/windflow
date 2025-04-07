@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ModelMeta, ProviderName } from "@renderer/types"
 import useModelStore from "@renderer/store/model.store"
+import { storeToRefs } from "pinia"
+import useChatStore from "@renderer/store/chat.store"
 const props = defineProps<{
   providerName: ProviderName
   data: ModelMeta[]
 }>()
 const { t } = useI18n()
 const modelStore = useModelStore()
+const chatStore = useChatStore()
+const { currentTopic } = storeToRefs(chatStore)
+
 const handledData = computed<Record<string, ModelMeta[]>>(() => {
   return props.data.reduce((acc, cur) => {
     if (acc[cur.subProviderName]) {
@@ -20,6 +25,7 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
 
 const onModelChange = (row: ModelMeta) => {
   modelStore.dbUpdate(row)
+  chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
 }
 </script>
 <template>

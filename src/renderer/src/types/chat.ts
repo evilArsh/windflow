@@ -121,7 +121,7 @@ export type ModelMeta = {
    */
   type: ModelType
   /**
-   * @description 厂商提供的模型名称
+   * @description 厂商提供的模型名称(模型ID)
    */
   modelName: string
   /**
