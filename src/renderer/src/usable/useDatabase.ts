@@ -32,7 +32,7 @@ export const indexKey = {
   chatTopic_createAt_idx: "chatTopic_createAt_idx",
 }
 
-export const name = "db-ai-mate"
+export const name = "db-ai-chat"
 export const version = 1
 
 export const useDatabase = () => {

@@ -1,5 +1,5 @@
 {
-  "name": "ai-mate",
+  "name": "ai-chat",
   "version": "0.0.1",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
@@ -69,7 +69,8 @@
     "unist-util-visit": "^5.0.0",
     "vue": "^3.5.13",
     "vue-i18n": "^11.1.2",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@babel/types": "^7.26.10",

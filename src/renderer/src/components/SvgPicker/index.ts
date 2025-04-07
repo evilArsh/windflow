@@ -1,10 +1,8 @@
-import openmoji from "@iconify/json/json/openmoji.json"
 import fluentEmojiFlat from "@iconify/json/json/fluent-emoji-flat.json"
 import emojione from "@iconify/json/json/emojione.json"
 import streamline from "@iconify/json/json/streamline-emojis.json"
 import flag from "@iconify/json/json/circle-flags.json"
 import type { IconifyJSON } from "@iconify/types"
-import openmojiDefault from "~icons/openmoji/1st-place-medal"
 import fluentEmojiFlatDefault from "~icons/fluent-emoji-flat/basketball"
 import emojioneDefault from "~icons/emojione/flushed-face"
 import streamlineDefault from "~icons/streamline-emojis/boar-1"
@@ -15,6 +13,14 @@ import { sample } from "lodash-es"
 
 export const getSubIconSet = (iconMap: IconifyJSON, allIconKeys: string[], from: number, length: number) => {
   return getIcons(iconMap as IconifyJSON, allIconKeys.slice(from, from + length))
+}
+export const searchIcon = (iconMap: IconifyJSON, allIconKeys: string[], keyword?: string) => {
+  if (!keyword) return []
+  return allIconKeys
+    .filter(key => key.toLowerCase().replaceAll("-", " ").includes(keyword.toLowerCase().replaceAll("-", " ")))
+    .map(key => {
+      return getIconHTML(iconMap, key)
+    })
 }
 
 export const getIconHTML = (json: IconifyJSON, iconKey: string) => {
@@ -43,11 +49,6 @@ export const iconMap: Record<string, { title: Component; icons: IconifyJSON; ico
     title: streamlineDefault,
     icons: streamline as IconifyJSON,
     iconsKeys: Object.keys((streamline as IconifyJSON).icons),
-  },
-  openmoji: {
-    title: openmojiDefault,
-    icons: openmoji as IconifyJSON,
-    iconsKeys: Object.keys((openmoji as IconifyJSON).icons),
   },
   flag: {
     title: flagDefault,

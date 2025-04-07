@@ -26,7 +26,7 @@ iconMap.provider = {
 <template>
   <div class="flex flex-col gap-1rem w-full">
     <div class="flex gap-1rem">
-      <el-button class="w-3.5rem h-3.5rem">
+      <el-button class="p-0! w-3.5rem h-3.5rem">
         <Svg :src="modelValue" class="text-25px"></Svg>
       </el-button>
       <el-input v-model="key"></el-input>
@@ -43,6 +43,7 @@ iconMap.provider = {
     <SvgPanel
       :icon-map="iconMap[tabs.active].icons"
       :icons-keys="iconMap[tabs.active].iconsKeys"
+      :keyword="key"
       @change="emit('update:modelValue', $event)"></SvgPanel>
   </div>
 </template>

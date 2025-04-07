@@ -91,7 +91,6 @@ defineExpose({
   --content-bg-color: transparent;
   --content-header-bg-color: transparent;
   --content-handler-bg-color: #f6f6f7;
-  --content-handler-border-color: #d9d9d9;
 
   flex: 1;
   display: flex;
@@ -122,9 +121,6 @@ defineExpose({
     display: flex;
     background-color: var(--content-handler-bg-color);
     padding: 1rem;
-    margin: 1rem;
-    border-radius: 1rem;
-    border: solid 1px var(--content-handler-border-color);
     min-height: 15rem;
   }
 }

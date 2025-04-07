@@ -35,28 +35,25 @@ const handlerStyle = computed<CSSProperties>(() => {
     case "t":
       return {
         height: px(props.size),
-        top: px(-toNumber(props.size) / 2),
         left: 0,
-        right: 0,
         cursor: "ns-resize",
       }
     case "r":
       return {
         width: px(props.size),
-        top: 0,
         bottom: 0,
-        right: px(-toNumber(props.size) / 2),
         cursor: "ew-resize",
       }
     default:
       return {}
   }
 })
-const iconStyle = computed<CSSProperties>(() => {
-  return {
-    transform: props.direction == "t" ? "rotate(90deg)" : "rotate(0deg)",
-  }
-})
+
+const barWidth = computed<string>(() => (props.direction == "r" ? "2px" : "100%"))
+const barHeight = computed<string>(() => (props.direction == "r" ? "100%" : "2px"))
+const barRight = computed<string>(() => (props.direction == "r" ? "0" : "unset"))
+const barTop = computed<string>(() => (props.direction == "r" ? "unset" : "0"))
+
 on(ScaleEv.SCALING, () => {
   emit("update:modelValue", {
     width: getValue("width", scaleConfig.value.containerStyle?.width),
@@ -66,16 +63,10 @@ on(ScaleEv.SCALING, () => {
 on(ScaleEv.AFTER_SCALE, () => {
   emit("afterScale")
 })
-onBeforeUnmount(() => {
-  dispose()
-})
+onBeforeUnmount(dispose)
 </script>
 <template>
-  <div class="resize-handler" :style="handlerStyle" @mousedown="onMouseDown($event, props.direction)">
-    <i-material-symbols-light:drag-indicator
-      class="resize-handler-icon"
-      :style="iconStyle"></i-material-symbols-light:drag-indicator>
-  </div>
+  <div class="resize-handler" :style="handlerStyle" @mousedown="onMouseDown($event, props.direction)"></div>
 </template>
 <style lang="scss" scoped>
 .resize-handler {
@@ -84,9 +75,21 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   opacity: 0;
+  top: 0;
+  right: 0;
   transition: opacity 0.3s ease;
-  &:hover {
+  &:hover,
+  &:active {
     opacity: 1;
+    &::before {
+      content: "";
+      position: absolute;
+      width: v-bind(barWidth);
+      height: v-bind(barHeight);
+      top: v-bind(barTop);
+      right: v-bind(barRight);
+      background-color: var(--el-color-primary);
+    }
   }
 }
 .resize-handler-icon {
