@@ -25,7 +25,7 @@ export const rehypeVueVnode = ({
           const comp = compMap[lang] ?? compMap.default
           if (!idxMap[index]) {
             const elId = "id-" + uniqueId()
-            const vnode = cloneVNode(comp, { code, lang })
+            const vnode = cloneVNode(comp, { code, lang, rootId: elId })
             idxMap[index] = { mdId, idx: index, elId, vnode, code, lang }
           } else {
             idxMap[index].code = code

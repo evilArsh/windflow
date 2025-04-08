@@ -78,21 +78,21 @@ const parse = async (val: LLMChatMessage) => {
       const res = await un.process(normalizeFormula(val.content))
       html.value = res.value.toString()
     }
-    nextTick(() => {
-      Object.values(idxMap).forEach(item => {
-        const el = document.getElementById(item.elId)
-        if (el) {
-          item.vnode = cloneVNode(item.vnode, {
-            partial: false,
-            code: item.code,
-            html: el.innerHTML,
-            lang: item.lang,
-          })
-          el.innerHTML = ""
-          render(item.vnode, el)
-        }
-      })
+    await nextTick()
+    Object.values(idxMap).forEach(item => {
+      const el = document.getElementById(item.elId)
+      if (el) {
+        item.vnode = cloneVNode(item.vnode, {
+          rootId: item.elId,
+          code: item.code,
+          html: el.innerHTML,
+          lang: item.lang,
+        })
+        el.innerHTML = ""
+        render(item.vnode, el)
+      }
     })
+    mermaid.run()
   }
 }
 watch(
@@ -111,3 +111,38 @@ onMounted(() => {
 <template>
   <div style="line-height: 1.5" v-html="html"></div>
 </template>
+<style>
+pre {
+  counter-reset: line;
+}
+.code-line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2em;
+  margin-right: 1em;
+  color: #666;
+  text-align: right;
+  user-select: none;
+}
+.code-block {
+  --el-card-padding: 1rem;
+  border: solid 1px #dce0e5;
+  border-radius: 0.5rem;
+}
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.code-block-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mermaid-container {
+  display: block !important;
+  max-width: 100%;
+  overflow: auto;
+}
+</style>
