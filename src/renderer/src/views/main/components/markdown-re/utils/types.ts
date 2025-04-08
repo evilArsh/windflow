@@ -8,7 +8,7 @@ export type CodePluginOptions = {
   /**
    * @description 代码块在md内容中的索引
    */
-  idx: number
+  // idx: number
   /**
    * @description 代码块在dom中的id
    */

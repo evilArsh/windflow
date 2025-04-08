@@ -156,7 +156,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
                       </div>
                     </div>
                   </template>
-                  <MarkdownRe v-if="msg.modelId" :id="msg.id" :content="msg.content" :partial="!msg.finish" />
+                  <MarkdownRe v-if="msg.modelId" :id="msg.id" :content="msg.content.content" :partial="!msg.finish" />
                   <el-text v-else type="primary" class="self-end!">
                     {{ msg.content.content }}
                   </el-text>

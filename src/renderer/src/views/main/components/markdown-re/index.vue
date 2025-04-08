@@ -1,58 +1,26 @@
 <script setup lang="ts">
-import { LLMChatMessage } from "@renderer/types"
 import mermaid from "mermaid"
-import { unified } from "unified"
-import remarkParse from "remark-parse"
-import remarkMath from "remark-math"
-import remarkGfm from "remark-gfm"
-import remarkEmoji from "remark-emoji"
-import remarkSqueezeParagraphs from "remark-squeeze-paragraphs"
-import remarkRehype from "remark-rehype"
-// import remarkStringify from "remark-stringify"
-// import remarkMdx from "remark-mdx"
-import rehypeMathjax from "rehype-mathjax"
-import rehypeStringify from "rehype-stringify"
-import rehypeHighlight from "rehype-highlight"
-import rehypeHighlightCodeLines from "rehype-highlight-code-lines"
 import { normalizeFormula } from "./utils/utils"
-import { rehypeVueVnode, rehypeHrToBr } from "./utils/rehypeCode"
 import { CodePluginOptions } from "./utils/types"
 import CodeBlock from "./utils/codeBlock.vue"
 import MermaidBlock from "./utils/mermaidBlock.vue"
 import { cloneVNode, h, render, ref, shallowReactive, watch } from "vue"
+import { cloneUn, cloneVnodeUn } from "./utils/unified"
 const props = defineProps<{
   id: string
   partial?: boolean
-  content: LLMChatMessage
+  content: string
 }>()
 
 const html = ref("")
 const withPartialFirst = ref(false)
+const activeUn = markRaw(cloneUn())
 
 const idxMap = shallowReactive<Record<string, CodePluginOptions>>({})
 const compMap = shallowReactive<Record<string, VNode>>({
   mermaid: h(MermaidBlock),
   default: h(CodeBlock),
 })
-const un = unified()
-  .data("settings", {
-    allowDangerousHtml: true,
-    allowDangerousCharacters: true,
-  })
-  .use(remarkParse)
-  .use(remarkMath, { singleDollarTextMath: true })
-  .use(remarkSqueezeParagraphs)
-  .use(remarkGfm)
-  .use(remarkEmoji)
-  .use(remarkRehype, { allowDangerousHtml: true, format: "html" })
-  .use(rehypeMathjax)
-  .use(rehypeVueVnode, { mdId: props.id, idxMap, compMap })
-  .use(rehypeHighlight)
-  .use(rehypeHighlightCodeLines, {
-    showLineNumbers: true,
-  })
-  .use(rehypeHrToBr)
-  .use(rehypeStringify)
 
 mermaid.initialize({
   startOnLoad: true,
@@ -61,21 +29,22 @@ mermaid.initialize({
     useMaxWidth: true,
     htmlLabels: true,
   },
+  fontFamily: "Maple Mono CN",
   theme: "default",
 })
 /**
  * @description 分片渲染时，vnode只取innerHTML,内部功能失效
  * 所有内容加载完毕后render完整的vnode
  */
-const parse = async (val: LLMChatMessage) => {
+const parse = async (val: string) => {
   // 部分数据渲染||完整数据第一次渲染，搜集所有code块
   if (props.partial) {
-    const res = await un.process(normalizeFormula(val.content))
+    const res = await activeUn.process(normalizeFormula(val))
     html.value = res.value.toString()
   } else {
     // 完整数据第一次渲染，搜集所有code块
     if (!withPartialFirst.value) {
-      const res = await un.process(normalizeFormula(val.content))
+      const res = await cloneVnodeUn(props.id, idxMap, compMap).process(normalizeFormula(val))
       html.value = res.value.toString()
     }
     await nextTick()
@@ -97,8 +66,8 @@ const parse = async (val: LLMChatMessage) => {
 }
 watch(
   [() => props.content, () => props.partial],
-  () => {
-    parse(props.content)
+  ([content, _]) => {
+    parse(content)
   },
   { deep: true }
 )

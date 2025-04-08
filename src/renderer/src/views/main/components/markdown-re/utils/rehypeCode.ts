@@ -5,6 +5,26 @@ import { toString } from "hast-util-to-string"
 import { CodePluginOptions } from "./types"
 import { cloneVNode } from "vue"
 import { getLang } from "./utils"
+import { isElement } from "hast-util-is-element"
+import { hasProperty } from "hast-util-has-property"
+
+const newVNode = (
+  mdId: string,
+  elId: string,
+  idxMap: Record<string, CodePluginOptions>,
+  compMap: Record<string, VNode>,
+  node: any,
+  parent: any
+) => {
+  const codeNode = node.children.find(child => isElement(child, "code"))
+  const code = codeNode ? toString(codeNode) : ""
+  const lang = getLang(node)
+  const comp = compMap[lang] ?? compMap.default
+  parent.properties = parent.properties ?? {}
+  parent.properties.id = elId
+  const vnode = cloneVNode(comp, { code, lang, rootId: elId })
+  idxMap[elId] = { mdId, elId, vnode, code, lang }
+}
 
 export const rehypeVueVnode = ({
   mdId,
@@ -16,26 +36,20 @@ export const rehypeVueVnode = ({
   compMap: Record<string, VNode>
 }) => {
   return tree => {
-    const selected = selectAll("pre", tree)
-    if (selected.length > 0) {
-      visit(tree, selected, (node, index, parent) => {
-        if (!isUndefined(index)) {
-          const lang = getLang(node)
-          const code = toString(node)
-          const comp = compMap[lang] ?? compMap.default
-          if (!idxMap[index]) {
-            const elId = "id-" + uniqueId()
-            const vnode = cloneVNode(comp, { code, lang, rootId: elId })
-            idxMap[index] = { mdId, idx: index, elId, vnode, code, lang }
-          } else {
-            idxMap[index].code = code
-          }
-          const wrap = parseSelector(`div#${idxMap[index].elId}`)
-          wrap.children = [node]
-          parent.children[index] = wrap
+    visit(tree, selectAll("pre", tree), (node, index, parent) => {
+      const elId = "id-" + uniqueId()
+      if (isElement(parent, "div")) {
+        if (!hasProperty(parent, "id")) {
+          newVNode(mdId, elId, idxMap, compMap, node, parent)
         }
-      })
-    }
+      } else {
+        if (isUndefined(index)) return
+        const wrap = parseSelector(`div#${elId}`)
+        wrap.children = [node]
+        parent.children[index] = wrap
+        newVNode(mdId, elId, idxMap, compMap, node, parent)
+      }
+    })
   }
 }
 

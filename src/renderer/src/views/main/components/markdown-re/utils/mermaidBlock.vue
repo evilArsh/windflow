@@ -7,8 +7,13 @@ defineProps<{
   html?: string
 }>()
 </script>
+
 <template>
   <BlockBase :lang :code :html :root-id>
-    <div v-html="code" class="mermaid mermaid-container"></div>
+    <div class="mermaid-container">
+      <pre>
+        <code class="mermaid language-mermaid" v-text="code"></code>
+      </pre>
+    </div>
   </BlockBase>
 </template>
