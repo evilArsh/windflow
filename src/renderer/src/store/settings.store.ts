@@ -1,12 +1,10 @@
 import { defineStore } from "pinia"
-import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/usable/useDatabase"
 import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
 
-export default defineStore(storeKey.settings, () => {
-  const { add, put, get: dbGet } = useDatabase()
-
+export default defineStore("settings", () => {
   const settings = reactive<Record<string, Settings<SettingsValue>>>({})
 
   /**
@@ -20,27 +18,20 @@ export default defineStore(storeKey.settings, () => {
       return settings[id] as Settings<T>
     } else {
       // 数据库查询
-      const data = await dbGet<Settings<T>>("settings", id)
+      const data = (await db.settings.get(id)) as Settings<T> | undefined
       if (data) {
         settings[id] = data
         return data
       } else {
         const val: Settings<T> = { id, value: defaultValue }
         settings[id] = val
-        const count = await add("settings", val)
-        if (count === 0) {
-          console.error(`[add settings failed] ${id}`)
-        }
+        await db.settings.add(val)
         return settings[id] as Settings<T>
       }
     }
   }
 
-  const dbUpdate = useThrottleFn(
-    async (data: Settings<SettingsValue>) => await put("settings", data.id, toRaw(data)),
-    300,
-    true
-  )
+  const dbUpdate = useThrottleFn(async (data: Settings<SettingsValue>) => await db.settings.put(toRaw(data)), 300, true)
   /**
    * 配置数据监听，实时更新到数据库
    */

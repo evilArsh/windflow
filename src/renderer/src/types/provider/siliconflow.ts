@@ -1,4 +1,4 @@
-import { LLMBaseRequest, Role } from "./chat"
+import { LLMBaseRequest, Role } from "../chat"
 
 export type SFModelsResponse = {
   object: "list"
@@ -58,7 +58,7 @@ export interface SFChatCompletionRequest extends LLMBaseRequest {
       }
       strict?: boolean
     }
-  }
+  }[]
 }
 
 export type SFChatCompletionResponse = {

@@ -13,7 +13,7 @@ import {
 } from "@renderer/types"
 import { chatTopicDefault } from "./default/chat.default"
 import { useDebounceFn, useThrottleFn } from "@vueuse/core"
-import { indexKey, storeKey, useDatabase } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/usable/useDatabase"
 import { ElMessage } from "element-plus"
 import useProviderStore from "./provider.store"
 import useModelsStore from "./model.store"
@@ -44,8 +44,7 @@ function assembleTopicTree(data: ChatTopic[], cb: (item: ChatTopicTree) => void)
   return res
 }
 
-export default defineStore(storeKey.chat_topic, () => {
-  const { add: dbAdd, put, get, request, wrapTransaction, count } = useDatabase()
+export default defineStore("chat_topic", () => {
   const providerStore = useProviderStore()
   const modelsStore = useModelsStore()
   const settingsStore = useSettingsStore()
@@ -119,9 +118,7 @@ export default defineStore(storeKey.chat_topic, () => {
         }
       }
     }
-    if (!context.find(val => val.role === Role.System)) {
-      context.unshift({ role: Role.System, content: topic.prompt })
-    }
+    context.unshift({ role: Role.System, content: topic.prompt })
     return context
   }
 
@@ -177,11 +174,7 @@ export default defineStore(storeKey.chat_topic, () => {
     }
     return { model, providerMeta, provider }
   }
-  const dbUpdateChatTopic = useThrottleFn(
-    async (data: ChatTopic) => await put("chat_topic", data.id, toRaw(data)),
-    300,
-    true
-  )
+  const dbUpdateChatTopic = useThrottleFn(async (data: ChatTopic) => await db.chatTopic.put(toRaw(data)), 300, true)
   function refreshChatTopicModelIds(topic?: ChatTopic) {
     if (!topic) return
     // 刷新models
@@ -195,18 +188,16 @@ export default defineStore(storeKey.chat_topic, () => {
     }, [] as string[])
   }
   async function dbAddChatTopic(data: ChatTopic) {
-    return await dbAdd("chat_topic", toRaw(data))
+    return await db.chatTopic.add(toRaw(data))
   }
   async function dbAddChatMessage(data: ChatMessage) {
-    return await dbAdd("chat_message", toRaw(data))
+    return await db.chatMessage.add(toRaw(data))
   }
-  const dbUpdateChatMessage = useDebounceFn(
-    async (data: ChatMessage) => await put("chat_message", data.id, toRaw(data)),
-    300,
-    { maxWait: 1000 }
-  )
+  const dbUpdateChatMessage = useDebounceFn(async (data: ChatMessage) => await db.chatMessage.put(toRaw(data)), 300, {
+    maxWait: 1000,
+  })
   async function dbFindChatMessage(id: string) {
-    const res = await get<ChatMessage>("chat_message", id)
+    const res = await db.chatMessage.get(id)
     if (res) {
       res.data.forEach(item => {
         item.finish = true
@@ -219,18 +210,22 @@ export default defineStore(storeKey.chat_topic, () => {
    * @description 删除对应的聊天组和聊天消息
    */
   async function dbDelChatTopic(data: ChatTopic[]) {
-    return await request(async db => {
-      const ts = db.transaction([storeKey.chat_message, storeKey.chat_topic], "readwrite")
-      const storeTopic = ts.objectStore(storeKey.chat_topic)
-      const storeMessage = ts.objectStore(storeKey.chat_message)
-      for (const item of data) {
-        storeTopic.delete(item.id)
-        if (item.chatMessageId) {
-          storeMessage.delete(item.chatMessageId)
+    return await db
+      .transaction("rw", db.chatMessage, db.chatTopic, async trans => {
+        for (const item of data) {
+          trans.chatTopic.delete(item.id)
+          if (item.chatMessageId) {
+            trans.chatMessage.delete(item.chatMessageId)
+          }
         }
-      }
-      return await wrapTransaction(ts)
-    })
+      })
+      .then(() => {
+        return true
+      })
+      .catch(error => {
+        console.log(`[dbDelChatTopic]`, error)
+        return false
+      })
   }
 
   function terminate(done: CallBackFn, topicId?: string, messageId?: string) {
@@ -353,7 +348,6 @@ export default defineStore(storeKey.chat_topic, () => {
       },
       modelId: "",
     })
-
     const context = getMessageContext(topic, message.data) // 消息上下文
     for (const modelId of topic.modelIds) {
       const meta = getMeta(modelId)
@@ -390,46 +384,26 @@ export default defineStore(storeKey.chat_topic, () => {
   }
   const fetch = async () => {
     try {
-      const total = await count("chat_topic")
+      const total = await db.chatTopic.count()
       if (total > 0) {
-        const data = await request<ChatTopic[]>(async db => {
-          const index = db
-            .transaction(storeKey.chat_topic, "readonly")
-            .objectStore(storeKey.chat_topic)
-            .index(indexKey.chatTopic_createAt_idx)
-          const res = await new Promise<ChatTopic[]>(resolve => {
-            const results: ChatTopic[] = []
-            index.openCursor(null, "next").onsuccess = e => {
-              const cursor = (e.target as IDBRequest<IDBCursorWithValue>).result
-              if (cursor) {
-                results.push(cursor.value as ChatTopic)
-                cursor.continue()
-              } else {
-                resolve(results)
+        const data = await db.chatTopic.orderBy("createAt").toArray()
+        // --- 恢复状态
+        const nodeKeyData = (await db.settings.get("chat.currentNodeKey")) as Settings<string> | undefined
+        currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
+        topicList.push(
+          ...assembleTopicTree(data, async item => {
+            if (item.id === currentNodeKey.value) {
+              currentTopic.value = item
+              if (item.node.chatMessageId) {
+                const msg = await db.chatMessage.get(item.node.chatMessageId)
+                if (msg) {
+                  chatMessage[msg.id] = msg
+                  currentMessage.value = msg
+                }
               }
             }
           })
-          return res
-        })
-        // --- 恢复状态
-        if (data) {
-          const nodeKeyData = await get<Settings<string>>("settings", "chat.currentNodeKey")
-          currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
-          topicList.push(
-            ...assembleTopicTree(data, async item => {
-              if (item.id === currentNodeKey.value) {
-                currentTopic.value = item
-                if (item.node.chatMessageId) {
-                  const msg = await dbFindChatMessage(item.node.chatMessageId)
-                  if (msg) {
-                    chatMessage[msg.id] = msg
-                    currentMessage.value = msg
-                  }
-                }
-              }
-            })
-          )
-        }
+        )
       } else {
         const data = chatTopicDefault()
         topicList.push(
@@ -439,9 +413,7 @@ export default defineStore(storeKey.chat_topic, () => {
             }
           })
         )
-        for (const item of data) {
-          await dbAdd("chat_topic", item)
-        }
+        await db.chatTopic.bulkAdd(data)
       }
     } catch (error) {
       console.error(`[fetch chat topic] ${(error as Error).message}`)

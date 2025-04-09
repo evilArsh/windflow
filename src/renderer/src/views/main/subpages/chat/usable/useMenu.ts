@@ -1,12 +1,11 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
-import { ChatMessage, ChatTopic, ChatTopicTree, Role } from "@renderer/types"
+import { ChatTopic, ChatTopicTree } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
 import type { TreeInstance, TreeNodeData } from "element-plus"
 import { cloneDeep } from "lodash-es"
 import useSettingsStore from "@renderer/store/settings.store"
-import { useThrottleFn } from "@vueuse/core"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
@@ -40,28 +39,6 @@ function topicToTree(topic: ChatTopic): ChatTopicTree {
     children: [],
   }
 }
-// 刷新prompt
-const refreshPrompt = useThrottleFn(
-  (message: ChatMessage, prompt: string) => {
-    const system = message.data.find(item => item.content.role == Role.System)
-    if (message.data.length == 0 || !system) {
-      const p = {
-        id: uniqueId(),
-        finish: true,
-        status: 200,
-        time: formatSecond(new Date()),
-        content: { role: Role.System, content: prompt },
-        modelId: "",
-      }
-      message.data.unshift(p)
-    } else {
-      system.content.content = prompt
-    }
-  },
-  1000,
-  true
-)
-
 function getAllNodes(current: ChatTopicTree): ChatTopic[] {
   const res: ChatTopic[] = []
   res.push(current.node)
@@ -120,10 +97,8 @@ export default (
       tree.currentHover = ""
     }),
   })
-  const newMessage = async (prompt: string) => {
+  const newMessage = async () => {
     const msg = chatMessageDefault()
-    msg.data[0].content.content = prompt
-    msg.data[0].content.role = "system"
     await chatStore.dbAddChatMessage(msg)
     return msg
   }
@@ -141,14 +116,14 @@ export default (
               chatMessage.value[topic.node.chatMessageId] = data
               currentMessage.value = chatMessage.value[topic.node.chatMessageId]
             } else {
-              const msg = await newMessage(topic.node.prompt)
+              const msg = await newMessage()
               chatMessage.value[msg.id] = msg
               topic.node.chatMessageId = msg.id
               currentMessage.value = chatMessage.value[msg.id]
             }
           }
         } else {
-          const msg = await newMessage(topic.node.prompt)
+          const msg = await newMessage()
           chatMessage.value[msg.id] = msg
           topic.node.chatMessageId = msg.id
           currentMessage.value = chatMessage.value[msg.id]
@@ -191,7 +166,7 @@ export default (
           })
           treeRef.value?.remove(selectedTopic.value)
           const res = await chatStore.dbDelChatTopic(nodes)
-          if (!res || res.code != 200) {
+          if (!res) {
             throw new Error(t("chat.deleteFailed"))
           }
           // 删除当前打开的消息
@@ -245,15 +220,9 @@ export default (
       const topic =
         parentId && selectedTopic.value
           ? cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
-          : newTopic(
-              parentId ?? null,
-              // models.value.filter(item => !!item.active).map(item => item.id),
-              [],
-              t("chat.addChat")
-            )
+          : newTopic(parentId ?? null, [], t("chat.addChat"))
       if (parentId) tree.pushDefaultExpandedKeys(parentId)
-      const res = await chatStore.dbAddChatTopic(topic)
-      if (res != 1) throw new Error(t("chat.addFailed"))
+      await chatStore.dbAddChatTopic(topic)
       const newNode: ChatTopicTree = topicToTree(topic)
       if (parentId) {
         treeRef.value?.append(newNode, parentId)
@@ -326,12 +295,6 @@ export default (
     async (val, old) => {
       if (val && val === old) {
         await chatStore.dbUpdateChatTopic(val.node)
-        if (val.node.chatMessageId) {
-          // TODO: 当models改变需要刷新llmChats
-          const msg = chatMessage.value[val.node.chatMessageId]
-          // 刷新提示词
-          msg && refreshPrompt(msg, val.node.prompt)
-        }
       }
     },
     { deep: true }

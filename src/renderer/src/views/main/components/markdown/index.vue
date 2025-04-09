@@ -1,51 +1,28 @@
 <script setup lang="ts">
-import markdownit from "markdown-it"
-import { full as emoji } from "markdown-it-emoji"
-import markdownitAnchor from "markdown-it-anchor"
-import mathjax3 from "markdown-it-mathjax3"
-import markdownItCode from "./plugins"
-import MarkdownIt from "markdown-it"
-import { CodePluginOptions } from "./plugins"
-import { LLMChatMessage } from "@renderer/types"
-import { render, cloneVNode, VNode } from "vue"
 import mermaid from "mermaid"
-import MermaidBlock from "./plugins/mermaidBlock.vue"
-import CodeBlock from "./plugins/codeBlock.vue"
+import { normalizeFormula } from "./utils/utils"
+import { CodePluginOptions } from "./utils/types"
+import CodeBlock from "./utils/codeBlock.vue"
+import MermaidBlock from "./utils/mermaidBlock.vue"
+import { cloneVNode, h, render, ref, shallowReactive, watch } from "vue"
+import { cloneUn, cloneVnodeUn } from "./utils/unified"
 const props = defineProps<{
   id: string
-  /**
-   * @description 如果markdown内容是分段返回的，并且还未返回完成，则需要设置为true。
-   * 表示当前content还在不断返回
-   */
   partial?: boolean
-  /**
-   * @description TODO: 数据是增量数据，不是独立分片。
-   */
-  content: LLMChatMessage
+  content: string
 }>()
-const md: MarkdownIt = markRaw(
-  markdownit({
-    html: true,
-    linkify: true,
-    typographer: true,
-  }).disable(["hr"])
-)
+
+const html = ref("")
+
 const idxMap = shallowReactive<Record<string, CodePluginOptions>>({})
 const compMap = shallowReactive<Record<string, VNode>>({
   mermaid: h(MermaidBlock),
   default: h(CodeBlock),
 })
-md.use(emoji)
-md.use(markdownitAnchor)
-md.use(markdownItCode, props.id, idxMap, compMap)
-md.use(mathjax3, {
-  tex: {
-    tags: "ams",
-  },
-  options: {
-    skipHtml: false,
-  },
-})
+
+const activeUn = markRaw(cloneUn())
+const vnodeUn = markRaw(cloneVnodeUn(props.id, idxMap, compMap))
+
 mermaid.initialize({
   startOnLoad: true,
   securityLevel: "loose",
@@ -53,46 +30,92 @@ mermaid.initialize({
     useMaxWidth: true,
     htmlLabels: true,
   },
+  fontFamily: "Maple Mono CN",
   theme: "default",
 })
-const html = ref("")
-const withPartialFirst = ref(false)
 /**
- * @description 分片渲染时，vnode只取innerHTML,内部功能失效
- * 所有内容加载完毕后render完整的vnode
+ * @description 所有内容加载完毕后render完整的vnode
  */
-const parse = (val: LLMChatMessage) => {
-  if (props.partial) {
-    html.value = md.render(val.content)
+const parse = async (content: string, partial: boolean) => {
+  // 部分数据渲染
+  if (partial) {
+    html.value = (await activeUn.process(normalizeFormula(content))).value.toString()
   } else {
-    // 完整数据第一次渲染，搜集所有code块
-    if (!withPartialFirst.value) {
-      html.value = md.render(val.content)
-    }
-    nextTick(() => {
-      Object.values(idxMap).forEach(item => {
-        const el = document.getElementById(item.elId)
-        if (el) {
-          el.innerHTML = ""
-          item.vnode = cloneVNode(item.vnode, { partial: false, code: item.code, lang: item.lang })
-          render(item.vnode, el)
-        }
-      })
+    html.value = (await vnodeUn.process(normalizeFormula(content))).value.toString()
+    await nextTick()
+    Object.values(idxMap).forEach(item => {
+      const el = document.getElementById(item.elId)
+      if (el) {
+        item.vnode = cloneVNode(item.vnode, {
+          rootId: item.elId,
+          code: item.code,
+          html: el.innerHTML,
+          lang: item.lang,
+        })
+        el.innerHTML = ""
+        render(item.vnode, el)
+      }
     })
+    mermaid.run()
+  }
+}
+const handleContent = (content: string, partial: boolean) => {
+  if (partial) {
+    parse(content, partial)
+  } else {
+    Object.keys(idxMap).forEach(key => {
+      delete idxMap[key]
+    })
+    parse(content, partial)
   }
 }
 watch(
   [() => props.content, () => props.partial],
-  () => {
-    parse(props.content)
+  ([content, partial]) => {
+    handleContent(content, partial)
   },
   { deep: true }
 )
 onMounted(() => {
-  withPartialFirst.value = props.partial
-  parse(props.content)
+  handleContent(props.content, props.partial)
 })
 </script>
+
 <template>
   <div style="line-height: 1.5" v-html="html"></div>
 </template>
+<style>
+pre {
+  counter-reset: line;
+}
+.code-line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2em;
+  margin-right: 1em;
+  color: #666;
+  text-align: right;
+  user-select: none;
+}
+.code-block {
+  --el-card-padding: 1rem;
+  border: solid 1px #dce0e5;
+  border-radius: 0.5rem;
+}
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.code-block-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mermaid-container {
+  display: block !important;
+  max-width: 100%;
+  overflow: auto;
+}
+</style>

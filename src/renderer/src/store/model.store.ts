@@ -1,12 +1,10 @@
 import { ModelMeta, ProviderName } from "@renderer/types"
 import { defineStore } from "pinia"
 import { modelsDefault } from "./default/models.default"
-import { storeKey, useDatabase } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/usable/useDatabase"
 import { useThrottleFn } from "@vueuse/core"
 
-export default defineStore(storeKey.model, () => {
-  const { getAll, add, get, put } = useDatabase()
-
+export default defineStore("model", () => {
   const models = reactive<ModelMeta[]>([]) // 所有模型
   const cache = markRaw<Map<string, ModelMeta>>(new Map()) // 检索缓存
 
@@ -30,29 +28,27 @@ export default defineStore(storeKey.model, () => {
     return models.filter(v => v.providerName === name)
   }
 
-  const dbUpdate = useThrottleFn(async (data: ModelMeta) => await put("model", data.id, toRaw(data)), 300, true)
+  const dbUpdate = useThrottleFn(async (data: ModelMeta) => await db.model.put(toRaw(data)), 300, true)
 
   async function refresh(newModels: ModelMeta[]) {
     for (const v of newModels) {
-      const model = await get("model", v.id)
+      const model = await db.model.get(v.id)
       if (!model) {
         models.push(v)
-        await add("model", v)
+        await db.model.add(v)
       }
     }
   }
 
   const fetch = async () => {
     try {
-      const data = await getAll<ModelMeta>("model")
+      const data = await db.model.toArray()
       if (data.length > 0) {
         models.push(...data)
       } else {
         const data = modelsDefault()
         models.push(...data)
-        for (const item of data) {
-          await add("model", item)
-        }
+        await db.model.bulkAdd(data)
       }
     } catch (error) {
       console.error(`[fetch models] ${(error as Error).message}`)

@@ -1,5 +1,5 @@
 export * from "./layout"
-export * from "./deepseek"
-export * from "./siliconflow"
+export * from "./provider/deepseek"
+export * from "./provider/siliconflow"
 export * from "./chat"
 export * from "./settings"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ChatMessage, ChatTopic, Role } from "@renderer/types"
+import { ChatMessage, ChatTopic } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
-import MarkdownRe from "@renderer/views/main/components/markdown-re/index.vue"
+import Markdown from "@renderer/views/main/components/markdown/index.vue"
 import useScrollHook from "../../usable/useScrollHook"
 import useShortcut from "../../usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
@@ -43,14 +43,7 @@ const edit = (msg: ChatMessage["data"][number]) => {
     document.body
   )
 }
-const interactMsg = computed(() => {
-  return currentMessage.value?.data.filter(item => item.content.role !== Role.System) ?? []
-})
-const promptMsg = computed(() => {
-  return (currentMessage.value?.data.filter(item => item.content.role === Role.System) ?? [])
-    .map(item => item.content.content)
-    .join("\n")
-})
+const message = computed(() => currentMessage.value?.data ?? [])
 const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
   send,
 })
@@ -62,8 +55,8 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
         <div class="flex p-1rem justify-end flex-1"></div>
       </template>
       <div class="flex flex-col gap2rem flex-1 overflow-hidden">
-        <el-text line-clamp="7" class="text-1.2rem" type="info" size="small">{{ promptMsg }}</el-text>
-        <MsgBubble v-for="msg in interactMsg" :key="msg.id" :reverse="!msg.modelId">
+        <el-text line-clamp="7" class="text-1.2rem" type="info" size="small">{{ currentTopic.node.prompt }}</el-text>
+        <MsgBubble v-for="msg in message" :key="msg.id" :reverse="!msg.modelId">
           <template #head>
             <div class="flex flex-col gap1rem">
               <Hover>
@@ -156,7 +149,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
                       </div>
                     </div>
                   </template>
-                  <MarkdownRe v-if="msg.modelId" :id="msg.id" :content="msg.content.content" :partial="!msg.finish" />
+                  <Markdown v-if="msg.modelId" :id="msg.id" :content="msg.content.content" :partial="!msg.finish" />
                   <el-text v-else type="primary" class="self-end!">
                     {{ msg.content.content }}
                   </el-text>

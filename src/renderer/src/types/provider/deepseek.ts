@@ -1,4 +1,4 @@
-import { LLMBaseRequest, Role } from "./chat"
+import { LLMBaseRequest, Role } from "../chat"
 
 export type DSModelsResponse = {
   object: "list"
@@ -136,7 +136,7 @@ export interface DSChatCompletionRequest extends LLMBaseRequest {
         properties: Record<string, any>
       }
     }
-  }
+  }[]
   /**
    * @description  控制模型调用 tool 的行为。
    * - `none` 意味着模型不会调用任何 tool，而是生成一条消息。
