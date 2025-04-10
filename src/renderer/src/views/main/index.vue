@@ -8,7 +8,6 @@ onMounted(() => {})
       <Navbar></Navbar>
     </div>
     <div class="content-container">
-      <!-- <div class="content-header"></div> -->
       <div class="content-main">
         <router-view></router-view>
       </div>

@@ -1,6 +1,4 @@
 import {
-  SFChatCompletionRequest,
-  SFChatCompletionResponse,
   LLMChatMessage,
   LLMBaseRequest,
   LLMChatResponse,
@@ -8,13 +6,14 @@ import {
   LLMProvider,
   ProviderMeta,
   ModelMeta,
-  SFMessage,
   ModelType,
-  SFModelsResponse,
+  ChatCompletionRequest,
+  Message,
+  ModelsResponse,
 } from "@renderer/types"
-import JSON5 from "json5"
 import { useLLMChat, createInstance } from "@renderer/lib/http"
-import { AxiosInstance, HttpStatusCode } from "axios"
+import { AxiosInstance } from "axios"
+import { parseOpenAIResponseStream } from "./utils/chat"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -25,21 +24,17 @@ const types = [
   { name: "speech-to-text", type: ModelType.SpeechToText },
   { name: "text-to-video", type: ModelType.TextToVideo },
 ]
-const reasonerPattern = /deepseek-r1|qwq-32b/
+const reasonerPattern = /deepseek-r1|qwq-32b|deepseek-reasoner/
 
 export class SiliconFlow implements LLMProvider {
-  #messageConfig: SFChatCompletionRequest
+  #messageConfig: ChatCompletionRequest
   #axios: AxiosInstance
   constructor() {
     this.#messageConfig = {
       model: "",
       messages: [],
       stream: true,
-      max_tokens: 16384,
-      temperature: 0.7,
-      // top_p: 0.7,
-      top_k: 50,
-      frequency_penalty: 0.5,
+      max_tokens: 8192,
       n: 1,
       response_format: {
         type: "text",
@@ -48,28 +43,7 @@ export class SiliconFlow implements LLMProvider {
     this.#axios = createInstance()
   }
   parseResponse(text: string): LLMChatResponse {
-    try {
-      const data: SFChatCompletionResponse[] = text
-        .replace(/data: |\[DONE\]|: keep-alive/g, "")
-        .split("\n")
-        .filter(item => !!item)
-        .map(item => JSON5.parse(item))
-      return {
-        status: HttpStatusCode.PartialContent,
-        msg: "",
-        data: data.map<LLMChatMessage>(v => ({
-          role: "assistant",
-          content: v.choices[0].delta.content ?? "",
-          reasoningContent: v.choices[0].delta.reasoning_content ?? "",
-        })),
-      }
-    } catch (error) {
-      return {
-        status: HttpStatusCode.PartialContent,
-        msg: "",
-        data: [{ content: dataToText(error), role: "assistant" }],
-      }
-    }
+    return parseOpenAIResponseStream(text)
   }
 
   chat(
@@ -84,12 +58,12 @@ export class SiliconFlow implements LLMProvider {
 
     const request = useLLMChat(this.#axios, this, providerMeta)
     if (reqConfig) {
-      this.#messageConfig = reqConfig as SFChatCompletionRequest
+      this.#messageConfig = reqConfig as ChatCompletionRequest
     }
-    this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as SFMessage[]
+    this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as Message[]
 
     this.#messageConfig.model = modelMeta.modelName
-    const mn = modelMeta.modelName.toLocaleLowerCase()
+    const mn = modelMeta.modelName.toLowerCase()
     if (mn.includes("deepseek")) {
       this.#messageConfig.max_tokens = 8192
     } else {
@@ -114,7 +88,7 @@ export class SiliconFlow implements LLMProvider {
       (acc, v) => {
         acc.push(
           this.#axios
-            .request<SFModelsResponse>({
+            .request<ModelsResponse>({
               method: provider.apiModelList.method,
               url: provider.apiModelList.url,
               params: { sub_type: v.name },
@@ -126,7 +100,7 @@ export class SiliconFlow implements LLMProvider {
         )
         return acc
       },
-      [] as Promise<{ type: ModelType; data: SFModelsResponse["data"] }>[]
+      [] as Promise<{ type: ModelType; data: ModelsResponse["data"] }>[]
     )
     const dataRes = await Promise.all(req)
 

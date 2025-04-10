@@ -1,15 +1,10 @@
 import { HttpStatusCode, Method } from "axios"
-
-export enum Role {
-  System = "system",
-  User = "user",
-  Assistant = "assistant",
-  Tool = "tool",
-}
+import { LLMBaseRequest } from "."
 export enum ProviderName {
   System = "System",
   DeepSeek = "DeepSeek",
   SiliconFlow = "SiliconFlow",
+  Volcengine = "Volcengine",
 }
 export enum ModelType {
   Chat = "Chat",
@@ -26,9 +21,7 @@ export enum ModelActiveStatus {
   Active = "Active",
   Inactive = "Inactive",
 }
-export interface LLMBaseRequest {
-  [x: string]: unknown
-}
+
 export type LLMChatMessage = {
   /**
    * 消息类型
@@ -101,6 +94,7 @@ export type ProviderMeta = {
     method: Method
     url: string
   }
+  apiDoc?: string
   /**
    * @description 模型列表中需要展示的模型类型
    */

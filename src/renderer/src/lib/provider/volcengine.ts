@@ -9,30 +9,33 @@ import {
   ModelType,
   ChatCompletionRequest,
   Message,
-  ModelsResponse,
+  ProviderName,
 } from "@renderer/types"
 import { useLLMChat, createInstance } from "@renderer/lib/http"
 import { AxiosInstance } from "axios"
 import { parseOpenAIResponseStream } from "./utils/chat"
+import { modelsDefault } from "@renderer/store/default/models.default"
 
-export class LLMDeepSeek implements LLMProvider {
+export class SiliconFlow implements LLMProvider {
   #messageConfig: ChatCompletionRequest
   #axios: AxiosInstance
   constructor() {
     this.#messageConfig = {
+      model: "",
       messages: [],
-      model: "deepseek-chat",
+      stream: true,
       max_tokens: 8192,
+      n: 1,
       response_format: {
         type: "text",
       },
-      stream: true,
     }
     this.#axios = createInstance()
   }
   parseResponse(text: string): LLMChatResponse {
     return parseOpenAIResponseStream(text)
   }
+
   chat(
     message: LLMChatMessage | LLMChatMessage[],
     modelMeta: ModelMeta,
@@ -48,6 +51,12 @@ export class LLMDeepSeek implements LLMProvider {
     }
     this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as Message[]
     this.#messageConfig.model = modelMeta.modelName
+    const mn = modelMeta.modelName.toLowerCase()
+    if (mn.includes("deepseek")) {
+      this.#messageConfig.max_tokens = 8192
+    } else {
+      this.#messageConfig.max_tokens = 4096
+    }
     return request.chat(this.#messageConfig, cb => {
       callback({
         ...cb,
@@ -55,19 +64,8 @@ export class LLMDeepSeek implements LLMProvider {
       })
     })
   }
-  async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    this.#axios.defaults.baseURL = provider.apiUrl
-    this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
-    const res = await this.#axios.request<ModelsResponse>({
-      method: provider.apiModelList.method,
-      url: provider.apiModelList.url,
-    })
-    return res.data.data.map<ModelMeta>((v: ModelsResponse["data"][number]) => ({
-      id: `${provider.name}_${v.id}`,
-      type: v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner,
-      modelName: v.id,
-      providerName: provider.name,
-      subProviderName: provider.name,
-    }))
+
+  async fetchModels(_provider: ProviderMeta): Promise<ModelMeta[]> {
+    return modelsDefault().filter(v => v.providerName === ProviderName.Volcengine)
   }
 }
