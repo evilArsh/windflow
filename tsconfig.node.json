@@ -1,5 +1,9 @@
 {
-  "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*"],
+  "include": [
+    "electron.vite.config.*",
+    "src/main/**/*",
+    "src/preload/**/*",
+  ],
   "compilerOptions": {
     "composite": true,
     "types": ["electron-vite/node", "vite/client"],
@@ -7,7 +11,6 @@
     // "module": "ESNext"
     // "moduleResolution": "Bundler",
     // "allowSyntheticDefaultImports": true
-
     "target": "ESNext",
     "module": "NodeNext",
     "sourceMap": false,
@@ -21,6 +24,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": false,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "baseUrl": ".",
+    "paths": {
+      "@main/*": ["src/main/*"],
+      "@preload/*": ["src/preload/*"],
+    }
   }
 }

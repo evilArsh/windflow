@@ -5,9 +5,8 @@
     "src/renderer/src/**/*.ts",
     "src/renderer/src/**/*.tsx",
     "src/renderer/src/**/*.vue",
-    "src/preload/*.d.ts",
     "src/renderer/auto-imports.d.ts",
-    "src/renderer/components.d.ts"
+    "src/renderer/components.d.ts",
   ],
   "compilerOptions": {
     "baseUrl": ".",
@@ -30,15 +29,13 @@
     "types": ["element-plus/global", "unplugin-icons/types/vue"],
     "noEmit": false,
     "composite": true,
-
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitReturns": true,
-
     "paths": {
-      "@renderer/*": ["src/renderer/src/*"]
+      "@renderer/*": ["src/renderer/src/*"],
     }
   }
 }

@@ -11,9 +11,21 @@ import { ElementPlusResolver } from "unplugin-vue-components/resolvers"
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: [
+        { find: "@main", replacement: path.resolve("src/main") },
+        { find: "@preload", replacement: path.resolve("src/preload") },
+      ],
+    },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: [
+        { find: "@main", replacement: path.resolve("src/main") },
+        { find: "@preload", replacement: path.resolve("src/preload") },
+      ],
+    },
   },
   renderer: {
     server: {
@@ -26,9 +38,7 @@ export default defineConfig({
       sourcemap: false,
     },
     resolve: {
-      alias: {
-        "@renderer": path.resolve("src/renderer/src"),
-      },
+      alias: [{ find: "@renderer", replacement: path.resolve("src/renderer/src") }],
     },
     plugins: [
       vue({
