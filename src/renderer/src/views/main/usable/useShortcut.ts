@@ -1,10 +1,6 @@
 import useHotKey from "@renderer/usable/useHotKey"
-import { ChatMessage, ChatTopic, ChatTopicTree } from "@renderer/types"
-export default (
-  topic: Ref<ChatTopicTree | undefined>,
-  message: Ref<ChatMessage | undefined>,
-  options: { send: (topic?: ChatTopic, message?: ChatMessage) => void }
-) => {
+import { ChatTopic, ChatTopicTree } from "@renderer/types"
+export default (topic: Ref<ChatTopicTree | undefined>, options: { send: (topic?: ChatTopic) => void }) => {
   const { on: onHotKey, cleanAll, clean } = useHotKey()
   const sendShortcut = ref("ctrl+enter") // 发送快捷键
 
@@ -14,7 +10,7 @@ export default (
       if (old) clean(old)
       onHotKey(val, res => {
         if (res.active) {
-          options.send(topic.value?.node, message.value)
+          options.send(topic.value?.node)
         }
       })
     },

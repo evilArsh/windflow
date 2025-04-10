@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Navbar from "./components/nav.vue"
+import Navbar from "./components/nav/index.vue"
 onMounted(() => {})
 </script>
 <template>

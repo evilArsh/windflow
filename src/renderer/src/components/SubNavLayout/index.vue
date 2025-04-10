@@ -11,7 +11,7 @@ const scaleRef = useTemplateRef("scale")
 const widthWacher = shallowRef<WatchHandle>()
 const handlerStyle = ref<CSSProperties>({})
 onMounted(() => {
-  widthWacher.value = settingsStore.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle, {
+  widthWacher.value = settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle, {
     width: "300px",
   })
 })

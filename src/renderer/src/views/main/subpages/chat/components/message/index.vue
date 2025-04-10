@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatTopic, ChatMessageData } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
-import Markdown from "@renderer/views/main/components/markdown/index.vue"
-import useScrollHook from "../../usable/useScrollHook"
-import useShortcut from "../../usable/useShortcut"
+import Markdown from "@renderer/components/Markdown/index.vue"
+import useScrollHook from "@renderer/views/main/usable/useScrollHook"
+import useShortcut from "@renderer/views/main/usable/useShortcut"
 import useModelsStore from "@renderer/store/model.store"
-import ModelTool from "../model/index.vue"
+import ModelSelect from "../modelSelect/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
 import EditMsg from "./editMsg.vue"
@@ -20,15 +20,15 @@ const chatStore = useChatStore()
 const { t } = useI18n()
 const { onScroll } = useScrollHook(contentLayout, currentTopic, currentMessage)
 const providerStore = useProviderStore()
-const send = (topic?: ChatTopic, message?: ChatMessage) => {
-  if (topic && message) {
-    chatStore.send(topic, message)
+const send = (topic?: ChatTopic) => {
+  if (topic) {
+    chatStore.send(topic)
     nextTick(() => {
       contentLayout.value?.scrollToBottom("smooth")
     })
   }
 }
-const edit = (msg: ChatMessage["data"][number]) => {
+const edit = (msg: ChatMessageData) => {
   render(
     h(EditMsg, {
       ts: Date.now(),
@@ -44,7 +44,7 @@ const edit = (msg: ChatMessage["data"][number]) => {
   )
 }
 const message = computed(() => currentMessage.value?.data ?? [])
-const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
+const { sendShortcut } = useShortcut(currentTopic, {
   send,
 })
 </script>
@@ -83,7 +83,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
                 </el-tooltip>
                 <el-tooltip v-if="msg.modelId" :content="t('chat.regenerate')" placement="right">
                   <Button
-                    @click="done => chatStore.restart(done, currentTopic?.node, currentMessage?.id, msg.id)"
+                    @click="done => chatStore.restart(done, currentTopic?.node, msg.id)"
                     size="small"
                     :disabled="!msg.finish"
                     circle
@@ -164,7 +164,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
       <template #handler>
         <div class="chat-input-container" ref="scale">
           <div class="chat-input-header">
-            <ModelTool v-model="currentTopic.node.modelIds" />
+            <ModelSelect v-model="currentTopic.node.modelIds" />
           </div>
           <div class="chat-input">
             <el-input
@@ -180,7 +180,7 @@ const { sendShortcut } = useShortcut(currentTopic, currentMessage, {
               :placeholder="t('tip.inputPlaceholder')"></el-input>
           </div>
           <div class="chat-input-actions">
-            <el-button size="small" type="default" plain @click="send(currentTopic.node, currentMessage)">
+            <el-button size="small" type="default" plain @click="send(currentTopic.node)">
               发送({{ sendShortcut }})
             </el-button>
           </div>

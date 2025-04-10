@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import { ChatTopicTree } from "@renderer/types"
-import ChatContent from "./components/chatContent/index.vue"
+import Message from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
 import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
-import useMenu from "./usable/useMenu"
+import useMenu from "@renderer/views/main/usable/useMenu"
 const { t } = useI18n()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
       </ScalePanel>
     </template>
     <template #content>
-      <ChatContent />
+      <Message />
     </template>
   </SubNavLayout>
 </template>

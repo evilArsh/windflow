@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
-import ModelSelect from "../model/index.vue"
+import ModelSelect from "../modelSelect/index.vue"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
 const props = defineProps<{
   modelValue: ChatTopic

@@ -47,6 +47,7 @@ export default [
       ".lintstagedrc*",
       "commitlint*",
       "**/build/",
+      "**/out/",
       "**/dist/",
       "**/h5/",
       "**/.vscode/",

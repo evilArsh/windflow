@@ -4,9 +4,7 @@ import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
 
-export default defineStore("settings", () => {
-  const settings = reactive<Record<string, Settings<SettingsValue>>>({})
-
+const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
   /**
    * Get a setting value
    * @param id - The name of the setting
@@ -31,7 +29,7 @@ export default defineStore("settings", () => {
     }
   }
 
-  const dbUpdate = useThrottleFn(async (data: Settings<SettingsValue>) => await db.settings.put(toRaw(data)), 300, true)
+  const update = useThrottleFn(async (data: Settings<SettingsValue>) => await db.settings.put(toRaw(data)), 300, true)
   /**
    * 配置数据监听，实时更新到数据库
    */
@@ -50,16 +48,29 @@ export default defineStore("settings", () => {
       async val => {
         if (configData.value) {
           configData.value.value = isRef(val) ? toValue(val) : (toRaw(val) as T)
-          await dbUpdate(configData.value)
+          await update(configData.value)
         }
       },
       { deep: true }
     )
   }
-
   return {
     get,
-    dbUpdate,
+    update,
     dataWatcher,
+  }
+}
+
+export default defineStore("settings", () => {
+  const settings = reactive<Record<string, Settings<SettingsValue>>>({})
+  const { get, update, dataWatcher } = useData(settings)
+  return {
+    get,
+    dataWatcher,
+    api: {
+      get,
+      update,
+      dataWatcher,
+    },
   }
 })

@@ -24,7 +24,7 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
 })
 
 const onModelChange = (row: ModelMeta) => {
-  modelStore.dbUpdate(row)
+  modelStore.api.update(row)
   chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
 }
 </script>

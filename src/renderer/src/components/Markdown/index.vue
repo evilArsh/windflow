@@ -2,8 +2,8 @@
 import mermaid from "mermaid"
 import { normalizeFormula } from "./utils/utils"
 import { CodePluginOptions } from "./utils/types"
-import CodeBlock from "./utils/codeBlock.vue"
-import MermaidBlock from "./utils/mermaidBlock.vue"
+import CodeBlock from "./components/codeBlock.vue"
+import MermaidBlock from "./components/mermaidBlock.vue"
 import { cloneVNode, h, render, ref, shallowReactive, watch } from "vue"
 import { cloneUn, cloneVnodeUn } from "./utils/unified"
 const props = defineProps<{
@@ -39,9 +39,9 @@ mermaid.initialize({
 const parse = async (content: string, partial: boolean) => {
   // 部分数据渲染
   if (partial) {
-    html.value = (await activeUn.process(normalizeFormula(content))).value.toString()
+    html.value = (await activeUn.process(content)).value.toString()
   } else {
-    html.value = (await vnodeUn.process(normalizeFormula(content))).value.toString()
+    html.value = (await vnodeUn.process(content)).value.toString()
     await nextTick()
     Object.values(idxMap).forEach(item => {
       const el = document.getElementById(item.elId)
@@ -60,6 +60,7 @@ const parse = async (content: string, partial: boolean) => {
   }
 }
 const handleContent = (content: string, partial: boolean) => {
+  content = normalizeFormula(content)
   if (partial) {
     parse(content, partial)
   } else {

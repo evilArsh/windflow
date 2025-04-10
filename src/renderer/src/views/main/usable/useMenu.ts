@@ -59,7 +59,7 @@ export default (
   const { t } = useI18n()
   // const { models } = storeToRefs(modelStore)
   const settingsStore = useSettingsStore()
-  const { topicList, chatMessage, llmChats, currentTopic, currentMessage, currentNodeKey } = storeToRefs(chatStore)
+  const { topicList, chatMessage, currentTopic, currentMessage, currentNodeKey } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({
@@ -99,7 +99,7 @@ export default (
   })
   const newMessage = async () => {
     const msg = chatMessageDefault()
-    await chatStore.dbAddChatMessage(msg)
+    await chatStore.api.addChatMessage(msg)
     return msg
   }
   const setCurrentTopic = async (topic?: ChatTopicTree) => {
@@ -111,7 +111,7 @@ export default (
           if (cached) {
             currentMessage.value = cached
           } else {
-            const data = await chatStore.dbFindChatMessage(topic.node.chatMessageId)
+            const data = await chatStore.api.findChatMessage(topic.node.chatMessageId)
             if (data) {
               chatMessage.value[topic.node.chatMessageId] = data
               currentMessage.value = chatMessage.value[topic.node.chatMessageId]
@@ -154,18 +154,14 @@ export default (
             // 删除展开的节点key
             tree.removeDefaultExpandedKeys(item.id)
             // 终止请求
-            if (llmChats.value[item.id]) {
-              llmChats.value[item.id].forEach(val => {
-                val.handler?.terminate()
-              })
-            }
+            chatStore.terminateAll(item.id)
             // 删除消息缓存
             if (item.chatMessageId) {
               delete chatMessage.value[item.chatMessageId]
             }
           })
           treeRef.value?.remove(selectedTopic.value)
-          const res = await chatStore.dbDelChatTopic(nodes)
+          const res = await chatStore.api.delChatTopic(nodes)
           if (!res) {
             throw new Error(t("chat.deleteFailed"))
           }
@@ -222,7 +218,7 @@ export default (
           ? cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
           : newTopic(parentId ?? null, [], t("chat.addChat"))
       if (parentId) tree.pushDefaultExpandedKeys(parentId)
-      await chatStore.dbAddChatTopic(topic)
+      await chatStore.api.addChatTopic(topic)
       const newNode: ChatTopicTree = topicToTree(topic)
       if (parentId) {
         treeRef.value?.append(newNode, parentId)
@@ -282,7 +278,7 @@ export default (
     (val, old) => {
       if (val) {
         if (val === old) {
-          chatStore.dbUpdateChatTopic(val.node)
+          chatStore.api.updateChatTopic(val.node)
         } else {
           currentNodeKey.value = val.id
         }
@@ -294,7 +290,7 @@ export default (
     selectedTopic,
     async (val, old) => {
       if (val && val === old) {
-        await chatStore.dbUpdateChatTopic(val.node)
+        await chatStore.api.updateChatTopic(val.node)
       }
     },
     { deep: true }
@@ -303,7 +299,7 @@ export default (
     currentMessage,
     async (val, old) => {
       if (val && val.id && val === old) {
-        await chatStore.dbUpdateChatMessage(val)
+        await chatStore.api.updateChatMessage(val)
       }
     },
     { deep: true }
@@ -314,7 +310,7 @@ export default (
       treeRef.value?.filter(v)
     }
   )
-  const watchKeys = settingsStore.dataWatcher<string[]>(
+  const watchKeys = settingsStore.api.dataWatcher<string[]>(
     "chat.defaultExpandedKeys",
     toRef(tree, "defaultExpandedKeys"),
     []

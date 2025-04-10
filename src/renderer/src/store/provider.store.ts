@@ -7,22 +7,12 @@ import { useThrottleFn } from "@vueuse/core"
 import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
 import { IconifyJSON } from "@iconify/types"
 import { getIconHTML } from "@renderer/components/SvgPicker"
-export default defineStore("provider", () => {
+import { Reactive } from "vue"
+const useData = (metas: Reactive<Record<string, ProviderMeta>>, currentProvider: Ref<ProviderMeta | undefined>) => {
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
-  const currentProvider = ref<ProviderMeta>() // 模型页选中的提供商
-  const metas = reactive<Record<string, ProviderMeta>>({})
-  const manager = markRaw<ProviderManager>(new ProviderManager())
-  const dbUpdate = useThrottleFn(async (data: ProviderMeta) => await db.providerMeta.put(toRaw(data)), 300, true)
-
-  function getProviderLogo(name?: string) {
-    if (!name) {
-      return defaultLogo
-    }
-    const provider = metas[name]
-    return provider?.logo || userLogo
-  }
+  const update = useThrottleFn(async (data: ProviderMeta) => await db.providerMeta.put(toRaw(data)), 300, true)
 
   const fetch = async () => {
     try {
@@ -46,10 +36,31 @@ export default defineStore("provider", () => {
   }
   fetch()
   return {
-    dbUpdate,
+    defaultLogo,
+    userLogo,
+    update,
+  }
+}
+export default defineStore("provider", () => {
+  const currentProvider = ref<ProviderMeta>() // 模型页选中的提供商
+  const metas = reactive<Record<string, ProviderMeta>>({})
+  const manager = markRaw<ProviderManager>(new ProviderManager())
+
+  const { defaultLogo, userLogo, update } = useData(metas, currentProvider)
+  function getProviderLogo(name?: string) {
+    if (!name) {
+      return defaultLogo
+    }
+    const provider = metas[name]
+    return provider?.logo || userLogo
+  }
+  return {
     getProviderLogo,
     providerMetas: metas,
     providerManager: manager,
     currentProvider,
+    api: {
+      update,
+    },
   }
 })

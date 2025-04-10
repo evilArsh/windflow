@@ -78,7 +78,7 @@ async function onRefreshModel(done: CallBackFn) {
       const provider = providerStore.providerManager.getLLMProvider(data.value.name)
       if (provider) {
         const models = await provider.fetchModels(data.value)
-        await modelStore.refresh(models)
+        await modelStore.api.refresh(models)
       }
     }
     done()
@@ -101,7 +101,7 @@ watch(
   (val, old) => {
     if (val && val === old) {
       // 保存到indexedDB
-      providerStore.dbUpdate(val)
+      providerStore.api.update(val)
     }
   },
   { deep: true }
