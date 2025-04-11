@@ -8,34 +8,47 @@ import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
 import { IconifyJSON } from "@iconify/types"
 import { getIconHTML } from "@renderer/components/SvgPicker"
 import { Reactive } from "vue"
+import { Settings } from "@renderer/types"
 const useData = (metas: Reactive<Record<string, ProviderMeta>>, currentProvider: Ref<ProviderMeta | undefined>) => {
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
   const update = useThrottleFn(async (data: ProviderMeta) => await db.providerMeta.put(toRaw(data)), 300, true)
+  const add = async (data: ProviderMeta) => await db.providerMeta.add(toRaw(data))
 
   const fetch = async () => {
     try {
+      for (const key in metas) {
+        delete metas[key]
+      }
+      const defaultData = providerDefault(providerSvgIcon as IconifyJSON)
       const data = await db.providerMeta.toArray()
-      if (data.length > 0) {
-        data.forEach(item => {
+      data.forEach(item => {
+        metas[item.name] = item
+      })
+      for (const item of defaultData) {
+        if (!metas[item.name]) {
           metas[item.name] = item
-        })
-        currentProvider.value = data[0]
-      } else {
-        const data = providerDefault(providerSvgIcon as IconifyJSON)
-        data.forEach(item => {
-          metas[item.name] = item
-        })
-        currentProvider.value = data[0]
-        await db.providerMeta.bulkAdd(data)
+          await add(item)
+        }
+      }
+      const current = (await db.settings.get("provider.currentSettingActive")) as Settings<string> | undefined
+      if (current) {
+        currentProvider.value = metas[current.value]
+      } else if (defaultData.length > 0) {
+        currentProvider.value = metas[defaultData[0].name]
       }
     } catch (error) {
       console.error(`[fetch providers] ${(error as Error).message}`)
     }
   }
-  fetch()
+  const reset = async () => {
+    await db.providerMeta.clear()
+    await fetch()
+  }
   return {
+    reset,
+    fetch,
     defaultLogo,
     userLogo,
     update,
@@ -46,21 +59,19 @@ export default defineStore("provider", () => {
   const metas = reactive<Record<string, ProviderMeta>>({})
   const manager = markRaw<ProviderManager>(new ProviderManager())
 
-  const { defaultLogo, userLogo, update } = useData(metas, currentProvider)
+  const api = useData(metas, currentProvider)
   function getProviderLogo(name?: string) {
     if (!name) {
-      return defaultLogo
+      return api.defaultLogo
     }
     const provider = metas[name]
-    return provider?.logo || userLogo
+    return provider?.logo || api.userLogo
   }
   return {
     getProviderLogo,
     providerMetas: metas,
     providerManager: manager,
     currentProvider,
-    api: {
-      update,
-    },
+    api,
   }
 })

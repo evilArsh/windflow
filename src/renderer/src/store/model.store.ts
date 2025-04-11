@@ -7,38 +7,43 @@ import { Reactive } from "vue"
 const useData = (models: Reactive<ModelMeta[]>) => {
   const update = useThrottleFn(async (data: ModelMeta) => await db.model.put(toRaw(data)), 300, true)
   async function refresh(newModels: ModelMeta[]) {
-    for (const v of newModels) {
-      const model = await db.model.get(v.id)
-      if (!model) {
-        models.push(v)
-        await db.model.add(v)
-      }
-    }
+    await db.model.bulkPut(newModels)
+    await fetch()
+  }
+  async function find(modelId?: string) {
+    if (!modelId) return
+    return await db.model.get(modelId)
   }
 
   const fetch = async () => {
     try {
+      models.length = 0
+      const defaultData = modelsDefault()
       const data = await db.model.toArray()
-      if (data.length > 0) {
-        models.push(...data)
-      } else {
-        const data = modelsDefault()
-        models.push(...data)
-        await db.model.bulkAdd(data)
+      data.forEach(v => {
+        models.push(v)
+      })
+      for (const v of defaultData) {
+        if (!models.find(model => model.id === v.id)) {
+          models.push(v)
+          await db.model.add(v)
+        }
       }
     } catch (error) {
       console.error(`[fetch models] ${(error as Error).message}`)
     }
   }
-  fetch()
   return {
+    fetch,
     update,
+    find,
     refresh,
   }
 }
 export default defineStore("model", () => {
   const models = reactive<ModelMeta[]>([]) // 所有模型
   const cache = markRaw<Map<string, ModelMeta>>(new Map()) // 检索缓存
+  const api = useData(models)
 
   function setModel(newModel: ModelMeta) {
     cache.set(newModel.id, newModel)
@@ -59,16 +64,12 @@ export default defineStore("model", () => {
   function findByProvider(name: ProviderName): ModelMeta[] {
     return models.filter(v => v.providerName === name)
   }
-  const { update, refresh } = useData(models)
 
   return {
     models,
     setModel,
     find,
     findByProvider,
-    api: {
-      update,
-      refresh,
-    },
+    api,
   }
 })

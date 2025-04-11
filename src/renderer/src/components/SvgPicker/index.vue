@@ -18,7 +18,7 @@ const tabs = reactive({
   active: "fluentEmojiFlat",
 })
 iconMap.provider = {
-  title: h(Svg, { style: "font-size: 3rem", src: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek") }),
+  title: h(Svg, { style: "font-size: 3rem", src: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek-color") }),
   icons: providerSvgIcon as IconifyJSON,
   iconsKeys: Object.keys((providerSvgIcon as IconifyJSON).icons),
 }

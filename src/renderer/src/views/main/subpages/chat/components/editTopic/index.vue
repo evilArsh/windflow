@@ -9,7 +9,7 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: ChatTopic): void
   (e: "close"): void
 }>()
-const form = computed({
+const form = computed<ChatTopic>({
   get: () => props.modelValue,
   set: (v: ChatTopic) => {
     emit("update:modelValue", v)
@@ -33,7 +33,7 @@ defineExpose({
           <el-input v-model="form.prompt" type="textarea" :autosize="{ minRows: 4, maxRows: 10 }" />
         </el-form-item>
         <el-form-item prop="modelIds" label="模型">
-          <ModelSelect v-model="form.modelIds"></ModelSelect>
+          <ModelSelect v-model="form"></ModelSelect>
         </el-form-item>
         <el-form-item prop="icon" label="图标">
           <SvgPicker v-model="form.icon"></SvgPicker>

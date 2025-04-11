@@ -5,6 +5,7 @@ export enum ProviderName {
   DeepSeek = "DeepSeek",
   SiliconFlow = "SiliconFlow",
   Volcengine = "Volcengine",
+  OpenAI = "OpenAI",
 }
 export enum ModelType {
   Chat = "Chat",

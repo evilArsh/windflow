@@ -1,64 +1,12 @@
-import {
-  LLMChatMessage,
-  LLMBaseRequest,
-  LLMChatResponse,
-  LLMChatResponseHandler,
-  LLMProvider,
-  ProviderMeta,
-  ModelMeta,
-  ModelType,
-  ChatCompletionRequest,
-  Message,
-  ModelsResponse,
-} from "@renderer/types"
-import { useLLMChat, createInstance } from "@renderer/lib/http"
-import { AxiosInstance } from "axios"
-import { parseOpenAIResponseStream } from "./utils/chat"
+import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
+import { OpenAICompatible } from "./openai"
 
-export class LLMDeepSeek implements LLMProvider {
-  #messageConfig: ChatCompletionRequest
-  #axios: AxiosInstance
+export class DeepSeek extends OpenAICompatible {
   constructor() {
-    this.#messageConfig = {
-      messages: [],
-      model: "deepseek-chat",
-      max_tokens: 8192,
-      response_format: {
-        type: "text",
-      },
-      stream: true,
-    }
-    this.#axios = createInstance()
-  }
-  parseResponse(text: string): LLMChatResponse {
-    return parseOpenAIResponseStream(text)
-  }
-  chat(
-    message: LLMChatMessage | LLMChatMessage[],
-    modelMeta: ModelMeta,
-    providerMeta: ProviderMeta,
-    callback: (message: LLMChatResponse) => void,
-    reqConfig?: LLMBaseRequest
-  ): LLMChatResponseHandler {
-    this.#axios.defaults.baseURL = providerMeta.apiUrl
-    this.#axios.defaults.headers.common["Authorization"] = `Bearer ${providerMeta.apiKey}`
-    const request = useLLMChat(this.#axios, this, providerMeta)
-    if (reqConfig) {
-      this.#messageConfig = reqConfig as ChatCompletionRequest
-    }
-    this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as Message[]
-    this.#messageConfig.model = modelMeta.modelName
-    return request.chat(this.#messageConfig, cb => {
-      callback({
-        ...cb,
-        reasoning: modelMeta.type === ModelType.ChatReasoner,
-      })
-    })
+    super()
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    this.#axios.defaults.baseURL = provider.apiUrl
-    this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
-    const res = await this.#axios.request<ModelsResponse>({
+    const res = await this.getInstance(provider).request<ModelsResponse>({
       method: provider.apiModelList.method,
       url: provider.apiModelList.url,
     })

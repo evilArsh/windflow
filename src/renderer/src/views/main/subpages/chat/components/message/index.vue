@@ -164,7 +164,7 @@ const { sendShortcut } = useShortcut(currentTopic, {
       <template #handler>
         <div class="chat-input-container" ref="scale">
           <div class="chat-input-header">
-            <ModelSelect v-model="currentTopic.node.modelIds" />
+            <ModelSelect v-model="currentTopic.node" />
           </div>
           <div class="chat-input">
             <el-input

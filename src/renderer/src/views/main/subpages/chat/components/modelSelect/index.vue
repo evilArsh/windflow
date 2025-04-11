@@ -2,13 +2,14 @@
 import useModelStore from "@renderer/store/model.store"
 import { storeToRefs } from "pinia"
 import { ModelType, type ModelMeta } from "@renderer/types"
+import type { ChatTopic } from "@renderer/types"
 const props = defineProps<{
-  modelValue: string[]
+  modelValue: ChatTopic
 }>()
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string[]): void
+  (e: "update:modelValue", value: ChatTopic): void
 }>()
-const data = computed<string[]>({
+const data = computed<ChatTopic>({
   get: () => props.modelValue,
   set: val => emit("update:modelValue", val),
 })
@@ -40,7 +41,7 @@ const activeModels = computed<Record<string, ModelMeta[]>>(() => {
   <div>
     <el-popover placement="top" :width="400" trigger="click" v-model:visible="pop.show">
       <template #reference>
-        <el-badge :value="data.length" type="primary">
+        <el-badge :value="data.modelIds.length" type="primary">
           <el-button size="small">
             <template #icon>
               <i-mdi:gift-open v-if="pop.show"></i-mdi:gift-open>
@@ -52,7 +53,7 @@ const activeModels = computed<Record<string, ModelMeta[]>>(() => {
       </template>
       <template #default>
         <el-scrollbar max-height="500px">
-          <el-checkbox-group v-model="data" class="line-height-unset! text-inherit">
+          <el-checkbox-group v-model="data.modelIds" class="line-height-unset! text-inherit">
             <div class="flex flex-col gap-0.5rem">
               <div v-for="(item, provider) in activeModels" :key="provider">
                 <el-card shadow="never" style="--el-card-padding: 1rem">

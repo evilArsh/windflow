@@ -33,21 +33,27 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
   /**
    * 配置数据监听，实时更新到数据库
    */
-  function dataWatcher<T extends SettingsValue>(id: string, wrapData: Ref<T> | Reactive<T>, defaultValue: T) {
+  function dataWatcher<T extends SettingsValue>(
+    id: string,
+    wrapData: Ref<T> | Reactive<T> | (() => T),
+    defaultValue: T
+  ) {
     const configData = ref<Settings<T>>()
     get(id, defaultValue).then(res => {
       configData.value = res
       if (isRef(wrapData)) {
         wrapData.value = configData.value.value
-      } else {
+      } else if (isReactive(wrapData)) {
         Object.assign(wrapData, configData.value.value)
+      } else {
+        // TODO
       }
     })
     return watch(
       wrapData,
       async val => {
         if (configData.value) {
-          configData.value.value = isRef(val) ? toValue(val) : (toRaw(val) as T)
+          configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
           await update(configData.value)
         }
       },
@@ -63,14 +69,8 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
 
 export default defineStore("settings", () => {
   const settings = reactive<Record<string, Settings<SettingsValue>>>({})
-  const { get, update, dataWatcher } = useData(settings)
+  const api = useData(settings)
   return {
-    get,
-    dataWatcher,
-    api: {
-      get,
-      update,
-      dataWatcher,
-    },
+    api,
   }
 })

@@ -1,17 +1,22 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import useProviderStore from "@renderer/store/provider.store"
+import useSettingsStore from "@renderer/store/settings.store"
 import { storeToRefs } from "pinia"
 import { ProviderName } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
+import Handler from "./components/handler.vue"
 const providerStore = useProviderStore()
+const settingsStore = useSettingsStore()
 const { providerMetas, currentProvider } = storeToRefs(providerStore)
 const { t } = useI18n()
 const useConfigComponent = () => {
   const componentsMap = shallowReactive({
     [ProviderName.DeepSeek]: CnfDeepseek,
     [ProviderName.SiliconFlow]: CnfDeepseek,
+    [ProviderName.Volcengine]: CnfDeepseek,
+    [ProviderName.OpenAI]: CnfDeepseek,
     [ProviderName.System]: h(ElEmpty),
   })
   function getComponent(name?: ProviderName) {
@@ -29,10 +34,16 @@ const { getComponent } = useConfigComponent()
 function onCardClick(name: ProviderName) {
   currentProvider.value = providerMetas.value[name] ?? undefined
 }
+settingsStore.api.dataWatcher<string | undefined>(
+  "provider.currentSettingActive",
+  () => currentProvider.value?.name,
+  ""
+)
 </script>
 <template>
   <SubNavLayout id="model.subNav">
     <template #submenu>
+      <Handler></Handler>
       <el-scrollbar>
         <div class="provider-container">
           <Hover

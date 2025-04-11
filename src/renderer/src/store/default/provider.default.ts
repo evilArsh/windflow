@@ -6,7 +6,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
     {
       name: ProviderName.DeepSeek,
       alias: `provider.name.${ProviderName.DeepSeek}`,
-      logo: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek"),
+      logo: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek-color"),
       apiDoc: "https://api-docs.deepseek.com/zh-cn/",
       apiUrl: "https://api.deepseek.com",
       apiKey: "",
@@ -52,7 +52,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
     {
       name: ProviderName.Volcengine,
       alias: `provider.name.${ProviderName.Volcengine}`,
-      logo: getIconHTML(providerSvgIcon as IconifyJSON, "volcengine"),
+      logo: getIconHTML(providerSvgIcon as IconifyJSON, "volcengine-color"),
       apiDoc: "https://www.volcengine.com/docs/82379/1263272",
       apiUrl: "https://ark.cn-beijing.volces.com/api/v3",
       apiKey: "",
@@ -71,6 +71,28 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
       selectedSubProviders: [],
       activeStatus: ModelActiveStatus.All,
+    },
+    {
+      name: ProviderName.OpenAI,
+      alias: `provider.name.${ProviderName.OpenAI}`,
+      logo: getIconHTML(providerSvgIcon as IconifyJSON, "openai"),
+      apiDoc: "https://platform.openai.com/docs/api-reference",
+      apiUrl: "https://api.openai.com",
+      apiKey: "",
+      apiModelList: {
+        method: "GET",
+        url: "/models",
+      },
+      apiLLMChat: {
+        method: "POST",
+        url: "/chat/completions",
+      },
+      apiBalance: {
+        method: "GET",
+        url: "",
+      },
+      selectedTypes: [],
+      selectedSubProviders: [],
     },
   ]
 }

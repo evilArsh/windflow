@@ -96,44 +96,42 @@ const useData = (
   }
   const fetch = async () => {
     try {
-      const total = await db.chatTopic.count()
-      if (total > 0) {
-        const data = await db.chatTopic.orderBy("createAt").toArray()
-        // --- 恢复状态
-        const nodeKeyData = (await db.settings.get("chat.currentNodeKey")) as Settings<string> | undefined
-        currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
-        topicList.push(
-          ...assembleTopicTree(data, async item => {
-            if (item.id === currentNodeKey.value) {
-              currentTopic.value = item
-              if (item.node.chatMessageId) {
-                const msg = await db.chatMessage.get(item.node.chatMessageId)
-                if (msg) {
-                  chatMessage[msg.id] = msg
-                  currentMessage.value = msg
-                }
+      topicList.length = 0
+      for (const key in chatMessage) {
+        delete chatMessage[key]
+      }
+      const data = await db.chatTopic.orderBy("createAt").toArray()
+      const defaultData = chatTopicDefault()
+      for (const item of defaultData) {
+        if (!data.find(v => v.id === item.id)) {
+          data.push(item)
+          await db.chatTopic.add(item)
+        }
+      }
+      // --- 恢复状态
+      const nodeKeyData = (await db.settings.get("chat.currentNodeKey")) as Settings<string> | undefined
+      currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
+      topicList.push(
+        ...assembleTopicTree(data, async item => {
+          if (item.id === currentNodeKey.value) {
+            currentTopic.value = item
+            if (item.node.chatMessageId) {
+              const msg = await db.chatMessage.get(item.node.chatMessageId)
+              if (msg) {
+                chatMessage[msg.id] = msg
+                currentMessage.value = msg
               }
             }
-          })
-        )
-      } else {
-        const data = chatTopicDefault()
-        topicList.push(
-          ...assembleTopicTree(data, item => {
-            if (item.id === currentNodeKey.value) {
-              currentTopic.value = item
-            }
-          })
-        )
-        await db.chatTopic.bulkAdd(data)
-      }
+          }
+        })
+      )
     } catch (error) {
       console.error(`[fetch chat topic] ${(error as Error).message}`)
     }
   }
-  fetch()
   settingsStore.api.dataWatcher<string>("chat.currentNodeKey", currentNodeKey, "")
   return {
+    fetch,
     topicToTree,
     assembleTopicTree,
     updateChatTopic,
@@ -271,13 +269,7 @@ export default defineStore("chat_topic", () => {
   const currentTopic = ref<ChatTopicTree>() // 选中的聊天
   const currentMessage = ref<ChatMessage>() // 选中的消息
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
-  const { updateChatTopic, addChatTopic, addChatMessage, updateChatMessage, findChatMessage, delChatTopic } = useData(
-    topicList,
-    chatMessage,
-    currentTopic,
-    currentMessage,
-    currentNodeKey
-  )
+  const api = useData(topicList, chatMessage, currentTopic, currentMessage, currentNodeKey)
 
   /**
    * @description 发送消息
@@ -514,13 +506,6 @@ export default defineStore("chat_topic", () => {
     send,
     refreshChatTopicModelIds,
     terminateAll,
-    api: {
-      updateChatTopic,
-      addChatTopic,
-      addChatMessage,
-      updateChatMessage,
-      findChatMessage,
-      delChatTopic,
-    },
+    api,
   }
 })

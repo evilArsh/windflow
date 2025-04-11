@@ -39,8 +39,10 @@
     },
     "name": {
       "DeepSeek": "深度求索",
+      "OpenAI": "OpenAI",
       "SiliconFlow": "硅基流动",
-      "System": "你"
+      "System": "你",
+      "Volcengine": "火山引擎"
     },
     "providerName": "提供商"
   },
@@ -54,6 +56,7 @@
     "deleteConfirm": "要删除吗?",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中",
+    "reset": "即将重置?",
     "selectAll": "全选",
     "yes": "是的"
   }
