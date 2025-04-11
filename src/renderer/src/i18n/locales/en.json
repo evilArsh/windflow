@@ -2,14 +2,35 @@
   "app": {
     "name": "AI chat"
   },
+  "btn": {
+    "add": "add",
+    "delete": "delete",
+    "edit": "edit",
+    "send": "send"
+  },
   "chat": {
     "addChat": "New Chat",
     "addFailed": "add failed",
-    "deleteFailed": "delete failed"
+    "deleteFailed": "delete failed",
+    "editChat": "edit",
+    "regenerate": "re-generate",
+    "search": "search",
+    "terminate": "terminate",
+    "thinking": "thinking"
   },
   "lang": {
     "en": "English",
     "zh": "简体中文"
+  },
+  "modelType": {
+    "Chat": "Chat",
+    "ChatReasoner": "Chat-Reasoner",
+    "Embedding": "Embedding",
+    "ImageToImage": "ImageToImage",
+    "Reranker": "Reranker",
+    "SpeechToText": "SpeechToText",
+    "TextToImage": "TextToImage",
+    "TextToVideo": "TextToVideo"
   },
   "nav": {
     "chat": "chat",
@@ -19,16 +40,42 @@
     "apiKey": "API KEY",
     "apiUrl": "API URL",
     "model": {
-      "name": "models"
+      "activeStatus": "active status",
+      "activeStatusActive": "active",
+      "activeStatusAll": "all",
+      "activeStatusInactive": "inactive",
+      "name": "models",
+      "subProvider": "sub provider",
+      "type": "type"
     },
     "name": {
       "DeepSeek": "DeepSeek",
+      "OpenAI": "OpenAI",
       "SiliconFlow": "SiliconFlow",
-      "System": "you"
-    }
+      "System": "you",
+      "Volcengine": "Volcengine"
+    },
+    "providerName": "privoder name"
+  },
+  "request": {
+    "failed": "request failed",
+    "status401": "identity verify failed,please check the config "
   },
   "tip": {
+    "cancel": "cancel",
+    "confirm": "confirm",
+    "deleteConfirm": "you sure delete?",
     "inputPlaceholder": "say something and enter",
-    "selectAll": "select all"
+    "loading": "loading",
+    "reset": "reset",
+    "selectAll": "select all",
+    "selectModel": "select model first",
+    "yes": "yes"
+  },
+  "topic": {
+    "icon": "icon",
+    "model": "model",
+    "prompt": "prompt",
+    "title": "title"
   }
 }

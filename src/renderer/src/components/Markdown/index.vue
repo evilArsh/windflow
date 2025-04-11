@@ -83,9 +83,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div style="line-height: 1.5" v-html="html"></div>
+  <div class="markdown-container" v-html="html"></div>
 </template>
-<style>
+<style lang="scss">
 pre {
   counter-reset: line;
 }
@@ -118,5 +118,24 @@ pre {
   display: block !important;
   max-width: 100%;
   overflow: auto;
+}
+.markdown-container {
+  line-height: 1.5;
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+  }
+
+  table th,
+  table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+
+  table th {
+    background-color: #f2f2f2;
+    text-align: left;
+  }
 }
 </style>

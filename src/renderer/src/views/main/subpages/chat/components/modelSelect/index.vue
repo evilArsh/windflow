@@ -47,7 +47,7 @@ const activeModels = computed<Record<string, ModelMeta[]>>(() => {
               <i-mdi:gift-open v-if="pop.show"></i-mdi:gift-open>
               <i-mdi:gift v-else></i-mdi:gift>
             </template>
-            <el-text>模型</el-text>
+            <el-text>{{ t("provider.model.name") }}</el-text>
           </el-button>
         </el-badge>
       </template>

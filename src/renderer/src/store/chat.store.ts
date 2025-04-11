@@ -15,7 +15,6 @@ import {
 import { chatTopicDefault } from "./default/chat.default"
 import { useDebounceFn, useThrottleFn } from "@vueuse/core"
 import { db } from "@renderer/usable/useDatabase"
-import { ElMessage } from "element-plus"
 import useProviderStore from "./provider.store"
 import useModelsStore from "./model.store"
 import useSettingsStore from "./settings.store"
@@ -448,7 +447,6 @@ export default defineStore("chat_topic", () => {
     if (!topic) return
     if (!topic.content.trim()) return
     if (topic.modelIds.length == 0) {
-      ElMessage.warning("请选择模型")
       return
     }
     if (!topic.chatMessageId) {

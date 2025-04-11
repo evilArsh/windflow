@@ -1,18 +1,22 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron"
+import { app, shell, BrowserWindow } from "electron"
 import { join } from "path"
-import { electronApp, optimizer, is } from "@electron-toolkit/utils"
+import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils"
 import icon from "../../resources/icon.png?asset"
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1024,
+    height: 768,
     show: false,
+    minWidth: 1024,
+    minHeight: 768,
     autoHideMenuBar: true,
-    ...(process.platform === "linux" ? { icon } : {}),
+    ...(platform.isLinux ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, "../preload/index.js"),
+      preload: join(__dirname, "../preload/index.mjs"),
       sandbox: false,
+      webSecurity: false,
+      webviewTag: true,
     },
   })
 
@@ -30,22 +34,15 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"))
   }
-  // mainWindow.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId("com.electron")
-
+  electronApp.setAppUserModelId("com.arsh.aichat")
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on("browser-window-created", (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on("ping", () => console.log("pong"))
-
   createWindow()
-
   app.on("activate", function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })

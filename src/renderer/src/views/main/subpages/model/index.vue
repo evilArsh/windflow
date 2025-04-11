@@ -3,7 +3,7 @@ import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import useProviderStore from "@renderer/store/provider.store"
 import useSettingsStore from "@renderer/store/settings.store"
 import { storeToRefs } from "pinia"
-import { ProviderName } from "@renderer/types"
+import { ProviderName, ProviderMeta } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
@@ -30,6 +30,7 @@ const useConfigComponent = () => {
     getComponent,
   }
 }
+const providerMetasList = computed(() => Object.values(providerMetas.value))
 const { getComponent } = useConfigComponent()
 function onCardClick(name: ProviderName) {
   currentProvider.value = providerMetas.value[name] ?? undefined
@@ -45,23 +46,23 @@ settingsStore.api.dataWatcher<string | undefined>(
     <template #submenu>
       <Handler></Handler>
       <el-scrollbar>
-        <div class="provider-container">
-          <Hover
-            background
-            v-for="item in providerMetas"
-            :key="item.name"
-            still-lock
-            :default-lock="currentProvider?.name == item.name">
-            <el-card class="card" shadow="never" @click="onCardClick(item.name)">
-              <div class="card-body">
-                <Svg :src="item.logo" class="icon"></Svg>
-                <div class="flex items-center">
-                  <el-text class="name">{{ t(item.alias || "") }}</el-text>
+        <el-tree
+          class="provider-tree"
+          :current-node-key="currentProvider?.name"
+          highlight-current
+          node-key="name"
+          :data="providerMetasList">
+          <template #default="{ data }: { data: ProviderMeta }">
+            <div class="provider-tree-node" @click.stop="onCardClick(data.name)">
+              <el-button text size="small" circle>
+                <div class="provider-tree-icon">
+                  <Svg :src="data.logo" class="text-2rem"></Svg>
                 </div>
-              </div>
-            </el-card>
-          </Hover>
-        </div>
+              </el-button>
+              <el-text class="provider-tree-label" line-clamp="2">{{ t(data.alias || "") }}</el-text>
+            </div>
+          </template>
+        </el-tree>
       </el-scrollbar>
     </template>
     <template #content>
@@ -75,29 +76,33 @@ settingsStore.api.dataWatcher<string | undefined>(
   </SubNavLayout>
 </template>
 <style lang="scss" scoped>
-.provider-container {
-  --provider-container-padding: 0.5rem;
-  --provider-container-icon-size: 2.5rem;
-  padding: var(--provider-container-padding);
+.provider-tree {
+  --el-tree-node-content-height: 4rem;
+}
+.provider-tree-node {
+  --chat-tree-icon-size: 3rem;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  .card {
-    --el-card-padding: 0.3rem;
-    --el-border-color-light: transparent;
+  gap: 0.5rem;
+  flex: 1;
+  overflow: hidden;
+  padding: 0.5rem;
+  .provider-tree-icon {
+    transition: all 0.3s ease-in-out;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    .card-body {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      .icon {
-        font-size: var(--provider-container-icon-size);
-      }
-      .name {
-        font-size: 1.4rem;
-      }
+    justify-content: center;
+    width: var(--chat-tree-icon-size);
+    height: var(--chat-tree-icon-size);
+    border-radius: 0.5rem;
+    &:hover {
+      background-color: rgba(10, 205, 231, 0.2);
     }
+  }
+  .provider-tree-label {
+    font-size: 14px;
+    flex: 1;
+    overflow: hidden;
   }
 }
 </style>

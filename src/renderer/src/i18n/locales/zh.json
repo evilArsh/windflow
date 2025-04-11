@@ -2,6 +2,12 @@
   "app": {
     "name": "AI 助手"
   },
+  "btn": {
+    "add": "添加",
+    "delete": "删除",
+    "edit": "编辑",
+    "send": "发送"
+  },
   "chat": {
     "addChat": "新的聊天",
     "addFailed": "添加失败",
@@ -34,7 +40,12 @@
     "apiKey": "API Key",
     "apiUrl": "API 地址",
     "model": {
+      "activeStatus": "激活状态",
+      "activeStatusActive": "激活",
+      "activeStatusAll": "全部",
+      "activeStatusInactive": "未激活",
       "name": "模型",
+      "subProvider": "模型标识",
       "type": "类型"
     },
     "name": {
@@ -58,6 +69,13 @@
     "loading": "加载中",
     "reset": "即将重置?",
     "selectAll": "全选",
+    "selectModel": "请选择模型",
     "yes": "是的"
+  },
+  "topic": {
+    "icon": "图标",
+    "model": "模型",
+    "prompt": "提示词",
+    "title": "标题"
   }
 }

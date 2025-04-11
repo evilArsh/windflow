@@ -11,6 +11,7 @@ const props = defineProps<{
    */
   focus: boolean
 }>()
+const { t } = useI18n()
 const deleteConfirm = ref(false)
 const menuRef = useTemplateRef<HTMLElement>("menu")
 
@@ -52,19 +53,19 @@ defineExpose({
         <el-button text @click.stop="onEdit">
           <div class="handle-item">
             <i-ep:edit></i-ep:edit>
-            <span>编辑</span>
+            <span>{{ t("btn.edit") }}</span>
           </div>
         </el-button>
         <Button text @click="(done, e) => onAdd(done, e)">
           <div class="handle-item">
             <i-ep:plus></i-ep:plus>
-            <span>新增</span>
+            <span>{{ t("btn.add") }}</span>
           </div>
         </Button>
         <el-button v-if="!deleteConfirm" @click.stop="deleteConfirm = true" text type="default">
           <div class="handle-item">
             <i-ep:delete></i-ep:delete>
-            <span>删除</span>
+            <span>{{ t("btn.delete") }}</span>
           </div>
         </el-button>
         <Button v-else text type="danger" @click="(done, e) => onDelete(done, e)"> 确认删除? </Button>

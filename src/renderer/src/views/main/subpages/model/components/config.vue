@@ -110,7 +110,7 @@ watch(
   <MsgBubble v-if="data">
     <template #head>
       <el-avatar style="--el-avatar-size: 5rem">
-        <Svg :src="data.logo" class="text-4.5rem"></Svg>
+        <Svg :src="data.logo" class="text-3rem"></Svg>
       </el-avatar>
     </template>
     <template #content>
@@ -131,7 +131,7 @@ watch(
             <el-form-item :label="t('provider.model.name')" class="w-full">
               <el-card shadow="never" class="w-full">
                 <div class="flex flex-col gap-2rem w-full">
-                  <el-form-item label="模型类型" label-width="5rem">
+                  <el-form-item :label="t('provider.model.type')" label-width="5rem">
                     <el-checkbox
                       style="margin-right: 2rem"
                       size="small"
@@ -154,7 +154,7 @@ watch(
                         :value="item" />
                     </el-checkbox-group>
                   </el-form-item>
-                  <el-form-item label="模型标识" label-width="5rem">
+                  <el-form-item :label="t('provider.model.subProvider')" label-width="5rem">
                     <el-checkbox
                       style="margin-right: 2rem"
                       size="small"
@@ -177,11 +177,17 @@ watch(
                         :value="item" />
                     </el-checkbox-group>
                   </el-form-item>
-                  <el-form-item label="激活状态" label-width="5rem">
+                  <el-form-item :label="t('provider.model.activeStatus')" label-width="5rem">
                     <el-radio-group v-model="data.activeStatus" size="small">
-                      <el-radio-button :value="ModelActiveStatus.All">全部</el-radio-button>
-                      <el-radio-button :value="ModelActiveStatus.Active">激活</el-radio-button>
-                      <el-radio-button :value="ModelActiveStatus.Inactive">未激活</el-radio-button>
+                      <el-radio-button :value="ModelActiveStatus.All">
+                        {{ t("provider.model.activeStatusAll") }}
+                      </el-radio-button>
+                      <el-radio-button :value="ModelActiveStatus.Active">
+                        {{ t("provider.model.activeStatusActive") }}
+                      </el-radio-button>
+                      <el-radio-button :value="ModelActiveStatus.Inactive">
+                        {{ t("provider.model.activeStatusInactive") }}
+                      </el-radio-button>
                     </el-radio-group>
                   </el-form-item>
                   <el-form-item>

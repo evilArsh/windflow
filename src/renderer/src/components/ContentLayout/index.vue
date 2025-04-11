@@ -70,7 +70,7 @@ defineExpose({
     <div v-if="$slots.header" class="content-header">
       <slot name="header"></slot>
     </div>
-    <div class="content">
+    <div class="content-main">
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
       <el-scrollbar ref="scroll" style="flex: 1" id="scroll-view">
         <div class="content--inner">
@@ -90,6 +90,7 @@ defineExpose({
   --content-container-bg-color: #ffffff;
   --content-bg-color: transparent;
   --content-header-bg-color: transparent;
+  --content-header-height: 4rem;
   --content-handler-bg-color: #f6f6f7;
 
   flex: 1;
@@ -100,10 +101,10 @@ defineExpose({
   .content-header {
     flex-shrink: 0;
     display: flex;
-    padding: 0.5rem;
+    flex-basis: var(--content-header-height);
     background-color: var(--content-header-bg-color);
   }
-  .content {
+  .content-main {
     flex: 1;
     background-color: var(--content-bg-color);
     overflow: hidden;

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import { ChatTopicTree } from "@renderer/types"
-import Message from "./components/message/index.vue"
+import MessagePanel from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
 import EditTopic from "./components/editTopic/index.vue"
@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
       </ScalePanel>
     </template>
     <template #content>
-      <Message />
+      <MessagePanel />
     </template>
   </SubNavLayout>
 </template>
