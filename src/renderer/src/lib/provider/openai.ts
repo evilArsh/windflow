@@ -14,6 +14,7 @@ import {
 import { useLLMChat, createInstance } from "@renderer/lib/http"
 import { AxiosInstance, HttpStatusCode } from "axios"
 import JSON5 from "json5"
+import { cloneDeep } from "lodash"
 
 export abstract class OpenAICompatible implements LLMProvider {
   #axios: AxiosInstance
@@ -82,7 +83,7 @@ export abstract class OpenAICompatible implements LLMProvider {
     } else {
       this.#messageConfig.max_tokens = 4096
     }
-    return request.chat(this.#messageConfig, cb => {
+    return request.chat(cloneDeep(this.#messageConfig), cb => {
       callback({
         ...cb,
         reasoning: modelMeta.type === ModelType.ChatReasoner,

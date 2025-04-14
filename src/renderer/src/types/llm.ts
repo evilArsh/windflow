@@ -196,7 +196,7 @@ export type ChatCompletionResponse = {
   created: number
   model: string
   system_fingerprint: string
-  object: "chat.completion"
+  object: string
   usage: {
     completion_tokens: number
     prompt_tokens: number

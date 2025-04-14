@@ -14,11 +14,10 @@ export const useLLMChat = (
   providerMeta: ProviderMeta
 ): LLMChatRequestHandler => {
   const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol(`message-${providerMeta.name}`)
-  let cacheMessage: LLMBaseRequest = {}
   const bus = useEventBus(eventBusKey)
 
   function chat(message: LLMBaseRequest, callback: (message: LLMChatResponse) => void): LLMChatResponseHandler {
-    cacheMessage = message
+    const cacheMessage: LLMBaseRequest = message
     const reqId = uniqueId()
     let abortController = new AbortController()
     const messageHandler = (event: { reqId: string; message: LLMChatResponse }) => {

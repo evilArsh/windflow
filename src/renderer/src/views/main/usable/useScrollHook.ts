@@ -19,7 +19,7 @@ export default (
     if (topic.value) {
       topic.value.node.scrollY = y
     }
-  }, 1000)
+  }, 500)
 
   watch(topic, (val, old) => {
     if (val && val !== old) {
