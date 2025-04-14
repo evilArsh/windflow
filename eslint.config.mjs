@@ -42,6 +42,7 @@ export default [
   {
     // If ignores is used without any other keys in the configuration object, then the patterns act as global ignores
     ignores: [
+      "demo",
       "*.min.{js,ts,css}",
       "public/",
       ".lintstagedrc*",

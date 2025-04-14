@@ -16,14 +16,14 @@ export const initRoutes = initNode.iter<RouteRecordRaw>(router => {
     component: router.component ?? undefined,
   } as RouteRecordRaw
 })
-
+const defaultPath = "/main/chat"
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     initRoutes,
-    { path: "/", redirect: "/main/chat" },
-    { path: "", redirect: "/main/chat" },
-    { path: "/:pathMatch(.*)*", redirect: "/main/chat" },
+    { path: "", redirect: defaultPath },
+    { path: "/", redirect: defaultPath },
+    { path: "/:pathMatch(.*)*", redirect: defaultPath },
   ],
 })
 

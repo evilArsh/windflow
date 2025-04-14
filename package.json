@@ -29,6 +29,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@iconify/utils": "^2.3.0",
+    "@modelcontextprotocol/sdk": "^1.9.0",
     "@unocss/reset": "66.1.0-beta.10",
     "@vueuse/core": "^13.0.0",
     "@vueuse/motion": "^3.0.3",
