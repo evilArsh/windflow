@@ -1,89 +1,61 @@
 import {
   LLMChatMessage,
-  LLMBaseRequest,
   LLMChatResponse,
   LLMChatResponseHandler,
   LLMProvider,
   ProviderMeta,
   ModelMeta,
   ModelType,
-  ChatCompletionRequest,
-  Message,
-  ChatCompletionResponseStream,
+  LLMBaseRequest,
+  Role,
 } from "@renderer/types"
-import { useLLMChat, createInstance } from "@renderer/lib/http"
-import { AxiosInstance, HttpStatusCode } from "axios"
+
+import { createInstance, useLLMChat } from "@renderer/lib/provider/http"
 import JSON5 from "json5"
-import { cloneDeep } from "lodash"
-
+import { generateOpenAIChatRequest } from "./utils"
+import { HttpStatusCode } from "./http/index"
 export abstract class OpenAICompatible implements LLMProvider {
-  #axios: AxiosInstance
-  #messageConfig: ChatCompletionRequest
-  constructor() {
-    this.#axios = createInstance()
-    this.#messageConfig = {
-      model: "",
-      messages: [],
-      stream: true,
-      max_tokens: 8192,
-      n: 1,
-      response_format: {
-        type: "text",
-      },
-    }
-  }
+  axios = createInstance()
+  constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
-
-  getInstance(provider: ProviderMeta): AxiosInstance {
-    this.#axios.defaults.baseURL = provider.apiUrl
-    this.#axios.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
-    return this.#axios
-  }
 
   parseResponse(text: string): LLMChatResponse {
     try {
-      const data: ChatCompletionResponseStream[] = text
-        .replace(/data: |\[DONE\]|: keep-alive/g, "")
-        .split("\n")
-        .filter(item => !!item)
-        .map(item => JSON5.parse(item))
-      return {
-        status: HttpStatusCode.PartialContent,
-        msg: "",
-        data: data.map<LLMChatMessage>(v => ({
-          role: "assistant",
-          content: v.choices[0].delta.content ?? "",
-          reasoningContent: v.choices[0].delta.reasoning_content ?? "",
-        })),
+      if (text.startsWith("data:")) {
+        const data = JSON5.parse(text.replace(/data:/, ""))
+        return {
+          role: Role.Assistant,
+          status: HttpStatusCode.PartialContent,
+          content: data.choices[0].delta.content ?? "",
+          reasoning_content: data.choices[0].delta.reasoning_content ?? "",
+        }
+      } else {
+        return {
+          role: Role.Assistant,
+          status: HttpStatusCode.PartialContent,
+          content: "",
+          reasoning_content: "",
+        }
       }
     } catch (error) {
       return {
         status: HttpStatusCode.PartialContent,
         msg: "",
-        data: [{ content: dataToText(error), role: "assistant" }],
+        content: dataToText(error),
+        role: Role.Assistant,
       }
     }
   }
   chat(
-    message: LLMChatMessage | LLMChatMessage[],
+    messages: LLMChatMessage[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): LLMChatResponseHandler {
-    const request = useLLMChat(this.getInstance(providerMeta), this, providerMeta)
-    if (reqConfig) {
-      this.#messageConfig = reqConfig as ChatCompletionRequest
-    }
-    this.#messageConfig.messages = (Array.isArray(message) ? message : [message]) as Message[]
-    this.#messageConfig.model = modelMeta.modelName
-    const mn = modelMeta.modelName.toLowerCase()
-    if (mn.includes("deepseek")) {
-      this.#messageConfig.max_tokens = 8192
-    } else {
-      this.#messageConfig.max_tokens = 4096
-    }
-    return request.chat(cloneDeep(this.#messageConfig), cb => {
+    const request = useLLMChat(this, providerMeta)
+    const requestData = generateOpenAIChatRequest(messages, modelMeta, reqConfig)
+    return request.chat(requestData, modelMeta.type === ModelType.ChatReasoner, cb => {
       callback({
         ...cb,
         reasoning: modelMeta.type === ModelType.ChatReasoner,

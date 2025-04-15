@@ -121,8 +121,8 @@ const edit = (msg: ChatMessageData) => {
                   </el-button>
                 </div>
                 <div>
-                  <el-text v-show="data.content.reasoningContent" type="success" class="self-start!">
-                    {{ data.content.reasoningContent }}
+                  <el-text v-show="data.content.reasoning_content" type="success" class="self-start!">
+                    {{ data.content.reasoning_content }}
                   </el-text>
                 </div>
                 <div>

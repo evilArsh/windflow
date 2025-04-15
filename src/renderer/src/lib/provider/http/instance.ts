@@ -21,3 +21,5 @@ export const createInstance = (): AxiosInstance => {
   )
   return instance
 }
+
+export const defaultInstance = createInstance()

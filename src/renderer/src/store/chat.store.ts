@@ -117,6 +117,10 @@ const useData = (
             if (item.node.chatMessageId) {
               const msg = await db.chatMessage.get(item.node.chatMessageId)
               if (msg) {
+                msg.data.forEach(v => {
+                  v.finish = true
+                  v.status = 200
+                })
                 chatMessage[msg.id] = msg
                 currentMessage.value = msg
               }
@@ -286,8 +290,8 @@ export default defineStore("chat_topic", () => {
     chatContext.handler = chatContext.provider.chat(context, model, providerMeta, async msg => {
       message.status = msg.status
       message.reasoning = msg.reasoning
-      message.content.content += msg.data.map(item => item.content).join("")
-      message.content.reasoningContent += msg.data.map(item => item.reasoningContent).join("")
+      message.content.content += msg.content
+      message.content.reasoning_content += msg.reasoning_content ?? ""
       if (msg.status == 206) {
         message.finish = false
       } else if (msg.status == 200) {
@@ -383,7 +387,7 @@ export default defineStore("chat_topic", () => {
     const { model, providerMeta, provider } = meta
     const contextIndex = message.data.findIndex(item => item.id === messageData.id)
     const context = getMessageContext(topic, message.data.slice(0, contextIndex)) // 消息上下文
-    messageData.content = { role: "assistant", content: "", reasoningContent: "" }
+    messageData.content = { role: "assistant", content: "", reasoning_content: "" }
     messageData.finish = false
     messageData.status = 200
     messageData.time = formatSecond(new Date())
@@ -481,7 +485,7 @@ export default defineStore("chat_topic", () => {
         finish: false,
         status: 200,
         time: formatSecond(new Date()),
-        content: { role: "assistant", content: "", reasoningContent: "" },
+        content: { role: "assistant", content: "", reasoning_content: "" },
         modelId,
       })
       const chatContext = fetchTopicContext(topic.id, modelId, newMessageData.id, message.id, provider) // 获取聊天信息上下文

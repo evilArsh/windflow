@@ -1,5 +1,6 @@
 import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
 import { OpenAICompatible } from "./openai"
+import { patchInstance } from "./utils"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -18,10 +19,11 @@ export class SiliconFlow extends OpenAICompatible {
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
     const res: ModelMeta[][] = []
+    patchInstance(provider, this.axios)
     const req = types.reduce(
       (acc, v) => {
         acc.push(
-          this.getInstance(provider)
+          this.axios
             .request<ModelsResponse>({
               method: provider.apiModelList.method,
               url: provider.apiModelList.url,

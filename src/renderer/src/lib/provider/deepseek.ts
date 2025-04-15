@@ -1,12 +1,14 @@
 import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
 import { OpenAICompatible } from "./openai"
+import { patchInstance } from "./utils"
 
 export class DeepSeek extends OpenAICompatible {
   constructor() {
     super()
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    const res = await this.getInstance(provider).request<ModelsResponse>({
+    patchInstance(provider, this.axios)
+    const res = await this.axios.request<ModelsResponse>({
       method: provider.apiModelList.method,
       url: provider.apiModelList.url,
     })

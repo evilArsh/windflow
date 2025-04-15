@@ -38,5 +38,3 @@ export class ProviderManager {
     this.#llmProviders.add(provider)
   }
 }
-
-export * from "./deepseek"
