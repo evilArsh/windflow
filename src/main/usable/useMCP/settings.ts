@@ -1,0 +1,65 @@
+import { MCPStdioServersParams } from "@shared/mcp"
+
+export const mcpServers: Record<string, MCPStdioServersParams> = {
+  gittools: {
+    command: "python",
+    args: ["-m", "mcp_server_git"],
+    env: {},
+    disabled: false,
+    autoApprove: ["git_status"],
+  },
+  filesystem: {
+    command: "node",
+    args: ["D:/mcp/servers/src/filesystem/dist/index.js", "d:/project_priv/vite-ts-jssip"],
+    env: {},
+    disabled: false,
+    autoApprove: [
+      "read_file",
+      "read_multiple_files",
+      "write_file",
+      "edit_file",
+      "create_directory",
+      "list_directory",
+      "directory_tree",
+      "move_file",
+      "search_files",
+      "get_file_info",
+      "list_allowed_directories",
+    ],
+  },
+  everything: {
+    command: "node",
+    args: ["D:/mcp/servers/src/everything/dist/index.js"],
+    env: {},
+    disabled: false,
+    autoApprove: [],
+  },
+  github: {
+    command: "node",
+    args: ["D:/mcp/servers/src/github/dist/index.js"],
+    env: {},
+    disabled: false,
+    autoApprove: [],
+  },
+  memory: {
+    command: "node",
+    args: ["D:/mcp/servers/src/memory/dist/index.js"],
+    env: {},
+    disabled: false,
+    autoApprove: [],
+  },
+  puppeteer: {
+    command: "node",
+    args: ["D:/mcp/servers/src/puppeteer/dist/index.js"],
+    env: {},
+    disabled: false,
+    autoApprove: [],
+  },
+  sequentialthinking: {
+    command: "node",
+    args: ["D:/mcp/servers/src/sequentialthinking/dist/index.js"],
+    env: {},
+    disabled: false,
+    autoApprove: [],
+  },
+}
