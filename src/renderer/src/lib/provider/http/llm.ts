@@ -7,8 +7,9 @@ import {
   LLMBaseRequest,
   Role,
 } from "@renderer/types"
+import { HttpStatusCode } from "@shared/code"
+import { errorToText } from "@shared/error"
 import { useEventBus, EventBusKey } from "@vueuse/core"
-import { HttpStatusCode } from "./code"
 
 async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {

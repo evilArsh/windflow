@@ -8,6 +8,7 @@ import { cloneDeep } from "lodash-es"
 import useSettingsStore from "@renderer/store/settings.store"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
+import { errorToText } from "@shared/error"
 function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
   return {
     id: uniqueId(),

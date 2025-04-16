@@ -4,9 +4,9 @@ import useModelStore from "@renderer/store/model.store"
 import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
 import { ElMessage } from "element-plus"
-import { errorToText } from "@renderer/lib/shared/error"
 import ModelCard from "./model-card.vue"
 import type { CheckboxValueType } from "element-plus"
+import { errorToText } from "@shared/error"
 const { t } = useI18n()
 const props = defineProps<{
   providerName: ProviderName

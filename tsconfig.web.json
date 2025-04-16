@@ -8,6 +8,7 @@
     "src/renderer/auto-imports.d.ts",
     "src/renderer/components.d.ts",
     "src/preload/index.d.ts",
+    "src/shared/*.ts",
   ],
   "compilerOptions": {
     "baseUrl": ".",
@@ -37,6 +38,7 @@
     "noImplicitReturns": true,
     "paths": {
       "@renderer/*": ["src/renderer/src/*"],
+      "@shared/*": ["src/shared/*"],
     }
   }
 }

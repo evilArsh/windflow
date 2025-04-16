@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "@renderer/lib/provider/http"
+import { HttpStatusCode } from "@shared/code"
 
 export enum Role {
   System = "system",

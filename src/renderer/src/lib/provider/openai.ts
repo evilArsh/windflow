@@ -13,7 +13,8 @@ import {
 import { createInstance, useLLMChat } from "@renderer/lib/provider/http"
 import JSON5 from "json5"
 import { generateOpenAIChatRequest } from "./utils"
-import { HttpStatusCode } from "./http/index"
+import { HttpStatusCode } from "@shared/code"
+import { errorToText } from "@shared/error"
 export abstract class OpenAICompatible implements LLMProvider {
   axios = createInstance()
   constructor() {}
@@ -41,7 +42,7 @@ export abstract class OpenAICompatible implements LLMProvider {
       }
     } catch (error) {
       console.log("[parseResponse error]", error)
-      return { status: HttpStatusCode.PartialContent, msg: "", content: dataToText(error), role: Role.Assistant }
+      return { status: HttpStatusCode.PartialContent, msg: "", content: errorToText(error), role: Role.Assistant }
     }
   }
   chat(

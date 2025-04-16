@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "@renderer/lib/provider/http"
+import { HttpStatusCode } from "@shared/code"
 import { LLMChatMessage, LLMChatResponseHandler, LLMProvider } from "."
 
 export type ChatMessageData = {

@@ -7,12 +7,3 @@ export function errorToText(error: unknown): string {
     return JSON.stringify(serializeError(error))
   }
 }
-
-export function dataToText(data: unknown): string {
-  if (typeof data === "string") {
-    return data
-  } else if (isObject(data)) {
-    return JSON.stringify(data)
-  }
-  return String(data)
-}
