@@ -3,7 +3,7 @@
     "electron.vite.config.*",
     "src/main/**/*",
     "src/preload/**/*",
-    "src/shared/*.ts",
+    "src/shared/*.ts", "src/shared/types/bridge.ts", "src/shared/types/mcp.ts", "src/shared/types/service.ts",
   ],
   "compilerOptions": {
     "composite": true,

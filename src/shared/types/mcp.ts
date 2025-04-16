@@ -1,6 +1,5 @@
 import type { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-
 export interface MCPStdioServersParams extends StdioServerParameters {
   disabled?: boolean
   /**
@@ -8,12 +7,10 @@ export interface MCPStdioServersParams extends StdioServerParameters {
    */
   autoApprove?: Array<string>
 }
-
 export type MCPServerContext = {
   params: MCPStdioServersParams
   client?: Client
 }
-
 export interface MCPToolDetail {
   name: string
   inputSchema: {

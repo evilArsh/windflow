@@ -1,13 +1,11 @@
-import { HttpStatusCode } from "./code"
+import { HttpStatusCode } from "../code"
 
 export interface BridgeResponse<T = unknown> {
   code: HttpStatusCode
   msg: string
   data: T
 }
-
 export type BridgeStatusResponse = BridgeResponse<undefined>
-
 export function responseCode(code: HttpStatusCode, msg?: string): BridgeStatusResponse {
   return {
     code,
@@ -15,11 +13,9 @@ export function responseCode(code: HttpStatusCode, msg?: string): BridgeStatusRe
     data: undefined,
   }
 }
-
 export function responseData<T>(code: HttpStatusCode, msg: string, data: T): BridgeResponse<T> {
   return { code, msg, data }
 }
-
 export function code1xx(code: HttpStatusCode) {
   return code >= 100 && code < 200
 }

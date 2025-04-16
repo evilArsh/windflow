@@ -1,16 +1,15 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { serializeError } from "serialize-error"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
-import { mcpServers } from "./settings"
-import { MCPStdioServersParams, MCPToolDetail, MCPServerContext } from "@shared/mcp"
-import { BridgeResponse, BridgeStatusResponse, responseCode, responseData } from "@shared/bridge"
-import { app } from "electron"
+import { MCPStdioServersParams, MCPToolDetail, MCPServerContext } from "@shared/types/mcp"
+import { BridgeResponse, BridgeStatusResponse, responseCode, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
+import { MCPService } from "@shared/types/service"
 
-export default () => {
+const useMCP = (): MCPService => {
   const context = new Map<string, MCPServerContext>()
 
-  const newClient = () => new Client({ name: "aichat-mcp-client", version: app.getVersion() })
+  const newClient = () => new Client({ name: "aichat-mcp-client", version: "v0.0.1" })
 
   async function registerClient(label: string, serverParams: MCPStdioServersParams): Promise<BridgeStatusResponse> {
     try {
@@ -60,14 +59,12 @@ export default () => {
     return responseData(200, "ok", tools.tools)
   }
 
-  async function listAllTools() {
+  async function listAllTools(): Promise<BridgeResponse<MCPToolDetail[]>> {
     try {
       const toolRes: MCPToolDetail[][] = []
-      for await (const ctx of context.values()) {
-        if (ctx.client) {
-          const tools = await ctx.client.listTools()
-          toolRes.push(tools.tools)
-        }
+      for (const label of context.keys()) {
+        const tools = await listTools(label)
+        toolRes.push(tools.data)
       }
       return {
         code: 200,
@@ -75,16 +72,14 @@ export default () => {
         data: toolRes.flat(),
       } as BridgeResponse<MCPToolDetail[]>
     } catch (error) {
-      return responseCode(500, JSON.stringify(serializeError(error)))
+      return { code: 500, msg: JSON.stringify(serializeError(error)), data: [] }
     }
   }
+  return {
+    registerClient,
+    toggleServer,
+    listTools,
+    listAllTools,
+  }
 }
-
-async function main() {
-  // await registerServer("filesystem", mcpServers.filesystem)
-  // await registerServer("everything", mcpServers.everything)
-  // const all = await getAllTools()
-  // console.log("---------------------")
-  // console.log(all)
-}
-main()
+export default useMCP
