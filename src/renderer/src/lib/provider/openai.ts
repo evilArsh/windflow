@@ -22,28 +22,26 @@ export abstract class OpenAICompatible implements LLMProvider {
   parseResponse(text: string): LLMChatResponse {
     try {
       if (text.startsWith("data:")) {
+        if (text.includes("[DONE]")) {
+          return { role: Role.Assistant, status: HttpStatusCode.Ok, content: "", reasoning_content: "" }
+        }
         const data = JSON5.parse(text.replace(/data:/, ""))
         return {
           role: Role.Assistant,
           status: HttpStatusCode.PartialContent,
           content: data.choices[0].delta.content ?? "",
           reasoning_content: data.choices[0].delta.reasoning_content ?? "",
+          usage: data.usage ?? undefined,
+          tool_calls: data.choices[0].delta.tool_calls ?? data.choices[0].delta.tools ?? undefined,
         }
+      } else if (text.includes(":keep-alive")) {
+        return { role: Role.Assistant, status: HttpStatusCode.Processing, content: "", reasoning_content: "" }
       } else {
-        return {
-          role: Role.Assistant,
-          status: HttpStatusCode.PartialContent,
-          content: "",
-          reasoning_content: "",
-        }
+        return { role: Role.Assistant, status: HttpStatusCode.PartialContent, content: "", reasoning_content: "" }
       }
     } catch (error) {
-      return {
-        status: HttpStatusCode.PartialContent,
-        msg: "",
-        content: dataToText(error),
-        role: Role.Assistant,
-      }
+      console.log("[parseResponse error]", error)
+      return { status: HttpStatusCode.PartialContent, msg: "", content: dataToText(error), role: Role.Assistant }
     }
   }
   chat(
@@ -55,11 +53,9 @@ export abstract class OpenAICompatible implements LLMProvider {
   ): LLMChatResponseHandler {
     const request = useLLMChat(this, providerMeta)
     const requestData = generateOpenAIChatRequest(messages, modelMeta, reqConfig)
-    return request.chat(requestData, modelMeta.type === ModelType.ChatReasoner, cb => {
-      callback({
-        ...cb,
-        reasoning: modelMeta.type === ModelType.ChatReasoner,
-      })
+    return request.chat(requestData, cb => {
+      cb.reasoning = modelMeta.type === ModelType.ChatReasoner
+      callback(cb)
     })
   }
 }

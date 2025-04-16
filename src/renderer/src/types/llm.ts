@@ -9,6 +9,7 @@ export enum Role {
 }
 
 export interface LLMBaseRequest {
+  stream?: boolean
   [x: string]: unknown
 }
 
@@ -73,10 +74,6 @@ export interface LLMChatResponseHandler {
   terminate: () => void
 }
 export interface LLMChatRequestHandler {
-  chat: (
-    message: LLMBaseRequest,
-    stream: boolean,
-    callback: (message: LLMChatResponse) => void
-  ) => LLMChatResponseHandler
+  chat: (message: LLMBaseRequest, callback: (message: LLMChatResponse) => void) => LLMChatResponseHandler
 }
 // ---------------------
