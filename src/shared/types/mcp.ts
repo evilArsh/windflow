@@ -12,9 +12,38 @@ export type MCPServerContext = {
   client?: Client
 }
 export interface MCPToolDetail {
+  /**
+   * tool name
+   */
   name: string
-  inputSchema: {
+  /**
+   * tool from which server
+   */
+  serverName: string
+  inputSchema?: {
     [x: string]: unknown
   }
   description?: string
 }
+
+// --- mcp call result start ---
+export interface ToolContentBase {
+  type: "text" | "image" | "audio" | "resource"
+  text?: string
+  data?: string
+  mimeType?: string
+  uri?: string
+  blob?: string
+  resource?: {
+    uri: string
+    text?: string
+    mimeType?: string
+    blob?: string
+  }
+}
+export interface CallToolResult {
+  content: ToolContentBase | ToolContentBase[]
+  isError?: boolean
+  toolResult?: unknown
+}
+// --- mcp call result end ---

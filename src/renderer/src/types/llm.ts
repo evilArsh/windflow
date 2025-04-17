@@ -19,7 +19,6 @@ export interface LLMChatMessage {
    * 消息内容
    */
   content: string | Array<Record<string, unknown>>
-
   /**
    * 推理内容
    */

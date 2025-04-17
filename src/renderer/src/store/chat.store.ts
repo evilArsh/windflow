@@ -277,7 +277,7 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 发送消息
    */
-  const sendMessage = (
+  const sendMessage = async (
     topic: ChatTopic,
     chatContext: ChatContext,
     context: LLMChatMessage[],
@@ -287,7 +287,7 @@ export default defineStore("chat_topic", () => {
   ) => {
     topic.requestCount++
     if (!chatContext.provider) return
-    chatContext.handler = chatContext.provider.chat(context, model, providerMeta, async msg => {
+    chatContext.handler = await chatContext.provider.chat(context, model, providerMeta, msg => {
       message.status = msg.status
       message.reasoning = msg.reasoning
       message.content.content += msg.content

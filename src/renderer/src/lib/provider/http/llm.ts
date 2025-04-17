@@ -44,7 +44,7 @@ export const useLLMChat = (provider: LLMProvider, providerMeta: ProviderMeta): L
       }
     }
     bus.on(messageHandler)
-    const doRequest = async (signal: AbortSignal, provider: LLMProvider) => {
+    const doRequest = async (body: LLMBaseRequest, signal: AbortSignal, provider: LLMProvider) => {
       try {
         bus.emit({
           reqId,
@@ -64,12 +64,12 @@ export const useLLMChat = (provider: LLMProvider, providerMeta: ProviderMeta): L
             Authorization: `Bearer ${apiKey}`,
           },
           signal: signal,
-          body: JSON.stringify(cacheMessage),
+          body: JSON.stringify(body),
         })
         if (!response.body) {
           throw new Error("response body not found")
         }
-        if (cacheMessage.stream) {
+        if (body.stream) {
           for await (const line of readLines(response.body)) {
             const parsedData = provider.parseResponse(line)
             parsedData.stream = true
@@ -97,7 +97,7 @@ export const useLLMChat = (provider: LLMProvider, providerMeta: ProviderMeta): L
             status: HttpStatusCode.Ok,
             msg: "",
             content: errorToText(error),
-            stream: cacheMessage.stream,
+            stream: body.stream,
             role: Role.Assistant,
           },
         })
@@ -106,13 +106,13 @@ export const useLLMChat = (provider: LLMProvider, providerMeta: ProviderMeta): L
     function restart() {
       abortController.abort()
       abortController = new AbortController()
-      doRequest(abortController.signal, provider)
+      doRequest(cacheMessage, abortController.signal, provider)
     }
     function terminate() {
       abortController.abort()
     }
 
-    doRequest(abortController.signal, provider)
+    doRequest(cacheMessage, abortController.signal, provider)
     return {
       restart,
       terminate,

@@ -1,16 +1,18 @@
 import { BridgeResponse, BridgeStatusResponse } from "./bridge"
-import { MCPStdioServersParams, MCPToolDetail } from "./mcp"
+import { CallToolResult, MCPStdioServersParams, MCPToolDetail } from "./mcp"
 
-export enum IpcChannel {
-  mcp_registerClient = "mcp:registerClient",
-  mcp_toggleServer = "mcp:toggleServer",
-  mcp_listTools = "mcp:listTools",
-  mcp_listAllTools = "mcp:listAllTools",
+export const IpcChannel = {
+  McpRegisterClient: "mcp.registerClient",
+  McpToggleClient: "mcp.toggleClient",
+  McpListTools: "mcp.listTools",
+  McpCallTool: "mcp.callTool",
 }
-
 export interface MCPService {
-  registerClient: (label: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
-  toggleServer: (label: string, disabled: boolean) => Promise<BridgeStatusResponse>
-  listTools: (label: string) => Promise<BridgeResponse<MCPToolDetail[]>>
-  listAllTools: () => Promise<BridgeResponse<MCPToolDetail[]>>
+  registerClient: (name: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
+  toggleClient: (name: string, disabled: boolean) => Promise<BridgeStatusResponse>
+  listTools: (clientName?: string) => Promise<BridgeResponse<MCPToolDetail[]>>
+  // listPrompts: (label?: string) => Promise<BridgeResponse<string[]>>
+  // listResources: (label?: string) => Promise<BridgeResponse<string[]>>
+  // listResourceTemplates: (label?: string) => Promise<BridgeResponse<string[]>>
+  callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<CallToolResult>>
 }

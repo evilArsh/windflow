@@ -4383,6 +4383,11 @@ electron-builder@^26.0.12:
     simple-update-notifier "2.0.0"
     yargs "^17.6.2"
 
+electron-log@^5.3.3:
+  version "5.3.3"
+  resolved "https://registry.npmmirror.com/electron-log/-/electron-log-5.3.3.tgz#323f5e70b3658d683a0f51f26867dc077a823aa3"
+  integrity sha512-ZOnlgCVfhKC0Nef68L0wDhwhg8nh5QkpEOA+udjpBxcPfTHGgbZbfoCBS6hmAgVHTAWByHNPkHKpSbEOPGZcxA==
+
 electron-publish@26.0.11:
   version "26.0.11"
   resolved "https://registry.npmmirror.com/electron-publish/-/electron-publish-26.0.11.tgz#92c9329a101af2836d9d228c82966eca1eee9a7b"

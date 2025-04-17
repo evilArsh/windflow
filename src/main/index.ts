@@ -2,7 +2,8 @@ import { app, shell, BrowserWindow } from "electron"
 import { join } from "path"
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils"
 import icon from "../../resources/icon.png?asset"
-function createWindow(): void {
+import { registerService } from "./usable"
+function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
@@ -19,11 +20,9 @@ function createWindow(): void {
       webviewTag: true,
     },
   })
-
   mainWindow.on("ready-to-show", () => {
     mainWindow.show()
   })
-
   mainWindow.webContents.setWindowOpenHandler(details => {
     shell.openExternal(details.url)
     return { action: "deny" }
@@ -33,22 +32,31 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"))
   }
+  return mainWindow
 }
 
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId("com.arsh.aichat")
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on("browser-window-created", (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-  createWindow()
-  app.on("activate", function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+function init() {
+  if (!app.requestSingleInstanceLock()) {
     app.quit()
+    process.exit(0)
+  } else {
+    app.whenReady().then(() => {
+      electronApp.setAppUserModelId("com.arsh.aichat")
+      // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+      app.on("browser-window-created", (_, window) => {
+        optimizer.watchWindowShortcuts(window)
+      })
+      app.on("activate", function () {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+      })
+      createWindow()
+      registerService()
+    })
+    app.on("window-all-closed", () => {
+      if (process.platform !== "darwin") {
+        app.quit()
+      }
+    })
   }
-})
+}
+init()

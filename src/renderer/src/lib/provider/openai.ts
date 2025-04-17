@@ -15,6 +15,7 @@ import JSON5 from "json5"
 import { generateOpenAIChatRequest } from "./utils"
 import { HttpStatusCode } from "@shared/code"
 import { errorToText } from "@shared/error"
+import { loadOpenAIMCPTools } from "./utils/mcp"
 export abstract class OpenAICompatible implements LLMProvider {
   axios = createInstance()
   constructor() {}
@@ -45,19 +46,23 @@ export abstract class OpenAICompatible implements LLMProvider {
       return { status: HttpStatusCode.PartialContent, msg: "", content: errorToText(error), role: Role.Assistant }
     }
   }
-  chat(
+  async chat(
     messages: LLMChatMessage[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
-  ): LLMChatResponseHandler {
+  ): Promise<LLMChatResponseHandler> {
     const request = useLLMChat(this, providerMeta)
     const requestData = generateOpenAIChatRequest(messages, modelMeta, reqConfig)
-    return request.chat(requestData, cb => {
+    // 获取MCP工具列表
+    await loadOpenAIMCPTools(requestData)
+    const handler = request.chat(requestData, async cb => {
+      console.log("[OpenAI chat]", cb)
       cb.reasoning = modelMeta.type === ModelType.ChatReasoner
       callback(cb)
     })
+    return handler
   }
 }
 

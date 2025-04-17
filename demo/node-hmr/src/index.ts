@@ -1,9 +1,9 @@
-import "./modules/mcp/index"
+import "./modules/proxy/index"
 if (import.meta.hot) {
   import.meta.hot.accept(() => {
-    console.log("[accept]")
+    // console.log("[accept]")
   })
   import.meta.hot.dispose(() => {
-    console.log("[dispose]")
+    // console.log("[dispose]")
   })
 }

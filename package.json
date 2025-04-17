@@ -38,6 +38,7 @@
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "dompurify": "^3.2.5",
+    "electron-log": "^5.3.3",
     "electron-updater": "^6.6.2",
     "element-plus": "^2.9.7",
     "hast-util-has-property": "^3.0.0",
