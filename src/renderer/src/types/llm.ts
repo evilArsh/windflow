@@ -18,7 +18,7 @@ export interface LLMChatMessage {
   /**
    * 消息内容
    */
-  content: string | Array<Record<string, unknown>>
+  content: string | Record<string, unknown> | Array<Record<string, unknown>>
   /**
    * 推理内容
    */
@@ -26,11 +26,17 @@ export interface LLMChatMessage {
   //  Role.Tool
   tool_call_id?: string
   //  Role.Assistant
-  tool_calls?: Array<{
-    function: { arguments: string; name: string }
-    id?: string
-    type: "function"
-  }>
+  tool_calls?: Array<LLMToolCall>
+}
+
+export interface LLMToolCall {
+  function: {
+    arguments: string
+    name: string
+  }
+  id?: string
+  type: "function"
+  index?: number
 }
 
 export interface LLMChatResponse {
@@ -56,11 +62,7 @@ export interface LLMChatResponse {
    */
   reasoning?: boolean
   stream?: boolean
-  tool_calls?: Array<{
-    function: { arguments: string; name: string }
-    id?: string
-    type: "function"
-  }>
+  tool_calls?: Array<LLMToolCall>
   usage?: {
     completion_tokens: number
     prompt_tokens: number
@@ -69,8 +71,9 @@ export interface LLMChatResponse {
 }
 
 export interface LLMChatResponseHandler {
-  restart: () => void
+  restart: () => Promise<void>
   terminate: () => void
+  dispose: () => void
 }
 export interface LLMChatRequestHandler {
   chat: (message: LLMBaseRequest, callback: (message: LLMChatResponse) => void) => LLMChatResponseHandler

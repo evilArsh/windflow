@@ -22,7 +22,7 @@ const edit = (msg: ChatMessageData) => {
   render(
     h(RawTextEdit, {
       ts: Date.now(),
-      data: msg.content.content,
+      data: msg.content.content as string,
       title: t("chat.editChat"),
       confirm: t("tip.confirm"),
       cancel: t("tip.cancel"),
@@ -62,8 +62,8 @@ const edit = (msg: ChatMessageData) => {
               </Button>
             </el-tooltip>
             <el-tooltip v-if="data.modelId" :content="t('chat.regenerate')" placement="right">
-              <Button
-                @click="done => chatStore.restart(done, currentTopic?.node, data.id)"
+              <el-button
+                @click="chatStore.restart(currentTopic?.node, data.id)"
                 size="small"
                 :disabled="!data.finish"
                 circle
@@ -71,7 +71,7 @@ const edit = (msg: ChatMessageData) => {
                 text
                 type="primary">
                 <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
-              </Button>
+              </el-button>
             </el-tooltip>
             <el-tooltip v-if="data.modelId" :content="t('chat.editChat')" placement="right">
               <el-button size="small" :disabled="!data.finish" circle plain text type="primary" @click="edit(data)">
@@ -132,7 +132,11 @@ const edit = (msg: ChatMessageData) => {
                 </div>
               </div>
             </template>
-            <Markdown v-if="data.modelId" :id="data.id" :content="data.content.content" :partial="!data.finish" />
+            <Markdown
+              v-if="data.modelId"
+              :id="data.id"
+              :content="data.content.content as string"
+              :partial="!data.finish" />
             <el-text v-else type="primary" class="self-end!">
               {{ data.content.content }}
             </el-text>

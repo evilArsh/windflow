@@ -8,16 +8,42 @@ import {
   ModelType,
   LLMBaseRequest,
   Role,
+  LLMToolCall,
 } from "@renderer/types"
 
 import { createInstance, useLLMChat } from "@renderer/lib/provider/http"
-import JSON5 from "json5"
 import { generateOpenAIChatRequest } from "./utils"
 import { HttpStatusCode } from "@shared/code"
 import { errorToText } from "@shared/error"
-import { loadOpenAIMCPTools } from "./utils/mcp"
+import { callOpenAITool, loadOpenAIMCPTools } from "./utils/mcp"
+import { merge } from "lodash"
+function usePartialToolCalls() {
+  let tools: Record<number, LLMToolCall> = {}
+  function clear() {
+    tools = {}
+  }
+  function add(data: LLMChatResponse) {
+    if (data.tool_calls) {
+      data.tool_calls.forEach(tool => {
+        if (isNumber(tool.index)) {
+          const mapTool = tools[tool.index]
+          if (mapTool) {
+            mapTool.function.arguments = mapTool.function.arguments + tool.function.arguments
+          } else {
+            tools[tool.index] = tool
+          }
+        }
+      })
+    }
+  }
+  function content() {
+    return Object.values(tools)
+  }
+  return { clear, add, content }
+}
 export abstract class OpenAICompatible implements LLMProvider {
   axios = createInstance()
+  #handler: ReturnType<typeof useLLMChat> = useLLMChat()
   constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 
@@ -27,7 +53,7 @@ export abstract class OpenAICompatible implements LLMProvider {
         if (text.includes("[DONE]")) {
           return { role: Role.Assistant, status: HttpStatusCode.Ok, content: "", reasoning_content: "" }
         }
-        const data = JSON5.parse(text.replace(/data:/, ""))
+        const data = JSON.parse(text.replace(/data:/, ""))
         return {
           role: Role.Assistant,
           status: HttpStatusCode.PartialContent,
@@ -53,16 +79,49 @@ export abstract class OpenAICompatible implements LLMProvider {
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): Promise<LLMChatResponseHandler> {
-    const request = useLLMChat(this, providerMeta)
+    const partialToolCalls = usePartialToolCalls()
+    this.#handler.update(this, providerMeta)
     const requestData = generateOpenAIChatRequest(messages, modelMeta, reqConfig)
+    let requestHandler:
+      | {
+          terminate: () => void
+          data: AsyncGenerator<LLMChatResponse>
+        }
+      | undefined = undefined
+
     // 获取MCP工具列表
     await loadOpenAIMCPTools(requestData)
-    const handler = request.chat(requestData, async cb => {
-      console.log("[OpenAI chat]", cb)
-      cb.reasoning = modelMeta.type === ModelType.ChatReasoner
-      callback(cb)
-    })
-    return handler
+    requestHandler = this.#handler.chat(requestData)
+    setTimeout(async () => {
+      for await (const cb of requestHandler.data) {
+        cb.reasoning = modelMeta.type === ModelType.ChatReasoner
+        if (cb.tool_calls) {
+          partialToolCalls.add(cb)
+        }
+        callback(cb)
+      }
+      const tools = partialToolCalls.content()
+      const reqToolsData = await callOpenAITool(tools)
+      const toolRequestHandler = this.#handler.chat(
+        generateOpenAIChatRequest(merge([], reqToolsData, messages), modelMeta, reqConfig)
+      )
+      for await (const cb of toolRequestHandler.data) {
+        callback(cb)
+      }
+      console.log(reqToolsData)
+    }, 0)
+    return {
+      restart: async () => {
+        partialToolCalls.clear()
+        // return await requestHandler?.restart()
+      },
+      terminate: () => {
+        partialToolCalls.clear()
+      },
+      dispose: () => {
+        partialToolCalls.clear()
+      },
+    }
   }
 }
 

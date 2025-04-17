@@ -361,7 +361,7 @@ export default defineStore("chat_topic", () => {
     })
   }
 
-  function restart(done: CallBackFn, topic?: ChatTopic, messageDataId?: string) {
+  function restart(topic?: ChatTopic, messageDataId?: string) {
     if (!(topic && messageDataId)) {
       console.warn(`[restart] topic or messageDataId is empty.${topic} ${messageDataId}`)
       return
@@ -402,7 +402,6 @@ export default defineStore("chat_topic", () => {
       const chatContext = fetchTopicContext(topic.id, messageData.modelId, messageData.id, message.id, provider) // 获取聊天信息上下文
       sendMessage(topic, chatContext, context, model, providerMeta, messageData)
     }
-    done()
   }
 
   /**

@@ -40,10 +40,12 @@ export interface ToolContentBase {
     mimeType?: string
     blob?: string
   }
+  [x: string]: unknown
 }
 export interface CallToolResult {
   content: ToolContentBase | ToolContentBase[]
   isError?: boolean
   toolResult?: unknown
+  [x: string]: unknown
 }
 // --- mcp call result end ---

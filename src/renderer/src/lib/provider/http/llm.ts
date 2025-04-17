@@ -1,124 +1,195 @@
-import {
-  LLMChatRequestHandler,
-  LLMChatResponseHandler,
-  ProviderMeta,
-  LLMChatResponse,
-  LLMProvider,
-  LLMBaseRequest,
-  Role,
-} from "@renderer/types"
+import { ProviderMeta, LLMChatResponse, LLMProvider, LLMBaseRequest, Role } from "@renderer/types"
 import { HttpStatusCode } from "@shared/code"
 import { errorToText } from "@shared/error"
-import { useEventBus, EventBusKey } from "@vueuse/core"
+import { useEventBus, EventBusKey, UseEventBusReturn } from "@vueuse/core"
+import { readLines } from "./utils"
 
-async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
+// type BusMessage = {
+//   reqId: string
+//   message: LLMChatResponse
+// }
+type BusMessage = LLMChatResponse
+const uniqueBusKey = (id: string): EventBusKey<BusMessage> => Symbol(`message-${id}`)
+// async function request(
+//   reqId: string,
+//   body: LLMBaseRequest,
+//   signal: AbortSignal,
+//   eventBus: UseEventBusReturn<BusMessage, BusMessage>,
+//   provider?: LLMProvider,
+//   providerMeta?: ProviderMeta
+// ) {
+//   try {
+//     if (!(provider && providerMeta)) {
+//       eventBus.emit({
+//         reqId,
+//         message: {
+//           status: 500,
+//           content: "provider or providerMeta not found",
+//           stream: body.stream,
+//           role: Role.Assistant,
+//         },
+//       })
+//       return
+//     }
+//     eventBus.emit({
+//       reqId,
+//       message: {
+//         status: 100,
+//         content: "",
+//         stream: body.stream,
+//         role: Role.Assistant,
+//       },
+//     })
+//     const { apiUrl, apiKey, apiLLMChat } = providerMeta
+//     const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
+//       method: apiLLMChat.method,
+//       headers: {
+//         "Content-Type": "application/json;charset=utf-8",
+//         Authorization: `Bearer ${apiKey}`,
+//       },
+//       signal: signal,
+//       body: JSON.stringify(body),
+//     })
+//     if (!response.body) {
+//       throw new Error("response body not found")
+//     }
+//     if (body.stream) {
+//       for await (const line of readLines(response.body)) {
+//         const parsedData = provider.parseResponse(line)
+//         parsedData.stream = true
+//         eventBus.emit({ reqId, message: parsedData })
+//       }
+//     } else {
+//       const data = await response.json()
+//       eventBus.emit({
+//         reqId,
+//         message: {
+//           role: data.choices[0].message.role,
+//           content: data.choices[0].message.content,
+//           reasoning_content: data.choices[0].message.reasoning_content ?? "",
+//           status: HttpStatusCode.Ok,
+//           stream: false,
+//           usage: data.usage ?? undefined,
+//           tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
+//         },
+//       })
+//     }
+//   } catch (error) {
+//     eventBus.emit({
+//       reqId,
+//       message: {
+//         status: HttpStatusCode.Ok,
+//         content: errorToText(error),
+//         stream: body.stream,
+//         role: Role.Assistant,
+//       },
+//     })
+//   }
+// }
+async function* request(
+  body: LLMBaseRequest,
+  signal: AbortSignal,
+  provider?: LLMProvider,
+  providerMeta?: ProviderMeta
+) {
   try {
-    const reader = stream.getReader()
-    const decoder = new TextDecoder()
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      const lines = decoder
-        .decode(value, { stream: true })
-        .split(/\r?\n/)
-        .filter(v => !!v)
-      for (const line of lines) {
-        yield line
+    if (!(provider && providerMeta)) {
+      yield {
+        status: 500,
+        content: "provider or providerMeta not found",
+        stream: body.stream,
+        role: Role.Assistant,
+      }
+      return
+    }
+    yield {
+      status: 100,
+      content: "",
+      stream: body.stream,
+      role: Role.Assistant,
+    }
+    const { apiUrl, apiKey, apiLLMChat } = providerMeta
+    const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
+      method: apiLLMChat.method,
+      headers: {
+        "Content-Type": "application/json;charset=utf-8",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      signal: signal,
+      body: JSON.stringify(body),
+    })
+    if (!response.body) {
+      throw new Error("response body not found")
+    }
+    if (body.stream) {
+      for await (const line of readLines(response.body)) {
+        const parsedData = provider.parseResponse(line)
+        parsedData.stream = true
+        yield parsedData
+      }
+    } else {
+      const data = await response.json()
+      yield {
+        role: data.choices[0].message.role,
+        content: data.choices[0].message.content,
+        reasoning_content: data.choices[0].message.reasoning_content ?? "",
+        status: HttpStatusCode.Ok,
+        stream: false,
+        usage: data.usage ?? undefined,
+        tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
       }
     }
   } catch (error) {
-    yield errorToText(error)
+    yield {
+      status: HttpStatusCode.Ok,
+      content: errorToText(error),
+      stream: body.stream,
+      role: Role.Assistant,
+    }
   }
 }
-
-export const useLLMChat = (provider: LLMProvider, providerMeta: ProviderMeta): LLMChatRequestHandler => {
-  const eventBusKey: EventBusKey<{ reqId: string; message: LLMChatResponse }> = Symbol(`message-${providerMeta.name}`)
+export const useLLMChat = () => {
+  const eventBusKey = uniqueBusKey(uniqueId())
   const bus = useEventBus(eventBusKey)
-  function chat(message: LLMBaseRequest, callback: (message: LLMChatResponse) => void): LLMChatResponseHandler {
-    const cacheMessage: LLMBaseRequest = message
+  let provider: LLMProvider | undefined
+  let providerMeta: ProviderMeta | undefined
+  function update(newProvider: LLMProvider, newProviderMeta: ProviderMeta) {
+    provider = newProvider
+    providerMeta = newProviderMeta
+  }
+  function chat(message: LLMBaseRequest): {
+    terminate: () => void
+    data: AsyncGenerator<BusMessage>
+  } {
     const reqId = uniqueId()
-    let abortController = new AbortController()
-    const messageHandler = (event: { reqId: string; message: LLMChatResponse }) => {
-      if (event.reqId === reqId) {
-        callback(event.message)
-      }
-    }
-    bus.on(messageHandler)
-    const doRequest = async (body: LLMBaseRequest, signal: AbortSignal, provider: LLMProvider) => {
-      try {
-        bus.emit({
-          reqId,
-          message: {
-            status: HttpStatusCode.Continue,
-            msg: "",
-            content: "",
-            stream: cacheMessage.stream,
-            role: Role.Assistant,
-          },
-        })
-        const { apiUrl, apiKey, apiLLMChat } = providerMeta
-        const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
-          method: apiLLMChat.method,
-          headers: {
-            "Content-Type": "application/json;charset=utf-8",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          signal: signal,
-          body: JSON.stringify(body),
-        })
-        if (!response.body) {
-          throw new Error("response body not found")
-        }
-        if (body.stream) {
-          for await (const line of readLines(response.body)) {
-            const parsedData = provider.parseResponse(line)
-            parsedData.stream = true
-            bus.emit({ reqId, message: parsedData })
-          }
-        } else {
-          const data = await response.json()
-          bus.emit({
-            reqId,
-            message: {
-              role: data.choices[0].message.role,
-              content: data.choices[0].message.content,
-              reasoning_content: data.choices[0].message.reasoning_content ?? "",
-              status: HttpStatusCode.Ok,
-              stream: false,
-              usage: data.usage ?? undefined,
-              tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
-            },
-          })
-        }
-      } catch (error) {
-        bus.emit({
-          reqId,
-          message: {
-            status: HttpStatusCode.Ok,
-            msg: "",
-            content: errorToText(error),
-            stream: body.stream,
-            role: Role.Assistant,
-          },
-        })
-      }
-    }
-    function restart() {
-      abortController.abort()
-      abortController = new AbortController()
-      doRequest(cacheMessage, abortController.signal, provider)
-    }
-    function terminate() {
-      abortController.abort()
-    }
-
-    doRequest(cacheMessage, abortController.signal, provider)
+    const abortController = new AbortController()
+    // const messageHandler = (event: { reqId: string; message: LLMChatResponse }) => {
+    //   if (event.reqId === reqId) {
+    //     callback(event.message)
+    //   }
+    // }
+    // bus.on(messageHandler)
+    // async function restart() {
+    //   if (abortController) {
+    //     abortController.abort()
+    //   }
+    //   abortController = new AbortController()
+    //   await request(reqId, message, abortController.signal, bus, provider, providerMeta)
+    // }
+    // function dispose() {
+    //   bus.off(messageHandler)
+    // }
+    // restart()
+    const data = request(message, abortController.signal, provider, providerMeta)
     return {
-      restart,
-      terminate,
-    } as LLMChatResponseHandler
+      terminate: () => {
+        abortController.abort()
+      },
+      data,
+    }
   }
   return {
     chat,
+    update,
   }
 }
