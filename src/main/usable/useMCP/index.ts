@@ -1,19 +1,28 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { serializeError } from "serialize-error"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
-import { MCPStdioServersParams, MCPToolDetail, MCPServerContext, CallToolResult } from "@shared/types/mcp"
+import {
+  MCPStdioServersParams,
+  MCPToolDetail,
+  MCPServerContext,
+  MCPCallToolResult,
+  MCPListResourcesRequestParams,
+  MCPListResourcesResponse,
+  MCPListPromptsRequestParams,
+  MCPListPromptsResponse,
+  MCPListResourceTemplatesParams,
+  MCPListResourceTemplatesResponse,
+} from "@shared/types/mcp"
 import { BridgeResponse, BridgeStatusResponse, code2xx, responseCode, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
 import { IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
-import path from "node:path"
 import { modifyPlatformCMD } from "./cmd"
+import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
 export const useMCP = (): MCPService => {
   const context = new Map<string, MCPServerContext>()
-
   const newClient = () => new Client({ name: "aichat-mcp-client", version: "v0.0.1" })
-
   async function registerClient(name: string, serverParams: MCPStdioServersParams): Promise<BridgeStatusResponse> {
     try {
       let ctx = context.get(name)
@@ -40,7 +49,6 @@ export const useMCP = (): MCPService => {
       return responseCode(500, JSON.stringify(serializeError(error)))
     }
   }
-
   async function toggleClient(name: string, disabled: boolean): Promise<BridgeStatusResponse> {
     const ctx = context.get(name)
     if (!ctx) {
@@ -49,7 +57,6 @@ export const useMCP = (): MCPService => {
     ctx.params.disabled = disabled
     return responseCode(200)
   }
-
   async function listTools(clientName?: string): Promise<BridgeResponse<MCPToolDetail[]>> {
     try {
       const labels = clientName ? [clientName] : context.keys()
@@ -57,10 +64,9 @@ export const useMCP = (): MCPService => {
       for (const label of labels) {
         const ctx = context.get(label)
         if (ctx && ctx.client && !ctx.params.disabled) {
-          const tools = (await ctx.client.listTools()).tools.map<MCPToolDetail>(tool => ({
-            ...tool,
-            serverName: label,
-          }))
+          const tools = (await ctx.client.listTools()).tools.map<MCPToolDetail>(tool =>
+            Object.assign(tool, { serverName: label })
+          )
           toolRes.push(tools)
         }
       }
@@ -69,9 +75,58 @@ export const useMCP = (): MCPService => {
       return responseData(500, JSON.stringify(serializeError(error)), [])
     }
   }
-  // async function listPrompts(label?: string) {}
-  // async function listResources(label?: string) {}
-  async function callTool(toolname: string, args?: Record<string, unknown>): Promise<BridgeResponse<CallToolResult>> {
+  async function listPrompts(params?: MCPListPromptsRequestParams, options?: RequestOptions) {
+    try {
+      const results: MCPListPromptsResponse[] = []
+      for (const ctx of context.values()) {
+        if (ctx.client && !ctx.params.disabled) {
+          const res = await ctx.client.listPrompts(params, options)
+          results.push(res)
+        }
+      }
+      return responseData(200, "ok", results)
+    } catch (error) {
+      return responseData(500, JSON.stringify(serializeError(error)), [])
+    }
+  }
+  async function listResources(
+    params?: MCPListResourcesRequestParams,
+    options?: RequestOptions
+  ): Promise<BridgeResponse<MCPListResourcesResponse[]>> {
+    try {
+      const results: MCPListResourcesResponse[] = []
+      for (const ctx of context.values()) {
+        if (ctx.client && !ctx.params.disabled) {
+          const res = await ctx.client.listResources(params, options)
+          results.push(res)
+        }
+      }
+      return responseData(200, "ok", results)
+    } catch (error) {
+      return responseData(500, JSON.stringify(serializeError(error)), [])
+    }
+  }
+  async function listResourceTemplates(
+    params?: MCPListResourceTemplatesParams,
+    options?: RequestOptions
+  ): Promise<BridgeResponse<MCPListResourceTemplatesResponse[]>> {
+    try {
+      const results: MCPListResourceTemplatesResponse[] = []
+      for (const ctx of context.values()) {
+        if (ctx.client && !ctx.params.disabled) {
+          const res = await ctx.client.listResourceTemplates(params, options)
+          results.push(res)
+        }
+      }
+      return responseData(200, "ok", results)
+    } catch (error) {
+      return responseData(500, JSON.stringify(serializeError(error)), [])
+    }
+  }
+  async function callTool(
+    toolname: string,
+    args?: Record<string, unknown>
+  ): Promise<BridgeResponse<MCPCallToolResult>> {
     try {
       const tools = await listTools()
       const tool = tools.data.find(tool => tool.name === toolname)
@@ -87,7 +142,7 @@ export const useMCP = (): MCPService => {
           const res = (await ctx.client!.callTool({
             name: toolname,
             arguments: args,
-          })) as CallToolResult
+          })) as MCPCallToolResult
           return responseData(200, "ok", res)
         }
         return responseData(500, res.msg, {
@@ -108,6 +163,9 @@ export const useMCP = (): MCPService => {
     toggleClient,
     listTools,
     callTool,
+    listPrompts,
+    listResources,
+    listResourceTemplates,
   }
 }
 export const registerMCP = async () => {
@@ -124,14 +182,22 @@ export const registerMCP = async () => {
   ipcMain.handle(IpcChannel.McpCallTool, async (_, name: string, args?: Record<string, unknown>) => {
     return mcp.callTool(name, args)
   })
-  await mcp.registerClient("everything", {
-    command: "npx",
-    disabled: false,
-    args: ["-y", "@modelcontextprotocol/server-everything"],
-  })
-  await mcp.registerClient("filesystem", {
-    command: "npx",
-    disabled: false,
-    args: ["-y", "@modelcontextprotocol/server-filesystem", path.normalize("D:\\")],
-  })
+  ipcMain.handle(
+    IpcChannel.McpListPrompts,
+    async (_, params?: MCPListPromptsRequestParams, options?: RequestOptions) => {
+      return mcp.listPrompts(params, options)
+    }
+  )
+  ipcMain.handle(
+    IpcChannel.McpListResources,
+    async (_, params?: MCPListResourcesRequestParams, options?: RequestOptions) => {
+      return mcp.listResources(params, options)
+    }
+  )
+  ipcMain.handle(
+    IpcChannel.McpListResourceTemplates,
+    async (_, params?: MCPListResourceTemplatesParams, options?: RequestOptions) => {
+      return mcp.listResourceTemplates(params, options)
+    }
+  )
 }

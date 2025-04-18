@@ -12,7 +12,7 @@ const useData = (models: Reactive<ModelMeta[]>) => {
   }
   async function find(modelId?: string) {
     if (!modelId) return
-    return await db.model.get(modelId)
+    return db.model.get(modelId)
   }
 
   const fetch = async () => {

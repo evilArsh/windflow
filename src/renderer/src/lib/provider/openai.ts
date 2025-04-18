@@ -64,14 +64,14 @@ async function makeRequest(
   }
   // 调用MCP工具
   const tools = partialToolCalls.content()
+  if (tools.length == 0) return
   console.log("[tools invoke params]", tools)
   const reqToolsData = await callOpenAITool(tools)
-  if (reqToolsData.length > 0) {
-    // 处理工具调用结果
-    const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestBody)
-    for await (const cb of toolRequestHandler.chat(reqBody, provider, providerMeta)) {
-      callback(cb)
-    }
+  if (reqToolsData.length == 0) return
+  // 处理工具调用结果
+  const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestBody)
+  for await (const cb of toolRequestHandler.chat(reqBody, provider, providerMeta)) {
+    callback(cb)
   }
 }
 export abstract class OpenAICompatible implements LLMProvider {

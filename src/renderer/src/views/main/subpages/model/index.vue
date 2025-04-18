@@ -80,7 +80,7 @@ settingsStore.api.dataWatcher<string | undefined>(
   --el-tree-node-content-height: 4rem;
 }
 .provider-tree-node {
-  --chat-tree-icon-size: 3rem;
+  --model-tree-icon-size: 3rem;
   display: flex;
   gap: 0.5rem;
   flex: 1;
@@ -92,8 +92,8 @@ settingsStore.api.dataWatcher<string | undefined>(
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--chat-tree-icon-size);
-    height: var(--chat-tree-icon-size);
+    width: var(--model-tree-icon-size);
+    height: var(--model-tree-icon-size);
     border-radius: 0.5rem;
     &:hover {
       background-color: rgba(10, 205, 231, 0.2);

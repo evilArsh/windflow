@@ -4,6 +4,8 @@ import { NavPage } from "@renderer/types"
 import { useI18n } from "vue-i18n"
 import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
+import ITerminal from "~icons/material-symbols/terminal"
+import useI18nWatch from "@renderer/usable/useI18nWatch"
 const { t } = useI18n()
 const route = useRoute()
 const menuEv = {
@@ -19,18 +21,26 @@ const status = reactive({
   },
 })
 const defaultRoute = ref("/main/chat")
-const pageNav: NavPage[] = [
-  {
-    index: "/main/chat",
-    label: t("nav.chat"),
-    icon: h(IMdiChatProcessing),
-  },
-  {
-    index: "/main/model",
-    label: t("nav.modelSetting"),
-    icon: h(ICardGiftcard),
-  },
-]
+const pageNav = shallowRef<NavPage[]>([])
+useI18nWatch(() => {
+  pageNav.value = [
+    {
+      index: "/main/chat",
+      label: t("nav.chat"),
+      icon: h(IMdiChatProcessing),
+    },
+    {
+      index: "/main/model",
+      label: t("nav.modelSetting"),
+      icon: h(ICardGiftcard),
+    },
+    {
+      index: "/main/mcp",
+      label: t("nav.mcp"),
+      icon: h(ITerminal),
+    },
+  ]
+})
 onMounted(() => {
   defaultRoute.value = route.path
 })

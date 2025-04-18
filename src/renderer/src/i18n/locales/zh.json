@@ -34,6 +34,7 @@
   },
   "nav": {
     "chat": "聊天",
+    "mcp": "MCP",
     "modelSetting": "模型"
   },
   "provider": {

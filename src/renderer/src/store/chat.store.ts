@@ -54,10 +54,10 @@ const useData = (
   const updateChatTopic = useThrottleFn(async (data: ChatTopic) => await db.chatTopic.put(toRaw(data)), 300, true)
 
   async function addChatTopic(data: ChatTopic) {
-    return await db.chatTopic.add(toRaw(data))
+    return db.chatTopic.add(toRaw(data))
   }
   async function addChatMessage(data: ChatMessage) {
-    return await db.chatMessage.add(toRaw(data))
+    return db.chatMessage.add(toRaw(data))
   }
   const updateChatMessage = useDebounceFn(async (data: ChatMessage) => await db.chatMessage.put(toRaw(data)), 300, {
     maxWait: 1000,
@@ -76,7 +76,7 @@ const useData = (
    * @description 删除对应的聊天组和聊天消息
    */
   async function delChatTopic(data: ChatTopic[]) {
-    return await db
+    return db
       .transaction("rw", db.chatMessage, db.chatTopic, async trans => {
         for (const item of data) {
           trans.chatTopic.delete(item.id)

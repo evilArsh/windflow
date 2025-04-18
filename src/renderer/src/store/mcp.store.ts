@@ -1,0 +1,61 @@
+import { MCPStdioServer } from "@renderer/types"
+import { defineStore } from "pinia"
+import { Reactive } from "vue"
+import { mcpStdioDefault } from "./default/mcp.default"
+import { db } from "@renderer/usable/useDatabase"
+import { cloneDeep } from "lodash"
+
+const useData = (servers: Reactive<MCPStdioServer[]>) => {
+  async function update(data: MCPStdioServer) {
+    try {
+      return db.mcpServer.update(data.serverName, data)
+    } catch (error) {
+      console.log(`[update mcp server error] ${(error as Error).message}`)
+      return 0
+    }
+  }
+  async function add(data: MCPStdioServer) {
+    try {
+      return db.mcpServer.add(data)
+    } catch (error) {
+      console.log(`[add mcp server error] ${(error as Error).message}`)
+      return 0
+    }
+  }
+  async function fetch() {
+    try {
+      servers.length = 0
+      const defaultData = mcpStdioDefault()
+      const data = await db.mcpServer.toArray()
+      data.forEach(v => {
+        servers.push(v)
+      })
+      for (const v of defaultData) {
+        if (!servers.find(server => server.serverName === v.serverName)) {
+          servers.push(v)
+          await db.mcpServer.add(v)
+        }
+      }
+      const initRequest = servers.map(v => {
+        return window.api.mcp.registerClient(v.serverName, cloneDeep(v))
+      })
+      await Promise.all(initRequest)
+      console.log(`[fetch mcp servers success]`)
+    } catch (error) {
+      console.log(`[fetch mcp servers error] ${(error as Error).message}`)
+    }
+  }
+  return {
+    add,
+    fetch,
+    update,
+  }
+}
+export default defineStore("mcp", () => {
+  const servers = reactive<MCPStdioServer[]>([])
+  const api = useData(servers)
+  return {
+    servers,
+    api,
+  }
+})

@@ -1,3 +1,5 @@
+import { errorToText } from "@shared/error"
+
 export async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {
     const reader = stream.getReader()

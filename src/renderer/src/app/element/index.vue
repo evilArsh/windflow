@@ -3,13 +3,15 @@ import zhCn from "element-plus/es/locale/lang/zh-cn"
 import useProviderStore from "@renderer/store/provider.store"
 import useModelsStore from "@renderer/store/model.store"
 import useChatTopicStore from "@renderer/store/chat.store"
+import useMCPStore from "@renderer/store/mcp.store"
 const ready = ref(false)
 async function init() {
   try {
     await Promise.all([
-      await useProviderStore().api.fetch(),
-      await useModelsStore().api.fetch(),
-      await useChatTopicStore().api.fetch(),
+      useProviderStore().api.fetch(),
+      useModelsStore().api.fetch(),
+      useChatTopicStore().api.fetch(),
+      useMCPStore().api.fetch(),
     ])
   } catch (error) {
     console.error(`[init] ${(error as Error).message}`)
