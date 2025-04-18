@@ -113,3 +113,43 @@ export type responseEncoding =
   | "UTF8"
   | "utf16le"
   | "UTF16LE"
+
+export enum ContentType {
+  TextPlain = "text/plain; charset=utf-8",
+  TextHtml = "text/html; charset=utf-8",
+  TextCss = "text/css; charset=utf-8",
+  TextJavascript = "text/javascript; charset=utf-8",
+  TextCsv = "text/csv; charset=utf-8",
+  TextXml = "text/xml; charset=utf-8",
+  TextMarkdown = "text/markdown; charset=utf-8",
+
+  ImageJpeg = "image/jpeg",
+  ImagePng = "image/png",
+  ImageGif = "image/gif",
+  ImageSvg = "image/svg+xml",
+  ImageWebp = "image/webp",
+  ImageIco = "image/x-icon",
+
+  ApplicationJson = "application/json; charset=utf-8",
+  ApplicationXml = "application/xml; charset=utf-8",
+  ApplicationPdf = "application/pdf",
+  ApplicationZip = "application/zip",
+  ApplicationOctetStream = "application/octet-stream",
+  ApplicationXWwwFormUrlencoded = "application/x-www-form-urlencoded",
+  ApplicationFormData = "multipart/form-data",
+  ApplicationJavascript = "application/javascript; charset=utf-8",
+  ApplicationWasm = "application/wasm",
+
+  AudioMpeg = "audio/mpeg",
+  AudioOgg = "audio/ogg",
+  AudioWav = "audio/wav",
+  AudioWebm = "audio/webm",
+  VideoMp4 = "video/mp4",
+  VideoOgg = "video/ogg",
+  VideoWebm = "video/webm",
+  VideoMpeg = "video/mpeg",
+
+  FontTtf = "font/ttf",
+  FontWoff = "font/woff",
+  FontWoff2 = "font/woff2",
+}

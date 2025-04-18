@@ -1,4 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
+import { LLMProvider, ProviderMeta } from "."
 
 export enum Role {
   System = "system",
@@ -12,13 +13,13 @@ export interface LLMBaseRequest {
   stream?: boolean
   [x: string]: unknown
 }
-
+export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>
 export interface LLMChatMessage {
   role: "system" | "user" | "assistant" | "tool" | "developer"
   /**
    * 消息内容
    */
-  content: string | Record<string, unknown> | Array<Record<string, unknown>>
+  content: LLMContent
   /**
    * 推理内容
    */
@@ -76,6 +77,8 @@ export interface LLMChatResponseHandler {
   dispose: () => void
 }
 export interface LLMChatRequestHandler {
-  chat: (message: LLMBaseRequest, callback: (message: LLMChatResponse) => void) => LLMChatResponseHandler
+  chat: (message: LLMBaseRequest, provider: LLMProvider, providerMeta: ProviderMeta) => AsyncGenerator<LLMChatResponse>
+  terminate: () => void
 }
+
 // ---------------------

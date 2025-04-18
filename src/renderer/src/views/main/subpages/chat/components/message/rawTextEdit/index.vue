@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { LLMContent } from "@renderer/types"
 import { ref } from "vue"
 const props = defineProps<{
   ts: number // timestamp
-  data: string
+  data: LLMContent
   title: string
   confirm: string
   cancel: string
@@ -22,11 +23,15 @@ watch(
 watch(
   () => props.data,
   () => {
-    data.value = props.data
+    if (isString(props.data)) {
+      data.value = props.data
+    }
   }
 )
 const onConfirm = () => {
-  emit("change", data.value)
+  if (isString(data.value)) {
+    emit("change", data.value)
+  }
   show.value = false
 }
 </script>
@@ -34,7 +39,7 @@ const onConfirm = () => {
   <el-dialog v-model="show" :title="title" width="70vw" draggable lock-scroll destroy-on-close overflow>
     <div class="w-full h-70vh overflow-hidden">
       <el-scrollbar>
-        <el-input v-model="data" type="textarea" autosize resize="none" />
+        <el-input v-if="isString(data)" v-model="data" type="textarea" autosize resize="none" />
       </el-scrollbar>
     </div>
     <template #footer>

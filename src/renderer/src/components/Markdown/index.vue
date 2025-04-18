@@ -6,10 +6,11 @@ import CodeBlock from "./components/codeBlock.vue"
 import MermaidBlock from "./components/mermaidBlock.vue"
 import { cloneVNode, h, render, ref, shallowReactive, watch } from "vue"
 import { cloneUn, cloneVnodeUn } from "./utils/unified"
+import { LLMContent } from "@renderer/types"
 const props = defineProps<{
   id: string
   partial?: boolean
-  content: string
+  content: LLMContent
 }>()
 
 const html = ref("")
@@ -73,12 +74,20 @@ const handleContent = (content: string, partial: boolean) => {
 watch(
   [() => props.content, () => props.partial],
   ([content, partial]) => {
-    handleContent(content, partial)
+    if (isString(content)) {
+      handleContent(content, partial)
+    } else {
+      // TODO
+    }
   },
   { deep: true }
 )
 onMounted(() => {
-  handleContent(props.content, props.partial)
+  if (isString(props.content)) {
+    handleContent(props.content, props.partial)
+  } else {
+    // TODO
+  }
 })
 </script>
 

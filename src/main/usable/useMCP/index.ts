@@ -84,7 +84,10 @@ export const useMCP = (): MCPService => {
         const res = await registerClient(tool.serverName, ctx.params)
         if (code2xx(res.code)) {
           ctx = context.get(tool.serverName)!
-          const res = (await ctx.client!.callTool({ name: toolname, args })) as CallToolResult
+          const res = (await ctx.client!.callTool({
+            name: toolname,
+            arguments: args,
+          })) as CallToolResult
           return responseData(200, "ok", res)
         }
         return responseData(500, res.msg, {

@@ -1,5 +1,4 @@
-import { LLMBaseRequest, LLMChatMessage, LLMChatResponse, LLMToolCall, Role } from "@renderer/types"
-import { errorToText } from "@shared/error"
+import { LLMBaseRequest, LLMChatMessage, LLMToolCall, Role } from "@renderer/types"
 
 export async function loadOpenAIMCPTools(request: LLMBaseRequest) {
   const tools = (await window.api.mcp.listTools()).data.map(tool => {
@@ -14,9 +13,9 @@ export async function loadOpenAIMCPTools(request: LLMBaseRequest) {
   })
   // request["tool_calls"] = tools // openai
   request["tools"] = tools // deepseek
+  console.log("[loadOpenAIMCPTools]", tools)
 }
 export async function callOpenAITool(tools: LLMToolCall[]): Promise<LLMChatMessage[]> {
-  // export async function callOpenAITool(tools: LLMToolCall[]): Promise<LLMChatMessage[] | LLMChatResponse> {
   try {
     const results: LLMChatMessage[] = []
     for (const tool of tools) {
@@ -28,14 +27,10 @@ export async function callOpenAITool(tools: LLMToolCall[]): Promise<LLMChatMessa
         tool_call_id: tool.id,
       })
     }
+    console.log("[callOpenAITool]", results)
     return results
   } catch (error) {
-    console.error("[callOpenAITool]", error)
+    console.log("[callOpenAITool error]", error)
     return []
-    // return {
-    //   role: Role.Assistant,
-    //   content: errorToText(error),
-    //   status: 500,
-    // } as LLMChatResponse
   }
 }

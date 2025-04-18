@@ -9,14 +9,14 @@ import {
   LLMBaseRequest,
   Role,
   LLMToolCall,
+  LLMChatRequestHandler,
 } from "@renderer/types"
 
-import { createInstance, useLLMChat } from "@renderer/lib/provider/http"
+import { createInstance, useSingleLLMChat } from "@renderer/lib/provider/http"
 import { generateOpenAIChatRequest } from "./utils"
 import { HttpStatusCode } from "@shared/code"
 import { errorToText } from "@shared/error"
 import { callOpenAITool, loadOpenAIMCPTools } from "./utils/mcp"
-import { merge } from "lodash"
 function usePartialToolCalls() {
   let tools: Record<number, LLMToolCall> = {}
   function clear() {
@@ -41,9 +41,41 @@ function usePartialToolCalls() {
   }
   return { clear, add, content }
 }
+async function makeRequest(
+  context: LLMChatMessage[],
+  provider: LLMProvider,
+  providerMeta: ProviderMeta,
+  modelMeta: ModelMeta,
+  requestHandler: LLMChatRequestHandler,
+  toolRequestHandler: LLMChatRequestHandler,
+  callback: (message: LLMChatResponse) => void,
+  requestBody?: LLMBaseRequest
+) {
+  const partialToolCalls = usePartialToolCalls()
+  const requestData = generateOpenAIChatRequest(context, modelMeta, requestBody)
+  // 获取MCP工具列表
+  await loadOpenAIMCPTools(requestData)
+  for await (const content of requestHandler.chat(requestData, provider, providerMeta)) {
+    content.reasoning = modelMeta.type === ModelType.ChatReasoner
+    if (content.tool_calls) {
+      partialToolCalls.add(content)
+    }
+    callback(content)
+  }
+  // 调用MCP工具
+  const tools = partialToolCalls.content()
+  console.log("[tools invoke params]", tools)
+  const reqToolsData = await callOpenAITool(tools)
+  if (reqToolsData.length > 0) {
+    // 处理工具调用结果
+    const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestBody)
+    for await (const cb of toolRequestHandler.chat(reqBody, provider, providerMeta)) {
+      callback(cb)
+    }
+  }
+}
 export abstract class OpenAICompatible implements LLMProvider {
   axios = createInstance()
-  #handler: ReturnType<typeof useLLMChat> = useLLMChat()
   constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 
@@ -72,6 +104,7 @@ export abstract class OpenAICompatible implements LLMProvider {
       return { status: HttpStatusCode.PartialContent, msg: "", content: errorToText(error), role: Role.Assistant }
     }
   }
+
   async chat(
     messages: LLMChatMessage[],
     modelMeta: ModelMeta,
@@ -79,48 +112,25 @@ export abstract class OpenAICompatible implements LLMProvider {
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): Promise<LLMChatResponseHandler> {
-    const partialToolCalls = usePartialToolCalls()
-    this.#handler.update(this, providerMeta)
-    const requestData = generateOpenAIChatRequest(messages, modelMeta, reqConfig)
-    let requestHandler:
-      | {
-          terminate: () => void
-          data: AsyncGenerator<LLMChatResponse>
-        }
-      | undefined = undefined
-
-    // 获取MCP工具列表
-    await loadOpenAIMCPTools(requestData)
-    requestHandler = this.#handler.chat(requestData)
-    setTimeout(async () => {
-      for await (const cb of requestHandler.data) {
-        cb.reasoning = modelMeta.type === ModelType.ChatReasoner
-        if (cb.tool_calls) {
-          partialToolCalls.add(cb)
-        }
-        callback(cb)
-      }
-      const tools = partialToolCalls.content()
-      const reqToolsData = await callOpenAITool(tools)
-      const toolRequestHandler = this.#handler.chat(
-        generateOpenAIChatRequest(merge([], reqToolsData, messages), modelMeta, reqConfig)
-      )
-      for await (const cb of toolRequestHandler.data) {
-        callback(cb)
-      }
-      console.log(reqToolsData)
-    }, 0)
+    // chat调用
+    const requestHandler = useSingleLLMChat()
+    // tool调用
+    const toolRequestHandler = useSingleLLMChat()
+    const context = Array.from(messages)
+    const terminate = () => {
+      toolRequestHandler.terminate()
+      requestHandler.terminate()
+    }
+    const restart = async () => {
+      terminate()
+      makeRequest(context, this, providerMeta, modelMeta, requestHandler, toolRequestHandler, callback, reqConfig)
+    }
+    const dispose = () => {}
+    restart()
     return {
-      restart: async () => {
-        partialToolCalls.clear()
-        // return await requestHandler?.restart()
-      },
-      terminate: () => {
-        partialToolCalls.clear()
-      },
-      dispose: () => {
-        partialToolCalls.clear()
-      },
+      restart,
+      terminate,
+      dispose,
     }
   }
 }

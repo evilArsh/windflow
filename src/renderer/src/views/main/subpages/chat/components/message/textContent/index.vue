@@ -22,7 +22,7 @@ const edit = (msg: ChatMessageData) => {
   render(
     h(RawTextEdit, {
       ts: Date.now(),
-      data: msg.content.content as string,
+      data: msg.content.content,
       title: t("chat.editChat"),
       confirm: t("tip.confirm"),
       cancel: t("tip.cancel"),
@@ -132,11 +132,7 @@ const edit = (msg: ChatMessageData) => {
                 </div>
               </div>
             </template>
-            <Markdown
-              v-if="data.modelId"
-              :id="data.id"
-              :content="data.content.content as string"
-              :partial="!data.finish" />
+            <Markdown v-if="data.modelId" :id="data.id" :content="data.content.content" :partial="!data.finish" />
             <el-text v-else type="primary" class="self-end!">
               {{ data.content.content }}
             </el-text>

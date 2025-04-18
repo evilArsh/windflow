@@ -296,13 +296,14 @@ export default defineStore("chat_topic", () => {
         message.finish = false
       } else if (msg.status == 200) {
         message.finish = true
-        topic.requestCount--
+        topic.requestCount = Math.max(0, topic.requestCount - 1)
         console.log(`[message done] ${msg.status}`)
       } else if (msg.status == 100) {
+        message.finish = false
         console.log(`[message pending] ${msg.status}`)
       } else {
         message.finish = true
-        topic.requestCount--
+        topic.requestCount = Math.max(0, topic.requestCount - 1)
         console.log(`[message] ${msg.status}`)
       }
     })
