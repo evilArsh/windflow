@@ -3,18 +3,30 @@ import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import Config from "./config.vue"
 import useMcpStore from "@renderer/store/mcp.store"
 import { MCPStdioServer } from "@renderer/types"
-const { servers } = useMcpStore()
 import ITerminal from "~icons/material-symbols/terminal"
+import { storeToRefs } from "pinia"
+import ContentLayout from "@renderer/components/ContentLayout/index.vue"
+const mcp = useMcpStore()
+const { servers } = storeToRefs(mcp)
+const { t } = useI18n()
 const currentServer = ref<MCPStdioServer>()
 const onCardClick = (current: MCPStdioServer) => {
   currentServer.value = current
+}
+const onCurrentChange = (data: MCPStdioServer) => {
+  currentServer.value && Object.assign(currentServer.value, data)
 }
 </script>
 <template>
   <SubNavLayout id="mcp.subNav">
     <template #submenu>
       <el-scrollbar>
-        <el-tree class="mcp-tree" highlight-current node-key="name" :data="servers">
+        <el-tree
+          class="mcp-tree"
+          :current-node-key="currentServer?.serverName"
+          highlight-current
+          node-key="name"
+          :data="servers">
           <template #default="{ data }: { data: MCPStdioServer }">
             <div class="mcp-tree-node" @click.stop="onCardClick(data)">
               <el-button text size="small" circle>
@@ -30,7 +42,17 @@ const onCardClick = (current: MCPStdioServer) => {
       </el-scrollbar>
     </template>
     <template #content>
-      <Config v-if="currentServer" v-model="currentServer"></Config>
+      <ContentLayout>
+        <template #header>
+          <div class="p-1rem flex-1 flex flex-col">
+            <div>
+              <el-button type="primary" size="small">{{ t("btn.new") }}</el-button>
+            </div>
+            <el-divider class="my-1rem!"></el-divider>
+          </div>
+        </template>
+        <Config v-if="currentServer" :data="currentServer" @change="onCurrentChange"></Config>
+      </ContentLayout>
     </template>
   </SubNavLayout>
 </template>

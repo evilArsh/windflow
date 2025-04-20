@@ -3,7 +3,6 @@ import { defineStore } from "pinia"
 import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default/mcp.default"
 import { db } from "@renderer/usable/useDatabase"
-import { cloneDeep } from "lodash"
 
 const useData = (servers: Reactive<MCPStdioServer[]>) => {
   async function update(data: MCPStdioServer) {
@@ -36,10 +35,10 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
           await db.mcpServer.add(v)
         }
       }
-      const initRequest = servers.map(v => {
-        return window.api.mcp.registerClient(v.serverName, cloneDeep(v))
-      })
-      await Promise.all(initRequest)
+      // const initRequest = servers.map(v => {
+      //   return window.api.mcp.registerClient(v.serverName, cloneDeep(v))
+      // })
+      // await Promise.all(initRequest)
       console.log(`[fetch mcp servers success]`)
     } catch (error) {
       console.log(`[fetch mcp servers error] ${(error as Error).message}`)

@@ -12,25 +12,11 @@ import { readLines } from "./utils"
 async function* request(
   body: LLMBaseRequest,
   signal: AbortSignal,
-  provider?: LLMProvider,
-  providerMeta?: ProviderMeta
-) {
+  provider: LLMProvider,
+  providerMeta: ProviderMeta
+): AsyncGenerator<LLMChatResponse> {
   try {
-    if (!(provider && providerMeta)) {
-      yield {
-        status: 500,
-        content: "provider or providerMeta not found",
-        stream: body.stream,
-        role: Role.Assistant,
-      }
-      return
-    }
-    yield {
-      status: 100,
-      content: "",
-      stream: body.stream,
-      role: Role.Assistant,
-    }
+    yield { status: 100, content: "", stream: body.stream, role: Role.Assistant }
     const { apiUrl, apiKey, apiLLMChat } = providerMeta
     const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
       method: apiLLMChat.method,

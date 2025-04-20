@@ -6,7 +6,6 @@ import useChatStore from "@renderer/store/chat.store"
 import useProviderStore from "@renderer/store/provider.store"
 import useModelsStore from "@renderer/store/model.store"
 import { storeToRefs } from "pinia"
-import { render } from "vue"
 import RawTextEdit from "../rawTextEdit/index.vue"
 defineProps<{
   data: ChatMessageData
@@ -17,22 +16,19 @@ const providerStore = useProviderStore()
 const modelsStore = useModelsStore()
 const { t } = useI18n()
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
-
-const edit = (msg: ChatMessageData) => {
-  render(
-    h(RawTextEdit, {
-      ts: Date.now(),
-      data: msg.content.content,
-      title: t("chat.editChat"),
-      confirm: t("tip.confirm"),
-      cancel: t("tip.cancel"),
-      onChange: (data: string) => {
-        msg.content.content = data
-      },
-    }),
-    document.body
-  )
-}
+const rawTextDlg = reactive({
+  show: false,
+  data: undefined as ChatMessageData | undefined,
+  onChange: markRaw((value: string) => {
+    if (rawTextDlg.data) {
+      rawTextDlg.data.content.content = value
+    }
+  }),
+  edit: markRaw((msg: ChatMessageData) => {
+    rawTextDlg.data = msg
+    rawTextDlg.show = true
+  }),
+})
 </script>
 <template>
   <MsgBubble :reverse="!data.modelId" :id>
@@ -74,7 +70,14 @@ const edit = (msg: ChatMessageData) => {
               </el-button>
             </el-tooltip>
             <el-tooltip v-if="data.modelId" :content="t('chat.editChat')" placement="right">
-              <el-button size="small" :disabled="!data.finish" circle plain text type="primary" @click="edit(data)">
+              <el-button
+                size="small"
+                :disabled="!data.finish"
+                circle
+                plain
+                text
+                type="primary"
+                @click="rawTextDlg.edit(data)">
                 <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
               </el-button>
             </el-tooltip>
@@ -143,6 +146,13 @@ const edit = (msg: ChatMessageData) => {
       </div>
     </template>
   </MsgBubble>
+  <RawTextEdit
+    v-model="rawTextDlg.show"
+    @change="rawTextDlg.onChange"
+    :data="rawTextDlg.data?.content.content"
+    :title="t('chat.editChat')"
+    :confirm="t('tip.confirm')"
+    :cancel="t('tip.cancel')"></RawTextEdit>
 </template>
 <style lang="scss" scoped>
 .chat-item-container {

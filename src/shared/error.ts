@@ -4,6 +4,10 @@ export function errorToText(error: unknown): string {
   if (error instanceof AxiosError) {
     return error.response?.data ?? error.message
   } else {
-    return JSON.stringify(serializeError(error))
+    const e = serializeError(error)
+    if (e instanceof Error && e.message) {
+      return e.message
+    }
+    return JSON.stringify(e)
   }
 }

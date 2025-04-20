@@ -6,6 +6,8 @@
     "add": "添加",
     "delete": "删除",
     "edit": "编辑",
+    "new": "新增",
+    "save": "保存",
     "send": "发送"
   },
   "chat": {
@@ -21,6 +23,14 @@
   "lang": {
     "en": "English",
     "zh": "简体中文"
+  },
+  "mcp": {
+    "args": "参数",
+    "command": "命令",
+    "cwd": "工作目录",
+    "desc": "描述",
+    "env": "环境变量",
+    "serverName": "服务名称"
   },
   "modelType": {
     "Chat": "对话",
@@ -53,7 +63,7 @@
       "DeepSeek": "深度求索",
       "OpenAI": "OpenAI",
       "SiliconFlow": "硅基流动",
-      "System": "你",
+      "System": "系统",
       "Volcengine": "火山引擎"
     },
     "providerName": "提供商"

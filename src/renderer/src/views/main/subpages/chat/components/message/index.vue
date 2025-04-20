@@ -21,7 +21,6 @@ const send = (topic?: ChatTopic) => {
     })
   }
 }
-
 const message = computed(() => currentMessage.value?.data ?? [])
 const { sendShortcut } = useShortcut(currentTopic, {
   send,
