@@ -5,16 +5,31 @@ import useMcpStore from "@renderer/store/mcp.store"
 import { MCPStdioServer } from "@renderer/types"
 import ITerminal from "~icons/material-symbols/terminal"
 import { storeToRefs } from "pinia"
+import useDialog from "@renderer/usable/useDialog"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
+import { cloneDeep } from "lodash"
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
+const { dlgProps, dlgEvent, close, open } = useDialog({
+  draggable: true,
+  lockScroll: true,
+  center: false,
+  top: "10vh",
+  destroyOnClose: true,
+  overflow: true,
+  width: "70vw",
+})
 const currentServer = ref<MCPStdioServer>()
 const onCardClick = (current: MCPStdioServer) => {
   currentServer.value = current
 }
 const onCurrentChange = (data: MCPStdioServer) => {
   currentServer.value && Object.assign(currentServer.value, data)
+}
+const onAdd = (data: MCPStdioServer) => {
+  servers.value.push(cloneDeep(data))
+  close()
 }
 </script>
 <template>
@@ -46,15 +61,20 @@ const onCurrentChange = (data: MCPStdioServer) => {
         <template #header>
           <div class="p-1rem flex-1 flex flex-col">
             <div>
-              <el-button type="primary" size="small">{{ t("btn.new") }}</el-button>
+              <el-button type="primary" size="small" @click="open">{{ t("btn.new") }}</el-button>
             </div>
             <el-divider class="my-1rem!"></el-divider>
           </div>
         </template>
-        <Config v-if="currentServer" :data="currentServer" @change="onCurrentChange"></Config>
+        <Config v-if="currentServer" mode="edit" :data="currentServer" @change="onCurrentChange"></Config>
       </ContentLayout>
     </template>
   </SubNavLayout>
+  <el-dialog v-bind="dlgProps" v-on="dlgEvent" :title="t('mcp.add')">
+    <Config mode="add" @change="onAdd">
+      <el-button @click="close">{{ t("btn.close") }}</el-button>
+    </Config>
+  </el-dialog>
 </template>
 <style lang="scss" scoped>
 .mcp-tree {

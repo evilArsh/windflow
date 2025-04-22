@@ -10,14 +10,14 @@ import RawTextEdit from "../rawTextEdit/index.vue"
 defineProps<{
   data: ChatMessageData
 }>()
+const { t } = useI18n()
 const id = useId()
+const rawDlg = useTemplateRef("rawDlg")
 const chatStore = useChatStore()
 const providerStore = useProviderStore()
 const modelsStore = useModelsStore()
-const { t } = useI18n()
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 const rawTextDlg = reactive({
-  show: false,
   data: undefined as ChatMessageData | undefined,
   onChange: markRaw((value: string) => {
     if (rawTextDlg.data) {
@@ -26,7 +26,7 @@ const rawTextDlg = reactive({
   }),
   edit: markRaw((msg: ChatMessageData) => {
     rawTextDlg.data = msg
-    rawTextDlg.show = true
+    rawDlg.value?.open()
   }),
 })
 </script>
@@ -146,13 +146,7 @@ const rawTextDlg = reactive({
       </div>
     </template>
   </MsgBubble>
-  <RawTextEdit
-    v-model="rawTextDlg.show"
-    @change="rawTextDlg.onChange"
-    :data="rawTextDlg.data?.content.content"
-    :title="t('chat.editChat')"
-    :confirm="t('tip.confirm')"
-    :cancel="t('tip.cancel')"></RawTextEdit>
+  <RawTextEdit ref="rawDlg" @change="rawTextDlg.onChange" :data="rawTextDlg.data?.content.content"></RawTextEdit>
 </template>
 <style lang="scss" scoped>
 .chat-item-container {
