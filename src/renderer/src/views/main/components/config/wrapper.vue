@@ -38,24 +38,24 @@ const { scaleEv, lock, hover, folded, toggle, toggleLock, toggleHover, onMouseEn
             :handle="baseParams?.handle"
             :move="unref(def.move)"
             :drag-offset="unref(def.dragOffset)">
-            <Hover :default-lock="lock" need-lock @lock="toggleLock">
+            <ContentBox :default-lock="lock" need-lock @lock="toggleLock">
               <el-button size="small" circle>
                 <i-ic:baseline-lock></i-ic:baseline-lock>
               </el-button>
-            </Hover>
-            <Hover :default-lock="hover" need-lock @lock="toggleHover">
+            </ContentBox>
+            <ContentBox :default-lock="hover" need-lock @lock="toggleHover">
               <el-button size="small" circle>
                 <i-ic:round-touch-app></i-ic:round-touch-app>
               </el-button>
-            </Hover>
-            <Hover>
+            </ContentBox>
+            <ContentBox>
               <el-switch
                 :model-value="folded"
                 @change="toggle"
                 :active-value="false"
                 :inactive-value="true"
                 size="small"></el-switch>
-            </Hover>
+            </ContentBox>
           </ToolBar>
           <div class="move" ref="move"></div>
         </div>

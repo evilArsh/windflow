@@ -5,6 +5,7 @@ import { cloneDeep } from "lodash"
 import useMcpStore from "@renderer/store/mcp.store"
 import { errorToText } from "@shared/error"
 import Form from "./form.vue"
+import { msg } from "@renderer/lib/shared/msg"
 const mcp = useMcpStore()
 const props = defineProps<{
   mode: "edit" | "add"

@@ -35,7 +35,7 @@ const rawTextDlg = reactive({
     <template #head>
       <el-affix :offset="40" :target="`#${id}`">
         <div class="flex flex-col gap1rem">
-          <Hover>
+          <ContentBox>
             <el-avatar style="--el-avatar-size: 4rem">
               <Svg
                 :src="
@@ -43,7 +43,7 @@ const rawTextDlg = reactive({
                 "
                 class="text-3rem"></Svg>
             </el-avatar>
-          </Hover>
+          </ContentBox>
           <div class="flex flex-col gap0.5rem items-center">
             <el-tooltip v-if="data.modelId" :content="t('chat.terminate')" placement="right">
               <Button

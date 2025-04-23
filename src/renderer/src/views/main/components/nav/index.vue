@@ -52,36 +52,38 @@ onMounted(() => {
         <el-menu :default-active="defaultRoute" @select="menuEv.onSelect" router>
           <el-menu-item v-for="item in pageNav" :key="item.index" :index="item.index" :disabled="item.disabled">
             <div class="nav-menu-item">
-              <Hover background still-lock :default-lock="defaultRoute == item.index">
-                <div class="nav-menu-item-inner">
-                  <i class="nav-menu-item-icon">
-                    <component :is="item.icon"></component>
-                  </i>
-                  <el-text style="--el-text-font-size: 1.2rem">{{ item.label }}</el-text>
-                </div>
-              </Hover>
+              <ContentBox
+                :main-style="{ flexDirection: 'column' }"
+                background
+                still-lock
+                :default-lock="defaultRoute == item.index">
+                <template #icon>
+                  <i class="nav-menu-item-icon"><component :is="item.icon"></component></i>
+                </template>
+                <el-text style="--el-text-font-size: 1.2rem">{{ item.label }}</el-text>
+              </ContentBox>
             </div>
           </el-menu-item>
         </el-menu>
       </el-scrollbar>
     </div>
     <div class="nav-bottom">
-      <Hover background>
+      <ContentBox background>
         <div class="nav-bottom-item" @click="status.toggleDark">
           <i-ic:baseline-mode-night v-if="status.dark" class="text-1.4rem"></i-ic:baseline-mode-night>
           <i-ic:twotone-light-mode v-else class="text-1.4rem"></i-ic:twotone-light-mode>
         </div>
-      </Hover>
-      <Hover background>
+      </ContentBox>
+      <ContentBox background>
         <div class="nav-bottom-item">
           <I18n></I18n>
         </div>
-      </Hover>
-      <Hover background>
+      </ContentBox>
+      <ContentBox background>
         <div class="nav-bottom-item">
           <i-mdi:settings class="text-1.4rem"></i-mdi:settings>
         </div>
-      </Hover>
+      </ContentBox>
     </div>
   </div>
 </template>
@@ -97,8 +99,6 @@ onMounted(() => {
   --el-menu-hover-bg-color: transparent;
   --nav-container-nav-menu-item-icon-color: #333;
   --nav-container-bg-color: var(--el-card-bg-color);
-  --nav-container-nav-menu-item-inner-width: 80%;
-  --nav-container-nav-menu-item-inner-height: 80%;
 
   width: 100%;
   position: relative;
@@ -111,29 +111,15 @@ onMounted(() => {
     overflow: hidden;
   }
   .nav-menu-item {
-    margin: 1rem 0;
+    margin: 0.5rem;
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-
     .nav-menu-item-icon {
       font-size: 1.8rem;
       color: var(--nav-container-nav-menu-item-icon-color);
-    }
-    .nav-menu-item-inner {
-      border-radius: 0.5rem;
-      width: var(--nav-container-nav-menu-item-inner-width);
-      height: var(--nav-container-nav-menu-item-inner-height);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      &.horizontal {
-        flex-direction: row;
-      }
     }
   }
   .nav-bottom {

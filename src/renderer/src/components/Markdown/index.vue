@@ -98,6 +98,10 @@ onMounted(() => {
 pre {
   counter-reset: line;
 }
+.code-line {
+  white-space: normal;
+  word-break: break-word;
+}
 .code-line::before {
   counter-increment: line;
   content: counter(line);

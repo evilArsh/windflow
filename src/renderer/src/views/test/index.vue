@@ -1,18 +1,18 @@
 <template>
   <div class="flex gap20px flex-col">
-    <Hover>
+    <ContentBox>
       <el-input-number></el-input-number>
-    </Hover>
-    <Hover>
+    </ContentBox>
+    <ContentBox>
       <el-button circle round>按钮</el-button>
-    </Hover>
-    <Hover need-lock>
+    </ContentBox>
+    <ContentBox need-lock>
       <el-button>hello world</el-button>
-    </Hover>
+    </ContentBox>
 
-    <Hover default-lock>
+    <ContentBox default-lock>
       <el-button>hello world</el-button>
-    </Hover>
+    </ContentBox>
 
     <el-text type="primary" style="--el-text-font-size: 1rem">文字测试</el-text>
     <el-text type="primary" style="--el-text-font-size: 10px">文字测试</el-text>
