@@ -7,7 +7,7 @@ import { db } from "@renderer/usable/useDatabase"
 const useData = (servers: Reactive<MCPStdioServer[]>) => {
   async function update(data: MCPStdioServer) {
     try {
-      return db.mcpServer.update(data.serverName, data)
+      return db.mcpServer.update(data.id, data)
     } catch (error) {
       console.log(`[update mcp server error] ${(error as Error).message}`)
       return 0
@@ -21,6 +21,9 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
       return 0
     }
   }
+  async function getAll() {
+    return db.mcpServer.toArray()
+  }
   async function fetch() {
     try {
       servers.length = 0
@@ -30,7 +33,7 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
         servers.push(v)
       })
       for (const v of defaultData) {
-        if (!servers.find(server => server.serverName === v.serverName)) {
+        if (!servers.find(server => server.id === v.id)) {
           servers.push(v)
           await db.mcpServer.add(v)
         }
@@ -43,6 +46,7 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
     add,
     fetch,
     update,
+    getAll,
   }
 }
 export default defineStore("mcp", () => {

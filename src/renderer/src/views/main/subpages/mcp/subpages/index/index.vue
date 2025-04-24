@@ -9,21 +9,23 @@ import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { cloneDeep } from "lodash"
 import { errorToText } from "@shared/error"
 import Form from "./components/form.vue"
+import List from "./components/list.vue"
 import ILight from "~icons/fxemoji/lightbulb"
 import IProhibited from "~icons/fluent-emoji-flat/prohibited"
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
 const { dlgProps, dlgEvent, close, open } = useDialog({
-  draggable: true,
-  lockScroll: true,
-  center: false,
-  top: "10vh",
-  destroyOnClose: true,
-  overflow: true,
   width: "70vw",
 })
-const formRef = useTemplateRef("form")
+const {
+  dlgProps: listDlgProps,
+  dlgEvent: listDlgEvent,
+  open: listDlgOpen,
+  close: listDlgClose,
+} = useDialog({
+  width: "70vw",
+})
 const currentServer = ref<MCPStdioServer>()
 const onCardClick = (current: MCPStdioServer) => {
   currentServer.value = current
@@ -40,35 +42,17 @@ const serverHandler = {
   },
 }
 const dlg = {
-  save: async (done: CallBackFn) => {
-    if (!formRef.value) {
-      done()
-      return
-    }
-    const formData = formRef.value.getFormData()
-    formRef.value.validate(async valid => {
-      try {
-        if (valid) {
-          if (!formData.id) {
-            formData.id = uniqueId()
-            await mcp.api.add(cloneDeep(formData))
-            servers.value.push(cloneDeep(formData))
-          } else {
-            await mcp.api.update(cloneDeep(formData))
-            currentServer.value && Object.assign(currentServer.value, formData)
-          }
-          dlg.close()
-        }
-      } catch (error) {
-        msg({ code: 500, msg: errorToText(error) })
-      } finally {
-        done()
-      }
-    })
-  },
-  close: () => {
+  onFormClose: () => {
     currentServer.value = undefined
     close()
+  },
+  onListClose: () => {
+    listDlgClose()
+  },
+  onFormChange: (data: MCPStdioServer) => {
+    if (currentServer.value) {
+      Object.assign(currentServer.value, data)
+    }
   },
 }
 </script>
@@ -76,8 +60,9 @@ const dlg = {
   <ContentLayout>
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
-        <div>
+        <div class="flex items-center gap1rem">
           <el-button type="primary" size="small" @click="open">{{ t("btn.new") }}</el-button>
+          <el-button type="warning" size="small" @click="listDlgOpen">{{ t("btn.mcpList") }}</el-button>
         </div>
         <el-divider class="my-1rem!"></el-divider>
       </div>
@@ -114,13 +99,10 @@ const dlg = {
       </el-col>
     </el-row>
     <el-dialog v-bind="dlgProps" v-on="dlgEvent">
-      <div class="px-1rem flex-1">
-        <Form ref="form" :data="currentServer"></Form>
-        <div class="flex gap1rem justify-end">
-          <Button type="primary" @click="dlg.save">{{ t("btn.save") }}</Button>
-          <el-button @click="dlg.close">{{ t("btn.close") }}</el-button>
-        </div>
-      </div>
+      <Form @close="dlg.onFormClose" @change="dlg.onFormChange" :data="currentServer"></Form>
+    </el-dialog>
+    <el-dialog v-bind="listDlgProps" v-on="listDlgEvent">
+      <List @close="dlg.onListClose"></List>
     </el-dialog>
   </ContentLayout>
 </template>
