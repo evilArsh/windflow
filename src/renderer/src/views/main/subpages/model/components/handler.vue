@@ -7,21 +7,19 @@ function onReset() {
 }
 </script>
 <template>
-  <el-card shadow="never" style="--el-card-padding: 0.5rem" class="mb-0.5rem">
-    <div class="flex flex-wrap gap-0.5rem">
-      <el-popconfirm :title="t('tip.reset')" @confirm="onReset">
-        <template #reference>
-          <el-button size="small" type="primary" plain>
-            <i-ep:refresh></i-ep:refresh>
-          </el-button>
-        </template>
-        <template #actions="{ confirm, cancel }">
-          <div class="flex justify-between">
-            <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
-            <el-button size="small" @click="cancel">{{ t("tip.cancel") }}</el-button>
-          </div>
-        </template>
-      </el-popconfirm>
-    </div>
-  </el-card>
+  <div class="flex flex-wrap gap-0.5rem">
+    <el-popconfirm :title="t('tip.reset')" @confirm="onReset">
+      <template #reference>
+        <el-button size="small" type="primary" plain>
+          <i-ep:refresh></i-ep:refresh>
+        </el-button>
+      </template>
+      <template #actions="{ confirm, cancel }">
+        <div class="flex justify-between">
+          <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
+          <el-button size="small" @click="cancel">{{ t("tip.cancel") }}</el-button>
+        </div>
+      </template>
+    </el-popconfirm>
+  </div>
 </template>

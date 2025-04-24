@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import useProviderStore from "@renderer/store/provider.store"
+import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings.store"
 import { storeToRefs } from "pinia"
-import { ProviderName, ProviderMeta } from "@renderer/types"
+import { ProviderName } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
-import ContentBox from "@renderer/components/ContentBox/index.vue"
 const providerStore = useProviderStore()
 const settingsStore = useSettingsStore()
 const { providerMetas, currentProvider } = storeToRefs(providerStore)
@@ -45,23 +45,34 @@ settingsStore.api.dataWatcher<string | undefined>(
 <template>
   <SubNavLayout id="model.subNav">
     <template #submenu>
-      <Handler></Handler>
       <el-scrollbar>
-        <el-tree
-          class="provider-tree"
-          :current-node-key="currentProvider?.name"
-          highlight-current
-          node-key="name"
-          :data="providerMetasList">
-          <template #default="{ data }: { data: ProviderMeta }">
-            <ContentBox normal @click.stop="onCardClick(data.name)">
-              <template #icon>
-                <Svg :src="data.logo" class="text-2rem"></Svg>
-              </template>
-              <el-text line-clamp="2">{{ t(data.alias || "") }}</el-text>
-            </ContentBox>
-          </template>
-        </el-tree>
+        <el-card style="--el-card-padding: 1rem" shadow="never">
+          <div class="flex flex-col">
+            <div class="my-1.2rem mb-2.4rem">
+              <ContentBox normal background>
+                <el-text class="text-2.6rem! font-600">模型</el-text>
+                <template #footer>
+                  <el-text type="info">模型和提供商设置</el-text>
+                </template>
+              </ContentBox>
+            </div>
+            <div class="mb-1rem">
+              <Handler></Handler>
+            </div>
+            <div class="flex flex-col gap-1rem">
+              <ContentBox
+                v-for="meta in providerMetasList"
+                :key="meta.name"
+                :default-lock="currentProvider?.name == meta.name"
+                still-lock
+                :background="false"
+                @click.stop="onCardClick(meta.name)">
+                <template #icon><Svg :src="meta.logo" class="text-2rem"></Svg></template>
+                <el-text line-clamp="2">{{ t(meta.alias || "") }}</el-text>
+              </ContentBox>
+            </div>
+          </div>
+        </el-card>
       </el-scrollbar>
     </template>
     <template #content>

@@ -36,7 +36,7 @@ onMounted(routes.toDefaultPath)
       <el-scrollbar>
         <el-card style="--el-card-padding: 1rem" shadow="never">
           <div class="flex flex-col">
-            <div class="my-2.4rem">
+            <div class="my-1.2rem mb-2.4rem">
               <ContentBox normal background>
                 <el-text class="text-2.6rem! font-600">MCP</el-text>
                 <template #footer>
