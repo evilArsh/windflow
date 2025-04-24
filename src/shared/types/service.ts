@@ -8,13 +8,14 @@ import {
   MCPListResourcesResponse,
   MCPListResourceTemplatesParams,
   MCPListResourceTemplatesResponse,
+  MCPServerHandleCommand,
   MCPStdioServersParams,
   MCPToolDetail,
 } from "./mcp"
 
 export const IpcChannel = {
-  McpRegisterClient: "mcp.registerClient",
-  McpToggleClient: "mcp.toggleClient",
+  McpRegisterServer: "mcp.registerServer",
+  McpToggleServer: "mcp.toggleServer",
   McpListTools: "mcp.listTools",
   McpCallTool: "mcp.callTool",
   McpListResources: "mcp.listResources",
@@ -22,10 +23,10 @@ export const IpcChannel = {
   McpListResourceTemplates: "mcp.listResourceTemplates",
 }
 export interface MCPService {
-  registerClient: (name: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
-  toggleClient: (name: string, disabled: boolean) => Promise<BridgeStatusResponse>
+  registerServer: (serverName: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
+  toggleServer: (serverName: string, command: MCPServerHandleCommand) => Promise<BridgeStatusResponse>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
-  listTools: (clientName?: string) => Promise<BridgeResponse<MCPToolDetail[]>>
+  listTools: (serverName?: string) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (
     params?: MCPListResourcesRequestParams,
     options?: RequestOptions

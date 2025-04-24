@@ -17,7 +17,7 @@ const db = new Dexie(name) as Dexie & {
   chatTopic: EntityTable<ChatTopic, "id">
   chatMessage: EntityTable<ChatMessage, "id">
   settings: EntityTable<Settings<SettingsValue>, "id">
-  mcpServer: EntityTable<MCPStdioServer, "serverName">
+  mcpServer: EntityTable<MCPStdioServer, "id">
 }
 
 db.version(1).stores({
@@ -26,15 +26,7 @@ db.version(1).stores({
   chatTopic: "id,chatMessageId,parentId,createAt",
   chatMessage: "id",
   settings: "id",
-})
-
-db.version(2).stores({
-  providerMeta: "name",
-  model: "id,providerName,type,active",
-  chatTopic: "id,chatMessageId,parentId,createAt",
-  chatMessage: "id",
-  settings: "id",
-  mcpServer: "serverName",
+  mcpServer: "id",
 })
 
 export { db }

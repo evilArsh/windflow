@@ -33,6 +33,11 @@
     "desc": "描述",
     "edit": "编辑",
     "env": "环境变量",
+    "menu": {
+      "env": "环境配置",
+      "market": "发现",
+      "servers": "服务列表"
+    },
     "serverName": "服务名称"
   },
   "modelType": {

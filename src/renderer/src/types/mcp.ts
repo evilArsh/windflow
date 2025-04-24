@@ -1,4 +1,5 @@
 export interface MCPStdioServer {
+  id: string
   command: string
   serverName: string
   disabled?: boolean

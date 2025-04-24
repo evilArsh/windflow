@@ -1,15 +1,12 @@
 import type { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-export type MCPStdioServersParams = StdioServerParameters & {
-  disabled?: boolean
-  /**
-   * @description 拥有权限的工具列表
-   */
-  // autoApprove?: Array<string>
-}
+export type MCPStdioServersParams = StdioServerParameters
 export type MCPServerContext = {
   params: MCPStdioServersParams
   client?: Client
+}
+export type MCPServerHandleCommand = {
+  command: "start" | "stop" | "restart" | "delete"
 }
 // --- mcp call result start ---
 // -- tool calls start ---

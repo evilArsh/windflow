@@ -35,11 +35,6 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
           await db.mcpServer.add(v)
         }
       }
-      // const initRequest = servers.map(v => {
-      //   return window.api.mcp.registerClient(v.serverName, cloneDeep(v))
-      // })
-      // await Promise.all(initRequest)
-      console.log(`[fetch mcp servers success]`)
     } catch (error) {
       console.log(`[fetch mcp servers error] ${(error as Error).message}`)
     }

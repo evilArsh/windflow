@@ -5,26 +5,30 @@ import IGlobe from "~icons/material-symbols/globe"
 import IDisplaySettingsOutline from "~icons/material-symbols/display-settings-outline"
 import useI18nWatch from "@renderer/usable/useI18nWatch"
 import { type Component } from "vue"
+const { t } = useI18n()
 
 const currentRoute = ref("")
 const router = useRouter()
 const route = useRoute()
 const menus = shallowRef<{ icon: Component; title: string; path: string }[]>([])
-function toPath(path: string) {
-  currentRoute.value = path
-  router.push(path)
+const routes = {
+  toPath: (path: string) => {
+    currentRoute.value = path
+    router.push(path)
+  },
+  toDefaultPath: () => {
+    const path = route.fullPath
+    currentRoute.value = path
+  },
 }
 useI18nWatch(() => {
   menus.value = [
-    { icon: ITerminal, title: "服务列表", path: "servers" },
-    { icon: IGlobe, title: "发现", path: "market" },
-    { icon: IDisplaySettingsOutline, title: "环境配置", path: "exec" },
+    { icon: ITerminal, title: t("mcp.menu.servers"), path: "/main/mcp/index" },
+    { icon: IGlobe, title: t("mcp.menu.market"), path: "/main/mcp/market" },
+    { icon: IDisplaySettingsOutline, title: t("mcp.menu.env"), path: "/main/mcp/exec" },
   ]
 })
-onMounted(() => {
-  const path = route.path
-  toPath(path.slice(path.lastIndexOf("/") + 1))
-})
+onMounted(routes.toDefaultPath)
 </script>
 <template>
   <SubNavLayout id="mcp.subNav">
@@ -47,7 +51,7 @@ onMounted(() => {
                 :default-lock="currentRoute == menu.path"
                 still-lock
                 :background="false"
-                @click="toPath(menu.path)">
+                @click="routes.toPath(menu.path)">
                 <template #icon><component :is="menu.icon"></component></template>
                 <el-text type="info">{{ menu.title }}</el-text>
               </ContentBox>

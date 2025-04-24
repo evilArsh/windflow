@@ -28,6 +28,7 @@ const formRules = reactive<FormRules>({
   args: { required: true, message: "", trigger: "blur" },
 })
 const clonedData = ref<MCPStdioServer>({
+  id: "",
   command: "",
   serverName: "",
 })
@@ -97,7 +98,7 @@ watch(() => props.data, handler.init, { immediate: true })
       <el-input v-model="clonedData.cwd"></el-input>
     </el-form-item>
     <el-form-item :label="t('mcp.desc')" prop="description">
-      <el-input v-model="clonedData.description"></el-input>
+      <el-input v-model="clonedData.description" :autosize="{ minRows: 5 }" type="textarea"></el-input>
     </el-form-item>
   </el-form>
 </template>
