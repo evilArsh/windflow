@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import Config from "./config.vue"
+import Config from "./components/config.vue"
 import useMcpStore from "@renderer/store/mcp.store"
 import { MCPStdioServer } from "@renderer/types"
 import ITerminal from "~icons/material-symbols/terminal"

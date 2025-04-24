@@ -126,7 +126,15 @@ export class RouterTree {
     }
   }
 
+  /**
+   * 添加路由
+   * @param parent 要添加的路由的父节点
+   * @param parentAbsPath 父节点绝对路由地址
+   * @param path 要添加的路由地址
+   * @param comp 要添加的路由对应的 Component
+   */
   private push(parent: Node, parentAbsPath: string, path: string, comp: AsyncComponnet): void {
+    // debugger
     if (path.length === 0) return
     const subCount = path.match(vars.SUBPAGE_REG)?.length ?? 0
     if (subCount === 0) {
@@ -160,7 +168,12 @@ export class RouterTree {
         this.routes.set(current, currentNode)
         parent.pushChild(currentNode)
       }
-      this.push(currentNode, current, paths.slice(1).join(vars.SEPARATOR), comp)
+      this.push(
+        currentNode,
+        current,
+        resolvePath(paths.slice(1).join(resolvePath([vars.SUBPAGES, vars.SEPARATOR], true, true))),
+        comp
+      )
     }
   }
 }

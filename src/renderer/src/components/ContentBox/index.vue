@@ -2,6 +2,7 @@
 import { CSSProperties } from "@renderer/lib/shared/types"
 
 const {
+  normal = false,
   wrapStyle = {},
   mainStyle = {},
   describe = "",
@@ -12,6 +13,7 @@ const {
 } = defineProps<{
   wrapStyle?: CSSProperties
   mainStyle?: CSSProperties
+  normal?: boolean
   /**
    * 默认保持按下状态
    */
@@ -29,7 +31,7 @@ const {
    */
   describe?: string
   /**
-   * 背景和波纹是否同时存在
+   * 是否有背景
    */
   background?: boolean
 }>()
@@ -39,20 +41,26 @@ const emit = defineEmits<{
    * @param status 锁定状态
    */
   lock: [status: boolean]
+  iconClick: [e: MouseEvent]
+  click: [e: MouseEvent]
 }>()
 
 const boxShadowColor = ref("rgba(0, 0, 0, 0.1)")
 const activeShadowColor = ref("rgba(0, 0, 0, 0.2)")
+const iconHoverColor = ref("rgba(10, 205, 231, 0.1)")
+const iconActiveColor = ref("rgba(10, 205, 231, 0.2)")
 const bgColor = computed(() => (background ? unref(boxShadowColor) : "unset"))
 const activeBgColor = computed(() => (background ? unref(activeShadowColor) : "unset"))
 const locked = ref(false)
 const active = ref(false)
 const boxStyle = computed<CSSProperties>(() => {
   return {
-    "--box-shadow-color": unref(boxShadowColor),
-    "--box-active-shadow-color": unref(activeShadowColor),
-    "--box-bg-color": unref(bgColor),
-    "--box-active-bg-color": unref(activeBgColor),
+    "--box-shadow-color": normal ? "unset" : unref(boxShadowColor),
+    "--box-active-shadow-color": normal ? "unset" : unref(activeShadowColor),
+    "--box-icon-hover-color": unref(iconHoverColor),
+    "--box-icon-active-color": unref(iconActiveColor),
+    "--box-bg-color": normal ? "unset" : unref(bgColor),
+    "--box-active-bg-color": normal ? "unset" : unref(activeBgColor),
   }
 })
 const handle = {
@@ -62,15 +70,20 @@ const handle = {
     locked.value = toggle ?? !locked.value
     emit("lock", locked.value)
   },
-  click: () => {
+  click: (e: MouseEvent) => {
     handle.toggleLock()
+    emit("click", e)
+  },
+  iconClick: (e: MouseEvent) => {
+    emit("iconClick", e)
   },
 }
 watch(
   () => defaultLock,
   v => {
     active.value = v
-  }
+  },
+  { immediate: true }
 )
 </script>
 <template>
@@ -82,9 +95,12 @@ watch(
     :show-arrow="false"
     :show-after="500"
     :disabled="!describe">
-    <div class="box" :class="{ active: active }" :style="[boxStyle, wrapStyle]" @click.stop="handle.click">
+    <div class="box" :class="{ active: active }" :style="[boxStyle, wrapStyle]" @click="handle.click">
+      <div v-if="$slots.header" class="box-header">
+        <slot name="header"></slot>
+      </div>
       <div class="box-main" :style="mainStyle">
-        <div v-if="$slots.icon" class="box-icon"><slot name="icon"></slot></div>
+        <div v-if="$slots.icon" @click="handle.iconClick" class="box-icon"><slot name="icon"></slot></div>
         <div class="box-text"><slot> </slot></div>
         <div v-if="$slots.end" class="box-end"><slot name="end"></slot></div>
       </div>
@@ -95,14 +111,9 @@ watch(
   </el-tooltip>
 </template>
 <style lang="scss" scoped>
-%active {
-  background-color: var(--box-active-bg-color);
-  box-shadow: 0 0 3px var(--box-active-shadow-color);
-}
 .box {
-  --box-shadow-color: rgba(0, 0, 0, 0.1);
-  --box-active-shadow-color: rgba(0, 0, 0, 0.2);
   user-select: none;
+  cursor: pointer;
   flex: 1;
   padding: 5px;
   border-radius: 5px;
@@ -114,25 +125,37 @@ watch(
     background-color: var(--box-bg-color);
     box-shadow: 0 0 3px var(--box-shadow-color);
   }
-  &:active {
-    @extend %active;
-  }
+  &:active,
   &.active {
-    @extend %active;
+    background-color: var(--box-active-bg-color);
+    box-shadow: 0 0 5px var(--box-active-shadow-color);
   }
   .box-main {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     align-items: center;
-    cursor: pointer;
   }
   .box-icon {
     flex-shrink: 0;
+    transition: all 0.3s ease-in-out;
+    padding: 2px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover {
+      background-color: var(--box-icon-hover-color);
+    }
+    &:active {
+      background-color: var(--box-icon-active-color);
+    }
   }
   .box-text {
     flex: 1;
     white-space: normal;
     word-break: break-word;
+    display: flex;
+    align-items: center;
   }
   .box-end {
     flex-shrink: 0;

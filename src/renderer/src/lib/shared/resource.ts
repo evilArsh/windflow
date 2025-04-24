@@ -4,14 +4,18 @@
  * @param withPrefix 是否需要 `/`前缀,default: true
  * @example eg: ["foo","bar"] ==> "foo/bar"
  */
-export const resolvePath = (path: string | string[], withPrefix: boolean = true): string => {
+export const resolvePath = (
+  path: string | string[],
+  withPrefix: boolean = true,
+  withSuffix: boolean = false
+): string => {
   let p = Array.isArray(path) ? path.join("/") : path
   const isNetworkPath = /^[a-zA-Z]+:\/\//.test(p)
   if (isNetworkPath) {
     return p.replace(/(?<!:\/)\/+/g, "/")
   }
   p = p.replace(/\/+/g, "/")
-  p = p === "/" ? p : p.endsWith("/") ? p.slice(0, -1) : p
+  p = p === "/" ? p : p.endsWith("/") && !withSuffix ? p.slice(0, -1) : p
   if (withPrefix) {
     p = p.startsWith("/") ? p : `/${p}`
   } else {

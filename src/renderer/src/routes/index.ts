@@ -16,6 +16,7 @@ export const initRoutes = initNode.iter<RouteRecordRaw>(router => {
     component: router.component ?? undefined,
   } as RouteRecordRaw
 })
+console.log("[routes]", initRoutes)
 const defaultPath = "/main/chat"
 const router = createRouter({
   history: createWebHistory(),

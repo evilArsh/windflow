@@ -7,6 +7,7 @@ import { ProviderName, ProviderMeta } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
+import ContentBox from "@renderer/components/ContentBox/index.vue"
 const providerStore = useProviderStore()
 const settingsStore = useSettingsStore()
 const { providerMetas, currentProvider } = storeToRefs(providerStore)
@@ -53,14 +54,12 @@ settingsStore.api.dataWatcher<string | undefined>(
           node-key="name"
           :data="providerMetasList">
           <template #default="{ data }: { data: ProviderMeta }">
-            <div class="provider-tree-node" @click.stop="onCardClick(data.name)">
-              <el-button text size="small" circle>
-                <div class="provider-tree-icon">
-                  <Svg :src="data.logo" class="text-2rem"></Svg>
-                </div>
-              </el-button>
-              <el-text class="provider-tree-label" line-clamp="2">{{ t(data.alias || "") }}</el-text>
-            </div>
+            <ContentBox normal @click.stop="onCardClick(data.name)">
+              <template #icon>
+                <Svg :src="data.logo" class="text-2rem"></Svg>
+              </template>
+              <el-text line-clamp="2">{{ t(data.alias || "") }}</el-text>
+            </ContentBox>
           </template>
         </el-tree>
       </el-scrollbar>
@@ -78,31 +77,5 @@ settingsStore.api.dataWatcher<string | undefined>(
 <style lang="scss" scoped>
 .provider-tree {
   --el-tree-node-content-height: 4rem;
-}
-.provider-tree-node {
-  --model-tree-icon-size: 3rem;
-  display: flex;
-  gap: 0.5rem;
-  flex: 1;
-  overflow: hidden;
-  padding: 0.5rem;
-  .provider-tree-icon {
-    transition: all 0.3s ease-in-out;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--model-tree-icon-size);
-    height: var(--model-tree-icon-size);
-    border-radius: 0.5rem;
-    &:hover {
-      background-color: rgba(10, 205, 231, 0.2);
-    }
-  }
-  .provider-tree-label {
-    font-size: 14px;
-    flex: 1;
-    overflow: hidden;
-  }
 }
 </style>

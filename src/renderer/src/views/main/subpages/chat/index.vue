@@ -8,6 +8,7 @@ import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "@renderer/views/main/usable/useMenu"
+import ContentBox from "@renderer/components/ContentBox/index.vue"
 const { t } = useI18n()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
@@ -58,17 +59,17 @@ onBeforeUnmount(() => {
             @node-collapse="tree.onNodeCollapse">
             <template #default="{ data }: { data: ChatTopicTree }">
               <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
-                <el-button text size="small" @click.stop="menu.openQuickEdit($event, data)" circle>
-                  <div class="chat-tree-icon">
+                <ContentBox normal @icon-click="menu.openQuickEdit($event, data)">
+                  <template #icon>
                     <Svg :src="data.node.icon" class="text-18px"></Svg>
+                  </template>
+                  <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
+                    <i-eos-icons:bubble-loading
+                      v-show="data.node.requestCount > 0"
+                      class="text-1.2rem"></i-eos-icons:bubble-loading>
+                    <el-text line-clamp="2">{{ data.node.label }}</el-text>
                   </div>
-                </el-button>
-                <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
-                  <i-eos-icons:bubble-loading
-                    v-show="data.node.requestCount > 0"
-                    class="text-1.2rem"></i-eos-icons:bubble-loading>
-                  <el-text class="chat-tree-label" line-clamp="2">{{ data.node.label }}</el-text>
-                </div>
+                </ContentBox>
                 <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
                   <el-button @click.stop="menu.open($event, data)" circle size="small">
                     <i-ep:more-filled></i-ep:more-filled>
@@ -116,28 +117,10 @@ onBeforeUnmount(() => {
 }
 
 .chat-tree-node {
-  --chat-tree-icon-size: 2.5rem;
   display: flex;
   gap: 0.5rem;
   flex: 1;
   overflow: hidden;
-  padding: 0.5rem;
-  .chat-tree-icon {
-    transition: all 0.3s ease-in-out;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--chat-tree-icon-size);
-    height: var(--chat-tree-icon-size);
-    border-radius: 0.5rem;
-    &:hover {
-      background-color: rgba(10, 205, 231, 0.2);
-    }
-  }
-  .chat-tree-label {
-    font-size: 14px;
-  }
   .chat-tree-handle {
     flex-shrink: 0;
     display: flex;

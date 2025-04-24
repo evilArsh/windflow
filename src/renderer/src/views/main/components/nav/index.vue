@@ -60,7 +60,7 @@ onMounted(() => {
                 <template #icon>
                   <i class="nav-menu-item-icon"><component :is="item.icon"></component></i>
                 </template>
-                <el-text style="--el-text-font-size: 1.2rem">{{ item.label }}</el-text>
+                <el-text size="small">{{ item.label }}</el-text>
               </ContentBox>
             </div>
           </el-menu-item>
@@ -130,9 +130,6 @@ onMounted(() => {
     gap: 1rem;
     align-items: center;
     .nav-bottom-item {
-      border-radius: 0.5rem;
-      margin: 0.1rem;
-      padding: 0.2rem;
       display: flex;
       flex-direction: column;
       align-items: center;

@@ -31,7 +31,7 @@ const { sendShortcut } = useShortcut(currentTopic, {
     <ContentLayout v-model:handler-height="currentTopic.node.inputHeight" ref="contentLayout" @scroll="onScroll">
       <template #header> </template>
       <div class="flex flex-col gap2rem flex-1 overflow-hidden">
-        <el-text line-clamp="7" class="text-1.2rem" type="info" size="small">{{ currentTopic.node.prompt }}</el-text>
+        <el-text line-clamp="7" type="info" size="small">{{ currentTopic.node.prompt }}</el-text>
         <TextContent v-for="data in message" :key="data.id" :data="data" />
       </div>
       <template #handler>

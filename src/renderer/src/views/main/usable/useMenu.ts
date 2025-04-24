@@ -198,6 +198,7 @@ export default (
     },
     // 点击icon快速编辑
     openQuickEdit: (event: MouseEvent, data: ChatTopicTree) => {
+      event.stopPropagation()
       selectedTopic.value = data
       panelConfig.mask = true
       menu.onEdit(event) // 弹出编辑框

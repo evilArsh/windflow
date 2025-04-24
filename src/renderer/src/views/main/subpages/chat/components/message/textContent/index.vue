@@ -35,14 +35,10 @@ const rawTextDlg = reactive({
     <template #head>
       <el-affix :offset="40" :target="`#${id}`">
         <div class="flex flex-col gap1rem">
-          <ContentBox>
-            <el-avatar style="--el-avatar-size: 4rem">
-              <Svg
-                :src="
-                  providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')
-                "
-                class="text-3rem"></Svg>
-            </el-avatar>
+          <ContentBox default-lock background>
+            <Svg
+              :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
+              class="text-3rem"></Svg>
           </ContentBox>
           <div class="flex flex-col gap0.5rem items-center">
             <el-tooltip v-if="data.modelId" :content="t('chat.terminate')" placement="right">
@@ -111,7 +107,7 @@ const rawTextDlg = reactive({
               <el-text type="danger">|</el-text>
               <el-text type="primary">{{ modelsStore.find(data.modelId)?.modelName }}</el-text>
             </div>
-            <el-text class="time">{{ data.time }}</el-text>
+            <el-text size="small" class="time">{{ data.time }}</el-text>
           </div>
         </el-affix>
         <div class="chat-item-content" :class="{ reverse: !data.modelId }">
@@ -170,12 +166,10 @@ const rawTextDlg = reactive({
     gap: 0.5rem;
     .name {
       align-self: unset;
-      font-size: 1.4rem;
       font-weight: 600;
     }
     .time {
       align-self: unset;
-      font-size: 1.2rem;
     }
     &.reverse {
       align-items: flex-end;
