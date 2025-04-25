@@ -27,17 +27,26 @@ const chatStore = useChatStore()
 const { servers } = storeToRefs(mcp)
 
 const popoverRefs = ref<Array<PopoverInstance>>([])
-const activeClick = ref("") // 点击的项
 const loading = ref(false) // 正在启动mcp
 
 const formHandler = {
-  onServerToggle: async () => {
+  onServerToggle: async (data: MCPStdioServer): Promise<boolean> => {
     try {
+      const finalStatus = !!data.disabled
+      if (finalStatus) {
+        const res = await window.api.mcp.toggleServer(data.id, {
+          command: "start",
+        })
+        if (res.code == 404) {
+          await window.api.mcp.registerServer(data.id, cloneDeep(data))
+        }
+      }
       await chatStore.api.updateChatTopic(cloneDeep(node.value))
       msg({ code: 200, msg: "ok" })
-      activeClick.value = ""
+      return true
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
+      return false
     }
   },
   onServerChange: async (data: MCPStdioServer, index: number) => {
@@ -45,13 +54,11 @@ const formHandler = {
       Object.assign(node.value.mcpServers[index], data)
       await chatStore.api.updateChatTopic(cloneDeep(node.value))
       msg({ code: 200, msg: "ok" })
-      activeClick.value = ""
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }
   },
   onClose: (popRef?: PopoverInstance) => {
-    activeClick.value = ""
     popRef?.hide()
   },
 }
@@ -65,6 +72,7 @@ const serverHandler = {
         }
       }
       await chatStore.api.updateChatTopic(cloneDeep(node.value))
+      await serverHandler.loadMCP()
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {
@@ -87,9 +95,13 @@ const serverHandler = {
   },
   restart: async (done: CallBackFn, server: MCPStdioServer) => {
     try {
+      if (server.disabled) {
+        throw new Error("Server is disabled")
+      }
       await window.api.mcp.toggleServer(server.id, {
-        command: "restart",
+        command: "delete",
       })
+      await window.api.mcp.registerServer(server.id, cloneDeep(server))
     } catch (error) {
       console.log("[restart]", error)
       msg({ code: 500, msg: errorToText(error) })
@@ -109,43 +121,40 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
     <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col gap1rem p1rem">
       <el-scrollbar>
         <div v-for="(server, index) in node.mcpServers" :key="server.id">
-          <ContentBox still-lock @click="activeClick = server.id" :default-lock="activeClick == server.id" background>
+          <ContentBox background>
             <template #icon>
-              <el-switch
+              <Switch
                 size="small"
                 v-model="server.disabled"
                 :active-value="false"
                 :inactive-value="true"
                 :active-action-icon="ILight"
                 :inactive-action-icon="IProhibited"
-                @change="formHandler.onServerToggle" />
+                :before-change="() => formHandler.onServerToggle(server)" />
             </template>
-            <el-popover
-              @hide="activeClick = ''"
-              placement="left"
-              :width="400"
-              trigger="click"
-              :ref="el => (popoverRefs[index] = el as PopoverInstance)">
-              <template #reference>
-                <div class="flex-1">
-                  <el-text size="small" type="info">{{ server.serverName }}</el-text>
-                </div>
-              </template>
-              <MCPForm
-                class="h-500px"
-                @change="data => formHandler.onServerChange(data, index)"
-                @close="formHandler.onClose(popoverRefs[index])"
-                :data="server">
-              </MCPForm>
-            </el-popover>
+            <el-text size="small" type="info">{{ server.serverName }}</el-text>
             <template #footer>
               <div class="flex items-center gap-.5rem" @click.stop>
                 <Button size="small" round circle @click="done => serverHandler.restart(done, server)">
                   <i class="i-ic:baseline-refresh text-1.6rem"></i>
                 </Button>
-                <!-- <ContentBox class="flex-grow-0! flex-shrink-0!" @click.stop>
-                  <i class="i-ic:baseline-refresh"></i>
-                </ContentBox> -->
+                <el-popover
+                  placement="left"
+                  :width="400"
+                  trigger="click"
+                  :ref="el => (popoverRefs[index] = el as PopoverInstance)">
+                  <template #reference>
+                    <ContentBox class="flex-grow-0! flex-shrink-0!" @click.stop>
+                      <i class="i-ep:edit"></i>
+                    </ContentBox>
+                  </template>
+                  <MCPForm
+                    class="h-500px"
+                    @change="data => formHandler.onServerChange(data, index)"
+                    @close="formHandler.onClose(popoverRefs[index])"
+                    :data="server">
+                  </MCPForm>
+                </el-popover>
               </div>
             </template>
           </ContentBox>

@@ -32,17 +32,21 @@ export const useMCP = (): MCPService => {
       let ctx = context.get(serverName)
       if (!ctx) {
         ctx = { params: serverParams }
-        log.debug("[MCP registerServer]", `${serverName} context not found create new one`)
+        log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} context not found create new one`)
       } else {
         if (ctx.client) {
           const pong = await ctx.client.ping()
           if (pong) {
-            return responseCode(201, `${serverName} already created`)
+            log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} already created`)
+            return responseCode(201, `${serverName}:${serverParams.args} already created`)
           } else {
-            log.debug("[MCP registerServer]", `${serverName} context found but client not connected`)
+            log.debug(
+              "[MCP registerServer]",
+              `${serverName}:${serverParams.args} context found but client not connected`
+            )
           }
         } else {
-          log.debug("[MCP registerServer]", `${serverName} context found but client not created`)
+          log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} context found but client not created`)
         }
       }
       ctx.client = newClient()
@@ -51,7 +55,7 @@ export const useMCP = (): MCPService => {
       transport.onerror = error => {
         log.error("[MCP registerServer]", errorToText(error))
       }
-      log.debug("[MCP registerServer]", `${serverName} created`)
+      log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} created`)
       context.set(serverName, ctx)
       return responseCode(200)
     } catch (error) {
@@ -71,17 +75,18 @@ export const useMCP = (): MCPService => {
           await ctx.client.close()
           ctx.client = undefined
         }
-        break
+        return responseCode(200, "ok")
       case "restart":
         await toggleServer(serverName, { command: "stop" })
-        await toggleServer(serverName, { command: "start" })
-        break
-      case "delete":
-        await toggleServer(serverName, { command: "stop" })
-        context.delete(serverName)
-        break
+        return toggleServer(serverName, { command: "start" })
+      case "delete": {
+        const res = await toggleServer(serverName, { command: "stop" })
+        if (code2xx(res.code)) {
+          context.delete(serverName)
+        }
+        return res
+      }
     }
-    return responseCode(200, "ok")
   }
   async function listTools(serverName?: string | string[]): Promise<BridgeResponse<MCPToolDetail[]>> {
     try {
