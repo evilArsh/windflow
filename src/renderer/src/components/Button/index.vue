@@ -1,6 +1,9 @@
 <template>
-  <el-button v-bind="$attrs" :disabled="disabled" :loading="loading" aria-label="ep-button" @click.stop="onClick">
-    <slot>load</slot>
+  <el-button v-bind="$attrs" :disabled="disabled" aria-label="ep-button" @click.stop="onClick">
+    <slot v-if="!loading"></slot>
+    <el-icon v-else>
+      <i class="i-ep:loading loading-icon"></i>
+    </el-icon>
   </el-button>
 </template>
 <script lang="ts" setup>
@@ -27,4 +30,16 @@ function onClick(e: MouseEvent) {
   emit("click", () => {}, e)
 }
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

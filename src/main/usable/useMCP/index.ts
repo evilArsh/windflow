@@ -32,12 +32,17 @@ export const useMCP = (): MCPService => {
       let ctx = context.get(serverName)
       if (!ctx) {
         ctx = { params: serverParams }
+        log.debug("[MCP registerServer]", `${serverName} context not found create new one`)
       } else {
         if (ctx.client) {
           const pong = await ctx.client.ping()
           if (pong) {
             return responseCode(201, `${serverName} already created`)
+          } else {
+            log.debug("[MCP registerServer]", `${serverName} context found but client not connected`)
           }
+        } else {
+          log.debug("[MCP registerServer]", `${serverName} context found but client not created`)
         }
       }
       ctx.client = newClient()

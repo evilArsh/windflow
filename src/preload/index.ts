@@ -23,7 +23,7 @@ for (const key of Object.values(IpcChannel)) {
     } else {
       if (prevProp && prevRoot) {
         prevRoot[prevProp] = async (...args: unknown[]) => {
-          log.debug("[api invoke]", key, args)
+          log.debug("[api invoke]", key)
           return ipcRenderer.invoke(key, ...args)
         }
       }

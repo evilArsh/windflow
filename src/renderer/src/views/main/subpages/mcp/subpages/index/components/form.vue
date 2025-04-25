@@ -62,8 +62,7 @@ const handler = {
     }
     formRef.value.validate(async valid => {
       if (valid) {
-        const res = cloneDeep(clonedData.value)
-        emit("change", res)
+        emit("change", clonedData.value)
         emit("close")
       }
       done()
@@ -74,28 +73,28 @@ const handler = {
   },
   onArgsChange(val: string) {
     clonedData.value.args = argsToArray(val)
-    handler.onDataChange()
   },
   onEnvChange(val: string) {
     clonedData.value.env = envToRecord(val)
-    handler.onDataChange()
-  },
-  onDataChange() {
-    formRef.value?.validate(valid => {
-      valid && emit("change", clonedData.value)
-    })
   },
 }
-watch(() => props.data, handler.init, { immediate: true })
+watch(
+  () => props.data,
+  (val, old) => {
+    if (val === old) return
+    handler.init()
+  },
+  { immediate: true }
+)
 </script>
 <template>
   <DialogPanel>
     <el-form ref="form" :rules="formRules" :model="clonedData" label-width="10rem" class="w-full" label-position="top">
       <el-form-item :label="t('mcp.serverName')" required prop="serverName">
-        <el-input @change="handler.onDataChange" v-model="clonedData.serverName"></el-input>
+        <el-input v-model="clonedData.serverName"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.command')" required prop="command">
-        <el-input @change="handler.onDataChange" v-model="clonedData.command"></el-input>
+        <el-input v-model="clonedData.command"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.args')" required prop="args">
         <el-input v-model="args" :autosize="{ minRows: 5 }" type="textarea" @change="handler.onArgsChange"></el-input>
@@ -109,14 +108,10 @@ watch(() => props.data, handler.init, { immediate: true })
           :autosize="{ minRows: 5 }"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.cwd')" prop="cwd">
-        <el-input @change="handler.onDataChange" v-model="clonedData.cwd"></el-input>
+        <el-input v-model="clonedData.cwd"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.desc')" prop="description">
-        <el-input
-          @change="handler.onDataChange"
-          v-model="clonedData.description"
-          :autosize="{ minRows: 5 }"
-          type="textarea"></el-input>
+        <el-input v-model="clonedData.description" :autosize="{ minRows: 5 }" type="textarea"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
