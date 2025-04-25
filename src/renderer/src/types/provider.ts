@@ -116,6 +116,7 @@ export interface LLMProvider extends Provider {
     messages: LLMChatMessage[],
     model: ModelMeta,
     provider: ProviderMeta,
+    mcpServersIds: Array<string>,
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): Promise<LLMChatResponseHandler>

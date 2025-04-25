@@ -78,9 +78,9 @@ export const useMCP = (): MCPService => {
     }
     return responseCode(200, "ok")
   }
-  async function listTools(serverName?: string): Promise<BridgeResponse<MCPToolDetail[]>> {
+  async function listTools(serverName?: string | string[]): Promise<BridgeResponse<MCPToolDetail[]>> {
     try {
-      const serverNames = serverName ? [serverName] : context.keys()
+      const serverNames = serverName ? (Array.isArray(serverName) ? serverName : [serverName]) : context.keys()
       const toolRes: MCPToolDetail[][] = []
       for (const serverName of serverNames) {
         const ctx = context.get(serverName)

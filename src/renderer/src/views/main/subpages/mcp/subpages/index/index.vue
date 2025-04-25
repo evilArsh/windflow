@@ -6,7 +6,7 @@ import { storeToRefs } from "pinia"
 import useDialog from "@renderer/usable/useDialog"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { cloneDeep } from "lodash"
+import { cloneDeep } from "lodash-es"
 import { errorToText } from "@shared/error"
 import Form from "./components/form.vue"
 import List from "./components/list.vue"
@@ -49,9 +49,21 @@ const dlg = {
   onListClose: () => {
     listDlgClose()
   },
-  onFormChange: (data: MCPStdioServer) => {
-    if (currentServer.value) {
-      Object.assign(currentServer.value, data)
+  onFormChange: async (data: MCPStdioServer) => {
+    try {
+      if (!data.id) {
+        data.id = uniqueId()
+        const res = cloneDeep(data)
+        await mcp.api.add(res)
+        servers.value.push(res)
+      } else {
+        await mcp.api.update(cloneDeep(data))
+        if (currentServer.value) {
+          Object.assign(currentServer.value, data)
+        }
+      }
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
     }
   },
 }
@@ -99,10 +111,10 @@ const dlg = {
       </el-col>
     </el-row>
     <el-dialog v-bind="dlgProps" v-on="dlgEvent">
-      <Form @close="dlg.onFormClose" @change="dlg.onFormChange" :data="currentServer"></Form>
+      <Form class="h-70vh" @close="dlg.onFormClose" @change="dlg.onFormChange" :data="currentServer"></Form>
     </el-dialog>
     <el-dialog v-bind="listDlgProps" v-on="listDlgEvent">
-      <List @close="dlg.onListClose"></List>
+      <List class="h-70vh" @close="dlg.onListClose"></List>
     </el-dialog>
   </ContentLayout>
 </template>

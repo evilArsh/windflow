@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
-import { LLMChatMessage, LLMChatResponseHandler, LLMProvider } from "."
+import { LLMChatMessage, LLMChatResponseHandler, LLMProvider, MCPStdioServer } from "."
 
 export type ChatMessageData = {
   /**
@@ -91,6 +91,10 @@ export type ChatTopic = {
    * @description 会话创建时间
    */
   createAt: number
+  /**
+   * @description mcp服务器列表
+   */
+  mcpServers: Array<MCPStdioServer>
 }
 
 export type ChatTopicTree = {

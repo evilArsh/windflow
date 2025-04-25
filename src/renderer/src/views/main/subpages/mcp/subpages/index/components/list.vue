@@ -5,7 +5,8 @@ import DialogPanel from "@renderer/components/DialogPanel/index.vue"
 import { errorToText } from "@shared/error"
 import { MCPStdioServer } from "@renderer/types"
 import { storeToRefs } from "pinia"
-import { cloneDeep } from "lodash"
+import { cloneDeep } from "lodash-es"
+import { argsToArray, envToRecord } from "../../../utils"
 type MCPServersConfig = { mcpServers: Record<string, Omit<MCPStdioServer, "serverName" | "id">> }
 const emit = defineEmits<{
   close: []
@@ -21,6 +22,7 @@ const onEditorChange = (val: string) => {
   value.value = val
 }
 const handler = {
+  // 所有mcp配置组装成json
   async init() {
     await nextTick()
     try {
@@ -39,6 +41,8 @@ const handler = {
     try {
       const changedData: MCPServersConfig = JSON.parse(value.value)
       for (const [serverName, value] of Object.entries(changedData.mcpServers)) {
+        value.args = argsToArray(value.args)
+        value.env = envToRecord(value.env)
         const existed = servers.value.find(v => v.serverName === serverName)
         if (existed) {
           Object.assign(existed, value)
@@ -75,7 +79,7 @@ const handler = {
 onMounted(handler.init)
 </script>
 <template>
-  <DialogPanel class="h-70vh">
+  <DialogPanel>
     <MonacoEditor :value @change="onEditorChange" namespace="mcp" lang="json" filename="mcpServer.json"></MonacoEditor>
     <template #footer>
       <div class="flex gap1rem justify-end">

@@ -48,13 +48,14 @@ async function makeRequest(
   modelMeta: ModelMeta,
   requestHandler: LLMChatRequestHandler,
   toolRequestHandler: LLMChatRequestHandler,
+  mcpServersIds: string[], // MCP服务器ID
   callback: (message: LLMChatResponse) => void,
   requestBody?: LLMBaseRequest
 ) {
   const partialToolCalls = usePartialToolCalls()
   const requestData = generateOpenAIChatRequest(context, modelMeta, requestBody)
   // 获取MCP工具列表
-  await loadOpenAIMCPTools(requestData)
+  await loadOpenAIMCPTools(mcpServersIds, requestData)
   for await (const content of requestHandler.chat(requestData, provider, providerMeta)) {
     content.reasoning = modelMeta.type === ModelType.ChatReasoner
     if (content.tool_calls) {
@@ -109,6 +110,7 @@ export abstract class OpenAICompatible implements LLMProvider {
     messages: LLMChatMessage[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
+    mcpServersIds: string[],
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): Promise<LLMChatResponseHandler> {
@@ -123,7 +125,17 @@ export abstract class OpenAICompatible implements LLMProvider {
     }
     const restart = async () => {
       terminate()
-      makeRequest(context, this, providerMeta, modelMeta, requestHandler, toolRequestHandler, callback, reqConfig)
+      makeRequest(
+        context,
+        this,
+        providerMeta,
+        modelMeta,
+        requestHandler,
+        toolRequestHandler,
+        mcpServersIds,
+        callback,
+        reqConfig
+      )
     }
     const dispose = () => {}
     restart()

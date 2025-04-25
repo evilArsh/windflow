@@ -1,6 +1,6 @@
 import { MCPStdioServersParams } from "@shared/types/mcp"
 import { platform } from "@electron-toolkit/utils"
-import { cloneDeep } from "lodash"
+import { cloneDeep } from "lodash-es"
 
 export function modifyPlatformCMD(params: MCPStdioServersParams): MCPStdioServersParams {
   const p = cloneDeep(params)

@@ -34,7 +34,7 @@ const rawTextDlg = reactive({
   <MsgBubble :reverse="!data.modelId" :id>
     <template #head>
       <el-affix :offset="40" :target="`#${id}`">
-        <div class="flex flex-col gap1rem">
+        <div class="flex flex-col gap1rem py1rem">
           <ContentBox default-lock background>
             <Svg
               :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
@@ -164,6 +164,7 @@ const rawTextDlg = reactive({
     flex-direction: column;
     background-color: var(--chat-item-header-bg-color);
     gap: 0.5rem;
+    padding: 1rem 0;
     .name {
       align-self: unset;
       font-weight: 600;

@@ -51,7 +51,7 @@ const useData = (
     })
     return res
   }
-  const updateChatTopic = useThrottleFn(async (data: ChatTopic) => await db.chatTopic.put(toRaw(data)), 300, true)
+  const updateChatTopic = useThrottleFn(async (data: ChatTopic) => db.chatTopic.put(toRaw(data)), 300, true)
 
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(toRaw(data))
@@ -59,7 +59,7 @@ const useData = (
   async function addChatMessage(data: ChatMessage) {
     return db.chatMessage.add(toRaw(data))
   }
-  const updateChatMessage = useDebounceFn(async (data: ChatMessage) => await db.chatMessage.put(toRaw(data)), 300, {
+  const updateChatMessage = useDebounceFn(async (data: ChatMessage) => db.chatMessage.put(toRaw(data)), 300, {
     maxWait: 1000,
   })
   async function findChatMessage(id: string) {
@@ -287,7 +287,8 @@ export default defineStore("chat_topic", () => {
   ) => {
     topic.requestCount++
     if (!chatContext.provider) return
-    chatContext.handler = await chatContext.provider.chat(context, model, providerMeta, msg => {
+    const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
+    chatContext.handler = await chatContext.provider.chat(context, model, providerMeta, mcpServersIds, msg => {
       message.status = msg.status
       message.reasoning = msg.reasoning
       message.content.content += msg.content

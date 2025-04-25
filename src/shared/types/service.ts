@@ -26,7 +26,7 @@ export interface MCPService {
   registerServer: (serverName: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
   toggleServer: (serverName: string, command: MCPServerHandleCommand) => Promise<BridgeStatusResponse>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
-  listTools: (serverName?: string) => Promise<BridgeResponse<MCPToolDetail[]>>
+  listTools: (serverName?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (
     params?: MCPListResourcesRequestParams,
     options?: RequestOptions

@@ -63,6 +63,9 @@ defineExpose({
     behavior.value = be
     y.value = newY
   },
+  updateScroll: () => {
+    scrollRef.value?.update()
+  },
 })
 </script>
 <template>
@@ -92,6 +95,7 @@ defineExpose({
   --content-header-bg-color: transparent;
   --content-header-height: 4rem;
   --content-handler-bg-color: #f6f6f7;
+  --content-handler-border-color: #d9d9d9;
 
   flex: 1;
   display: flex;
@@ -103,12 +107,12 @@ defineExpose({
     display: flex;
     flex-basis: var(--content-header-height);
     background-color: var(--content-header-bg-color);
+    border-bottom: 1px solid var(--content-handler-border-color);
   }
   .content-main {
     flex: 1;
     background-color: var(--content-bg-color);
     overflow: hidden;
-    padding: 0.5rem;
     display: flex;
     &--inner {
       display: flex;
@@ -121,6 +125,7 @@ defineExpose({
     position: relative;
     display: flex;
     background-color: var(--content-handler-bg-color);
+    border-top: 1px solid var(--content-handler-border-color);
     padding: 1rem;
     min-height: 15rem;
   }

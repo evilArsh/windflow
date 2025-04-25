@@ -1,11 +1,11 @@
 import { LLMBaseRequest, LLMChatMessage, LLMToolCall, Role } from "@renderer/types"
 
-export async function loadOpenAIMCPTools(request: LLMBaseRequest) {
+export async function loadOpenAIMCPTools(mcpServersIds: string[], request: LLMBaseRequest) {
   if (!window.api) {
     console.warn("[loadOpenAIMCPTools] window.api not found")
     return
   }
-  const tools = (await window.api.mcp.listTools()).data.map(tool => {
+  const tools = (await window.api.mcp.listTools(mcpServersIds)).data.map(tool => {
     return {
       type: "function",
       function: {

@@ -9,7 +9,7 @@
     <i v-if="isMax" class="i-ic:sharp-close-fullscreen"></i>
     <i v-else class="i-ic:baseline-open-in-full"></i>
   </ContentBox>
-  <ContentBox v-if="config.closable" describe="关闭" @click="tool.close">
+  <ContentBox v-if="config.closable" @click="tool.close">
     <i class="i-ic:round-cancel"></i>
   </ContentBox>
 </template>

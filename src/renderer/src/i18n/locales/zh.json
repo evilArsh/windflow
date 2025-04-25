@@ -12,7 +12,8 @@
     "mcpList": "配置列表",
     "new": "新增",
     "save": "保存",
-    "send": "发送"
+    "send": "发送",
+    "sync": "同步"
   },
   "chat": {
     "addChat": "新的聊天",
@@ -41,7 +42,8 @@
       "market": "发现",
       "servers": "服务列表"
     },
-    "serverName": "服务名称"
+    "serverName": "名称",
+    "status": "状态"
   },
   "modelType": {
     "Chat": "对话",

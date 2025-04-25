@@ -5,6 +5,6 @@ export interface MCPStdioServer {
   disabled?: boolean
   description?: string
   args?: string[]
-  env?: Record<string, string>
+  env?: Record<string, string | number>
   cwd?: string
 }

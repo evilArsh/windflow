@@ -5,7 +5,6 @@ const {
   normal = false,
   wrapStyle = {},
   mainStyle = {},
-  describe = "",
   defaultLock = false,
   needLock = false,
   stillLock = false,
@@ -26,10 +25,6 @@ const {
    * 该模式下`needLock`模式失效，组件的保持状态和`defaultLock`状态一致
    */
   stillLock?: boolean
-  /**
-   * hover时显示描述
-   */
-  describe?: string
   /**
    * 是否有背景
    */
@@ -87,28 +82,19 @@ watch(
 )
 </script>
 <template>
-  <el-tooltip
-    size="small"
-    effect="light"
-    :content="describe"
-    placement="top"
-    :show-arrow="false"
-    :show-after="500"
-    :disabled="!describe">
-    <div class="box" :class="{ active: active }" :style="[boxStyle, wrapStyle]" @click="handle.click">
-      <div v-if="$slots.header" class="box-header">
-        <slot name="header"></slot>
-      </div>
-      <div class="box-main" :style="mainStyle">
-        <div v-if="$slots.icon" @click="handle.iconClick" class="box-icon"><slot name="icon"></slot></div>
-        <div class="box-text"><slot> </slot></div>
-        <div v-if="$slots.end" class="box-end"><slot name="end"></slot></div>
-      </div>
-      <div v-if="$slots.footer" class="box-footer">
-        <slot name="footer"></slot>
-      </div>
+  <div class="box" :class="{ active: active }" :style="[boxStyle, wrapStyle]" @click="handle.click">
+    <div v-if="$slots.header" class="box-header">
+      <slot name="header"></slot>
     </div>
-  </el-tooltip>
+    <div class="box-main" :style="mainStyle">
+      <div v-if="$slots.icon" @click="handle.iconClick" class="box-icon"><slot name="icon"></slot></div>
+      <div class="box-text"><slot> </slot></div>
+      <div v-if="$slots.end" class="box-end"><slot name="end"></slot></div>
+    </div>
+    <div v-if="$slots.footer" class="box-footer">
+      <slot name="footer"></slot>
+    </div>
+  </div>
 </template>
 <style lang="scss" scoped>
 .box {

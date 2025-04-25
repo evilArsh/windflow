@@ -7,6 +7,7 @@ import ModelSelect from "../modelSelect/index.vue"
 import TextInput from "./textInput/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import TextContent from "./textContent/index.vue"
+import RightPanel from "./rightPanel/index.vue"
 import { storeToRefs } from "pinia"
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
@@ -20,6 +21,9 @@ const send = (topic?: ChatTopic) => {
       contentLayout.value?.scrollToBottom("smooth")
     })
   }
+}
+const onRightResizeChange = () => {
+  contentLayout.value?.updateScroll()
 }
 const message = computed(() => currentMessage.value?.data ?? [])
 const { sendShortcut } = useShortcut(currentTopic, {
@@ -48,6 +52,7 @@ const { sendShortcut } = useShortcut(currentTopic, {
         </div>
       </template>
     </ContentLayout>
+    <RightPanel v-model="currentTopic.node" @resize-change="onRightResizeChange"></RightPanel>
   </div>
   <div v-else class="flex flex-1 items-center justify-center">
     <el-empty />
