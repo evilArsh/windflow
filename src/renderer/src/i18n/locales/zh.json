@@ -4,7 +4,9 @@
   },
   "btn": {
     "add": "添加",
+    "cancel": "取消",
     "close": "关闭",
+    "confirm": "确定",
     "delete": "删除",
     "edit": "编辑",
     "mcpList": "配置列表",
@@ -82,12 +84,11 @@
     "status401": "身份验证失败，请检查配置信息"
   },
   "tip": {
-    "cancel": "取消",
-    "confirm": "确定",
     "deleteConfirm": "要删除吗?",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中",
     "reset": "即将重置?",
+    "saveSuccess": "保存成功",
     "selectAll": "全选",
     "selectModel": "请选择模型",
     "yes": "是的"

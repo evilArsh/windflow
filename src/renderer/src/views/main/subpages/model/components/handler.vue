@@ -17,7 +17,7 @@ function onReset() {
       <template #actions="{ confirm, cancel }">
         <div class="flex justify-between">
           <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
-          <el-button size="small" @click="cancel">{{ t("tip.cancel") }}</el-button>
+          <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
         </div>
       </template>
     </el-popconfirm>

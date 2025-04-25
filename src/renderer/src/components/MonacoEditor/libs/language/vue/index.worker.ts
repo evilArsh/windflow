@@ -6,7 +6,7 @@ import {
   type VueCompilerOptions,
   getFullLanguageServicePlugins,
   createVueLanguagePlugin,
-  resolveVueCompilerOptions,
+  getDefaultCompilerOptions,
 } from "@vue/language-service"
 import type { WorkerHost, WorkerMessage } from "./env"
 import { URI } from "vscode-uri"
@@ -54,8 +54,8 @@ self.onmessage = async (msg: MessageEvent<WorkerMessage>) => {
     }
 
     const { options: compilerOptions } = ts.convertCompilerOptionsFromJson(tsconfig?.compilerOptions || {}, "")
-    const vueCompilerOptions = resolveVueCompilerOptions(tsconfig.vueCompilerOptions || {})
-
+    const options = tsconfig.vueCompilerOptions
+    const vueCompilerOptions = getDefaultCompilerOptions(options?.target, options?.lib)
     return createTypeScriptWorkerLanguageService({
       typescript: ts,
       compilerOptions,

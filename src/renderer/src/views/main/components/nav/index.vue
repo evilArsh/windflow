@@ -20,7 +20,7 @@ const status = reactive({
     document.documentElement.classList.toggle("dark", status.dark)
   },
 })
-const defaultRoute = ref("/main/chat")
+const defaultRoute = ref("")
 const pageNav = shallowRef<NavPage[]>([])
 useI18nWatch(() => {
   pageNav.value = [
@@ -41,8 +41,9 @@ useI18nWatch(() => {
     },
   ]
 })
-onMounted(() => {
-  defaultRoute.value = route.path
+onBeforeMount(() => {
+  const current = pageNav.value.find(v => route.path.startsWith(v.index))
+  defaultRoute.value = current?.index ?? "/main/chat"
 })
 </script>
 <template>

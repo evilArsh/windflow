@@ -49,8 +49,8 @@ defineExpose({
     </div>
     <template #footer>
       <div class="flex gap1rem justify-end">
-        <el-button type="primary" @click="onConfirm">{{ t("tip.confirm") }}</el-button>
-        <el-button @click="onCancel">{{ t("tip.cancel") }}</el-button>
+        <el-button type="primary" @click="onConfirm">{{ t("btn.confirm") }}</el-button>
+        <el-button @click="onCancel">{{ t("btn.cancel") }}</el-button>
       </div>
     </template>
   </el-dialog>

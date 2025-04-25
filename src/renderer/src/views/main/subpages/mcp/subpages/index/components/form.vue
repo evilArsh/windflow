@@ -6,6 +6,7 @@ import { MCPStdioServer } from "@renderer/types"
 import { cloneDeep } from "lodash"
 import { FormRules } from "element-plus"
 import { storeToRefs } from "pinia"
+import { errorToText } from "@shared/error"
 const props = defineProps<{
   data?: MCPStdioServer
 }>()
@@ -55,7 +56,7 @@ const handler = {
     )
     args.value = (clonedData.value.args ?? []).join(" ")
     env.value = Object.entries(clonedData.value.env ?? {})
-      .map(([key, value]) => `${key}:${value}`)
+      .map(([key, value]) => `${key}=${value}`)
       .join("\n")
   },
   save: async (done: CallBackFn) => {
@@ -95,7 +96,7 @@ const handler = {
       .split(/[\n\s]+/)
       .filter(Boolean)
       .reduce((prev, cur) => {
-        const [key, value] = cur.split(":")
+        const [key, value] = cur.split("=")
         if (key && value) {
           prev[key] = value
         }
@@ -121,7 +122,7 @@ watch(() => props.data, handler.init, { immediate: true })
         <el-input
           v-model="env"
           @change="handler.onEnvChange"
-          placeholder="key:value"
+          placeholder="key=value"
           type="textarea"
           :autosize="{ minRows: 5 }"></el-input>
       </el-form-item>
