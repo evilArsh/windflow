@@ -82,10 +82,12 @@ const serverHandler = {
   loadMCP: async () => {
     try {
       loading.value = true
+      const asyncReq: Promise<unknown>[] = []
       for (const server of props.modelValue.mcpServers) {
         if (server.disabled) continue
-        await window.api.mcp.registerServer(server.id, cloneDeep(server))
+        asyncReq.push(window.api.mcp.registerServer(server.id, cloneDeep(server)))
       }
+      await Promise.allSettled(asyncReq)
     } catch (error) {
       console.log("[loadMCP]", error)
       msg({ code: 500, msg: errorToText(error) })
