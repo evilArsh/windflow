@@ -54,6 +54,7 @@ export default [
       "**/.vscode/",
       "**/assets/",
       "eslint.config.{mjs,cjs,js}",
+      "vitest.config.{ts,mts,js,mjs}",
       "vite.config.{ts,mts,js,mjs}",
       "**/.prettierrc.{mjs,cjs,js}",
       "**/rollup.config.{js,mjs,cjs}",
