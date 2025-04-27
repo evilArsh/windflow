@@ -8,6 +8,7 @@ import {
   LLMChatMessage,
   LLMProvider,
   ModelMeta,
+  ModelType,
   ProviderMeta,
   Role,
   Settings,
@@ -20,6 +21,7 @@ import useModelsStore from "./model.store"
 import useSettingsStore from "./settings.store"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { Reactive, Ref } from "vue"
+import { cloneDeep } from "lodash"
 
 const useData = (
   topicList: Reactive<Array<ChatTopicTree>>,
@@ -190,7 +192,9 @@ const useContext = () => {
     const context: LLMChatMessage[] = []
     let sysTick = false
     for (let i = message.length - 1; i >= 0; i--) {
-      const item = message[i]
+      const item = cloneDeep(message[i])
+      // deepseek patch
+      item.content.reasoning_content = undefined
       if (!sysTick) {
         if (item.content.role == Role.User) {
           sysTick = !sysTick
@@ -283,27 +287,28 @@ export default defineStore("chat_topic", () => {
     context: LLMChatMessage[],
     model: ModelMeta,
     providerMeta: ProviderMeta,
-    message: ChatMessageData
+    messageData: ChatMessageData
   ) => {
     topic.requestCount++
     if (!chatContext.provider) return
     const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
     chatContext.handler = await chatContext.provider.chat(context, model, providerMeta, mcpServersIds, msg => {
-      message.status = msg.status
-      message.reasoning = msg.reasoning
-      message.content.content += msg.content
-      message.content.reasoning_content += msg.reasoning_content ?? ""
+      messageData.status = msg.status
+      messageData.reasoning = model.type === ModelType.ChatReasoner
+      messageData.content.tool_calls = msg.tool_calls ?? undefined
+      messageData.content.content += msg.content
+      messageData.content.reasoning_content += msg.reasoning_content ?? ""
       if (msg.status == 206) {
-        message.finish = false
+        messageData.finish = false
       } else if (msg.status == 200) {
-        message.finish = true
+        messageData.finish = true
         topic.requestCount = Math.max(0, topic.requestCount - 1)
         console.log(`[message done] ${msg.status}`)
       } else if (msg.status == 100) {
-        message.finish = false
+        messageData.finish = false
         console.log(`[message pending] ${msg.status}`)
       } else {
-        message.finish = true
+        messageData.finish = true
         topic.requestCount = Math.max(0, topic.requestCount - 1)
         console.log(`[message] ${msg.status}`)
       }
@@ -395,6 +400,7 @@ export default defineStore("chat_topic", () => {
     messageData.time = formatSecond(new Date())
     if (chatContext) {
       if (chatContext.handler) {
+        // FIXME: 最新一次的tool_calls上下文应该删除,或者在重新请求时复用
         chatContext.handler.restart()
       } else {
         if (!chatContext.provider) chatContext.provider = provider

@@ -51,6 +51,7 @@ export enum HttpStatusCode {
   TooManyRequests = 429,
   RequestHeaderFieldsTooLarge = 431,
   UnavailableForLegalReasons = 451,
+  RequestAbort = 499, // extra status code
   InternalServerError = 500,
   NotImplemented = 501,
   BadGateway = 502,
@@ -63,7 +64,6 @@ export enum HttpStatusCode {
   NotExtended = 510,
   NetworkAuthenticationRequired = 511,
 }
-
 export type Method =
   | "get"
   | "GET"

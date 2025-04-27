@@ -1,9 +1,9 @@
-import { LLMBaseRequest, LLMChatMessage, LLMToolCall, Role } from "@renderer/types"
+import { LLMChatMessage, LLMToolCall, Role } from "@renderer/types"
 
-export async function loadOpenAIMCPTools(mcpServersIds: string[], request: LLMBaseRequest) {
+export async function loadMCPTools(mcpServersIds: string[]) {
   if (!window.api) {
-    console.warn("[loadOpenAIMCPTools] window.api not found")
-    return
+    console.warn("[load local MCP tools] window.api not found")
+    return []
   }
   const tools = (await window.api.mcp.listTools(mcpServersIds)).data.map(tool => {
     return {
@@ -15,11 +15,11 @@ export async function loadOpenAIMCPTools(mcpServersIds: string[], request: LLMBa
       },
     }
   })
-  // request["tool_calls"] = tools // openai
-  request["tools"] = tools // deepseek
-  console.log("[loadOpenAIMCPTools]", tools)
+
+  console.log("[load local MCP tools]", tools)
+  return tools
 }
-export async function callOpenAITool(tools: LLMToolCall[]): Promise<LLMChatMessage[]> {
+export async function callTools(tools: LLMToolCall[]): Promise<LLMChatMessage[]> {
   try {
     const results: LLMChatMessage[] = []
     for (const tool of tools) {
@@ -27,14 +27,15 @@ export async function callOpenAITool(tools: LLMToolCall[]): Promise<LLMChatMessa
       const result = await window.api.mcp.callTool(tool.function.name, args)
       results.push({
         role: Role.Tool,
-        content: result.data.content,
+        // patch deepseek
+        content: JSON.stringify(result),
         tool_call_id: tool.id,
       })
     }
-    console.log("[callOpenAITool]", results)
+    console.log("[call local tools]", results)
     return results
   } catch (error) {
-    console.log("[callOpenAITool error]", error)
+    console.log("[call local tools error]", error)
     return []
   }
 }

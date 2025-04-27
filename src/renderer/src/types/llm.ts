@@ -41,15 +41,6 @@ export interface LLMToolCall {
 }
 
 export interface LLMChatResponse {
-  role: string
-  /**
-   * 消息内容
-   */
-  content: string
-  /**
-   * 推理内容
-   */
-  reasoning_content?: string
   /**
    * 当前消息对应的状态码
    */
@@ -62,8 +53,22 @@ export interface LLMChatResponse {
    * 是否是推理对话
    */
   reasoning?: boolean
+  /**
+   * 是否是流式返回
+   */
   stream?: boolean
+  role: string
+  /**
+   * 消息内容
+   * TODO: 处理消息内容为其他类型
+   */
+  content: string
+  /**
+   * 推理内容
+   */
+  reasoning_content?: string
   tool_calls?: Array<LLMToolCall>
+  finish_reason?: string
   usage?: {
     completion_tokens: number
     prompt_tokens: number

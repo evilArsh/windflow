@@ -7,61 +7,68 @@ import {
   LLMChatResponse,
 } from "@renderer/types"
 import { ContentType, HttpStatusCode } from "@shared/code"
-import { errorToText } from "@shared/error"
 import { readLines } from "./utils"
+
+export class AbortError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "AbortError"
+  }
+}
+export class HttpCodeError extends Error {
+  #code: HttpStatusCode
+  constructor(code: HttpStatusCode, message: string) {
+    super(message)
+    this.#code = code
+    this.name = "HttpCodeError"
+  }
+  code() {
+    return this.#code
+  }
+}
 async function* request(
   body: LLMBaseRequest,
   abortController: AbortController,
   provider: LLMProvider,
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMChatResponse> {
-  try {
-    yield { status: 100, content: "", stream: body.stream, role: Role.Assistant }
-    const { apiUrl, apiKey, apiLLMChat } = providerMeta
-    const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
-      method: apiLLMChat.method,
-      headers: {
-        "Content-Type": ContentType.ApplicationJson,
-        Authorization: `Bearer ${apiKey}`,
-      },
-      signal: abortController.signal,
-      body: JSON.stringify(body),
-    })
-    if (response.status >= 300) {
-      const res = await response.text()
-      throw new Error(`HTTP error!,${res}`)
-    }
-    if (!response.body) {
-      throw new Error("response body not found")
-    }
-    if (body.stream) {
-      for await (const line of readLines(response.body)) {
-        if (abortController.signal.aborted) {
-          // TODO: 处理流中断
-        }
-        const parsedData = provider.parseResponse(line)
-        parsedData.stream = true
-        yield parsedData
+  yield { status: 100, content: "", stream: body.stream, role: Role.Assistant }
+  const { apiUrl, apiKey, apiLLMChat } = providerMeta
+  const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
+    method: apiLLMChat.method,
+    headers: {
+      "Content-Type": ContentType.ApplicationJson,
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+    signal: abortController.signal,
+  })
+  if (response.status >= 300) {
+    const res = await response.text()
+    throw new HttpCodeError(response.status, `HTTP error!,${res}`)
+  }
+  if (!response.body) {
+    throw new Error("response body not found")
+  }
+  if (body.stream) {
+    for await (const line of readLines(response.body)) {
+      if (abortController.signal.aborted) {
+        throw new AbortError("Request Aborted")
       }
-    } else {
-      const data = await response.json()
-      yield {
-        role: data.choices[0].message.role,
-        content: data.choices[0].message.content,
-        reasoning_content: data.choices[0].message.reasoning_content ?? "",
-        status: HttpStatusCode.Ok,
-        stream: false,
-        usage: data.usage ?? undefined,
-        tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
-      }
+      const parsedData = provider.parseResponse(line)
+      parsedData.stream = true
+      yield parsedData
     }
-  } catch (error) {
-    console.log("[LLMChat error]", error)
+  } else {
+    const data = await response.json()
     yield {
+      role: data.choices[0].message.role,
+      content: data.choices[0].message.content,
+      reasoning_content: data.choices[0].message.reasoning_content ?? "",
       status: HttpStatusCode.Ok,
-      content: errorToText(error),
-      stream: body.stream,
-      role: Role.Assistant,
+      stream: false,
+      usage: data.usage ?? undefined,
+      tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
     }
   }
 }
@@ -77,7 +84,7 @@ export const useSingleLLMChat = (): LLMChatRequestHandler => {
     return request(message, abortController, provider, providerMeta)
   }
   function terminate() {
-    abortController?.abort()
+    abortController?.abort("Request Aborted")
     abortController = undefined
   }
   return {
