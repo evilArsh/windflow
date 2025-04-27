@@ -56,6 +56,7 @@ async function makeRequest(
   const requestData = generateOpenAIChatRequest(context, modelMeta, requestBody)
   // 获取MCP工具列表
   await loadOpenAIMCPTools(mcpServersIds, requestData)
+  // 携带tools信息请求数据
   for await (const content of requestHandler.chat(requestData, provider, providerMeta)) {
     content.reasoning = modelMeta.type === ModelType.ChatReasoner
     if (content.tool_calls) {
@@ -71,6 +72,7 @@ async function makeRequest(
   if (reqToolsData.length == 0) return
   // 处理工具调用结果
   const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestBody)
+  // 携带mcp 调用结果请求数据
   for await (const cb of toolRequestHandler.chat(reqBody, provider, providerMeta)) {
     callback(cb)
   }
@@ -119,6 +121,7 @@ export abstract class OpenAICompatible implements LLMProvider {
     // tool调用
     const toolRequestHandler = useSingleLLMChat()
     const context = Array.from(messages)
+    // TODO: 加入mcp服务prompts
     const terminate = () => {
       toolRequestHandler.terminate()
       requestHandler.terminate()

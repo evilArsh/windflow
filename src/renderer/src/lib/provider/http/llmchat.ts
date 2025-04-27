@@ -11,7 +11,7 @@ import { errorToText } from "@shared/error"
 import { readLines } from "./utils"
 async function* request(
   body: LLMBaseRequest,
-  signal: AbortSignal,
+  abortController: AbortController,
   provider: LLMProvider,
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMChatResponse> {
@@ -24,14 +24,21 @@ async function* request(
         "Content-Type": ContentType.ApplicationJson,
         Authorization: `Bearer ${apiKey}`,
       },
-      signal: signal,
+      signal: abortController.signal,
       body: JSON.stringify(body),
     })
+    if (response.status >= 300) {
+      const res = await response.text()
+      throw new Error(`HTTP error!,${res}`)
+    }
     if (!response.body) {
       throw new Error("response body not found")
     }
     if (body.stream) {
       for await (const line of readLines(response.body)) {
+        if (abortController.signal.aborted) {
+          // TODO: 处理流中断
+        }
         const parsedData = provider.parseResponse(line)
         parsedData.stream = true
         yield parsedData
@@ -49,6 +56,7 @@ async function* request(
       }
     }
   } catch (error) {
+    console.log("[LLMChat error]", error)
     yield {
       status: HttpStatusCode.Ok,
       content: errorToText(error),
@@ -66,7 +74,7 @@ export const useSingleLLMChat = (): LLMChatRequestHandler => {
   ): AsyncGenerator<LLMChatResponse> {
     terminate()
     abortController = new AbortController()
-    return request(message, abortController.signal, provider, providerMeta)
+    return request(message, abortController, provider, providerMeta)
   }
   function terminate() {
     abortController?.abort()

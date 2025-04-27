@@ -24,6 +24,37 @@ import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
 export const useMCP = (): MCPService => {
   const context = new Map<string, MCPServerContext>()
   const newClient = () => new Client({ name: "aichat-mcp-client", version: "v0.0.1" })
+  const cachedTools: Record<string, MCPToolDetail[]> = {}
+
+  const availableServerNames = (serverName?: string | Array<string>): Array<string> => {
+    return serverName ? (Array.isArray(serverName) ? serverName : [serverName]) : Array.from(context.keys())
+  }
+  const availableClients = (serverName?: string | Array<string>): Array<{ serverName: string; client: Client }> => {
+    const res: Array<{ serverName: string; client: Client }> = []
+    const serverNames = availableServerNames(serverName)
+    serverNames.forEach(serverName => {
+      const ctx = context.get(serverName)
+      if (ctx && ctx.client) {
+        res.push({
+          serverName,
+          client: ctx.client,
+        })
+      }
+    })
+    return res
+  }
+  const requestWithName = async <T>(
+    serverName: string,
+    request: () => Promise<T>
+  ): Promise<{ serverName: string; data: T }> => {
+    const req = request()
+    if (req instanceof Promise) {
+      const data = await req
+      return { serverName, data }
+    }
+    return { serverName, data: req }
+  }
+
   async function registerServer(
     serverName: string,
     serverParams: MCPStdioServersParams
@@ -88,70 +119,111 @@ export const useMCP = (): MCPService => {
       }
     }
   }
-  async function listTools(serverName?: string | string[]): Promise<BridgeResponse<MCPToolDetail[]>> {
+  async function listTools(serverName?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
+    const results: MCPToolDetail[][] = []
     try {
-      const serverNames = serverName ? (Array.isArray(serverName) ? serverName : [serverName]) : context.keys()
-      const toolRes: MCPToolDetail[][] = []
-      for (const serverName of serverNames) {
-        const ctx = context.get(serverName)
-        if (ctx && ctx.client) {
-          const tools = (await ctx.client.listTools()).tools.map<MCPToolDetail>(tool =>
-            Object.assign(tool, { serverName })
-          )
-          toolRes.push(tools)
+      const clients = availableClients(serverName)
+      const filterClient: ReturnType<typeof availableClients> = []
+      clients.forEach(client => {
+        if (cachedTools[client.serverName]) {
+          results.push(cachedTools[client.serverName])
+        } else {
+          filterClient.push(client)
         }
+      })
+      const asyncReqs: Array<Promise<{ serverName: string; data: Awaited<ReturnType<Client["listTools"]>> }>> = []
+      for (const client of filterClient) {
+        asyncReqs.push(requestWithName(client.serverName, () => client.client.listTools()))
       }
-      return responseData(200, "ok", toolRes.flat())
+      if (asyncReqs.length > 0) {
+        const res = await Promise.allSettled(asyncReqs)
+        res.forEach(res => {
+          if (res.status === "fulfilled") {
+            const dst = res.value.data.tools.map<MCPToolDetail>(tool =>
+              Object.assign(tool, {
+                serverName: res.value.serverName,
+              })
+            )
+            results.push(dst)
+            cachedTools[res.value.serverName] = dst
+            log.debug("[MCP listTools]", `${res.value.serverName} tools cached`)
+          }
+        })
+      }
+      return responseData(200, "ok", results.flat())
     } catch (error) {
       return responseData(500, JSON.stringify(serializeError(error)), [])
     }
   }
-  async function listPrompts(params?: MCPListPromptsRequestParams, options?: RequestOptions) {
+  async function listPrompts(
+    serverName?: string | Array<string>,
+    params?: MCPListPromptsRequestParams,
+    options?: RequestOptions
+  ): Promise<BridgeResponse<MCPListPromptsResponse>> {
+    const results: MCPListPromptsResponse = { prompts: [] }
     try {
-      const results: MCPListPromptsResponse[] = []
-      for (const ctx of context.values()) {
-        if (ctx.client) {
-          const res = await ctx.client.listPrompts(params, options)
-          results.push(res)
-        }
+      const asyncReqs: Array<Promise<{ serverName: string; data: Awaited<ReturnType<Client["listPrompts"]>> }>> = []
+      const clients = availableClients(serverName)
+      for (const client of clients) {
+        asyncReqs.push(requestWithName(client.serverName, () => client.client.listPrompts(params, options)))
       }
+      const res = await Promise.allSettled(asyncReqs)
+      res.forEach(r => {
+        if (r.status === "fulfilled") {
+          results.prompts.push(...r.value.data.prompts)
+        }
+      })
       return responseData(200, "ok", results)
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), [])
+      return responseData(500, JSON.stringify(serializeError(error)), results)
     }
   }
   async function listResources(
+    serverName?: string | Array<string>,
     params?: MCPListResourcesRequestParams,
     options?: RequestOptions
-  ): Promise<BridgeResponse<MCPListResourcesResponse[]>> {
+  ): Promise<BridgeResponse<MCPListResourcesResponse>> {
+    const results: MCPListResourcesResponse = { resources: [] }
     try {
-      const results: MCPListResourcesResponse[] = []
-      for (const ctx of context.values()) {
-        if (ctx.client) {
-          const res = await ctx.client.listResources(params, options)
-          results.push(res)
-        }
+      const asyncReqs: Array<Promise<{ serverName: string; data: Awaited<ReturnType<Client["listResources"]>> }>> = []
+      const clients = availableClients(serverName)
+      for (const client of clients) {
+        asyncReqs.push(requestWithName(client.serverName, () => client.client.listResources(params, options)))
       }
+      const res = await Promise.allSettled(asyncReqs)
+      res.forEach(r => {
+        if (r.status === "fulfilled") {
+          results.resources.push(...r.value.data.resources)
+        }
+      })
       return responseData(200, "ok", results)
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), [])
+      return responseData(500, JSON.stringify(serializeError(error)), results)
     }
   }
   async function listResourceTemplates(
+    serverName?: string | Array<string>,
     params?: MCPListResourceTemplatesParams,
     options?: RequestOptions
-  ): Promise<BridgeResponse<MCPListResourceTemplatesResponse[]>> {
+  ): Promise<BridgeResponse<MCPListResourceTemplatesResponse>> {
+    const results: MCPListResourceTemplatesResponse = { resourceTemplates: [] }
     try {
-      const results: MCPListResourceTemplatesResponse[] = []
-      for (const ctx of context.values()) {
-        if (ctx.client) {
-          const res = await ctx.client.listResourceTemplates(params, options)
-          results.push(res)
-        }
+      const asyncReqs: Array<
+        Promise<{ serverName: string; data: Awaited<ReturnType<Client["listResourceTemplates"]>> }>
+      > = []
+      const clients = availableClients(serverName)
+      for (const client of clients) {
+        asyncReqs.push(requestWithName(client.serverName, () => client.client.listResourceTemplates(params, options)))
       }
+      const res = await Promise.allSettled(asyncReqs)
+      res.forEach(r => {
+        if (r.status === "fulfilled") {
+          results.resourceTemplates.push(...r.value.data.resourceTemplates)
+        }
+      })
       return responseData(200, "ok", results)
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), [])
+      return responseData(500, JSON.stringify(serializeError(error)), results)
     }
   }
   async function callTool(
@@ -215,20 +287,30 @@ export const registerMCP = async () => {
   })
   ipcMain.handle(
     IpcChannel.McpListPrompts,
-    async (_, params?: MCPListPromptsRequestParams, options?: RequestOptions) => {
-      return mcp.listPrompts(params, options)
+    async (_, serverName?: string | Array<string>, params?: MCPListPromptsRequestParams, options?: RequestOptions) => {
+      return mcp.listPrompts(serverName, params, options)
     }
   )
   ipcMain.handle(
     IpcChannel.McpListResources,
-    async (_, params?: MCPListResourcesRequestParams, options?: RequestOptions) => {
-      return mcp.listResources(params, options)
+    async (
+      _,
+      serverName?: string | Array<string>,
+      params?: MCPListResourcesRequestParams,
+      options?: RequestOptions
+    ) => {
+      return mcp.listResources(serverName, params, options)
     }
   )
   ipcMain.handle(
     IpcChannel.McpListResourceTemplates,
-    async (_, params?: MCPListResourceTemplatesParams, options?: RequestOptions) => {
-      return mcp.listResourceTemplates(params, options)
+    async (
+      _,
+      serverName?: string | Array<string>,
+      params?: MCPListResourceTemplatesParams,
+      options?: RequestOptions
+    ) => {
+      return mcp.listResourceTemplates(serverName, params, options)
     }
   )
 }

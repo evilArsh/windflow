@@ -1,4 +1,4 @@
-import "./modules/proxy/index"
+import "./modules/mcp/index"
 if (import.meta.hot) {
   import.meta.hot.accept(() => {
     // console.log("[accept]")

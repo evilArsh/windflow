@@ -28,15 +28,18 @@ export interface MCPService {
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
   listTools: (serverName?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (
+    serverName?: string | Array<string>,
     params?: MCPListResourcesRequestParams,
     options?: RequestOptions
-  ) => Promise<BridgeResponse<MCPListResourcesResponse[]>>
+  ) => Promise<BridgeResponse<MCPListResourcesResponse>>
   listPrompts: (
+    serverName?: string | Array<string>,
     params?: MCPListPromptsRequestParams,
     options?: RequestOptions
-  ) => Promise<BridgeResponse<MCPListPromptsResponse[]>>
+  ) => Promise<BridgeResponse<MCPListPromptsResponse>>
   listResourceTemplates: (
+    serverName?: string | Array<string>,
     params?: MCPListResourceTemplatesParams,
     options?: RequestOptions
-  ) => Promise<BridgeResponse<MCPListResourceTemplatesResponse[]>>
+  ) => Promise<BridgeResponse<MCPListResourceTemplatesResponse>>
 }
