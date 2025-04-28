@@ -1,11 +1,4 @@
-import {
-  ProviderMeta,
-  LLMProvider,
-  LLMBaseRequest,
-  Role,
-  LLMChatRequestHandler,
-  LLMChatResponse,
-} from "@renderer/types"
+import { ProviderMeta, LLMProvider, LLMBaseRequest, LLMChatRequestHandler, LLMChatResponse } from "@renderer/types"
 import { ContentType, HttpStatusCode } from "@shared/code"
 import { readLines } from "./utils"
 
@@ -32,7 +25,6 @@ async function* request(
   provider: LLMProvider,
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMChatResponse> {
-  yield { status: 100, content: "", stream: body.stream, role: Role.Assistant }
   const { apiUrl, apiKey, apiLLMChat } = providerMeta
   const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
     method: apiLLMChat.method,

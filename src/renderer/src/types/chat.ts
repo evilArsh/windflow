@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
-import { LLMChatMessage, LLMChatResponseHandler, LLMProvider, MCPStdioServer } from "."
+import { LLMChatMessage, LLMChatRequestHandler, LLMProvider, MCPStdioServer } from "."
 
 export type ChatMessageData = {
   /**
@@ -114,5 +114,5 @@ export interface ChatContext {
    */
   messageDataId: string
   provider?: LLMProvider
-  handler?: LLMChatResponseHandler
+  handler?: LLMChatRequestHandler
 }

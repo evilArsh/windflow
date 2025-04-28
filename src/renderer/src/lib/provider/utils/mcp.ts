@@ -15,7 +15,6 @@ export async function loadMCPTools(mcpServersIds: string[]) {
       },
     }
   })
-
   console.log("[load local MCP tools]", tools)
   return tools
 }

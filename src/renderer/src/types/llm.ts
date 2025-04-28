@@ -24,9 +24,9 @@ export interface LLMChatMessage {
    * 推理内容
    */
   reasoning_content?: string
-  //  Role.Tool
+  // Role.Tool response
   tool_call_id?: string
-  //  Role.Assistant
+  // Role.Assistant response
   tool_calls?: Array<LLMToolCall>
 }
 
@@ -76,11 +76,6 @@ export interface LLMChatResponse {
   }
 }
 
-export interface LLMChatResponseHandler {
-  restart: () => Promise<void>
-  terminate: () => void
-  dispose: () => void
-}
 export interface LLMChatRequestHandler {
   chat: (message: LLMBaseRequest, provider: LLMProvider, providerMeta: ProviderMeta) => AsyncGenerator<LLMChatResponse>
   terminate: () => void

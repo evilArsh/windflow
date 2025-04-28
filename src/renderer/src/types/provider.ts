@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMBaseRequest, LLMChatMessage, LLMChatResponse, LLMChatResponseHandler } from "."
+import { LLMBaseRequest, LLMChatMessage, LLMChatRequestHandler, LLMChatResponse } from "."
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
@@ -119,7 +119,7 @@ export interface LLMProvider extends Provider {
     mcpServersIds: Array<string>,
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
-  ): Promise<LLMChatResponseHandler>
+  ): LLMChatRequestHandler
   parseResponse(text: string): LLMChatResponse
 }
 

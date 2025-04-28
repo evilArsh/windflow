@@ -1,7 +1,6 @@
 import {
   LLMChatMessage,
   LLMChatResponse,
-  LLMChatResponseHandler,
   LLMProvider,
   ProviderMeta,
   ModelMeta,
@@ -13,7 +12,6 @@ import {
 
 import { createInstance, useSingleLLMChat, AbortError, HttpCodeError } from "./http"
 import { generateOpenAIChatRequest } from "./utils"
-import { HttpStatusCode } from "@shared/code"
 import { errorToText } from "@shared/error"
 import { callTools, loadMCPTools } from "./utils/mcp"
 function usePartialToolCalls() {
@@ -87,60 +85,56 @@ async function makeRequest(
   const partialToolCalls = usePartialToolCalls()
   const requestData = generateOpenAIChatRequest(context, modelMeta, requestBody)
   try {
-    // 获取MCP工具列表并写入body中
+    callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
+    // 获取MCP工具列表
     const toolList = await loadMCPTools(mcpServersIds)
     // 调用MCP工具并返回的调用结果
     let reqToolsData: LLMChatMessage[] = []
-    if (toolList.length > 0) {
-      requestData["tool_calls"] = toolList // openai
-      requestData["tools"] = toolList // deepseek
-      // 携带tools信息请求数据
-      for await (const content of requestHandler.chat(requestData, provider, providerMeta)) {
-        if (content.tool_calls) {
-          partialToolCalls.add(content)
-        }
+    // 携带tools信息请求
+    for await (const content of requestHandler.chat(
+      {
+        ...requestData,
+        tool_calls: toolList, // openai
+        tools: toolList, // deepseek
+      },
+      provider,
+      providerMeta
+    )) {
+      partialToolCalls.add(content)
+      if (!content.tool_calls) {
+        callback(content) // 没有触发mcp工具调用
       }
-      const tools = partialToolCalls.getTools()
-      if (tools.length == 0) {
-        callback(partialToolCalls.getResponse())
-        return
-      }
-      console.log("[tools selected by LLM]", tools)
-      // 调用MCP工具并返回调用结果
-      reqToolsData = await callTools(tools)
-      if (reqToolsData.length == 0) return
-      context.push(partialToolCalls.getChatMessage()) // TODO: 需要返回给外部作为一个上下文?
     }
+    const tools = partialToolCalls.getTools()
+    // 没有触发MCP工具调用
+    if (tools.length == 0) return
+    console.log("[tools selected by LLM]", tools)
+    callback({
+      status: 206,
+      content: "",
+      stream: requestData.stream,
+      role: Role.Assistant,
+      tool_calls: tools,
+    })
+    // 调用MCP工具并返回调用结果
+    reqToolsData = await callTools(tools)
+    if (reqToolsData.length == 0) return
+    const mcpToolsCallResponseMessage = partialToolCalls.getChatMessage()
+    context.push(mcpToolsCallResponseMessage) // TODO: 需要返回给外部作为一个上下文?
     // 处理工具调用结果
     const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestData)
-    // 携带mcp 调用结果请求数据
+    // 携带mcp调用结果请求
     for await (const content of requestHandler.chat(reqBody, provider, providerMeta)) {
       callback(content)
     }
   } catch (error) {
     if (error instanceof AbortError) {
-      callback({
-        status: 499,
-        content: "",
-        stream: requestData.stream,
-        role: Role.Assistant,
-      })
-      return
+      callback({ status: 499, content: "", stream: requestData.stream, role: Role.Assistant })
     } else if (error instanceof HttpCodeError) {
-      callback({
-        status: error.code(),
-        content: error.message,
-        stream: requestData.stream,
-        role: Role.Assistant,
-      })
-      return
+      callback({ status: error.code(), content: error.message, stream: requestData.stream, role: Role.Assistant })
+    } else {
+      callback({ status: 500, content: errorToText(error), stream: requestData.stream, role: Role.Assistant })
     }
-    callback({
-      status: 500,
-      content: errorToText(error),
-      stream: requestData.stream,
-      role: Role.Assistant,
-    })
   }
 }
 export abstract class OpenAICompatible implements LLMProvider {
@@ -152,7 +146,7 @@ export abstract class OpenAICompatible implements LLMProvider {
     try {
       if (text.startsWith("data:")) {
         if (text.includes("[DONE]")) {
-          return { role: Role.Assistant, status: HttpStatusCode.Ok, content: "", reasoning_content: "" }
+          return { role: Role.Assistant, status: 200, content: "", reasoning_content: "" }
         }
         const data = JSON.parse(text.replace(/data:/, ""))
         return {
@@ -165,13 +159,13 @@ export abstract class OpenAICompatible implements LLMProvider {
           finish_reason: data.choices[0].finish_reason ?? undefined,
         }
       } else if (text.includes(":keep-alive")) {
-        return { role: Role.Assistant, status: HttpStatusCode.Processing, content: "", reasoning_content: "" }
+        return { role: Role.Assistant, status: 102, content: "", reasoning_content: "" }
       } else {
         try {
           const data = JSON.parse(text)
           return {
             role: Role.Assistant,
-            status: HttpStatusCode.Ok,
+            status: 200,
             content: data.choices[0].message.content,
             reasoning_content: data.choices[0].message.reasoning_content ?? "",
             usage: data.usage ?? undefined,
@@ -188,32 +182,19 @@ export abstract class OpenAICompatible implements LLMProvider {
     }
   }
 
-  async chat(
+  chat(
     messages: LLMChatMessage[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
     mcpServersIds: string[],
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
-  ): Promise<LLMChatResponseHandler> {
+  ): LLMChatRequestHandler {
     // chat调用
     const requestHandler = useSingleLLMChat()
     const context = Array.from(messages)
-    // TODO: 加入mcp服务prompts
-    const terminate = () => {
-      requestHandler.terminate()
-    }
-    const restart = async () => {
-      terminate()
-      makeRequest(context, this, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
-    }
-    const dispose = () => {}
-    restart()
-    return {
-      restart,
-      terminate,
-      dispose,
-    }
+    makeRequest(context, this, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
+    return requestHandler
   }
 }
 

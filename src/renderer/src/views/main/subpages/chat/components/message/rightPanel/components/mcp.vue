@@ -81,7 +81,7 @@ const serverHandler = {
       for (const server of servers.value) {
         if (server.disabled) continue
         if (node.value.mcpServers.findIndex(item => item.id === server.id) === -1) {
-          node.value.mcpServers.push(server)
+          node.value.mcpServers.push(cloneDeep({ ...server, disabled: true }))
         }
       }
       await chatStore.api.updateChatTopic(cloneDeep(node.value))

@@ -217,7 +217,7 @@ const useContext = () => {
         }
       }
     }
-    context.unshift({ role: Role.System, content: topic.prompt })
+    context.unshift({ role: Role.System, content: JSON.stringify([{ type: "text", content: topic.prompt }]) })
     return context
   }
   function mountContext(val: ChatTopic, message: ChatMessage) {
@@ -281,7 +281,7 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 发送消息
    */
-  const sendMessage = async (
+  const sendMessage = (
     topic: ChatTopic,
     chatContext: ChatContext,
     context: LLMChatMessage[],
@@ -292,25 +292,29 @@ export default defineStore("chat_topic", () => {
     topic.requestCount++
     if (!chatContext.provider) return
     const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
-    chatContext.handler = await chatContext.provider.chat(context, model, providerMeta, mcpServersIds, msg => {
-      messageData.status = msg.status
-      messageData.reasoning = model.type === ModelType.ChatReasoner
-      messageData.content.tool_calls = msg.tool_calls ?? undefined
-      messageData.content.content += msg.content
-      messageData.content.reasoning_content += msg.reasoning_content ?? ""
-      if (msg.status == 206) {
-        messageData.finish = false
-      } else if (msg.status == 200) {
-        messageData.finish = true
-        topic.requestCount = Math.max(0, topic.requestCount - 1)
-        console.log(`[message done] ${msg.status}`)
-      } else if (msg.status == 100) {
-        messageData.finish = false
-        console.log(`[message pending] ${msg.status}`)
-      } else {
-        messageData.finish = true
-        topic.requestCount = Math.max(0, topic.requestCount - 1)
-        console.log(`[message] ${msg.status}`)
+    chatContext.handler = chatContext.provider.chat(context, model, providerMeta, mcpServersIds, msg => {
+      try {
+        messageData.status = msg.status
+        messageData.reasoning = model.type === ModelType.ChatReasoner
+        messageData.content.content += msg.content
+        messageData.content.reasoning_content += msg.reasoning_content ?? ""
+        messageData.content.tool_calls = msg.tool_calls ?? messageData.content.tool_calls
+        if (msg.status == 206) {
+          messageData.finish = false
+        } else if (msg.status == 200) {
+          messageData.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          console.log(`[message done] ${msg.status}`)
+        } else if (msg.status == 100) {
+          messageData.finish = false
+          console.log(`[message pending] ${msg.status}`)
+        } else {
+          messageData.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          console.log(`[message] ${msg.status}`)
+        }
+      } catch (error) {
+        console.log(error)
       }
     })
   }
@@ -399,13 +403,9 @@ export default defineStore("chat_topic", () => {
     messageData.status = 200
     messageData.time = formatSecond(new Date())
     if (chatContext) {
-      if (chatContext.handler) {
-        // FIXME: 最新一次的tool_calls上下文应该删除,或者在重新请求时复用
-        chatContext.handler.restart()
-      } else {
-        if (!chatContext.provider) chatContext.provider = provider
-        sendMessage(topic, chatContext, context, model, providerMeta, messageData)
-      }
+      if (chatContext.handler) chatContext.handler.terminate()
+      if (!chatContext.provider) chatContext.provider = provider
+      sendMessage(topic, chatContext, context, model, providerMeta, messageData)
     } else {
       const chatContext = fetchTopicContext(topic.id, messageData.modelId, messageData.id, message.id, provider) // 获取聊天信息上下文
       sendMessage(topic, chatContext, context, model, providerMeta, messageData)
