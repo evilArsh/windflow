@@ -85,7 +85,7 @@ async function makeRequest(
   const partialToolCalls = usePartialToolCalls()
   const requestData = generateOpenAIChatRequest(context, modelMeta, requestBody)
   try {
-    callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
+    // callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
     // 获取MCP工具列表
     const toolList = await loadMCPTools(mcpServersIds)
     // 调用MCP工具并返回的调用结果

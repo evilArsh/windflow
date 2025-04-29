@@ -68,6 +68,10 @@ export interface LLMChatResponse {
    */
   reasoning_content?: string
   tool_calls?: Array<LLMToolCall>
+  /**
+   * 是否tool_calls调用消息
+   */
+  tool_calls_chain?: boolean
   finish_reason?: string
   usage?: {
     completion_tokens: number

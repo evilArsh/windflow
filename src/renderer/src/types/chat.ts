@@ -27,6 +27,14 @@ export type ChatMessageData = {
    */
   content: LLMChatMessage
   /**
+   * @description tool_calls调用消息，只作为聊天上下文使用
+   */
+  toolCallsChain?: Array<LLMChatMessage>
+  /**
+   * @description 多个模型同时请求
+   */
+  // children?: Array<ChatMessageData>
+  /**
    * @description 当前消息使用的模型配置id
    */
   modelId: string
