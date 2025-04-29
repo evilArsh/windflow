@@ -299,15 +299,6 @@ export default (
     { deep: true }
   )
   watch(
-    currentMessage,
-    async (val, old) => {
-      if (val && val.id && val === old) {
-        await chatStore.api.updateChatMessage(val)
-      }
-    },
-    { deep: true }
-  )
-  watch(
     () => tree.searchKeyword,
     v => {
       treeRef.value?.filter(v)

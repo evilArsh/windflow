@@ -13,7 +13,7 @@ import {
   Settings,
 } from "@renderer/types"
 import { chatTopicDefault } from "./default/chat.default"
-import { useDebounceFn, useThrottleFn } from "@vueuse/core"
+import { useDebounceFn } from "@vueuse/core"
 import { db } from "@renderer/usable/useDatabase"
 import useProviderStore from "./provider.store"
 import useModelsStore from "./model.store"
@@ -52,7 +52,9 @@ const useData = (
     })
     return res
   }
-  const updateChatTopic = useThrottleFn(async (data: ChatTopic) => db.chatTopic.put(toRaw(data)), 300, true)
+  const updateChatTopic = useDebounceFn(async (data: ChatTopic) => db.chatTopic.update(data.id, toRaw(data)), 500, {
+    maxWait: 2000,
+  })
 
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(toRaw(data))
@@ -60,9 +62,13 @@ const useData = (
   async function addChatMessage(data: ChatMessage) {
     return db.chatMessage.add(toRaw(data))
   }
-  const updateChatMessage = useDebounceFn(async (data: ChatMessage) => db.chatMessage.put(toRaw(data)), 300, {
-    maxWait: 1000,
-  })
+  const updateChatMessage = useDebounceFn(
+    async (data: ChatMessage) => db.chatMessage.update(data.id, toRaw(data)),
+    500,
+    {
+      maxWait: 2000,
+    }
+  )
   async function findChatMessage(id: string) {
     const res = await db.chatMessage.get(id)
     if (res) {
@@ -329,29 +335,39 @@ export default defineStore("chat_topic", () => {
       if (res.tool_calls_chain) {
         messageItem.toolCallsChain = messageItem.toolCallsChain ?? []
         messageItem.toolCallsChain.push(res)
-        return
-      }
-      messageItem.status = res.status
-      messageItem.reasoning = model.type === ModelType.ChatReasoner
-      if (isString(res.content)) {
-        messageItem.content.content += res.content
-      }
-      messageItem.content.reasoning_content += res.reasoning_content ?? ""
-      messageItem.content.tool_calls = res.tool_calls ?? messageItem.content.tool_calls
-      if (res.status == 206) {
-        messageItem.finish = false
-      } else if (res.status == 200) {
-        messageItem.finish = true
-        topic.requestCount = Math.max(0, topic.requestCount - 1)
-        console.log(`[message done] ${res.status}`)
-      } else if (res.status == 100) {
-        messageItem.finish = false
-        console.log(`[message pending] ${res.status}`)
       } else {
-        messageItem.finish = true
-        topic.requestCount = Math.max(0, topic.requestCount - 1)
-        console.log(`[message] ${res.status}`)
+        messageItem.status = res.status
+        messageItem.reasoning = model.type === ModelType.ChatReasoner
+        if (isString(res.content)) {
+          messageItem.content.content += res.content
+        }
+        messageItem.content.reasoning_content += res.reasoning_content ?? ""
+        messageItem.content.tool_calls = res.tool_calls ?? messageItem.content.tool_calls
+        if (res.status == 206) {
+          messageItem.finish = false
+        } else if (res.status == 200) {
+          messageItem.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          console.log(`[message done] ${res.status}`)
+          if (topic.label === window.defaultTopicTitle) {
+            if (chatContext.provider) {
+              chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
+                if (res) {
+                  topic.label = res
+                }
+              })
+            }
+          }
+        } else if (res.status == 100) {
+          messageItem.finish = false
+          console.log(`[message pending] ${res.status}`)
+        } else {
+          messageItem.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          console.log(`[message] ${res.status}`)
+        }
       }
+      api.updateChatMessage(message)
     })
   }
   function restart(topic?: ChatTopic, messageDataId?: string) {

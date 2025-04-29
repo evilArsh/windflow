@@ -25,6 +25,7 @@ const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, createNewTo
   treeRef
 )
 onMounted(() => {
+  window.defaultTopicTitle = t("chat.addChat")
   window.addEventListener("resize", dlg.clickMask)
 })
 onBeforeUnmount(() => {

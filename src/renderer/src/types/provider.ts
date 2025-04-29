@@ -120,6 +120,7 @@ export interface LLMProvider extends Provider {
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
   ): LLMChatRequestHandler
+  titleSummary(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
   parseResponse(text: string): LLMChatResponse
 }
 

@@ -199,6 +199,24 @@ export abstract class OpenAICompatible implements LLMProvider {
     makeRequest(context, this, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
     return requestHandler
   }
+
+  async titleSummary(
+    context: string,
+    modelMeta: ModelMeta,
+    provider: ProviderMeta,
+    reqConfig?: LLMBaseRequest
+  ): Promise<string> {
+    const text = `Summarize a title in ${window.defaultLanguage ?? "简体中文"} within 10 characters without punctuation based on the following content:\n"${context}"`
+    const requestData = generateOpenAIChatRequest([{ role: Role.User, content: text }], modelMeta, reqConfig)
+    requestData.stream = false
+    const requestHandler = useSingleLLMChat()
+    for await (const content of requestHandler.chat(requestData, this, provider)) {
+      if (isString(content.content)) {
+        return content.content
+      }
+    }
+    return ""
+  }
 }
 
 export class OpenAI extends OpenAICompatible {

@@ -15,6 +15,8 @@ const i18n = useI18n()
 const toggle = ref(false)
 const switchLang = (lang: string) => {
   i18n.locale.value = lang
+  window.defaultLanguage = i18n.t(`lang.${lang}`)
   toggle.value = false
 }
+window.defaultLanguage = i18n.t(`lang.${i18n.locale.value}`)
 </script>
