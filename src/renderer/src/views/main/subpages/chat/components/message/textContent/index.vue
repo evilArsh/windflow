@@ -43,7 +43,7 @@ const isAssistant = computed(() => !!props.data.modelId)
             <template #header v-if="isAssistant">
               <Loading :data></Loading>
             </template>
-            <MCPCall :data></MCPCall>
+            <MCPCall v-if="isAssistant" :data></MCPCall>
             <Markdown v-if="isAssistant" :id="data.id" :content="data.content.content" :partial="!data.finish" />
             <el-text v-else type="primary" class="self-end!">
               {{ data.content.content }}

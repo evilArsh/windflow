@@ -21,7 +21,7 @@ const calls = computed(() => {
 })
 </script>
 <template>
-  <div class="flex flex-col gap.5rem my-1rem">
+  <div v-if="calls.length > 0" class="flex flex-col gap.5rem my-1rem">
     <ContentBox v-for="call in calls" default-lock :key="call.name">
       <template #icon>
         <ITerminal class="text-1.4rem" />
