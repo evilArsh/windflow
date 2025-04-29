@@ -184,7 +184,11 @@ const useContext = () => {
   }
 
   /**
-   * @description 获取消息上下文，最后一个消息必须是`Role.User`,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
+   * @description 获取消息上下文，最后一个消息必须是`Role.User`,
+   * `DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现,
+   * mcp调用中存在{tool_calls:[]}和{tool_call_id:""},存在`item.toolCallsChain`中，
+   * 提交时作为消息上下文
+   *
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
@@ -192,6 +196,7 @@ const useContext = () => {
     let sysTick = false
     for (let i = message.length - 1; i >= 0; i--) {
       const item = cloneDeep(message[i])
+      item.toolCallsChain
       // deepseek patch
       item.content.reasoning_content = undefined
       if (!sysTick) {
@@ -205,6 +210,9 @@ const useContext = () => {
         if (item.content.role == Role.Assistant) {
           sysTick = !sysTick
           context.unshift(item.content)
+          if (Array.isArray(item.toolCallsChain)) {
+            context.unshift(...item.toolCallsChain)
+          }
         } else if (item.content.role == Role.System) {
           context.unshift(item.content)
           break
@@ -318,9 +326,16 @@ export default defineStore("chat_topic", () => {
     const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
     topic.requestCount = Math.max(1, topic.requestCount + 1)
     chatContext.handler = chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
+      if (res.tool_calls_chain) {
+        messageItem.toolCallsChain = messageItem.toolCallsChain ?? []
+        messageItem.toolCallsChain.push(res)
+        return
+      }
       messageItem.status = res.status
       messageItem.reasoning = model.type === ModelType.ChatReasoner
-      messageItem.content.content += res.content
+      if (isString(res.content)) {
+        messageItem.content.content += res.content
+      }
       messageItem.content.reasoning_content += res.reasoning_content ?? ""
       messageItem.content.tool_calls = res.tool_calls ?? messageItem.content.tool_calls
       if (res.status == 206) {
@@ -359,6 +374,7 @@ export default defineStore("chat_topic", () => {
       console.warn(`[restart] messageItem not found.${messageDataId}`)
       return
     }
+    messageData.toolCallsChain = []
     sendMessage(topic, message, messageData)
   }
   async function send(topic?: ChatTopic) {

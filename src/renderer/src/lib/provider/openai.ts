@@ -30,7 +30,11 @@ function usePartialToolCalls() {
   }
   function add(data: LLMChatResponse) {
     // 分片消息每次返回的消息都是完整的数据结构,只是同一个字段的字符串是分批返回的
-    result.content += data.content
+    if (isString(data.content)) {
+      result.content += data.content
+    } else {
+      console.warn("[PartialToolCalls] content is not string", data.content)
+    }
     if (data.tool_calls) {
       data.tool_calls.forEach(tool => {
         if (isNumber(tool.index)) {
@@ -50,13 +54,15 @@ function usePartialToolCalls() {
     return Object.values(tools)
   }
   /**
-   * @description 返回结果是一个完整的消息结构,包含了所有的工具选择列表和消息内容
+   * @description 返回结果是一个完整的消息结构,包含tool_calls列表和消息内容，
+   * 是LLM的一次响应
    * @returns LLMChatResponse
    */
   function getResponse(): LLMChatResponse {
     return {
       ...result,
       tool_calls: Object.values(tools),
+      tool_calls_chain: true,
       status: 200,
     }
   }
@@ -85,7 +91,7 @@ async function makeRequest(
   const partialToolCalls = usePartialToolCalls()
   const requestData = generateOpenAIChatRequest(context, modelMeta, requestBody)
   try {
-    // callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
+    callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
     // 获取MCP工具列表
     const toolList = await loadMCPTools(mcpServersIds)
     // 调用MCP工具并返回的调用结果
@@ -109,20 +115,17 @@ async function makeRequest(
     // 没有触发MCP工具调用
     if (tools.length == 0) return
     console.log("[tools selected by LLM]", tools)
-    callback({
-      status: 206,
-      content: "",
-      stream: requestData.stream,
-      role: Role.Assistant,
-      tool_calls: tools,
-    })
     // 调用MCP工具并返回调用结果
     reqToolsData = await callTools(tools)
     if (reqToolsData.length == 0) return
+    callback(partialToolCalls.getResponse())
     const mcpToolsCallResponseMessage = partialToolCalls.getChatMessage()
-    context.push(mcpToolsCallResponseMessage) // TODO: 需要返回给外部作为一个上下文?
+    context.push(mcpToolsCallResponseMessage)
     // 处理工具调用结果
     const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestData)
+    reqToolsData.forEach(toolData => {
+      callback({ ...toolData, status: 200, tool_calls_chain: true, stream: requestData.stream })
+    })
     // 携带mcp调用结果请求
     for await (const content of requestHandler.chat(reqBody, provider, providerMeta)) {
       callback(content)
