@@ -40,15 +40,16 @@ function usePartialToolCalls() {
         if (isNumber(tool.index)) {
           const mapTool = tools[tool.index]
           if (mapTool) {
-            mapTool.function.arguments = mapTool.function.arguments + tool.function.arguments
+            mapTool.function.arguments += tool.function.arguments
+            // name
           } else {
             tools[tool.index] = tool
           }
         }
       })
     }
-    if (data.usage) result.usage = data.usage
-    if (result.finish_reason) result.finish_reason = data.finish_reason
+    result.usage = data.usage
+    result.finish_reason = data.finish_reason
   }
   function getTools(): LLMToolCall[] {
     return Object.values(tools)
@@ -63,7 +64,7 @@ function usePartialToolCalls() {
       ...result,
       tool_calls: Object.values(tools),
       tool_calls_chain: true,
-      status: 200,
+      status: 206,
     }
   }
   /**
@@ -96,35 +97,39 @@ async function makeRequest(
     const toolList = await loadMCPTools(mcpServersIds)
     // 调用MCP工具并返回的调用结果
     let reqToolsData: LLMChatMessage[] = []
-    // 携带tools信息请求
-    for await (const content of requestHandler.chat(
-      {
-        ...requestData,
-        tool_calls: toolList, // openai
-        tools: toolList, // deepseek
-      },
-      provider,
-      providerMeta
-    )) {
-      partialToolCalls.add(content)
-      if (!content.tool_calls) {
-        callback(content) // 没有触发mcp工具调用
+    // LLM返回的需要调用的工具列表
+    let needCallTools: LLMToolCall[] = []
+    if (toolList.length > 0) {
+      // 携带tools信息请求
+      for await (const content of requestHandler.chat(
+        { ...requestData, tools: toolList, tool_calls: toolList },
+        provider,
+        providerMeta
+      )) {
+        partialToolCalls.add(content)
+        if (content.status == 200) {
+          needCallTools = partialToolCalls.getTools()
+          if (needCallTools.length == 0) {
+            callback(content)
+          }
+        } else if (content.content || content.finish_reason !== "tool_calls") {
+          callback(content) // 没有触发mcp工具调用
+        }
       }
+      // 没有触发MCP工具调用
+      if (needCallTools.length == 0) return
+      console.log("[tools selected by LLM]", needCallTools)
+      // 调用MCP工具并返回调用结果
+      reqToolsData = await callTools(needCallTools)
+      if (reqToolsData.length == 0) return
+      callback(partialToolCalls.getResponse())
+      const mcpToolsCallResponseMessage = partialToolCalls.getChatMessage()
+      context.push(mcpToolsCallResponseMessage)
     }
-    const tools = partialToolCalls.getTools()
-    // 没有触发MCP工具调用
-    if (tools.length == 0) return
-    console.log("[tools selected by LLM]", tools)
-    // 调用MCP工具并返回调用结果
-    reqToolsData = await callTools(tools)
-    if (reqToolsData.length == 0) return
-    callback(partialToolCalls.getResponse())
-    const mcpToolsCallResponseMessage = partialToolCalls.getChatMessage()
-    context.push(mcpToolsCallResponseMessage)
     // 处理工具调用结果
     const reqBody = generateOpenAIChatRequest(context.concat(reqToolsData), modelMeta, requestData)
     reqToolsData.forEach(toolData => {
-      callback({ ...toolData, status: 200, tool_calls_chain: true, stream: requestData.stream })
+      callback({ ...toolData, status: 206, tool_calls_chain: true, stream: requestData.stream })
     })
     // 携带mcp调用结果请求
     for await (const content of requestHandler.chat(reqBody, provider, providerMeta)) {
@@ -157,9 +162,9 @@ export abstract class OpenAICompatible implements LLMProvider {
           status: 206,
           content: data.choices[0].delta.content ?? "",
           reasoning_content: data.choices[0].delta.reasoning_content ?? "",
-          usage: data.usage ?? undefined,
-          tool_calls: data.choices[0].delta.tool_calls ?? data.choices[0].delta.tools ?? undefined,
-          finish_reason: data.choices[0].finish_reason ?? undefined,
+          usage: data.usage,
+          tool_calls: data.choices[0].delta.tool_calls ?? data.choices[0].delta.tools,
+          finish_reason: data.choices[0].finish_reason,
         }
       } else if (text.includes(":keep-alive")) {
         return { role: Role.Assistant, status: 102, content: "", reasoning_content: "" }
@@ -171,9 +176,9 @@ export abstract class OpenAICompatible implements LLMProvider {
             status: 200,
             content: data.choices[0].message.content,
             reasoning_content: data.choices[0].message.reasoning_content ?? "",
-            usage: data.usage ?? undefined,
-            tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
-            finish_reason: data.choices[0].finish_reason ?? undefined,
+            usage: data.usage,
+            tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools,
+            finish_reason: data.choices[0].finish_reason,
           }
         } catch (error) {
           return { role: Role.Assistant, status: 200, content: errorToText(error), reasoning_content: "" }
@@ -206,7 +211,7 @@ export abstract class OpenAICompatible implements LLMProvider {
     provider: ProviderMeta,
     reqConfig?: LLMBaseRequest
   ): Promise<string> {
-    const text = `Summarize a title in ${window.defaultLanguage ?? "简体中文"} within 10 characters without punctuation based on the following content:\n"${context}"`
+    const text = `Summarize a title in ${window.defaultLanguage ?? "简体中文"} within 15 characters without punctuation based on the following content:\n"${context}"`
     const requestData = generateOpenAIChatRequest([{ role: Role.User, content: text }], modelMeta, reqConfig)
     requestData.stream = false
     const requestHandler = useSingleLLMChat()

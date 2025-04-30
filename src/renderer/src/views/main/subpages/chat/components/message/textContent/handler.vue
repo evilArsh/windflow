@@ -48,7 +48,7 @@ const { currentTopic, currentMessage } = storeToRefs(useChatStore())
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </el-button>
       </el-tooltip>
-      <el-tooltip v-if="data.modelId" :content="t('chat.editChat')" placement="right">
+      <el-tooltip :content="t('chat.editChat')" placement="right">
         <el-button size="small" :disabled="!data.finish" circle plain text type="primary" @click="$emit('edit')">
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
         </el-button>

@@ -338,11 +338,9 @@ export default defineStore("chat_topic", () => {
       } else {
         messageItem.status = res.status
         messageItem.reasoning = model.type === ModelType.ChatReasoner
-        if (isString(res.content)) {
-          messageItem.content.content += res.content
-        }
-        messageItem.content.reasoning_content += res.reasoning_content ?? ""
-        messageItem.content.tool_calls = res.tool_calls ?? messageItem.content.tool_calls
+        if (isString(res.content)) messageItem.content.content += res.content
+        if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
+        if (res.tool_calls) messageItem.content.tool_calls = res.tool_calls
         if (res.status == 206) {
           messageItem.finish = false
         } else if (res.status == 200) {

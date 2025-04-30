@@ -63,6 +63,7 @@ const isAssistant = computed(() => !!props.data.modelId)
   --chat-item-footer-bg-color: transparent;
 
   background-color: var(--chat-item-container-bg-color);
+  overflow: hidden;
   border-radius: 0.5rem;
   padding: 0.5rem;
   display: flex;

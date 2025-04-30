@@ -4,8 +4,6 @@ import useMcpStore from "@renderer/store/mcp.store"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
 import { CallBackFn } from "@renderer/lib/shared/types"
-import ILight from "~icons/fxemoji/lightbulb"
-import IProhibited from "~icons/fluent-emoji-flat/prohibited"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { cloneDeep } from "lodash-es"
 import { errorToText } from "@shared/error"
@@ -141,11 +139,10 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
             <template #icon>
               <Switch
                 size="small"
+                style="--el-switch-off-color: #ff4949"
                 v-model="server.disabled"
                 :active-value="false"
                 :inactive-value="true"
-                :active-action-icon="ILight"
-                :inactive-action-icon="IProhibited"
                 :before-change="() => formHandler.onServerToggle(server)" />
             </template>
             <el-text size="small" type="info">{{ server.serverName }}</el-text>
