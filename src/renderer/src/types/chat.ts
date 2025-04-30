@@ -33,7 +33,8 @@ export type ChatMessageData = {
   /**
    * @description 多个模型同时请求
    */
-  // children?: Array<ChatMessageData>
+  children?: Array<ChatMessageData>
+  parentId?: string
   /**
    * @description 当前消息使用的模型配置id
    */

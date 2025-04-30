@@ -58,7 +58,7 @@ export interface LLMChatResponse extends LLMChatMessage {
    */
   stream?: boolean
   /**
-   * 是否tool_calls调用消息
+   * 是否属于tool_calls调用链的消息
    */
   tool_calls_chain?: boolean
   finish_reason?: string

@@ -215,7 +215,7 @@ const useContext = () => {
         if (item.content.role == Role.Assistant) {
           sysTick = !sysTick
           context.unshift(item.content)
-          if (Array.isArray(item.toolCallsChain)) {
+          if (isArray(item.toolCallsChain)) {
             context.unshift(...item.toolCallsChain)
           }
         } else if (item.content.role == Role.System) {
@@ -311,55 +311,60 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 发送消息
    */
-  const sendMessage = (topic: ChatTopic, message: ChatMessage, messageItem: ChatMessageData) => {
-    const meta = getMeta(messageItem.modelId)
-    if (!meta) return
-    const { model, providerMeta, provider } = meta
-    let chatContext = findContext(topic.id, messageItem.id)
-    const messageContextIndex = message.data.findIndex(item => item.id === messageItem.id)
-    // 消息上下文
-    const messageContext = getMessageContext(topic, message.data.slice(0, messageContextIndex))
-    messageItem.content = { role: "assistant", content: "", reasoning_content: "" }
-    messageItem.finish = false
-    messageItem.status = 100
-    messageItem.time = formatSecond(new Date())
-    // 获取聊天框上下文
-    chatContext = chatContext ?? fetchTopicContext(topic.id, messageItem.modelId, messageItem.id, message.id, provider)
-    if (!chatContext.provider) chatContext.provider = provider
-    if (chatContext.handler) chatContext.handler.terminate()
+  const sendMessage = (topic: ChatTopic, message: ChatMessage, messageParent: ChatMessageData) => {
+    const messageGroup =
+      isArray(messageParent.children) && messageParent.children.length > 0 ? messageParent.children : [messageParent]
+    messageGroup.forEach(messageItem => {
+      const meta = getMeta(messageItem.modelId)
+      if (!meta) return
+      const { model, providerMeta, provider } = meta
+      let chatContext = findContext(topic.id, messageItem.id)
+      const messageContextIndex = message.data.findIndex(item => item.id === messageParent.id)
+      // 消息上下文
+      const messageContext = getMessageContext(topic, message.data.slice(0, messageContextIndex))
+      messageItem.content = { role: "assistant", content: "", reasoning_content: "" }
+      messageItem.finish = false
+      messageItem.status = 100
+      messageItem.time = formatSecond(new Date())
+      // 获取聊天框上下文
+      chatContext =
+        chatContext ?? fetchTopicContext(topic.id, messageItem.modelId, messageItem.id, message.id, provider)
+      if (!chatContext.provider) chatContext.provider = provider
+      if (chatContext.handler) chatContext.handler.terminate()
 
-    const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
-    topic.requestCount = Math.max(1, topic.requestCount + 1)
-    chatContext.handler = chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
-      if (res.tool_calls_chain) {
-        messageItem.toolCallsChain = messageItem.toolCallsChain ?? []
-        messageItem.toolCallsChain.push(res)
-      } else {
-        messageItem.status = res.status
-        messageItem.reasoning = model.type === ModelType.ChatReasoner
-        if (isString(res.content)) messageItem.content.content += res.content
-        if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
-        if (res.status == 206) {
-          messageItem.finish = false
-        } else if (res.status == 200) {
-          messageItem.finish = true
-          topic.requestCount = Math.max(0, topic.requestCount - 1)
-          console.log(`[message done] ${res.status}`)
-          if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-            chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
-              if (res) topic.label = res
-            })
-          }
-        } else if (res.status == 100) {
-          messageItem.finish = false
-          console.log(`[message pending] ${res.status}`)
+      const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
+      topic.requestCount = Math.max(1, topic.requestCount + 1)
+      chatContext.handler = chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
+        if (res.tool_calls_chain) {
+          messageItem.toolCallsChain = messageItem.toolCallsChain ?? []
+          messageItem.toolCallsChain.push(res)
         } else {
-          messageItem.finish = true
-          topic.requestCount = Math.max(0, topic.requestCount - 1)
-          console.log(`[message] ${res.status}`)
+          messageItem.status = res.status
+          messageItem.reasoning = model.type === ModelType.ChatReasoner
+          if (isString(res.content)) messageItem.content.content += res.content
+          if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
+          if (res.status == 206) {
+            messageItem.finish = false
+          } else if (res.status == 200) {
+            messageItem.finish = true
+            topic.requestCount = Math.max(0, topic.requestCount - 1)
+            console.log(`[message done] ${res.status}`)
+            if (topic.label === window.defaultTopicTitle && chatContext.provider) {
+              chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
+                if (res) topic.label = res
+              })
+            }
+          } else if (res.status == 100) {
+            messageItem.finish = false
+            console.log(`[message pending] ${res.status}`)
+          } else {
+            messageItem.finish = true
+            topic.requestCount = Math.max(0, topic.requestCount - 1)
+            console.log(`[message] ${res.status}`)
+          }
         }
-      }
-      api.updateChatMessage(message)
+        api.updateChatMessage(message)
+      })
     })
   }
   function restart(topic?: ChatTopic, messageDataId?: string) {
@@ -385,7 +390,7 @@ export default defineStore("chat_topic", () => {
     messageData.toolCallsChain = []
     sendMessage(topic, message, messageData)
   }
-  async function send(topic?: ChatTopic) {
+  function send(topic?: ChatTopic) {
     if (!topic) return
     if (!topic.content.trim()) return
     if (topic.modelIds.length == 0) {
@@ -400,8 +405,9 @@ export default defineStore("chat_topic", () => {
       console.warn("[send] message not found")
       return
     }
+    const id = uniqueId()
     message.data.push({
-      id: uniqueId(),
+      id,
       status: 200,
       time: formatSecond(new Date()),
       finish: true,
@@ -409,18 +415,31 @@ export default defineStore("chat_topic", () => {
       content: { role: "user", content: topic.content },
       modelId: "",
     })
-    for (const modelId of topic.modelIds) {
-      if (!getMeta(modelId)) continue
-      const newMessageData = reactive<ChatMessageData>({
-        id: uniqueId(),
-        status: 200,
-        content: { role: "assistant", content: "", reasoning_content: "" },
-        modelId,
-        time: formatSecond(new Date()),
+    const newMessageData = reactive<ChatMessageData>({
+      id: uniqueId(),
+      status: 200,
+      content: { role: "assistant", content: "", reasoning_content: "" },
+      modelId: "",
+      time: formatSecond(new Date()),
+      children: [],
+    })
+    const availiableModels = topic.modelIds.filter(modelId => getMeta(modelId))
+    if (availiableModels.length > 1) {
+      availiableModels.forEach(modelId => {
+        newMessageData.children!.push(
+          reactive<ChatMessageData>({
+            id: uniqueId(),
+            parentId: id,
+            status: 200,
+            content: { role: "assistant", content: "", reasoning_content: "" },
+            modelId,
+            time: formatSecond(new Date()),
+          })
+        )
       })
-      message.data.push(newMessageData)
-      sendMessage(topic, message, newMessageData)
     }
+    message.data.push(newMessageData)
+    sendMessage(topic, message, newMessageData)
     topic.content = ""
   }
   function refreshChatTopicModelIds(topic?: ChatTopic) {
