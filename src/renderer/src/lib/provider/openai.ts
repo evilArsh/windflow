@@ -102,6 +102,7 @@ async function makeRequest(
     if (toolList.length > 0) {
       // 携带tools信息请求
       for await (const content of requestHandler.chat(
+        // tools:deepseek,tool_calls:openai
         { ...requestData, tools: toolList, tool_calls: toolList },
         provider,
         providerMeta
@@ -112,7 +113,9 @@ async function makeRequest(
           if (needCallTools.length == 0) {
             callback(content)
           }
-        } else if (content.content || content.finish_reason !== "tool_calls") {
+        } else if (!content.tool_calls && (content.content || content.finish_reason !== "tool_calls")) {
+          // 1. 不是工具调用的消息
+          // 2. [DONE]结束但是不是tool_calls结束
           callback(content) // 没有触发mcp工具调用
         }
       }

@@ -2,6 +2,7 @@
 import { ChatTopic } from "@renderer/types"
 import { CSSProperties } from "@renderer/lib/shared/types"
 import MCP from "./components/mcp.vue"
+import Prompt from "./components/prompt.vue"
 const props = defineProps<{
   modelValue: ChatTopic
 }>()
@@ -24,11 +25,15 @@ const tabs = reactive({
 <template>
   <div ref="rightNav" :style="resizeStyle" class="right-panel">
     <Resize v-model="resizeStyle" @after-scale="emit('resizeChange')" size="8px" direction="l" :target="rightNavRef" />
-    <el-tabs class="flex-1" v-model="tabs.active">
-      <el-tab-pane class="max-h-100% overflow-hidden flex" label="mcp" name="mcp">
-        <MCP v-model="data"></MCP>
-      </el-tab-pane>
-    </el-tabs>
+    <div class="flex flex-col flex-1">
+      <Prompt v-model="data"></Prompt>
+      <el-divider class="my1.5rem!"></el-divider>
+      <el-tabs class="flex-1 overflow-hidden" type="border-card" v-model="tabs.active">
+        <el-tab-pane class="max-h-100% overflow-hidden flex" label="mcp" name="mcp">
+          <MCP v-model="data"></MCP>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
   </div>
 </template>
 <style lang="scss" scoped>

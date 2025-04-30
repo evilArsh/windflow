@@ -202,7 +202,6 @@ const useContext = () => {
     let sysTick = false
     for (let i = message.length - 1; i >= 0; i--) {
       const item = cloneDeep(message[i])
-      item.toolCallsChain
       // deepseek patch
       item.content.reasoning_content = undefined
       if (!sysTick) {
@@ -340,21 +339,16 @@ export default defineStore("chat_topic", () => {
         messageItem.reasoning = model.type === ModelType.ChatReasoner
         if (isString(res.content)) messageItem.content.content += res.content
         if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
-        if (res.tool_calls) messageItem.content.tool_calls = res.tool_calls
         if (res.status == 206) {
           messageItem.finish = false
         } else if (res.status == 200) {
           messageItem.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
           console.log(`[message done] ${res.status}`)
-          if (topic.label === window.defaultTopicTitle) {
-            if (chatContext.provider) {
-              chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
-                if (res) {
-                  topic.label = res
-                }
-              })
-            }
+          if (topic.label === window.defaultTopicTitle && chatContext.provider) {
+            chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
+              if (res) topic.label = res
+            })
           }
         } else if (res.status == 100) {
           messageItem.finish = false
@@ -503,6 +497,7 @@ export default defineStore("chat_topic", () => {
         message.data.splice(msgIndex, 1)
       }
     }
+    api.updateChatMessage(message)
   }
 
   return {

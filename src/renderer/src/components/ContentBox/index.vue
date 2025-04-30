@@ -46,7 +46,6 @@ const iconHoverColor = ref("rgba(10, 205, 231, 0.1)")
 const iconActiveColor = ref("rgba(10, 205, 231, 0.2)")
 const bgColor = computed(() => (background ? unref(boxShadowColor) : "unset"))
 const activeBgColor = computed(() => (background ? unref(activeShadowColor) : "unset"))
-const locked = ref(false)
 const active = ref(false)
 const boxStyle = computed<CSSProperties>(() => {
   return {
@@ -62,8 +61,8 @@ const handle = {
   toggleLock: (toggle?: boolean) => {
     if (stillLock) return
     if (!needLock) return
-    locked.value = toggle ?? !locked.value
-    emit("lock", locked.value)
+    active.value = toggle ?? !active.value
+    emit("lock", active.value)
   },
   click: (e: MouseEvent) => {
     handle.toggleLock()
