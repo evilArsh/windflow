@@ -47,7 +47,7 @@ onBeforeMount(() => {
 })
 </script>
 <template>
-  <div class="nav-container el-card">
+  <el-card class="nav-container" body-class="nav-container-body" shadow="never">
     <div class="nav-menu">
       <el-scrollbar>
         <el-menu :default-active="defaultRoute" @select="menuEv.onSelect" router>
@@ -86,9 +86,17 @@ onBeforeMount(() => {
         </div>
       </ContentBox>
     </div>
-  </div>
+  </el-card>
 </template>
-
+<style lang="scss">
+.nav-container-body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: solid 1px var(--nav-container-border-color);
+}
+</style>
 <style lang="scss" scoped>
 .nav-container {
   --el-menu-base-level-padding: 0;
@@ -100,6 +108,12 @@ onBeforeMount(() => {
   --el-menu-hover-bg-color: transparent;
   --nav-container-nav-menu-item-icon-color: #333;
   --nav-container-bg-color: var(--el-card-bg-color);
+
+  --el-card-border-color: transparent;
+  --el-card-border-radius: 0;
+  --el-card-padding: 0;
+
+  --nav-container-border-color: #d9d9d9;
 
   width: 100%;
   position: relative;

@@ -9,6 +9,8 @@ import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "@renderer/views/main/usable/useMenu"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
+import useSettingsStore from "@renderer/store/settings.store"
+const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
@@ -24,6 +26,8 @@ const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, createNewTo
   menuRef,
   treeRef
 )
+const toggleMenu = ref(true) // 左侧菜单是否显示
+settingsStore.api.dataWatcher<boolean>("chat.toggleMenu", toggleMenu, true)
 onMounted(() => {
   window.defaultTopicTitle = t("chat.addChat")
   window.addEventListener("resize", dlg.clickMask)
@@ -33,81 +37,104 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <SubNavLayout id="chat.subNav">
+  <SubNavLayout id="chat.subNav" :hide-submenu="!toggleMenu">
     <template #submenu>
-      <div class="chat-provider-header">
-        <el-input v-model="tree.searchKeyword" :placeholder="t('chat.search')" clearable />
-        <Button @click="done => createNewTopic(done)">
-          <i class="text-1.4rem i-ep:plus"></i>
-          <el-text>{{ t("chat.addChat") }}</el-text>
-        </Button>
-      </div>
-      <div class="chat-provider-content">
-        <el-scrollbar ref="scroll">
-          <el-tree
-            ref="treeRef"
-            :filter-node-method="tree.filterNode"
-            :default-expanded-keys="tree.defaultExpandedKeys"
-            :current-node-key="currentNodeKey"
-            :expand-on-click-node="false"
-            :indent="18"
-            highlight-current
-            :data="topicList"
-            node-key="id"
-            :props="tree.props"
-            @node-click="tree.onNodeClick"
-            @node-expand="tree.onNodeExpand"
-            @node-collapse="tree.onNodeCollapse">
-            <template #default="{ data }: { data: ChatTopicTree }">
-              <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
-                <ContentBox normal @icon-click="menu.openQuickEdit($event, data)">
-                  <template #icon>
-                    <Svg :src="data.node.icon" class="text-18px"></Svg>
-                  </template>
-                  <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
-                    <i-eos-icons:bubble-loading
-                      v-show="data.node.requestCount > 0"
-                      class="text-1.2rem"></i-eos-icons:bubble-loading>
-                    <el-text line-clamp="2">{{ data.node.label }}</el-text>
+      <el-card class="chat-provider" body-class="flex flex-col overflow-hidden" shadow="never">
+        <div class="chat-provider-header">
+          <div class="flex items-center gap-0.5rem">
+            <el-input v-model="tree.searchKeyword" :placeholder="t('chat.search')" clearable />
+            <div id="toggleMenu"></div>
+          </div>
+          <Button @click="done => createNewTopic(done)">
+            <i class="text-1.4rem i-ep:plus"></i>
+            <el-text>{{ t("chat.addChat") }}</el-text>
+          </Button>
+        </div>
+        <div class="chat-provider-content">
+          <el-scrollbar ref="scroll">
+            <el-tree
+              ref="treeRef"
+              :filter-node-method="tree.filterNode"
+              :default-expanded-keys="tree.defaultExpandedKeys"
+              :current-node-key="currentNodeKey"
+              :expand-on-click-node="false"
+              :indent="18"
+              highlight-current
+              :data="topicList"
+              node-key="id"
+              :props="tree.props"
+              @node-click="tree.onNodeClick"
+              @node-expand="tree.onNodeExpand"
+              @node-collapse="tree.onNodeCollapse">
+              <template #default="{ data }: { data: ChatTopicTree }">
+                <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
+                  <ContentBox normal @icon-click="menu.openQuickEdit($event, data)">
+                    <template #icon>
+                      <Svg :src="data.node.icon" class="text-18px"></Svg>
+                    </template>
+                    <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
+                      <i-eos-icons:bubble-loading
+                        v-show="data.node.requestCount > 0"
+                        class="text-1.2rem"></i-eos-icons:bubble-loading>
+                      <el-text line-clamp="2">{{ data.node.label }}</el-text>
+                    </div>
+                  </ContentBox>
+                  <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
+                    <el-button @click.stop="menu.open($event, data)" circle size="small">
+                      <i-ep:more-filled></i-ep:more-filled>
+                    </el-button>
                   </div>
-                </ContentBox>
-                <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
-                  <el-button @click.stop="menu.open($event, data)" circle size="small">
-                    <i-ep:more-filled></i-ep:more-filled>
-                  </el-button>
                 </div>
-              </div>
-            </template>
-          </el-tree>
-        </el-scrollbar>
-      </div>
-      <ScalePanel v-model="panelConfig" ref="scale" @mask-click="dlg.clickMask">
-        <MenuHandle
-          v-if="dlg.is === 'menu'"
-          ref="menuRef"
-          :focus="!!panelConfig.mask"
-          @edit="menu.onEdit"
-          @delete="menu.onDelete"
-          @add="menu.onAdd"></MenuHandle>
-        <EditTopic
-          ref="editTopicRef"
-          v-else-if="dlg.is === 'editTopic' && selectedTopic"
-          v-model="selectedTopic.node"
-          @close="dlg.clickMask"></EditTopic>
-      </ScalePanel>
+              </template>
+            </el-tree>
+          </el-scrollbar>
+        </div>
+        <ScalePanel v-model="panelConfig" ref="scale" @mask-click="dlg.clickMask">
+          <MenuHandle
+            v-if="dlg.is === 'menu'"
+            ref="menuRef"
+            :focus="!!panelConfig.mask"
+            @edit="menu.onEdit"
+            @delete="menu.onDelete"
+            @add="menu.onAdd"></MenuHandle>
+          <EditTopic
+            ref="editTopicRef"
+            v-else-if="dlg.is === 'editTopic' && selectedTopic"
+            v-model="selectedTopic.node"
+            @close="dlg.clickMask"></EditTopic>
+        </ScalePanel>
+      </el-card>
     </template>
     <template #content>
-      <MessagePanel />
+      <MessagePanel>
+        <template #leftHandler>
+          <teleport to="#toggleMenu" defer :disabled="!toggleMenu">
+            <ContentBox @click="toggleMenu = !toggleMenu" background>
+              <i-mdi:arrow-collapse-right v-if="!toggleMenu"></i-mdi:arrow-collapse-right>
+              <i-mdi:arrow-collapse-left v-else></i-mdi:arrow-collapse-left>
+            </ContentBox>
+          </teleport>
+        </template>
+      </MessagePanel>
     </template>
   </SubNavLayout>
 </template>
 <style lang="scss" scoped>
+.chat-provider {
+  --el-card-border-color: transparent;
+  --el-card-border-radius: 0;
+  --el-card-padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 100%;
+  overflow: hidden;
+}
 .chat-provider-header {
   flex-shrink: 0;
   flex-direction: column;
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
 }
 .chat-provider-content {
   flex: 1;
@@ -121,6 +148,7 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 0.5rem;
   flex: 1;
+  padding-right: 1rem;
   overflow: hidden;
   .chat-tree-handle {
     flex-shrink: 0;

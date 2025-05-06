@@ -103,6 +103,8 @@ defineExpose({
   overflow: hidden;
   background-color: var(--content-container-bg-color);
   .content-header {
+    position: relative;
+    z-index: 200;
     flex-shrink: 0;
     display: flex;
     flex-basis: var(--content-header-height);
