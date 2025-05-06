@@ -99,7 +99,7 @@ pre {
   counter-reset: line;
 }
 .code-line {
-  white-space: normal;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 .code-line::before {
