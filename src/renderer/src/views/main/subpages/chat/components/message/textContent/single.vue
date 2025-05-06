@@ -52,9 +52,9 @@ const isAssistant = computed(() => !!props.data.modelId)
         </div>
         <div class="chat-item-footer"></div>
       </div>
+      <RawTextEdit ref="rawDlg" @change="rawTextDlg.onChange" :data="rawTextDlg.data?.content.content"></RawTextEdit>
     </template>
   </MsgBubble>
-  <RawTextEdit ref="rawDlg" @change="rawTextDlg.onChange" :data="rawTextDlg.data?.content.content"></RawTextEdit>
 </template>
 <style lang="scss" scoped>
 .chat-item-container {
