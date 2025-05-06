@@ -4,6 +4,7 @@ import { ChatTopicTree } from "@renderer/types"
 import MessagePanel from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
+import useShortcut from "@renderer/views/main/usable/useShortcut"
 import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
@@ -12,6 +13,7 @@ import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings.store"
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
+const shortcut = useShortcut()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
@@ -27,6 +29,11 @@ const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, createNewTo
   treeRef
 )
 const toggleMenu = ref(true) // 左侧菜单是否显示
+shortcut.listen("ctrl+b", res => {
+  if (res.active) {
+    toggleMenu.value = !toggleMenu.value
+  }
+})
 settingsStore.api.dataWatcher<boolean>("chat.toggleMenu", toggleMenu, true)
 onMounted(() => {
   window.defaultTopicTitle = t("chat.addChat")

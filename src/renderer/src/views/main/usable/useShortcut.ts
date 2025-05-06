@@ -1,26 +1,34 @@
 import useHotKey from "@renderer/usable/useHotKey"
-import { ChatTopic, ChatTopicTree } from "@renderer/types"
-export default (topic: Ref<ChatTopicTree | undefined>, options: { send: (topic?: ChatTopic) => void }) => {
-  const { on: onHotKey, cleanAll, clean } = useHotKey()
-  const sendShortcut = ref("ctrl+enter") // 发送快捷键
-
-  watch(
-    sendShortcut,
-    (val, old) => {
-      if (old) clean(old)
-      onHotKey(val, res => {
-        if (res.active) {
-          options.send(topic.value?.node)
-        }
-      })
-    },
-    { immediate: true }
-  )
-
+import { WatchHandle } from "vue"
+export default () => {
+  const { on, cleanAll, clean: cleanKey } = useHotKey()
+  const handler = shallowRef<WatchHandle[]>([])
+  function listen(shortcut: string, callback: (status: { active: boolean }, ...args: unknown[]) => void) {
+    const key = ref(shortcut)
+    const watchHandler = watch(
+      key,
+      (val, old) => {
+        if (old) cleanKey(old)
+        on(val, res => callback(res))
+      },
+      { immediate: true }
+    )
+    handler.value.push(watchHandler)
+    function clean() {
+      key.value && cleanKey(key.value)
+    }
+    function trigger(...args: unknown[]) {
+      callback({ active: true }, ...args)
+    }
+    return { key, clean, trigger }
+  }
   onBeforeUnmount(() => {
+    handler.value.forEach(watcher => {
+      watcher.stop()
+    })
     cleanAll()
   })
   return {
-    sendShortcut,
+    listen,
   }
 }

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ChatTopic } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import useScrollHook from "@renderer/views/main/usable/useScrollHook"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
@@ -13,25 +12,31 @@ import useSettingsStore from "@renderer/store/settings.store"
 const settingsStore = useSettingsStore()
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
+const shortcut = useShortcut()
 const chatStore = useChatStore()
 const { t } = useI18n()
 const { onScroll } = useScrollHook(contentLayout, currentTopic, currentMessage)
 const togglePanel = ref(true) // 右侧面板是否显示
-const send = (topic?: ChatTopic) => {
-  if (topic) {
-    chatStore.send(topic)
-    nextTick(() => {
-      contentLayout.value?.scrollToBottom("smooth")
-    })
-  }
-}
 const message = computed(() => currentMessage.value?.data ?? [])
-const { sendShortcut } = useShortcut(currentTopic, {
-  send,
-})
+
 const onRightResizeChange = () => {
   contentLayout.value?.updateScroll()
 }
+const { key: sendShortcut, trigger: triggerSend } = shortcut.listen("ctrl+enter", async (res, done?: unknown) => {
+  if (res.active && currentTopic.value?.node) {
+    chatStore.send(currentTopic.value.node)
+    await nextTick()
+    contentLayout.value?.scrollToBottom("smooth")
+    if (isFunction(done)) done()
+  }
+})
+
+shortcut.listen("ctrl+shift+b", res => {
+  if (res.active) {
+    togglePanel.value = !togglePanel.value
+  }
+})
+
 settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
 </script>
 <template>
@@ -62,9 +67,9 @@ settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
           </div>
           <TextInput v-model="currentTopic.node.content" />
           <div class="chat-input-actions">
-            <el-button size="small" type="default" plain @click="send(currentTopic.node)">
+            <Button size="small" type="default" plain @click="done => triggerSend(done)">
               {{ t("btn.send") }}({{ sendShortcut }})
-            </el-button>
+            </Button>
           </div>
         </div>
       </template>

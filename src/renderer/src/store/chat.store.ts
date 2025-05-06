@@ -291,7 +291,7 @@ export default defineStore("chat_topic", () => {
   const api = useData(topicList, chatMessage, currentTopic, currentMessage, currentNodeKey)
 
   const getMeta = (modelId: string) => {
-    if (modelId.length == 0) {
+    if (!modelId) {
       console.warn("[getMeta] modelId is empty")
       return
     }
@@ -437,6 +437,8 @@ export default defineStore("chat_topic", () => {
           })
         )
       })
+    } else {
+      newMessageData.modelId = availiableModels[0]
     }
     message.data.push(newMessageData)
     sendMessage(topic, message, newMessageData)
