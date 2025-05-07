@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ChatMessageData } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
-import Markdown from "@renderer/components/Markdown/index.vue"
+import Markdown from "@renderer/components/Markdown2/index.vue"
 import RawTextEdit from "../rawTextEdit/index.vue"
 import Handler from "./handler.vue"
 import Title from "./title.vue"

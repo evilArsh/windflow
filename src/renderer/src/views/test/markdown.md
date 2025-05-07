@@ -1,5 +1,39 @@
 以下是 JavaScript 实现的快速排序（Quick Sort）算法，包含详细注释和示例：
 
+测试段落
+1. 1段落
+2. 2段落
+3. 3段落
+   1. 3-1段落
+   2. 3-2段落
+   3. 3-3段落
+   4. ```javascript
+      function quickSort(arr) {
+        // 基线条件：数组长度小于等于1时直接返回
+        if (arr.length <= 1) {
+          return arr;
+        }
+
+        // 选择基准值（pivot），通常取中间元素
+        const pivotIndex = Math.floor(arr.length / 2);
+        const pivot = arr[pivotIndex];
+
+        // 分区操作
+        const left = [];
+        const right = [];
+        
+        for (let i = 0; i < arr.length; i++) {
+          // 跳过基准元素
+          if (i === pivotIndex) continue;
+          
+          // 小于基准的放左边，大于等于的放右边
+          arr[i] < pivot ? left.push(arr[i]) : right.push(arr[i]);
+        }
+
+        // 递归排序左右子数组，并合并结果
+        return [...quickSort(left), pivot, ...quickSort(right)];
+      }
+
 ### 快速排序实现
 ```javascript
 function quickSort(arr) {
@@ -78,10 +112,10 @@ function partition(arr, left, right) {
 ```
 
 ### 对比其他排序
-| 算法       | 时间复杂度（平均） | 是否稳定 | 空间复杂度 |
-|------------|------------------|----------|-----------|
-| 快速排序   | O(n log n)       | 不稳定   | O(log n)  |
-| 归并排序   | O(n log n)       | 稳定     | O(n)      |
-| 冒泡排序   | O(n²)            | 稳定     | O(1)      |
+| 算法     | 时间复杂度（平均） | 是否稳定 | 空间复杂度 |
+| -------- | ------------------ | -------- | ---------- |
+| 快速排序 | O(n log n)         | 不稳定   | O(log n)   |
+| 归并排序 | O(n log n)         | 稳定     | O(n)       |
+| 冒泡排序 | O(n²)              | 稳定     | O(1)       |
 
 快速排序是实际应用中最快的排序算法之一，V8引擎的 `Array.prototype.sort()` 就使用了快速排序的变体（当数组长度 > 10时）。
