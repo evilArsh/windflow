@@ -27,14 +27,14 @@ pause()
 </script>
 <template>
   <el-row class="w-full h-full overflow-hidden">
-    <el-col :span="12" class="h-60vh overflow-hidden">
+    <el-col :span="12" class="h-full overflow-hidden">
       <div class="flex w-full h-full">
         <ContentLayout>
           <Markdown :content="content" :partial="partial" id="markdown" />
         </ContentLayout>
       </div>
     </el-col>
-    <el-col :span="12" class="h-60vh overflow-hidden">
+    <el-col :span="12" class="h-full overflow-hidden">
       <div class="flex gap-1rem">
         <el-button class="append" @click="append">append</el-button>
         <el-button class="append" @click="appendAuto">自动</el-button>
