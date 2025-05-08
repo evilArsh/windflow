@@ -4,7 +4,6 @@ import useParser from "./worker"
 // import MermaidBlock from "./components/mermaidBlock.vue"
 import { LLMContent } from "@renderer/types"
 const props = defineProps<{
-  id: string
   content: LLMContent
 }>()
 

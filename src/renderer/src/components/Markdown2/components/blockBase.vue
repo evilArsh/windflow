@@ -4,7 +4,6 @@ import "highlight.js/styles/github-dark.css"
 const props = defineProps<{
   code?: string
   lang?: string
-  html?: string
 }>()
 const { copy } = useClipboard()
 const copied = ref(false)

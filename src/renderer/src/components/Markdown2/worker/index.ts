@@ -10,8 +10,8 @@ import remarkRehype from "remark-rehype"
 // import remarkMdx from "remark-mdx"
 import rehypeMathjax from "rehype-mathjax"
 import rehypeStringify from "rehype-stringify"
-import rehypeHighlight from "rehype-highlight"
-import rehypeHighlightCodeLines from "rehype-highlight-code-lines"
+// import rehypeHighlight from "rehype-highlight"
+// import rehypeHighlightCodeLines from "rehype-highlight-code-lines"
 import { rehypeHrToBr, rehypeUrlAttributes } from "./rehypeCode"
 import { getLang, normalizeFormula } from "./utils"
 import useMermaid from "../usable/useMermaid"
@@ -19,7 +19,8 @@ import { toJsxRuntime } from "hast-util-to-jsx-runtime"
 import { toString } from "hast-util-to-string"
 import { Fragment, jsx } from "vue/jsx-runtime"
 import CodeBlock from "../components/codeBlock.vue"
-
+import { cloneVNode } from "vue"
+import { parseSelector } from "hast-util-parse-selector"
 const mdProcessor = unified()
   // 将Markdown解析为mdast
   .use(remarkParse)
@@ -36,19 +37,21 @@ const mdProcessor = unified()
   .freeze()
 
 const createProcessor = () => {
-  return mdProcessor()
-    .use(rehypeMathjax)
-    .use(rehypeHighlight)
-    .use(rehypeHighlightCodeLines, {
-      showLineNumbers: true,
-    })
-    .use(rehypeHrToBr)
-    .use(rehypeUrlAttributes)
-    .use(rehypeStringify, {
-      allowDangerousHtml: true,
-      allowDangerousCharacters: true,
-    })
-    .freeze()
+  return (
+    mdProcessor()
+      .use(rehypeMathjax)
+      // .use(rehypeHighlight)
+      // .use(rehypeHighlightCodeLines, {
+      //   showLineNumbers: true,
+      // })
+      .use(rehypeHrToBr)
+      .use(rehypeUrlAttributes)
+      .use(rehypeStringify, {
+        allowDangerousHtml: true,
+        allowDangerousCharacters: true,
+      })
+      .freeze()
+  )
 }
 const parser = () => {
   const mermaid = useMermaid()
@@ -58,23 +61,25 @@ const parser = () => {
   const preHandleContent = (content: string) => {
     return normalizeFormula(content)
   }
+  const codeBlock = h(CodeBlock)
   const parse = async (newContent: string) => {
     const content = preHandleContent(newContent)
     file.value = content
     const hast = processor.runSync(processor.parse(file))
     html.value = toJsxRuntime(hast, {
       Fragment: Fragment,
-      jsx,
+      development: false,
+      jsx: jsx,
       jsxs: jsx,
       components: {
         code: props => {
+          console.log(props)
           const code = toString(props.node)
+          // console.log(code)
           const lang = getLang(props.class)
-          return h(CodeBlock, {
+          return cloneVNode(codeBlock, {
             code: code,
-            html: code,
             lang,
-            rootId: "",
           })
         },
       },

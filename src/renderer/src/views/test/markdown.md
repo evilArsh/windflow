@@ -1,39 +1,33 @@
-以下是 JavaScript 实现的快速排序（Quick Sort）算法，包含详细注释和示例：
+# 以下是 JavaScript 实现的快速排序算法，包含详细注释和示例：
 
 测试段落
 
 1. 1段落
 2. 2段落
-3. 3段落
    1. 3-1段落
    2. 3-2段落
-   3. 3-3段落
 
-   4. ```javascript
+   3. ```javascript
       function quickSort(arr) {
-        // 基线条件：数组长度小于等于1时直接返回
         if (arr.length <= 1) {
           return arr;
         }
       }
       ```
 
-### 快速排序实现
+## 快速排序实现
 
 ```javascript
 function quickSort(arr) {
-  // 基线条件：数组长度小于等于1时直接返回
   if (arr.length <= 1) {
     return arr;
   }
 }
-
-// 示例用法
 const nums = [3, 6, 8, 10, 1, 2, 1];
-console.log(quickSort(nums)); // 输出: [1, 1, 2, 3, 6, 8, 10]
+console.log(quickSort(nums));
 ```
 
-### 关键点解析
+## 关键点解析
 
 1. **分治思想**：
    - 选择一个基准值（pivot）将数组分成两个子数组
@@ -43,21 +37,11 @@ console.log(quickSort(nums)); // 输出: [1, 1, 2, 3, 6, 8, 10]
    - 平均：O(n log n)
    - 最差（已排序数组且选错pivot时）：O(n²)
 
-3. **优化方向**：
-
-   ```javascript
-   // 优化pivot选择（三数取中法）
-   const mid = Math.floor(arr.length / 2);
-   const pivot = [arr[0], arr[mid], arr[arr.length - 1]]
-     .sort((a, b) => a - b)[1];
-   ```
-
-### 原地排序版本（节省空间）
+## 原地排序版本（节省空间）
 
 ```javascript
 function quickSortInPlace(arr, left = 0, right = arr.length - 1) {
   if (left >= right) return;
-
   const pivotIndex = partition(arr, left, right);
   quickSortInPlace(arr, left, pivotIndex - 1);
   quickSortInPlace(arr, pivotIndex + 1, right);
@@ -65,7 +49,7 @@ function quickSortInPlace(arr, left = 0, right = arr.length - 1) {
 }
 ```
 
-### 对比其他排序
+## 对比其他排序
 
 | 算法     | 时间复杂度（平均） | 是否稳定 | 空间复杂度 |
 | -------- | ------------------ | -------- | ---------- |
@@ -73,4 +57,6 @@ function quickSortInPlace(arr, left = 0, right = arr.length - 1) {
 | 归并排序 | O(n log n)         | 稳定     | O(n)       |
 | 冒泡排序 | O(n²)              | 稳定     | O(1)       |
 
-快速排序是实际应用中最快的排序算法之一，V8引擎的 `Array.prototype.sort()` 就使用了快速排序的变体（当数组长度 > 10时）。
+快速排序是实际应用中最快的排序算法之一，V8引擎的 `Array.prototype.sort()` 就使用了快速排序的变体
+
+end
