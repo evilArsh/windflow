@@ -1,20 +1,25 @@
 pre {
   counter-reset: line;
 }
-.code-line {
-  white-space: pre-wrap;
-  word-break: break-word;
+.shiki {
+  code {
+    span.line {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    span.line::before {
+      counter-increment: line;
+      content: counter(line);
+      display: inline-block;
+      width: 2em;
+      margin-right: 1em;
+      color: #666;
+      text-align: right;
+      user-select: none;
+    }
+  }
 }
-.code-line::before {
-  counter-increment: line;
-  content: counter(line);
-  display: inline-block;
-  width: 2em;
-  margin-right: 1em;
-  color: #666;
-  text-align: right;
-  user-select: none;
-}
+
 .code-block {
   --el-card-padding: 1rem;
   border: solid 1px #dce0e5;

@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { useClipboard } from "@vueuse/core"
 const props = defineProps<{
-  rootId: string
   code?: string
   lang?: string
-  html?: string
 }>()
 const { copy } = useClipboard()
 const copied = ref(false)

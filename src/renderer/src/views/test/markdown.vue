@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Markdown from "@renderer/components/Markdown2/index.vue"
+import Markdown from "@renderer/components/Markdown/index.vue"
 import md from "./markdown.md?raw"
 import { useIntervalFn } from "@vueuse/core"
 const index = ref(0)
