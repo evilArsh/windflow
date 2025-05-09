@@ -1,3 +1,5 @@
+import type { Element } from "hast"
+
 /**
  * @description 统一处理公式格式
  */
@@ -23,8 +25,18 @@ $$`
 /**
  * @description 获取代码块语言
  */
-export const getLang = (className: string): string => {
+export const getLang = (node?: Element): string => {
+  if (!node) return ""
+  const className = node.properties?.className ?? ""
   if (!className) return ""
-  const match = className.match(/language-(\w+)/)
-  return match ? match[1] : ""
+  if (isString(className)) {
+    return className.match(/language-(\w+)/)?.[1] ?? ""
+  }
+  if (isArray(className)) {
+    const lang = className.find(item => String(item).startsWith("language-"))
+    if (isString(lang)) {
+      return lang.match(/language-(\w+)/)?.[1] ?? ""
+    }
+  }
+  return ""
 }

@@ -40,7 +40,7 @@ pause()
       </div>
     </el-col>
     <el-col :span="4" class="h-full overflow-hidden">
-      <div class="flex gap-1rem">
+      <div class="flex flex-col gap-1rem">
         <el-button class="append" @click="clear">清空</el-button>
         <el-button class="append" @click="full">完整</el-button>
         <el-button class="append" @click="append">append</el-button>
