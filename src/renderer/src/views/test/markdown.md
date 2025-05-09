@@ -49,6 +49,52 @@ function quickSortInPlace(arr, left = 0, right = arr.length - 1) {
 }
 ```
 
+```vue
+<template>
+  <div class="code-block">
+    <pre><code class="hljs" v-html="highlightedWithLineNumbers"></code></pre>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import hljs from 'highlight.js';
+
+const props = defineProps({
+  children: String,
+  lang: String
+});
+
+const highlighted = computed(() => {
+  return hljs.highlight(props.children, { language: props.lang }).value;
+});
+
+const highlightedWithLineNumbers = computed(() => {
+  const lines = highlighted.value.split('\n');
+  return lines.map((line, i) => {
+    return `<span class="line-number">${i + 1}</span>${line}`;
+  }).join('\n');
+});
+</script>
+
+<style>
+.code-block {
+  position: relative;
+}
+
+.line-number {
+  display: inline-block;
+  width: 2em;
+  padding-right: 1em;
+  margin-right: 1em;
+  color: #999;
+  text-align: right;
+  user-select: none;
+  border-right: 1px solid #ddd;
+}
+</style>
+```
+
 ## 对比其他排序
 
 | 算法     | 时间复杂度（平均） | 是否稳定 | 空间复杂度 |

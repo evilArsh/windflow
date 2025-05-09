@@ -87,7 +87,6 @@ function createVnode(_: string | undefined): Create {
      * })
      */
     // ! type: 为传入的 Compomnent
-    // ! props: {children:string,class:string,node:Hast}
     const children = props.children
     if (isString(type)) {
       delete props.children
@@ -158,7 +157,6 @@ function element(state: State, node: Element): Child | undefined {
     })
   }
 
-  // ! props.node = xx
   addNode(state, props, type, node)
   addChildren(props, children)
 

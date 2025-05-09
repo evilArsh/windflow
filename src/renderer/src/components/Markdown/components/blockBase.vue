@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useClipboard } from "@vueuse/core"
-import "highlight.js/styles/github-dark.css"
 const props = defineProps<{
   rootId: string
   code?: string
