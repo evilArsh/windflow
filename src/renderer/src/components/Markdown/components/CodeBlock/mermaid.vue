@@ -10,19 +10,16 @@ watch(
   [() => props.code, () => props.lang],
   useDebounceFn(
     async () => {
-      await nextTick()
-      if (!codeRef.value) return
-      codeRef.value.removeAttribute("data-processed")
-      mermaid
-        .run({
-          nodes: [codeRef.value],
-          suppressErrors: false,
-        })
-        .catch(() => {
-          if (codeRef.value) {
-            codeRef.value.innerText = props.code
-          }
-        })
+      try {
+        await nextTick()
+        if (!codeRef.value) return
+        const { svg } = await mermaid.render("chart" + uniqueId(), props.code, codeRef.value)
+        codeRef.value.innerHTML = svg
+      } catch (_error) {
+        if (codeRef.value) {
+          codeRef.value.innerText = props.code
+        }
+      }
     },
     300,
     { maxWait: 1200 }
