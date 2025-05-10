@@ -7,11 +7,15 @@ export interface Highlight {
 }
 function shikiInstance(): Highlight {
   async function codeToHtml(code: string, lang: string, theme?: string): Promise<string> {
-    const highlighter = await highlighterPromise
-    return highlighter.codeToHtml(code, {
-      lang,
-      theme: theme ?? "github-dark",
-    })
+    try {
+      const highlighter = await highlighterPromise
+      return highlighter.codeToHtml(code, {
+        lang,
+        theme: theme ?? "github-dark",
+      })
+    } catch (_e) {
+      return code
+    }
   }
   return {
     codeToHtml,
@@ -29,6 +33,8 @@ const highlighterPromise = createHighlighter({
     "monokai",
   ],
   langs: [
+    "wasm",
+    "asm",
     "mermaid",
     "plaintext",
     "java",
