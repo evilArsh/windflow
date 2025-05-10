@@ -24,15 +24,15 @@ watch(
           }
         })
     },
-    500,
-    { maxWait: 2000 }
+    300,
+    { maxWait: 1200 }
   ),
   { immediate: true }
 )
 </script>
 <template>
   <div class="markdown-mermaid-container">
-    <pre class="mermaid language-mermaid"><code ref="code" v-text="code"></code></pre>
+    <pre class="language-mermaid"><code ref="code" v-text="code"></code></pre>
   </div>
 </template>
 <style lang="scss">
