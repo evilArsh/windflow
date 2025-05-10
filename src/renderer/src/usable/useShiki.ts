@@ -29,6 +29,7 @@ const highlighterPromise = createHighlighter({
     "monokai",
   ],
   langs: [
+    "mermaid",
     "plaintext",
     "java",
     "javascript",

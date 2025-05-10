@@ -1,32 +1,5 @@
 import { visit } from "unist-util-visit"
 import { urlAttributes } from "html-url-attributes"
-// import { toString } from "hast-util-to-string"
-// import { CodePluginOptions } from "./types"
-// import { cloneVNode } from "vue"
-// import { getLang } from "./utils"
-// import { isElement } from "hast-util-is-element"
-// import { selectAll } from "hast-util-select"
-// import { parseSelector } from "hast-util-parse-selector"
-// import { hasProperty } from "hast-util-has-property"
-
-// const newVNode = (
-//   mdId: string,
-//   elId: string,
-//   idxMap: Record<string, CodePluginOptions>,
-//   compMap: Record<string, VNode>,
-//   node: any,
-//   parent: any
-// ) => {
-//   const codeNode = node.children.find(child => isElement(child, "code"))
-//   const code = codeNode ? toString(codeNode) : ""
-//   const lang = getLang(node)
-//   const comp = compMap[lang] ?? compMap.default
-//   parent.properties = parent.properties ?? {}
-//   parent.properties.id = elId
-//   const vnode = cloneVNode(comp, { code, lang, rootId: elId })
-//   idxMap[elId] = { mdId, elId, vnode, code, lang }
-// }
-
 // --- rehypeUrlAttributes
 const safeProtocol = /^(https?|ircs?|mailto|xmpp)$/i
 function urlTransform(value: string) {
@@ -74,7 +47,6 @@ export const rehypeUrlAttributes = () => {
     })
   }
 }
-
 // --- rehypeHrToBr
 export const rehypeHrToBr = () => {
   return tree => {

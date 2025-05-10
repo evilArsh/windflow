@@ -19,33 +19,12 @@ pre {
     }
   }
 }
-
-.code-block {
-  --el-card-padding: 1rem;
-  border: solid 1px #dce0e5;
-  border-radius: 0.5rem;
-}
-.code-block-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.code-block-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.mermaid-container {
-  display: block !important;
-  max-width: 100%;
-  overflow: auto;
-}
 .markdown-container {
   line-height: 1.5;
   table {
     border-collapse: collapse;
     width: 100%;
-    margin: 1em 0;
+    margin: 1rem 0;
   }
 
   table th,
@@ -57,5 +36,25 @@ pre {
   table th {
     background-color: #f2f2f2;
     text-align: left;
+  }
+  ol,
+  ul {
+    padding-left: 0;
+    margin-top: 0;
+    list-style-position: outside;
+  }
+  ul {
+    list-style-type: none;
+    li {
+      padding-left: 1rem;
+      margin: 2px 0;
+    }
+  }
+  ol {
+    list-style-type: none;
+    li {
+      margin: 2px 0;
+      padding-left: 1rem;
+    }
   }
 }

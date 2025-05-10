@@ -12,7 +12,7 @@ import { rehypeHrToBr, rehypeUrlAttributes } from "./rehypeCode"
 import { normalizeFormula } from "./utils"
 import useMermaid from "../usable/useMermaid"
 import { toVueRuntime } from "./toVueRuntime/index"
-import CodeBlock from "../components/codeBlock.vue"
+import { Components } from "./toVueRuntime/types"
 const mdProcessor = unified()
   // 将Markdown解析为mdast
   .use(remarkParse)
@@ -39,7 +39,7 @@ export const createProcessor = () => {
     })
     .freeze()
 }
-const parser = () => {
+const parser = (components: Components) => {
   const mermaid = useMermaid()
   const html = shallowRef<any>()
   const processor = markRaw(createProcessor())
@@ -53,9 +53,7 @@ const parser = () => {
     const hast = processor.runSync(processor.parse(file))
     // console.log("[hast]", hast)
     html.value = toVueRuntime(hast, {
-      components: {
-        code: CodeBlock,
-      },
+      components,
       ignoreInvalidStyle: true,
       stylePropertyNameCase: "css",
       passKeys: true,

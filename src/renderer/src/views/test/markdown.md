@@ -2,6 +2,19 @@
 
 测试段落
 
+```mermaid
+flowchart TD
+    A[开始排序] --> B{数组长度 ≤ 1?}
+    B -- 是 --> C[返回原数组]
+    B -- 否 --> D[选择基准值 pivot]
+    D --> E[分割数组为 left 和 right]
+    E --> F[递归排序 left]
+    E --> G[递归排序 right]
+    F --> H[合并 left + pivot + right]
+    G --> H
+    H --> I[返回排序结果]
+```
+
 1. 1段落
 2. 2段落
    1. 3-1段落
@@ -47,52 +60,6 @@ function quickSortInPlace(arr, left = 0, right = arr.length - 1) {
   quickSortInPlace(arr, pivotIndex + 1, right);
   return arr;
 }
-```
-
-```vue
-<template>
-  <div class="code-block">
-    <pre><code class="hljs" v-html="highlightedWithLineNumbers"></code></pre>
-  </div>
-</template>
-
-<script setup>
-import { computed } from 'vue';
-import hljs from 'highlight.js';
-
-const props = defineProps({
-  children: String,
-  lang: String
-});
-
-const highlighted = computed(() => {
-  return hljs.highlight(props.children, { language: props.lang }).value;
-});
-
-const highlightedWithLineNumbers = computed(() => {
-  const lines = highlighted.value.split('\n');
-  return lines.map((line, i) => {
-    return `<span class="line-number">${i + 1}</span>${line}`;
-  }).join('\n');
-});
-</script>
-
-<style>
-.code-block {
-  position: relative;
-}
-
-.line-number {
-  display: inline-block;
-  width: 2em;
-  padding-right: 1em;
-  margin-right: 1em;
-  color: #999;
-  text-align: right;
-  user-select: none;
-  border-right: 1px solid #ddd;
-}
-</style>
 ```
 
 ## 对比其他排序
