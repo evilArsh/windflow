@@ -22,7 +22,10 @@ export const IpcChannel = {
   McpListPrompts: "mcp.listPrompts",
   McpListResourceTemplates: "mcp.listResourceTemplates",
 }
-export interface MCPService {
+export interface BaseService {
+  registerIpc: () => void
+}
+export interface MCPService extends BaseService {
   registerServer: (serverName: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
   toggleServer: (serverName: string, command: MCPServerHandleCommand) => Promise<BridgeStatusResponse>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>

@@ -5,12 +5,22 @@ import type { InjectionKey } from "vue"
 export interface Highlight {
   codeToHtml(code: string, lang: string, theme?: string): Promise<string>
 }
+function langPatch(lang: string): string {
+  switch (lang) {
+    case "wat":
+      return "wasm"
+    case "nasm":
+      return "asm"
+    default:
+      return lang
+  }
+}
 function shikiInstance(): Highlight {
   async function codeToHtml(code: string, lang: string, theme?: string): Promise<string> {
     try {
       const highlighter = await highlighterPromise
       return highlighter.codeToHtml(code, {
-        lang,
+        lang: langPatch(lang),
         theme: theme ?? "github-dark",
       })
     } catch (_e) {

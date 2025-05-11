@@ -21,7 +21,7 @@ import { ipcMain } from "electron"
 import log from "electron-log"
 import { modifyPlatformCMD } from "./cmd"
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
-export const useMCP = (): MCPService => {
+export default (): MCPService => {
   const context = new Map<string, MCPServerContext>()
   const newClient = () => new Client({ name: "aichat-mcp-client", version: "v0.0.1" })
   const cachedTools: Record<string, MCPToolDetail[]> = {}
@@ -261,6 +261,53 @@ export const useMCP = (): MCPService => {
       })
     }
   }
+  function registerIpc() {
+    ipcMain.handle(IpcChannel.McpRegisterServer, async (_, name: string, serverParams: MCPStdioServersParams) => {
+      return registerServer(name, serverParams)
+    })
+    ipcMain.handle(IpcChannel.McpToggleServer, async (_, name: string, command: MCPServerHandleCommand) => {
+      return toggleServer(name, command)
+    })
+    ipcMain.handle(IpcChannel.McpListTools, async (_, clientName?: string) => {
+      return listTools(clientName)
+    })
+    ipcMain.handle(IpcChannel.McpCallTool, async (_, name: string, args?: Record<string, unknown>) => {
+      return callTool(name, args)
+    })
+    ipcMain.handle(
+      IpcChannel.McpListPrompts,
+      async (
+        _,
+        serverName?: string | Array<string>,
+        params?: MCPListPromptsRequestParams,
+        options?: RequestOptions
+      ) => {
+        return listPrompts(serverName, params, options)
+      }
+    )
+    ipcMain.handle(
+      IpcChannel.McpListResources,
+      async (
+        _,
+        serverName?: string | Array<string>,
+        params?: MCPListResourcesRequestParams,
+        options?: RequestOptions
+      ) => {
+        return listResources(serverName, params, options)
+      }
+    )
+    ipcMain.handle(
+      IpcChannel.McpListResourceTemplates,
+      async (
+        _,
+        serverName?: string | Array<string>,
+        params?: MCPListResourceTemplatesParams,
+        options?: RequestOptions
+      ) => {
+        return listResourceTemplates(serverName, params, options)
+      }
+    )
+  }
   return {
     registerServer,
     toggleServer,
@@ -269,48 +316,6 @@ export const useMCP = (): MCPService => {
     listPrompts,
     listResources,
     listResourceTemplates,
+    registerIpc,
   }
-}
-export const registerMCP = async () => {
-  const mcp = useMCP()
-  ipcMain.handle(IpcChannel.McpRegisterServer, async (_, name: string, serverParams: MCPStdioServersParams) => {
-    return mcp.registerServer(name, serverParams)
-  })
-  ipcMain.handle(IpcChannel.McpToggleServer, async (_, name: string, command: MCPServerHandleCommand) => {
-    return mcp.toggleServer(name, command)
-  })
-  ipcMain.handle(IpcChannel.McpListTools, async (_, clientName?: string) => {
-    return mcp.listTools(clientName)
-  })
-  ipcMain.handle(IpcChannel.McpCallTool, async (_, name: string, args?: Record<string, unknown>) => {
-    return mcp.callTool(name, args)
-  })
-  ipcMain.handle(
-    IpcChannel.McpListPrompts,
-    async (_, serverName?: string | Array<string>, params?: MCPListPromptsRequestParams, options?: RequestOptions) => {
-      return mcp.listPrompts(serverName, params, options)
-    }
-  )
-  ipcMain.handle(
-    IpcChannel.McpListResources,
-    async (
-      _,
-      serverName?: string | Array<string>,
-      params?: MCPListResourcesRequestParams,
-      options?: RequestOptions
-    ) => {
-      return mcp.listResources(serverName, params, options)
-    }
-  )
-  ipcMain.handle(
-    IpcChannel.McpListResourceTemplates,
-    async (
-      _,
-      serverName?: string | Array<string>,
-      params?: MCPListResourceTemplatesParams,
-      options?: RequestOptions
-    ) => {
-      return mcp.listResourceTemplates(serverName, params, options)
-    }
-  )
 }
