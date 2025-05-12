@@ -1,17 +1,17 @@
-import { MCPStdioServersParams } from "@shared/types/mcp"
+import { MCPStdioServerParam } from "@shared/types/mcp"
 import { platform } from "@electron-toolkit/utils"
 import { cloneDeep } from "lodash-es"
 
-export function modifyPlatformCMD(params: MCPStdioServersParams): MCPStdioServersParams {
-  const p = cloneDeep(params)
+export function modifyPlatformCMD(param: MCPStdioServerParam): MCPStdioServerParam {
+  const p = cloneDeep(param)
   if (platform.isWindows) {
-    if (p.command === "npx") {
-      p.command = "cmd"
-      const args = p.args ?? []
+    if (p.params.command === "npx") {
+      p.params.command = "cmd"
+      const args = p.params.args ?? []
       if (!args.includes("-y")) {
         args.unshift("-y")
       }
-      p.args = ["/c", "npx", ...args]
+      p.params.args = ["/c", "npx", ...args]
     }
   }
   return p

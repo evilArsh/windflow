@@ -1,10 +1,8 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { serializeError } from "serialize-error"
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import {
-  MCPStdioServersParams,
+  MCPStdioServerParam,
   MCPToolDetail,
-  MCPServerContext,
   MCPCallToolResult,
   MCPListResourcesRequestParams,
   MCPListResourcesResponse,
@@ -12,95 +10,83 @@ import {
   MCPListPromptsResponse,
   MCPListResourceTemplatesParams,
   MCPListResourceTemplatesResponse,
-  MCPServerHandleCommand,
+  MCPClientHandleCommand,
+  MCPServerParam,
+  isAvailableServerParams,
+  isStdioServerParams,
+  isStreamableServerParams,
 } from "@shared/types/mcp"
 import { BridgeResponse, BridgeStatusResponse, code2xx, responseCode, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
 import { IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
-import { modifyPlatformCMD } from "./cmd"
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
+import {
+  availableClients,
+  createClient,
+  createSseTransport,
+  createStdioTransport,
+  createStreamableTransport,
+  requestWithId,
+} from "./utils"
+import { MCPClientContext } from "./types"
+export const name = "aichat-mcp-client"
+export const version = "v0.0.1"
 export default (): MCPService => {
-  const context = new Map<string, MCPServerContext>()
-  const newClient = () => new Client({ name: "aichat-mcp-client", version: "v0.0.1" })
+  const context = new Map<string, MCPClientContext>()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
-
-  const availableServerNames = (serverName?: string | Array<string>): Array<string> => {
-    return serverName ? (Array.isArray(serverName) ? serverName : [serverName]) : Array.from(context.keys())
-  }
-  const availableClients = (serverName?: string | Array<string>): Array<{ serverName: string; client: Client }> => {
-    const res: Array<{ serverName: string; client: Client }> = []
-    const serverNames = availableServerNames(serverName)
-    serverNames.forEach(serverName => {
-      const ctx = context.get(serverName)
-      if (ctx && ctx.client) {
-        res.push({
-          serverName,
-          client: ctx.client,
-        })
-      }
-    })
-    return res
-  }
-  const requestWithName = async <T>(
-    serverName: string,
-    request: () => Promise<T>
-  ): Promise<{ serverName: string; data: T }> => {
-    const req = request()
-    if (req instanceof Promise) {
-      const data = await req
-      return { serverName, data }
-    }
-    return { serverName, data: req }
-  }
-
-  async function registerServer(
-    serverName: string,
-    serverParams: MCPStdioServersParams
-  ): Promise<BridgeStatusResponse> {
+  async function registerServer(params: MCPServerParam): Promise<BridgeStatusResponse> {
     try {
-      let ctx = context.get(serverName)
+      if (!isAvailableServerParams(params)) {
+        log.error("[MCP registerServer]", "Invalid server params", params)
+      }
+      const { id, serverName } = params
+      let ctx = context.get(id)
       if (!ctx) {
-        ctx = { params: serverParams }
-        log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} context not found create new one`)
+        ctx = { params: params }
+        log.debug("[MCP registerServer]", `[${serverName}]context not found create new one`)
       } else {
         if (ctx.client) {
           const pong = await ctx.client.ping()
           if (pong) {
-            log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} already created`)
-            return responseCode(201, `${serverName}:${serverParams.args} already created`)
+            log.debug("[MCP registerServer]", `[${serverName}]already created`)
+            return responseCode(201, `[${serverName}]already created`)
           } else {
-            log.debug(
-              "[MCP registerServer]",
-              `${serverName}:${serverParams.args} context found but client not connected`
-            )
+            log.debug("[MCP registerServer]", `[${serverName}]context found but client not connected`)
           }
         } else {
-          log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} context found but client not created`)
+          log.debug("[MCP registerServer]", `[${serverName}]context found but client not created`)
         }
       }
-      ctx.client = newClient()
-      const transport = new StdioClientTransport(modifyPlatformCMD(ctx.params))
-      await ctx.client.connect(transport)
-      transport.onerror = error => {
-        log.error("[MCP registerServer]", errorToText(error))
+      ctx.client = createClient(name, version)
+      if (isStdioServerParams(ctx.params)) {
+        await createStdioTransport(ctx.client, ctx.params)
+        log.debug("[MCP register stdio server]", `[${serverName}]created`)
+      } else if (isStreamableServerParams(ctx.params)) {
+        try {
+          await createStreamableTransport(ctx.client, ctx.params)
+          log.debug("[MCP register streamable server]", `[${serverName}]created`)
+        } catch (error) {
+          log.warn("[MCP register streamable server error,attempt sse type]", errorToText(error))
+          await createSseTransport(ctx.client, ctx.params)
+          log.debug("[MCP register sse server]", `[${serverName}]created`)
+        }
       }
-      log.debug("[MCP registerServer]", `${serverName}:${serverParams.args} created`)
-      context.set(serverName, ctx)
+      context.set(id, ctx)
       return responseCode(200)
     } catch (error) {
       return responseCode(500, JSON.stringify(serializeError(error)))
     }
   }
-  async function toggleServer(serverName: string, command: MCPServerHandleCommand): Promise<BridgeStatusResponse> {
-    const ctx = context.get(serverName)
+  async function toggleServer(id: string, command: MCPClientHandleCommand): Promise<BridgeStatusResponse> {
+    const ctx = context.get(id)
     if (!ctx) {
-      return responseCode(404, `${serverName} not found`)
+      return responseCode(404, `${id} not found`)
     }
     switch (command.command) {
       case "start":
-        return registerServer(serverName, ctx.params)
+        return registerServer(ctx.params)
       case "stop":
         if (ctx.client) {
           await ctx.client.close()
@@ -108,32 +94,32 @@ export default (): MCPService => {
         }
         return responseCode(200, "ok")
       case "restart":
-        await toggleServer(serverName, { command: "stop" })
-        return toggleServer(serverName, { command: "start" })
+        await toggleServer(id, { command: "stop" })
+        return toggleServer(id, { command: "start" })
       case "delete": {
-        const res = await toggleServer(serverName, { command: "stop" })
+        const res = await toggleServer(id, { command: "stop" })
         if (code2xx(res.code)) {
-          context.delete(serverName)
+          context.delete(id)
         }
         return res
       }
     }
   }
-  async function listTools(serverName?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
+  async function listTools(id?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
     const results: MCPToolDetail[][] = []
     try {
-      const clients = availableClients(serverName)
+      const clients = availableClients(context, id)
       const filterClient: ReturnType<typeof availableClients> = []
       clients.forEach(client => {
-        if (cachedTools[client.serverName]) {
-          results.push(cachedTools[client.serverName])
+        if (cachedTools[client.id]) {
+          results.push(cachedTools[client.id])
         } else {
           filterClient.push(client)
         }
       })
-      const asyncReqs: Array<Promise<{ serverName: string; data: Awaited<ReturnType<Client["listTools"]>> }>> = []
+      const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listTools"]>> }>> = []
       for (const client of filterClient) {
-        asyncReqs.push(requestWithName(client.serverName, () => client.client.listTools()))
+        asyncReqs.push(requestWithId(client.id, () => client.client.listTools()))
       }
       if (asyncReqs.length > 0) {
         const res = await Promise.allSettled(asyncReqs)
@@ -141,12 +127,12 @@ export default (): MCPService => {
           if (res.status === "fulfilled") {
             const dst = res.value.data.tools.map<MCPToolDetail>(tool =>
               Object.assign(tool, {
-                serverName: res.value.serverName,
+                id: res.value.id,
               })
             )
             results.push(dst)
-            cachedTools[res.value.serverName] = dst
-            log.debug("[MCP listTools]", `${res.value.serverName} tools cached`)
+            cachedTools[res.value.id] = dst
+            log.debug("[MCP listTools]", `${res.value.id} tools cached`)
           }
         })
       }
@@ -156,16 +142,16 @@ export default (): MCPService => {
     }
   }
   async function listPrompts(
-    serverName?: string | Array<string>,
+    id?: string | Array<string>,
     params?: MCPListPromptsRequestParams,
     options?: RequestOptions
   ): Promise<BridgeResponse<MCPListPromptsResponse>> {
     const results: MCPListPromptsResponse = { prompts: [] }
     try {
-      const asyncReqs: Array<Promise<{ serverName: string; data: Awaited<ReturnType<Client["listPrompts"]>> }>> = []
-      const clients = availableClients(serverName)
+      const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listPrompts"]>> }>> = []
+      const clients = availableClients(context, id)
       for (const client of clients) {
-        asyncReqs.push(requestWithName(client.serverName, () => client.client.listPrompts(params, options)))
+        asyncReqs.push(requestWithId(client.id, () => client.client.listPrompts(params, options)))
       }
       const res = await Promise.allSettled(asyncReqs)
       res.forEach(r => {
@@ -179,16 +165,16 @@ export default (): MCPService => {
     }
   }
   async function listResources(
-    serverName?: string | Array<string>,
+    id?: string | Array<string>,
     params?: MCPListResourcesRequestParams,
     options?: RequestOptions
   ): Promise<BridgeResponse<MCPListResourcesResponse>> {
     const results: MCPListResourcesResponse = { resources: [] }
     try {
-      const asyncReqs: Array<Promise<{ serverName: string; data: Awaited<ReturnType<Client["listResources"]>> }>> = []
-      const clients = availableClients(serverName)
+      const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listResources"]>> }>> = []
+      const clients = availableClients(context, id)
       for (const client of clients) {
-        asyncReqs.push(requestWithName(client.serverName, () => client.client.listResources(params, options)))
+        asyncReqs.push(requestWithId(client.id, () => client.client.listResources(params, options)))
       }
       const res = await Promise.allSettled(asyncReqs)
       res.forEach(r => {
@@ -202,18 +188,16 @@ export default (): MCPService => {
     }
   }
   async function listResourceTemplates(
-    serverName?: string | Array<string>,
+    id?: string | Array<string>,
     params?: MCPListResourceTemplatesParams,
     options?: RequestOptions
   ): Promise<BridgeResponse<MCPListResourceTemplatesResponse>> {
     const results: MCPListResourceTemplatesResponse = { resourceTemplates: [] }
     try {
-      const asyncReqs: Array<
-        Promise<{ serverName: string; data: Awaited<ReturnType<Client["listResourceTemplates"]>> }>
-      > = []
-      const clients = availableClients(serverName)
+      const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listResourceTemplates"]>> }>> = []
+      const clients = availableClients(context, id)
       for (const client of clients) {
-        asyncReqs.push(requestWithName(client.serverName, () => client.client.listResourceTemplates(params, options)))
+        asyncReqs.push(requestWithId(client.id, () => client.client.listResourceTemplates(params, options)))
       }
       const res = await Promise.allSettled(asyncReqs)
       res.forEach(r => {
@@ -234,14 +218,14 @@ export default (): MCPService => {
       const tools = await listTools()
       const tool = tools.data.find(tool => tool.name === toolname)
       if (tool) {
-        let ctx = context.get(tool.serverName)
+        let ctx = context.get(tool.id)
         if (!ctx) {
-          const msg = `server ${tool.serverName} not found`
+          const msg = `server [${tool.id}] not found`
           return responseData(500, msg, { content: { type: "text", text: msg } })
         }
-        const res = await registerServer(tool.serverName, ctx.params)
+        const res = await registerServer(ctx.params)
         if (code2xx(res.code)) {
-          ctx = context.get(tool.serverName)!
+          ctx = context.get(tool.id)!
           const res = (await ctx.client!.callTool({
             name: toolname,
             arguments: args,
@@ -262,49 +246,34 @@ export default (): MCPService => {
     }
   }
   function registerIpc() {
-    ipcMain.handle(IpcChannel.McpRegisterServer, async (_, name: string, serverParams: MCPStdioServersParams) => {
-      return registerServer(name, serverParams)
+    ipcMain.handle(IpcChannel.McpRegisterServer, async (_, params: MCPStdioServerParam) => {
+      return registerServer(params)
     })
-    ipcMain.handle(IpcChannel.McpToggleServer, async (_, name: string, command: MCPServerHandleCommand) => {
-      return toggleServer(name, command)
+    ipcMain.handle(IpcChannel.McpToggleServer, async (_, id: string, command: MCPClientHandleCommand) => {
+      return toggleServer(id, command)
     })
-    ipcMain.handle(IpcChannel.McpListTools, async (_, clientName?: string) => {
-      return listTools(clientName)
+    ipcMain.handle(IpcChannel.McpListTools, async (_, id?: string | Array<string>) => {
+      return listTools(id)
     })
     ipcMain.handle(IpcChannel.McpCallTool, async (_, name: string, args?: Record<string, unknown>) => {
       return callTool(name, args)
     })
     ipcMain.handle(
       IpcChannel.McpListPrompts,
-      async (
-        _,
-        serverName?: string | Array<string>,
-        params?: MCPListPromptsRequestParams,
-        options?: RequestOptions
-      ) => {
-        return listPrompts(serverName, params, options)
+      async (_, id?: string | Array<string>, params?: MCPListPromptsRequestParams, options?: RequestOptions) => {
+        return listPrompts(id, params, options)
       }
     )
     ipcMain.handle(
       IpcChannel.McpListResources,
-      async (
-        _,
-        serverName?: string | Array<string>,
-        params?: MCPListResourcesRequestParams,
-        options?: RequestOptions
-      ) => {
-        return listResources(serverName, params, options)
+      async (_, id?: string | Array<string>, params?: MCPListResourcesRequestParams, options?: RequestOptions) => {
+        return listResources(id, params, options)
       }
     )
     ipcMain.handle(
       IpcChannel.McpListResourceTemplates,
-      async (
-        _,
-        serverName?: string | Array<string>,
-        params?: MCPListResourceTemplatesParams,
-        options?: RequestOptions
-      ) => {
-        return listResourceTemplates(serverName, params, options)
+      async (_, id?: string | Array<string>, params?: MCPListResourceTemplatesParams, options?: RequestOptions) => {
+        return listResourceTemplates(id, params, options)
       }
     )
   }

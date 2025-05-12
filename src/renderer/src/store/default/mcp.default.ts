@@ -1,20 +1,24 @@
-import { MCPStdioServer } from "@renderer/types"
+import { MCPServerParam } from "@shared/types/mcp"
 
-export const mcpStdioDefault = (): MCPStdioServer[] => {
+export const mcpStdioDefault = (): MCPServerParam[] => {
   return [
     {
+      type: "stdio",
       id: "server-everything",
       serverName: "server-everything",
-      command: "npx",
-      disabled: false,
-      args: ["-y", "@modelcontextprotocol/server-everything"],
+      params: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-everything"],
+      },
     },
     {
+      type: "stdio",
       id: "server-filesystem",
       serverName: "server-filesystem",
-      command: "npx",
-      disabled: false,
-      args: ["-y", "@modelcontextprotocol/server-filesystem", "D:\\"],
+      params: {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "D:\\"],
+      },
     },
   ]
 }

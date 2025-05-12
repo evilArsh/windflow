@@ -3,11 +3,10 @@ import MonacoEditor from "@renderer/components/MonacoEditor/index.vue"
 import useMcpStore from "@renderer/store/mcp.store"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
 import { errorToText } from "@shared/error"
-import { MCPStdioServer } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import { cloneDeep } from "lodash-es"
-import { argsToArray, envToRecord } from "../../../utils"
-type MCPServersConfig = { mcpServers: Record<string, Omit<MCPStdioServer, "serverName" | "id">> }
+import { MCPServerParam } from "@shared/types/mcp"
+type MCPServersConfig = { mcpServers: Record<string, MCPServerParam["params"]> }
 const emit = defineEmits<{
   close: []
 }>()
@@ -17,19 +16,19 @@ const data = reactive<MCPServersConfig>({
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
-const value = ref("")
+const value = ref("") // 编辑器内容
 const onEditorChange = (val: string) => {
   value.value = val
 }
 const handler = {
-  // 所有mcp配置组装成json
+  // 所有mcp配置组装成json,组装时隐藏id
   async init() {
     await nextTick()
     try {
       const res = await mcp.api.getAll()
       data.mcpServers = res.reduce<MCPServersConfig["mcpServers"]>((pre, cur) => {
         const serverName = cur.serverName
-        pre[serverName] = { ...cur, ...{ serverName: undefined, id: undefined } }
+        pre[serverName] = cur.params
         return pre
       }, {})
       value.value = JSON.stringify(toRaw(data), null, 2)
@@ -41,8 +40,6 @@ const handler = {
     try {
       const changedData: MCPServersConfig = JSON.parse(value.value)
       for (const [serverName, value] of Object.entries(changedData.mcpServers)) {
-        value.args = argsToArray(value.args)
-        value.env = envToRecord(value.env)
         const existed = servers.value.find(v => v.serverName === serverName)
         if (existed) {
           Object.assign(existed, value)
@@ -51,10 +48,12 @@ const handler = {
             throw new Error(`update ${serverName} failed`)
           }
         } else {
-          const newValue = cloneDeep({
-            ...value,
+          const newValue = cloneDeep<MCPServerParam>({
             id: uniqueId(),
             serverName,
+            type: Object.hasOwn(value, "url") ? "streamable" : "stdio",
+            params: value as any,
+            description: "",
           })
           const res = await mcp.api.add(newValue)
           if (res == 0) {

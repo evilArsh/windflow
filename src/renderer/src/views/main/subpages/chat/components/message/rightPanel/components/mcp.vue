@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic, MCPStdioServer } from "@renderer/types"
+import { ChatTopic } from "@renderer/types"
 import useMcpStore from "@renderer/store/mcp.store"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
@@ -9,6 +9,7 @@ import { cloneDeep } from "lodash-es"
 import { errorToText } from "@shared/error"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
 import { PopoverInstance } from "element-plus"
+import { MCPServerParam } from "@shared/types/mcp"
 const props = defineProps<{
   modelValue: ChatTopic
 }>()
@@ -28,7 +29,7 @@ const popoverRefs = ref<Array<PopoverInstance>>([])
 const loading = ref(false) // 正在启动mcp
 
 const formHandler = {
-  onServerToggle: async (data: MCPStdioServer): Promise<boolean> => {
+  onServerToggle: async (data: MCPServerParam): Promise<boolean> => {
     try {
       const finalStatus = !!data.disabled
       if (finalStatus) {
@@ -36,7 +37,7 @@ const formHandler = {
           command: "start",
         })
         if (res.code == 404) {
-          await window.api.mcp.registerServer(data.id, cloneDeep(data))
+          await window.api.mcp.registerServer(cloneDeep(data))
         }
       }
       await chatStore.api.updateChatTopic(cloneDeep(node.value))
@@ -47,7 +48,7 @@ const formHandler = {
       return false
     }
   },
-  onServerChange: async (data: MCPStdioServer, index: number) => {
+  onServerChange: async (data: MCPServerParam, index: number) => {
     try {
       Object.assign(node.value.mcpServers[index], data)
       await chatStore.api.updateChatTopic(cloneDeep(node.value))
@@ -96,7 +97,7 @@ const serverHandler = {
       const asyncReq: Promise<unknown>[] = []
       for (const server of props.modelValue.mcpServers) {
         if (server.disabled) continue
-        asyncReq.push(window.api.mcp.registerServer(server.id, cloneDeep(server)))
+        asyncReq.push(window.api.mcp.registerServer(server))
       }
       await Promise.allSettled(asyncReq)
     } catch (error) {
@@ -106,7 +107,7 @@ const serverHandler = {
       loading.value = false
     }
   },
-  restart: async (done: CallBackFn, server: MCPStdioServer) => {
+  restart: async (done: CallBackFn, server: MCPServerParam) => {
     try {
       if (server.disabled) {
         throw new Error("Server is disabled")
@@ -114,7 +115,7 @@ const serverHandler = {
       await window.api.mcp.toggleServer(server.id, {
         command: "delete",
       })
-      await window.api.mcp.registerServer(server.id, cloneDeep(server))
+      await window.api.mcp.registerServer(cloneDeep(server))
     } catch (error) {
       console.log("[restart]", error)
       msg({ code: 500, msg: errorToText(error) })
@@ -153,7 +154,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
                 </Button>
                 <el-popover
                   placement="left"
-                  :width="400"
+                  :width="600"
                   trigger="click"
                   :ref="el => (popoverRefs[index] = el as PopoverInstance)">
                   <template #reference>

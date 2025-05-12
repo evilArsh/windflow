@@ -1,11 +1,11 @@
-import { MCPStdioServer } from "@renderer/types"
+import { MCPServerParam } from "@shared/types/mcp"
 import { defineStore } from "pinia"
 import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default/mcp.default"
 import { db } from "@renderer/usable/useDatabase"
 
-const useData = (servers: Reactive<MCPStdioServer[]>) => {
-  async function update(data: MCPStdioServer) {
+const useData = (servers: Reactive<MCPServerParam[]>) => {
+  async function update(data: MCPServerParam) {
     try {
       return db.mcpServer.update(data.id, data)
     } catch (error) {
@@ -13,11 +13,19 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
       return 0
     }
   }
-  async function add(data: MCPStdioServer) {
+  async function add(data: MCPServerParam) {
     try {
       return db.mcpServer.add(data)
     } catch (error) {
       console.log(`[add mcp server error] ${(error as Error).message}`)
+      return 0
+    }
+  }
+  async function del(id: string) {
+    try {
+      return db.mcpServer.delete(id)
+    } catch (error) {
+      console.log(`[del mcp server error] ${(error as Error).message}`)
       return 0
     }
   }
@@ -44,13 +52,14 @@ const useData = (servers: Reactive<MCPStdioServer[]>) => {
   }
   return {
     add,
+    del,
     fetch,
     update,
     getAll,
   }
 }
 export default defineStore("mcp", () => {
-  const servers = reactive<MCPStdioServer[]>([])
+  const servers = reactive<MCPServerParam[]>([])
   const api = useData(servers)
   return {
     servers,

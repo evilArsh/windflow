@@ -1,4 +1,3 @@
-import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
 import { BridgeResponse, BridgeStatusResponse } from "./bridge"
 import {
   MCPCallToolResult,
@@ -8,9 +7,10 @@ import {
   MCPListResourcesResponse,
   MCPListResourceTemplatesParams,
   MCPListResourceTemplatesResponse,
-  MCPServerHandleCommand,
-  MCPStdioServersParams,
+  MCPClientHandleCommand,
   MCPToolDetail,
+  MCPServerParam,
+  MCPRequestParams,
 } from "./mcp"
 
 export const IpcChannel = {
@@ -26,23 +26,23 @@ export interface BaseService {
   registerIpc: () => void
 }
 export interface MCPService extends BaseService {
-  registerServer: (serverName: string, serverParams: MCPStdioServersParams) => Promise<BridgeStatusResponse>
-  toggleServer: (serverName: string, command: MCPServerHandleCommand) => Promise<BridgeStatusResponse>
+  registerServer: (params: MCPServerParam) => Promise<BridgeStatusResponse>
+  toggleServer: (id: string, command: MCPClientHandleCommand) => Promise<BridgeStatusResponse>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
-  listTools: (serverName?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
+  listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (
-    serverName?: string | Array<string>,
+    id?: string | Array<string>,
     params?: MCPListResourcesRequestParams,
-    options?: RequestOptions
+    options?: MCPRequestParams
   ) => Promise<BridgeResponse<MCPListResourcesResponse>>
   listPrompts: (
-    serverName?: string | Array<string>,
+    id?: string | Array<string>,
     params?: MCPListPromptsRequestParams,
-    options?: RequestOptions
+    options?: MCPRequestParams
   ) => Promise<BridgeResponse<MCPListPromptsResponse>>
   listResourceTemplates: (
-    serverName?: string | Array<string>,
+    id?: string | Array<string>,
     params?: MCPListResourceTemplatesParams,
-    options?: RequestOptions
+    options?: MCPRequestParams
   ) => Promise<BridgeResponse<MCPListResourceTemplatesResponse>>
 }

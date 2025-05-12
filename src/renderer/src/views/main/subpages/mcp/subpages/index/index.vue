@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import useMcpStore from "@renderer/store/mcp.store"
-import { MCPStdioServer } from "@renderer/types"
+import { MCPServerParam } from "@shared/types/mcp"
 import ITerminal from "~icons/material-symbols/terminal"
 import { storeToRefs } from "pinia"
 import useDialog from "@renderer/usable/useDialog"
@@ -26,13 +26,25 @@ const {
 } = useDialog({
   width: "70vw",
 })
-const currentServer = ref<MCPStdioServer>()
-const onCardClick = (current: MCPStdioServer) => {
+const currentServer = ref<MCPServerParam>()
+const onCardClick = (current: MCPServerParam) => {
   currentServer.value = current
   open()
 }
+const onCardDelete = async (current: MCPServerParam, index: number) => {
+  try {
+    const res = await mcp.api.del(current.id)
+    if (res == 0) {
+      msg({ code: 200, msg: t("tip.deleteFailed") })
+      return
+    }
+    servers.value.splice(index, 1)
+  } catch (error) {
+    msg(errorToText(error))
+  }
+}
 const serverHandler = {
-  onSwitchChange: async (server: MCPStdioServer) => {
+  onSwitchChange: async (server: MCPServerParam) => {
     try {
       await mcp.api.update(cloneDeep(server))
     } catch (error) {
@@ -49,8 +61,9 @@ const dlg = {
   onListClose: () => {
     listDlgClose()
   },
-  onFormChange: async (data: MCPStdioServer) => {
+  onFormChange: async (data: MCPServerParam) => {
     try {
+      currentServer.value = data
       if (!data.id) {
         data.id = uniqueId()
         const res = cloneDeep(data)
@@ -58,9 +71,6 @@ const dlg = {
         servers.value.push(res)
       } else {
         await mcp.api.update(cloneDeep(data))
-        if (currentServer.value) {
-          Object.assign(currentServer.value, data)
-        }
       }
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
@@ -80,7 +90,7 @@ const dlg = {
       </div>
     </template>
     <el-row>
-      <el-col :xl="4" :lg="6" :md="8" :sm="12" :xs="24" v-for="server in servers" :key="server.id">
+      <el-col :xl="4" :lg="6" :md="8" :sm="12" :xs="24" v-for="(server, index) in servers" :key="server.id">
         <div class="p1rem">
           <el-card shadow="hover" style="--el-card-padding: 1rem">
             <template #header>
@@ -105,6 +115,7 @@ const dlg = {
             </el-scrollbar>
             <template #footer>
               <el-button @click.stop="onCardClick(server)">{{ t("btn.edit") }}</el-button>
+              <el-button @click.stop="onCardDelete(server, index)">{{ t("btn.delete") }}</el-button>
             </template>
           </el-card>
         </div>

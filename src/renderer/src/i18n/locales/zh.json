@@ -5,6 +5,7 @@
   "btn": {
     "add": "添加",
     "cancel": "取消",
+    "clear": "清空",
     "close": "关闭",
     "confirm": "确定",
     "delete": "删除",
@@ -25,6 +26,11 @@
     "terminate": "终止",
     "thinking": "思考中"
   },
+  "form": {
+    "emptyValue": "不能存在空值",
+    "invalidUrl": "不是有效的URL地址",
+    "requiredValue": "该值是必选的"
+  },
   "lang": {
     "en": "English",
     "zh": "简体中文"
@@ -35,7 +41,9 @@
     "command": "命令",
     "cwd": "工作目录",
     "desc": "描述",
+    "disable": "禁用",
     "edit": "编辑",
+    "enable": "启用",
     "env": "环境变量",
     "menu": {
       "env": "环境配置",
@@ -43,7 +51,9 @@
       "servers": "服务列表"
     },
     "serverName": "名称",
-    "status": "状态"
+    "status": "状态",
+    "type": "类型",
+    "url": "url"
   },
   "modelType": {
     "Chat": "对话",
@@ -87,6 +97,7 @@
   },
   "tip": {
     "deleteConfirm": "要删除吗?",
+    "deleteFailed": "删除失败",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中",
     "reset": "即将重置?",

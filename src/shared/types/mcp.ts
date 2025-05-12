@@ -1,14 +1,79 @@
-import type { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio"
-import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-export type MCPStdioServersParams = StdioServerParameters
-export type MCPServerContext = {
-  params: MCPStdioServersParams
-  client?: Client
+export type MCPServerType = "sse" | "streamable" | "stdio"
+export interface MCPRequestParams {
+  /**
+   * A timeout (in milliseconds) for this request. If exceeded, an McpError with code `RequestTimeout` will be raised from request().
+   *
+   * If not specified, `DEFAULT_REQUEST_TIMEOUT_MSEC` will be used as the timeout.
+   */
+  timeout?: number
+  /**
+   * Maximum total time (in milliseconds) to wait for a response.
+   * If exceeded, an McpError with code `RequestTimeout` will be raised, regardless of progress notifications.
+   * If not specified, there is no maximum total timeout.
+   */
+  maxTotalTimeout?: number
 }
-export type MCPServerHandleCommand = {
+export interface MCPParamsBase {
+  id: string
+  serverName: string
+  description: string
+  disabled?: boolean
+}
+export interface MCPStreamableServerParam extends MCPRequestParams, MCPParamsBase {
+  type: "sse" | "streamable"
+  params: {
+    url: string
+  }
+}
+export interface MCPStdioServerParam extends MCPRequestParams, MCPParamsBase {
+  type: "stdio"
+  params: {
+    /**
+     * The executable to run to start the server.
+     */
+    command: string
+    /**
+     * Command line arguments to pass to the executable.
+     */
+    args: string[]
+    /**
+     * The environment to use when spawning the process.
+     *
+     * If not specified, the result of getDefaultEnvironment() will be used.
+     */
+    env: Record<string, string>
+    /**
+     * The working directory to use when spawning the process.
+     *
+     * If not specified, the current working directory will be inherited.
+     */
+    cwd?: string
+  }
+}
+export type MCPServerParam = MCPStdioServerParam | MCPStreamableServerParam
+
+export function isStdioServerParams(params: MCPServerParam): params is MCPStdioServerParam {
+  return params.type === "stdio"
+}
+
+export function isSSEServerParams(params: MCPServerParam): params is MCPStreamableServerParam {
+  return params.type === "sse"
+}
+
+export function isStreamableServerParams(params: MCPServerParam): params is MCPStreamableServerParam {
+  return params.type === "streamable"
+}
+
+export function isAvailableServerParams(params: MCPServerParam): params is MCPServerParam {
+  return isSSEServerParams(params) || isStreamableServerParams(params) || isStdioServerParams(params)
+}
+
+export interface MCPClientHandleCommand {
   command: "start" | "stop" | "restart" | "delete"
 }
+
 // --- mcp call result start ---
+
 // -- tool calls start ---
 export interface MCPToolDetail {
   /**
@@ -18,7 +83,7 @@ export interface MCPToolDetail {
   /**
    * tool from which server
    */
-  serverName: string
+  id: string
   inputSchema?: {
     [x: string]: unknown
   }
@@ -54,6 +119,7 @@ export interface MCPCallToolResult {
   [x: string]: unknown
 }
 // -- tool calls end ---
+
 // -- resouce start ---
 export interface MCPResourceItem {
   uri: string
@@ -70,6 +136,7 @@ export interface MCPListResourcesResponse {
   nextCursor?: string
 }
 // -- resource end ---
+
 // -- prompt start ---
 export type MCPListPromptsRequestParams = MCPListResourcesRequestParams
 export interface MCPPromptItem {
@@ -86,6 +153,7 @@ export interface MCPListPromptsResponse {
   prompts: Array<MCPPromptItem>
 }
 // -- prompt end ---
+
 // -- resource template start ---
 export interface MCPListResourceTemplatesParams {
   cursor?: string
@@ -101,4 +169,5 @@ export interface MCPListResourceTemplatesResponse {
   }>
 }
 // -- resource template end ---
+
 // --- mcp call result end ---

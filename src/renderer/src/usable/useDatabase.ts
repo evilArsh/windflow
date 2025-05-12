@@ -1,12 +1,5 @@
-import {
-  ProviderMeta,
-  ModelMeta,
-  ChatTopic,
-  ChatMessage,
-  Settings,
-  SettingsValue,
-  MCPStdioServer,
-} from "@renderer/types"
+import { ProviderMeta, ModelMeta, ChatTopic, ChatMessage, Settings, SettingsValue } from "@renderer/types"
+import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { type EntityTable } from "dexie"
 
 export const name = "db-ai-chat"
@@ -17,7 +10,7 @@ const db = new Dexie(name) as Dexie & {
   chatTopic: EntityTable<ChatTopic, "id">
   chatMessage: EntityTable<ChatMessage, "id">
   settings: EntityTable<Settings<SettingsValue>, "id">
-  mcpServer: EntityTable<MCPStdioServer, "id">
+  mcpServer: EntityTable<MCPServerParam, "id">
 }
 
 db.version(1).stores({

@@ -1,81 +1,89 @@
 <script lang="ts" setup>
-import { CallBackFn } from "@renderer/lib/shared/types"
+import Args from "./args.vue"
+import Env from "./env.vue"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
-import { MCPStdioServer } from "@renderer/types"
+import { CallBackFn } from "@renderer/lib/shared/types"
 import { cloneDeep } from "lodash-es"
 import { FormRules } from "element-plus"
-import { argsToArray, envToRecord } from "../../../utils"
+import { MCPServerParam } from "@shared/types/mcp"
 const props = defineProps<{
-  data?: MCPStdioServer
+  data?: MCPServerParam
 }>()
 const emit = defineEmits<{
   close: []
-  change: [MCPStdioServer]
+  change: [MCPServerParam]
 }>()
 const { t } = useI18n()
 const formRef = useTemplateRef("form")
-const formRules = reactive<FormRules>({
-  command: {
-    required: true,
-    message: "",
-    trigger: "blur",
-    validator: (_, v: string, cb) => {
-      cb(v.trim().length > 0 ? undefined : new Error())
-    },
-  },
+const formRules = ref<FormRules>({
   serverName: {
     required: true,
     message: "",
     trigger: "blur",
     validator: (_, v: string, cb) => {
-      cb(v.trim().length > 0 ? undefined : new Error())
+      cb(v.trim().length > 0 ? undefined : new Error(t("form.requiredValue")))
     },
   },
-  args: { required: true, message: "", trigger: "blur" },
+  "params.command": {
+    required: true,
+    trigger: "blur",
+    validator: (_, v: string, cb) => {
+      cb(v.trim().length > 0 ? undefined : new Error(t("form.requiredValue")))
+    },
+  },
+  "params.args": {
+    required: true,
+    trigger: "blur",
+    validator: (_, v: Array<string | number>, cb) => {
+      cb(v.every(v => isNumber(v) || v) ? undefined : new Error(t("form.emptyValue")))
+    },
+  },
+  "params.env": {
+    trigger: "blur",
+    validator: (_, v: Record<string, unknown>, cb) => {
+      cb(Object.keys(v).every(key => key && (isNumber(v[key]) || v[key])) ? undefined : new Error(t("form.emptyValue")))
+    },
+  },
+  "params.url": {
+    required: true,
+    trigger: "blur",
+    validator: (_, value, cb) => {
+      try {
+        new URL(value)
+        cb()
+      } catch {
+        cb(new Error(t("form.invalidUrl")))
+      }
+    },
+  },
+  type: { required: true, message: "", trigger: "blur" },
 })
-const clonedData = ref<MCPStdioServer>({
+const defaultData = (): MCPServerParam => ({
   id: "",
-  command: "",
   serverName: "",
+  type: "stdio",
+  params: { command: "", args: [], env: {} },
+  description: "",
 })
-const args = ref("")
-const env = ref("")
+const clonedData = ref<MCPServerParam>(defaultData())
 const handler = {
   async init() {
     await nextTick()
-    clonedData.value = cloneDeep(
-      props.data ??
-        ({
-          command: "",
-          serverName: "",
-        } as MCPStdioServer)
-    )
-    args.value = argsToArray(clonedData.value.args).join(" ")
-    env.value = Object.entries(envToRecord(clonedData.value.env))
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n")
+    clonedData.value = cloneDeep(props.data ?? defaultData())
   },
   save: async (done: CallBackFn) => {
-    if (!formRef.value) {
+    try {
+      await formRef.value?.validate()
+      emit("change", clonedData.value)
+      emit("close")
       done()
-      return
+    } catch (error) {
+      console.log(error)
+      done()
     }
-    formRef.value.validate(async valid => {
-      if (valid) {
-        emit("change", clonedData.value)
-        emit("close")
-      }
-      done()
-    })
   },
   close: () => {
     emit("close")
-  },
-  onArgsChange(val: string) {
-    clonedData.value.args = argsToArray(val)
-  },
-  onEnvChange(val: string) {
-    clonedData.value.env = envToRecord(val)
   },
 }
 watch(
@@ -89,27 +97,39 @@ watch(
 </script>
 <template>
   <DialogPanel>
-    <el-form ref="form" :rules="formRules" :model="clonedData" label-width="10rem" class="w-full" label-position="top">
+    <el-form ref="form" :rules="formRules" :model="clonedData" label-width="8rem" class="w-full">
       <el-form-item :label="t('mcp.serverName')" required prop="serverName">
         <el-input v-model="clonedData.serverName"></el-input>
       </el-form-item>
-      <el-form-item :label="t('mcp.command')" required prop="command">
-        <el-input v-model="clonedData.command"></el-input>
+      <el-form-item :label="t('mcp.type')" required prop="type">
+        <el-radio-group v-model="clonedData.type">
+          <el-radio-button label="stdio" value="stdio" />
+          <el-radio-button label="streamable" value="streamable" />
+          <el-radio-button label="sse" value="sse" />
+        </el-radio-group>
       </el-form-item>
-      <el-form-item :label="t('mcp.args')" required prop="args">
-        <el-input v-model="args" :autosize="{ minRows: 5 }" type="textarea" @change="handler.onArgsChange"></el-input>
+      <el-form-item :label="t('mcp.enable')" prop="disabled">
+        <el-switch v-model="clonedData.disabled" :active-value="false" :inactive-value="true" />
       </el-form-item>
-      <el-form-item :label="t('mcp.env')" prop="env">
-        <el-input
-          v-model="env"
-          @change="handler.onEnvChange"
-          placeholder="key=value"
-          type="textarea"
-          :autosize="{ minRows: 5 }"></el-input>
-      </el-form-item>
-      <el-form-item :label="t('mcp.cwd')" prop="cwd">
-        <el-input v-model="clonedData.cwd"></el-input>
-      </el-form-item>
+      <template v-if="clonedData.type === 'stdio'">
+        <el-form-item :label="t('mcp.command')" required prop="params.command">
+          <el-input v-model="clonedData.params.command"></el-input>
+        </el-form-item>
+        <el-form-item :label="t('mcp.args')" required prop="params.args">
+          <Args :model-value="clonedData.params.args"></Args>
+        </el-form-item>
+        <el-form-item :label="t('mcp.env')" prop="params.env">
+          <Env v-model="clonedData.params.env"></Env>
+        </el-form-item>
+        <el-form-item :label="t('mcp.cwd')" prop="params.cwd">
+          <el-input v-model="clonedData.params.cwd"></el-input>
+        </el-form-item>
+      </template>
+      <template v-else>
+        <el-form-item :label="t('mcp.url')" prop="params.url">
+          <el-input v-model="clonedData.params.url"></el-input>
+        </el-form-item>
+      </template>
       <el-form-item :label="t('mcp.desc')" prop="description">
         <el-input v-model="clonedData.description" :autosize="{ minRows: 5 }" type="textarea"></el-input>
       </el-form-item>
