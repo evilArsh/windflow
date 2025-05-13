@@ -113,7 +113,12 @@ const serverHandler = {
         if (server.disabled) continue
         asyncReq.push(window.api.mcp.registerServer(cloneDeep(server)))
       }
-      await Promise.allSettled(asyncReq)
+      const res = await Promise.allSettled(asyncReq)
+      for (const item of res) {
+        if (item.status === "rejected") {
+          throw item.reason
+        }
+      }
     } catch (error) {
       console.log("[loadMCP]", error)
       msg({ code: 500, msg: errorToText(error) })
@@ -156,7 +161,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
       <Button size="small" @click="serverHandler.syncServers">{{ t("btn.sync") }}</Button>
       <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     </div>
-    <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col p1rem">
+    <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
         <div v-for="(server, index) in node.mcpServers" :key="server.id">
           <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
@@ -169,7 +174,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
                 :inactive-value="true"
                 :before-change="() => formHandler.onServerToggle(server)" />
             </template>
-            <el-text size="small" type="info">{{ server.serverName }}</el-text>
+            <McpName :data="server"></McpName>
             <template #footer>
               <div class="flex items-center gap-.5rem" @click.stop>
                 <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index)">

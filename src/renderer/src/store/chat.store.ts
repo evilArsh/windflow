@@ -12,7 +12,7 @@ import {
   Role,
   Settings,
 } from "@renderer/types"
-import { chatTopicDefault } from "./default/chat.default"
+import { chatMessageDefault, chatTopicDefault } from "./default/chat.default"
 import { useDebounceFn } from "@vueuse/core"
 import { db } from "@renderer/usable/useDatabase"
 import useProviderStore from "./provider.store"
@@ -121,17 +121,18 @@ const useData = (
         ...assembleTopicTree(data, async item => {
           if (item.id === currentNodeKey.value) {
             currentTopic.value = item
+            let msg: ChatMessage | undefined = undefined
             if (item.node.chatMessageId) {
-              const msg = await db.chatMessage.get(item.node.chatMessageId)
-              if (msg) {
-                msg.data.forEach(v => {
-                  v.finish = true
-                  v.status = 200
-                })
-                chatMessage[msg.id] = msg
-                currentMessage.value = msg
-              }
+              msg = await db.chatMessage.get(item.node.chatMessageId)
             }
+            msg = msg ?? chatMessageDefault()
+            chatMessage[msg.id] = msg
+            currentMessage.value = msg
+            item.node.chatMessageId = msg.id
+            msg.data.forEach(v => {
+              v.finish = true
+              v.status = 200
+            })
           }
         })
       )

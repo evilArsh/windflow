@@ -69,8 +69,7 @@ const defaultData = (): MCPServerParam => ({
 const clonedData = ref<MCPServerParam>(defaultData())
 const handler = {
   async init() {
-    await nextTick()
-    clonedData.value = cloneDeep(props.data ?? defaultData())
+    clonedData.value = props.data ? cloneDeep(props.data) : defaultData()
   },
   save: async (done: CallBackFn) => {
     try {
@@ -89,8 +88,7 @@ const handler = {
 }
 watch(
   () => props.data,
-  (val, old) => {
-    if (val === old) return
+  () => {
     handler.init()
   },
   { immediate: true }

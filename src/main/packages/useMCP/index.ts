@@ -15,6 +15,7 @@ import {
   isAvailableServerParams,
   isStdioServerParams,
   isStreamableServerParams,
+  isSSEServerParams,
 } from "@shared/types/mcp"
 import { BridgeResponse, BridgeStatusResponse, code2xx, responseCode, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
@@ -63,20 +64,25 @@ export default (): MCPService => {
       if (isStdioServerParams(ctx.params)) {
         await createStdioTransport(client, ctx.params)
         log.debug("[MCP register stdio server]", `[${serverName}]created`)
-      } else if (isStreamableServerParams(ctx.params)) {
+      } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
           await createStreamableTransport(client, ctx.params)
           log.debug("[MCP register streamable server]", `[${serverName}]created`)
-        } catch (error) {
-          log.warn("[MCP register streamable server error,attempt sse type]", errorToText(error))
+        } catch (_e) {
+          log.warn("[MCP register streamable server error,attempt sse type]")
           await createSseTransport(client, ctx.params)
           log.debug("[MCP register sse server]", `[${serverName}]created`)
         }
+      } else {
+        const err = `unknown server type:${params.type} in server ${serverName}`
+        log.error("[MCP registerServer]", err, params)
+        throw new Error(err)
       }
       ctx.client = client
       context.set(id, ctx)
       return responseCode(200)
     } catch (error) {
+      console.log(error)
       return responseCode(500, JSON.stringify(serializeError(error)))
     }
   }

@@ -101,7 +101,7 @@ const dlg = {
                 <template #icon>
                   <ITerminal class="text-2rem"></ITerminal>
                 </template>
-                <el-text line-clamp="2">{{ server.serverName }}</el-text>
+                <McpName :data="server"></McpName>
                 <template #footer>
                   <el-switch
                     v-model="server.disabled"
