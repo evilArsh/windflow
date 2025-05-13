@@ -41,6 +41,7 @@
     "apiKey": "API KEY",
     "apiUrl": "API URL",
     "model": {
+      "active": "active",
       "activeStatus": "active status",
       "activeStatusActive": "active",
       "activeStatusAll": "all",

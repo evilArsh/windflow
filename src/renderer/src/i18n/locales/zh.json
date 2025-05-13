@@ -74,6 +74,7 @@
     "apiKey": "API Key",
     "apiUrl": "API 地址",
     "model": {
+      "active": "使用",
       "activeStatus": "激活状态",
       "activeStatusActive": "激活",
       "activeStatusAll": "全部",

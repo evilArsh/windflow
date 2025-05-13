@@ -15,7 +15,7 @@ const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const shortcut = useShortcut()
 const chatStore = useChatStore()
-const { topicList } = storeToRefs(chatStore)
+const { topicList, currentTopic } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
 const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
@@ -35,6 +35,7 @@ shortcut.listen("ctrl+b", res => {
   }
 })
 settingsStore.api.dataWatcher<boolean>("chat.toggleMenu", toggleMenu, true)
+chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
 onMounted(() => {
   window.defaultTopicTitle = t("chat.addChat")
   window.addEventListener("resize", dlg.clickMask)

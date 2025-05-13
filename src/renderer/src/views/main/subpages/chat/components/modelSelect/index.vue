@@ -23,9 +23,9 @@ const pop = reactive({
     pop.show = !pop.show
   }),
 })
-
-const activeModels = computed<Record<string, ModelMeta[]>>(() => {
-  return models.value
+const activeModels = ref<Record<string, ModelMeta[]>>({})
+watchEffect(() => {
+  activeModels.value = models.value
     .filter(v => v.active && (v.type === ModelType.Chat || v.type === ModelType.ChatReasoner))
     .reduce((acc, cur) => {
       if (acc[cur.providerName]) {

@@ -42,7 +42,7 @@ const onModelChange = (row: ModelMeta) => {
               <el-text type="primary">{{ t(`modelType.${row.type}`) }}</el-text>
             </template>
           </el-table-column>
-          <el-table-column label="使用">
+          <el-table-column :label="t('provider.model.active')">
             <template #default="{ row }">
               <el-switch v-model="row.active" @change="onModelChange(row)" />
             </template>
