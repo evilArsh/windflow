@@ -66,7 +66,7 @@ const dlg = {
   },
   onFormChange: async (data: MCPServerParam) => {
     try {
-      currentServer.value = data
+      if (currentServer.value) Object.assign(currentServer.value, data)
       if (!data.id) {
         data.id = uniqueId()
         const res = cloneDeep(data)
@@ -75,6 +75,7 @@ const dlg = {
       } else {
         await mcp.api.update(cloneDeep(data))
       }
+      msg({ code: 200, msg: "ok" })
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }

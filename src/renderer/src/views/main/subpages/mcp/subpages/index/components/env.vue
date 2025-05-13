@@ -44,10 +44,20 @@ function onChange() {
             <ContentBox v-for="(item, index) in dataset" :key="item.key">
               <el-row class="flex-1" :gutter="5">
                 <el-col :span="12">
-                  <el-input :maxlength="50" @change="onChange" v-model="dataset[index].key"></el-input>
+                  <el-input
+                    type="textarea"
+                    autosize
+                    :maxlength="500"
+                    @change="onChange"
+                    v-model="dataset[index].key"></el-input>
                 </el-col>
                 <el-col :span="12">
-                  <el-input :maxlength="50" @change="onChange" v-model="dataset[index].value"></el-input>
+                  <el-input
+                    type="textarea"
+                    autosize
+                    :maxlength="500"
+                    @change="onChange"
+                    v-model="dataset[index].value"></el-input>
                 </el-col>
               </el-row>
               <template #end>

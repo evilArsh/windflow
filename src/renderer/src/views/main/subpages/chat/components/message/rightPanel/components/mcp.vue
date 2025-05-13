@@ -78,11 +78,15 @@ const formHandler = {
 const serverHandler = {
   test: async (done: CallBackFn) => {
     try {
-      // const res = await window.api.mcp.listTools()
-      const res = await window.api.mcp.listPrompts()
-      // const res = await window.api.mcp.listResources()
-      // const res = await window.api.mcp.listResourceTemplates()
-      console.log(res)
+      const ids = node.value.mcpServers.map(v => v.id)
+      const listTools = await window.api.mcp.listTools(ids)
+      const listPrompts = await window.api.mcp.listPrompts(ids)
+      const listResources = await window.api.mcp.listResources(ids)
+      const listResourceTemplates = await window.api.mcp.listResourceTemplates(ids)
+      console.log("[listTools]", listTools)
+      console.log("[listPrompts]", listPrompts)
+      console.log("[listResources]", listResources)
+      console.log("[listResourceTemplates]", listResourceTemplates)
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {
@@ -157,7 +161,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
 </script>
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
-    <div class="flex-shrink-0">
+    <div class="flex-shrink-0 flex gap1rem">
       <Button size="small" @click="serverHandler.syncServers">{{ t("btn.sync") }}</Button>
       <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     </div>

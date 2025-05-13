@@ -125,7 +125,9 @@ const useData = (
             if (item.node.chatMessageId) {
               msg = await db.chatMessage.get(item.node.chatMessageId)
             }
-            msg = msg ?? chatMessageDefault()
+            if (!msg) {
+              msg = chatMessageDefault()
+            }
             chatMessage[msg.id] = msg
             currentMessage.value = msg
             item.node.chatMessageId = msg.id

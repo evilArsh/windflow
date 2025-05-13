@@ -27,3 +27,12 @@ export const uniqueId = (seed?: number): string => {
 export const isIndexOutOfRange = (index: number, length: number): boolean => {
   return index < 0 || index > length
 }
+
+export const isValidUrl = (url: string): boolean => {
+  try {
+    const u = new URL(url)
+    return u.protocol === "http:" || u.protocol === "https:"
+  } catch (_e) {
+    return false
+  }
+}

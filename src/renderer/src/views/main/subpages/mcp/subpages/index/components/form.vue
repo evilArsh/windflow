@@ -49,12 +49,7 @@ const formRules = ref<FormRules>({
     required: true,
     trigger: "blur",
     validator: (_, value, cb) => {
-      try {
-        new URL(value)
-        cb()
-      } catch {
-        cb(new Error(t("form.invalidUrl")))
-      }
+      cb(isValidUrl(value) ? undefined : new Error(t("form.invalidUrl")))
     },
   },
   type: { required: true, message: "", trigger: "blur" },
@@ -86,13 +81,7 @@ const handler = {
     emit("close")
   },
 }
-watch(
-  () => props.data,
-  () => {
-    handler.init()
-  },
-  { immediate: true }
-)
+watch(() => props.data, handler.init, { immediate: true })
 </script>
 <template>
   <DialogPanel>

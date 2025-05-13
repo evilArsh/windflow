@@ -40,9 +40,17 @@ const handler = {
     try {
       const changedData: MCPServersConfig = JSON.parse(value.value)
       for (const [serverName, value] of Object.entries(changedData.mcpServers)) {
-        const existed = servers.value.find(v => v.serverName === serverName)
+        // @ts-expect-error known property
+        if (!isObject(value.env)) value.env = {}
+        // @ts-expect-error known property
+        if (!isArray(value.args)) value.args = []
+        // @ts-expect-error known property
+        if (!isValidUrl(value.url)) {
+          delete value["url"]
+        }
+        const existed: MCPServerParam | undefined = servers.value.find(v => v.serverName === serverName)
         if (existed) {
-          Object.assign(existed, value)
+          existed.params = value
           const res = await mcp.api.update(cloneDeep(existed))
           if (res == 0) {
             throw new Error(`update ${serverName} failed`)
