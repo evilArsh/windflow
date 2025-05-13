@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 const props = defineProps<{
-  modelValue: Record<string, string | number> | undefined
+  modelValue: Record<string, string | number>
 }>()
 const emit = defineEmits<{
-  (e: "update:modelValue", value?: Record<string, string | number>): void
+  (e: "update:modelValue", value: Record<string, string | number>): void
 }>()
 const data = computed({
   get: () => props.modelValue,
@@ -11,12 +11,11 @@ const data = computed({
 })
 const dataset = ref<{ key: string; value: string | number }[]>([])
 watchEffect(() => {
-  if (!data.value) return
   dataset.value = Object.entries(data.value).map(([key, value]) => ({ key, value }))
 })
 function onAdd(index: number) {
   dataset.value.splice(index + 1, 0, {
-    key: "key",
+    key: `key_${dataset.value.length}`,
     value: "value",
   })
   onChange()

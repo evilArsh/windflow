@@ -1,5 +1,5 @@
 <script lang="ts" setup></script>
 <template>
-  <div>商场</div>
+  <el-empty></el-empty>
 </template>
 <style lang="scss" scoped></style>

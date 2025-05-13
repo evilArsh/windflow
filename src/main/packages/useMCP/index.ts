@@ -44,7 +44,7 @@ export default (): MCPService => {
       const { id, serverName } = params
       let ctx = context.get(id)
       if (!ctx) {
-        ctx = { params: params }
+        ctx = { params }
         log.debug("[MCP registerServer]", `[${serverName}]context not found create new one`)
       } else {
         if (ctx.client) {
@@ -59,20 +59,21 @@ export default (): MCPService => {
           log.debug("[MCP registerServer]", `[${serverName}]context found but client not created`)
         }
       }
-      ctx.client = createClient(name, version)
+      const client = createClient(name, version)
       if (isStdioServerParams(ctx.params)) {
-        await createStdioTransport(ctx.client, ctx.params)
+        await createStdioTransport(client, ctx.params)
         log.debug("[MCP register stdio server]", `[${serverName}]created`)
       } else if (isStreamableServerParams(ctx.params)) {
         try {
-          await createStreamableTransport(ctx.client, ctx.params)
+          await createStreamableTransport(client, ctx.params)
           log.debug("[MCP register streamable server]", `[${serverName}]created`)
         } catch (error) {
           log.warn("[MCP register streamable server error,attempt sse type]", errorToText(error))
-          await createSseTransport(ctx.client, ctx.params)
+          await createSseTransport(client, ctx.params)
           log.debug("[MCP register sse server]", `[${serverName}]created`)
         }
       }
+      ctx.client = client
       context.set(id, ctx)
       return responseCode(200)
     } catch (error) {

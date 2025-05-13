@@ -74,6 +74,7 @@ export default (
       top: 0,
       maxHeight: "100vh",
       overflow: "auto",
+      boxShadow: "var(--el-box-shadow-light)",
     },
     mask: false,
     maskStyle: {

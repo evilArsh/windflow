@@ -57,7 +57,6 @@ export default () => {
     onFilenameChange(data)
   }
   async function create(el: HTMLElement, init: EditorProps): Promise<void> {
-    await nextTick()
     const model = _createModel(init)
     const editorInstance = _editor.create(el, {
       model: model,

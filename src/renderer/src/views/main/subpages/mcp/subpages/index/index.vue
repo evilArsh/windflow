@@ -12,6 +12,7 @@ import Form from "./components/form.vue"
 import List from "./components/list.vue"
 import ILight from "~icons/fxemoji/lightbulb"
 import IProhibited from "~icons/fluent-emoji-flat/prohibited"
+import { CallBackFn } from "@renderer/lib/shared/types"
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
@@ -31,7 +32,7 @@ const onCardClick = (current: MCPServerParam) => {
   currentServer.value = current
   open()
 }
-const onCardDelete = async (current: MCPServerParam, index: number) => {
+const onCardDelete = async (done: CallBackFn, current: MCPServerParam, index: number) => {
   try {
     const res = await mcp.api.del(current.id)
     if (res == 0) {
@@ -41,6 +42,8 @@ const onCardDelete = async (current: MCPServerParam, index: number) => {
     servers.value.splice(index, 1)
   } catch (error) {
     msg(errorToText(error))
+  } finally {
+    done()
   }
 }
 const serverHandler = {
@@ -98,7 +101,7 @@ const dlg = {
                 <template #icon>
                   <ITerminal class="text-2rem"></ITerminal>
                 </template>
-                <el-text class="mcp-tree-label" line-clamp="2">{{ server.serverName }}</el-text>
+                <el-text line-clamp="2">{{ server.serverName }}</el-text>
                 <template #footer>
                   <el-switch
                     v-model="server.disabled"
@@ -114,8 +117,24 @@ const dlg = {
               <el-text type="info">{{ server.description }}</el-text>
             </el-scrollbar>
             <template #footer>
-              <el-button @click.stop="onCardClick(server)">{{ t("btn.edit") }}</el-button>
-              <el-button @click.stop="onCardDelete(server, index)">{{ t("btn.delete") }}</el-button>
+              <div class="flex gap1rem">
+                <el-button @click.stop="onCardClick(server)">{{ t("btn.edit") }}</el-button>
+                <el-popconfirm :title="t('tip.deleteConfirm')">
+                  <template #reference>
+                    <el-button type="danger">
+                      {{ t("btn.delete") }}
+                    </el-button>
+                  </template>
+                  <template #actions="{ cancel }">
+                    <div class="flex justify-between">
+                      <Button type="danger" size="small" @click="done => onCardDelete(done, server, index)">
+                        {{ t("tip.yes") }}
+                      </Button>
+                      <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+                    </div>
+                  </template>
+                </el-popconfirm>
+              </div>
             </template>
           </el-card>
         </div>

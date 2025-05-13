@@ -35,6 +35,7 @@ const formRules = ref<FormRules>({
     required: true,
     trigger: "blur",
     validator: (_, v: Array<string | number>, cb) => {
+      if (v.length === 0) return cb(new Error(t("form.emptyValue")))
       cb(v.every(v => isNumber(v) || v) ? undefined : new Error(t("form.emptyValue")))
     },
   },

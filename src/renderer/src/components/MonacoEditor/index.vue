@@ -34,10 +34,13 @@ watch(
   () => onNameSpaceChange({ ...toRaw(props) })
 )
 onMounted(async () => {
+  await nextTick()
   ev.emit("mounted")
   const propsRaw = toRaw(props)
-  await create(editorRef.value!, propsRaw)
   ev.on("change", (code: string) => emit("change", code))
+  setTimeout(() => {
+    editorRef.value && create(editorRef.value, propsRaw)
+  }, 0)
 })
 onBeforeUnmount(() => {
   ev.emit("beforeUnmount")

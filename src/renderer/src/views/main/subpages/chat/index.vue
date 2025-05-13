@@ -83,7 +83,7 @@ onBeforeUnmount(() => {
                       <i-eos-icons:bubble-loading
                         v-show="data.node.requestCount > 0"
                         class="text-1.2rem"></i-eos-icons:bubble-loading>
-                      <el-text line-clamp="2">{{ data.node.label }}</el-text>
+                      <el-text line-clamp="1">{{ data.node.label }}</el-text>
                     </div>
                   </ContentBox>
                   <div v-show="tree.currentHover === data.id" class="chat-tree-handle">

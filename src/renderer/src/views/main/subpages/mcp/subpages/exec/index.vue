@@ -1,5 +1,5 @@
 <script lang="ts" setup></script>
 <template>
-  <div>环境配置</div>
+  <el-empty></el-empty>
 </template>
 <style lang="scss" scoped></style>

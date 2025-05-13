@@ -6,7 +6,7 @@
         <slot></slot>
       </el-scrollbar>
     </div>
-    <el-divider class="my-1rem!"></el-divider>
+    <el-divider class="my-.25rem!"></el-divider>
     <div class="dialog-footer">
       <slot name="footer"></slot>
     </div>
@@ -14,6 +14,7 @@
 </template>
 <style lang="scss" scoped>
 .dialog-panel {
+  --panel-padding: 1.2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -21,9 +22,11 @@
   .dialog-content {
     flex: 1;
     overflow: hidden;
+    padding: var(--panel-padding);
   }
   .dialog-footer {
     flex-shrink: 0;
+    padding: var(--panel-padding);
   }
 }
 </style>

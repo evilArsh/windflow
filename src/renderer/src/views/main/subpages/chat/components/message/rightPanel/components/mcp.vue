@@ -10,6 +10,7 @@ import { errorToText } from "@shared/error"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
 import { PopoverInstance } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
+import { code5xx } from "@shared/types/bridge"
 const props = defineProps<{
   modelValue: ChatTopic
 }>()
@@ -24,23 +25,37 @@ const { t } = useI18n()
 const mcp = useMcpStore()
 const chatStore = useChatStore()
 const { servers } = storeToRefs(mcp)
-
-const popoverRefs = ref<Array<PopoverInstance>>([])
 const loading = ref(false) // 正在启动mcp
+const popover = reactive({
+  visible: false,
+  ref: undefined as PopoverInstance | undefined,
+  refs: [] as Array<HTMLElement>,
+  server: undefined as MCPServerParam | undefined,
+  triggerRef: undefined as HTMLElement | undefined,
+  onClick: markRaw((index: number) => {
+    popover.triggerRef = popover.refs[index]
+    popover.server = node.value.mcpServers[index]
+    popover.visible = true
+  }),
+})
 
 const formHandler = {
   onServerToggle: async (data: MCPServerParam): Promise<boolean> => {
     try {
-      const finalStatus = !!data.disabled
-      if (finalStatus) {
+      if (data.disabled) {
         const res = await window.api.mcp.toggleServer(data.id, {
           command: "start",
         })
+        if (code5xx(res.code)) throw new Error(res.msg)
         if (res.code == 404) {
-          await window.api.mcp.registerServer(cloneDeep(data))
+          const res = await window.api.mcp.registerServer(cloneDeep(data))
+          if (code5xx(res.code)) throw new Error(res.msg)
         }
       }
-      await chatStore.api.updateChatTopic(cloneDeep(node.value))
+      const count = await chatStore.api.updateChatTopic(cloneDeep(node.value))
+      if (count == 0) {
+        throw new Error("update failed")
+      }
       msg({ code: 200, msg: "ok" })
       return true
     } catch (error) {
@@ -48,17 +63,16 @@ const formHandler = {
       return false
     }
   },
-  onServerChange: async (data: MCPServerParam, index: number) => {
+  onServerChange: async (data: MCPServerParam) => {
     try {
-      Object.assign(node.value.mcpServers[index], data)
+      popover.server && Object.assign(popover.server, data)
       await chatStore.api.updateChatTopic(cloneDeep(node.value))
-      msg({ code: 200, msg: "ok" })
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }
   },
-  onClose: (popRef?: PopoverInstance) => {
-    popRef?.hide()
+  onClose: () => {
+    popover.visible = false
   },
 }
 const serverHandler = {
@@ -97,7 +111,7 @@ const serverHandler = {
       const asyncReq: Promise<unknown>[] = []
       for (const server of props.modelValue.mcpServers) {
         if (server.disabled) continue
-        asyncReq.push(window.api.mcp.registerServer(server))
+        asyncReq.push(window.api.mcp.registerServer(cloneDeep(server)))
       }
       await Promise.allSettled(asyncReq)
     } catch (error) {
@@ -112,10 +126,16 @@ const serverHandler = {
       if (server.disabled) {
         throw new Error("Server is disabled")
       }
-      await window.api.mcp.toggleServer(server.id, {
+      const toggleRes = await window.api.mcp.toggleServer(server.id, {
         command: "delete",
       })
-      await window.api.mcp.registerServer(cloneDeep(server))
+      if (code5xx(toggleRes.code)) {
+        throw new Error(toggleRes.msg)
+      }
+      const res = await window.api.mcp.registerServer(cloneDeep(server))
+      if (code5xx(res.code)) {
+        throw new Error(res.msg)
+      }
     } catch (error) {
       console.log("[restart]", error)
       msg({ code: 500, msg: errorToText(error) })
@@ -123,6 +143,9 @@ const serverHandler = {
       loading.value = false
       done()
     }
+  },
+  del: (index: number) => {
+    node.value.mcpServers.splice(index, 1)
   },
 }
 watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
@@ -136,7 +159,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
     <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col p1rem">
       <el-scrollbar>
         <div v-for="(server, index) in node.mcpServers" :key="server.id">
-          <ContentBox background>
+          <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
             <template #icon>
               <Switch
                 size="small"
@@ -149,26 +172,29 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
             <el-text size="small" type="info">{{ server.serverName }}</el-text>
             <template #footer>
               <div class="flex items-center gap-.5rem" @click.stop>
-                <Button size="small" round circle @click="done => serverHandler.restart(done, server)">
-                  <i class="i-ic:baseline-refresh text-1.6rem"></i>
-                </Button>
-                <el-popover
-                  placement="left"
-                  :width="600"
-                  trigger="click"
-                  :ref="el => (popoverRefs[index] = el as PopoverInstance)">
+                <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index)">
+                  <i class="i-ep:edit"></i>
+                </ContentBox>
+                <ContentBox class="flex-grow-0!" @click.stop>
+                  <Button text link type="warning" @click="done => serverHandler.restart(done, server)">
+                    <i class="i-ep:refresh text-1.4rem"></i>
+                  </Button>
+                </ContentBox>
+                <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="serverHandler.del(index)">
                   <template #reference>
-                    <ContentBox class="flex-grow-0! flex-shrink-0!" @click.stop>
-                      <i class="i-ep:edit"></i>
+                    <ContentBox class="flex-grow-0!" @click.stop>
+                      <el-button text link type="danger">
+                        <i class="i-ep:delete text-1.4rem"></i>
+                      </el-button>
                     </ContentBox>
                   </template>
-                  <MCPForm
-                    class="h-500px"
-                    @change="data => formHandler.onServerChange(data, index)"
-                    @close="formHandler.onClose(popoverRefs[index])"
-                    :data="server">
-                  </MCPForm>
-                </el-popover>
+                  <template #actions="{ confirm, cancel }">
+                    <div class="flex justify-between">
+                      <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
+                      <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+                    </div>
+                  </template>
+                </el-popconfirm>
               </div>
             </template>
           </ContentBox>
@@ -176,6 +202,27 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
         </div>
       </el-scrollbar>
     </div>
+    <el-popover
+      popper-style="--el-popover-padding: 0"
+      :visible="popover.visible"
+      virtual-triggering
+      :virtual-ref="popover.triggerRef"
+      placement="left"
+      :width="800"
+      trigger="click"
+      :ref="el => (popover.ref = el as PopoverInstance)">
+      <template #reference>
+        <ContentBox class="flex-grow-0! flex-shrink-0!" @click.stop>
+          <i class="i-ep:edit"></i>
+        </ContentBox>
+      </template>
+      <MCPForm
+        class="h-500px"
+        @change="data => formHandler.onServerChange(data)"
+        @close="formHandler.onClose()"
+        :data="popover.server">
+      </MCPForm>
+    </el-popover>
   </div>
 </template>
 <style lang="scss" scoped></style>
