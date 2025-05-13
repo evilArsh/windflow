@@ -121,7 +121,7 @@ export interface LLMProvider extends Provider {
     reqConfig?: LLMBaseRequest
   ): LLMChatRequestHandler
   titleSummary(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
-  parseResponse(text: string): LLMChatResponse
+  parseResponse(text: string, stream: boolean): LLMChatResponse
 }
 
 // text-to-image

@@ -47,21 +47,13 @@ async function* request(
       if (abortController.signal.aborted) {
         throw new AbortError("Request Aborted")
       }
-      const parsedData = provider.parseResponse(line)
+      const parsedData = provider.parseResponse(line, true)
       parsedData.stream = true
       yield parsedData
     }
   } else {
-    const data = await response.json()
-    yield {
-      role: data.choices[0].message.role,
-      content: data.choices[0].message.content,
-      reasoning_content: data.choices[0].message.reasoning_content ?? "",
-      status: HttpStatusCode.Ok,
-      stream: false,
-      usage: data.usage ?? undefined,
-      tool_calls: data.choices[0].message.tool_calls ?? data.choices[0].message.tools ?? undefined,
-    }
+    const data = await response.text()
+    yield provider.parseResponse(data, false)
   }
 }
 export const useSingleLLMChat = (): LLMChatRequestHandler => {

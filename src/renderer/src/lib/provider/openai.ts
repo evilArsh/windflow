@@ -153,15 +153,21 @@ export abstract class OpenAICompatible implements LLMProvider {
   constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 
-  parseResponse(text: string): LLMChatResponse {
+  parseResponse(text: string, stream: boolean): LLMChatResponse {
     try {
-      if (text.startsWith("data:")) {
+      if (text.includes(":keep-alive")) {
+        return { role: Role.Assistant, status: 102, content: "", reasoning_content: "" }
+      } else if (stream) {
+        text = text.replace(/^data:/, "").trim()
+        if (!text) {
+          return { role: Role.Assistant, status: 206, content: "", reasoning_content: "" }
+        }
         if (text.includes("[DONE]")) {
           return { role: Role.Assistant, status: 200, content: "", reasoning_content: "" }
         }
-        const data = JSON.parse(text.replace(/data:/, ""))
+        const data = JSON.parse(text)
         return {
-          role: Role.Assistant,
+          role: data.choices[0].delta.role,
           status: 206,
           content: data.choices[0].delta.content ?? "",
           reasoning_content: data.choices[0].delta.reasoning_content ?? "",
@@ -169,13 +175,11 @@ export abstract class OpenAICompatible implements LLMProvider {
           tool_calls: data.choices[0].delta.tool_calls ?? data.choices[0].delta.tools,
           finish_reason: data.choices[0].finish_reason,
         }
-      } else if (text.includes(":keep-alive")) {
-        return { role: Role.Assistant, status: 102, content: "", reasoning_content: "" }
       } else {
         try {
           const data = JSON.parse(text)
           return {
-            role: Role.Assistant,
+            role: data.choices[0].message.role,
             status: 200,
             content: data.choices[0].message.content,
             reasoning_content: data.choices[0].message.reasoning_content ?? "",
@@ -188,7 +192,7 @@ export abstract class OpenAICompatible implements LLMProvider {
         }
       }
     } catch (error) {
-      console.log("[parseResponse error]", error)
+      console.log("[parseResponse error]", error, text)
       return { status: 206, msg: "", content: errorToText(error), role: Role.Assistant }
     }
   }
