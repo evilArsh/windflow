@@ -108,6 +108,7 @@
     "mdast-util-mdxjs-esm": "^2.0.1",
     "prettier": "^3.5.3",
     "prettier-eslint": "^16.4.1",
+    "rollup-plugin-visualizer": "^5.14.0",
     "sass": "^1.88.0",
     "style-value-types": "^5.1.2",
     "terser": "^5.39.0",

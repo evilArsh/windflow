@@ -45,6 +45,7 @@ self.onmessage = async (msg: MessageEvent<WorkerMessage>) => {
               return uri.path.slice("/node_modules/".length)
             }
           }
+          return ""
         },
         pkgName => dependencies[pkgName],
         (path, content) => {

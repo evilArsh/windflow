@@ -13,7 +13,6 @@ import {
   Settings,
 } from "@renderer/types"
 import { chatMessageDefault, chatTopicDefault } from "./default/chat.default"
-import { useDebounceFn } from "@vueuse/core"
 import { db } from "@renderer/usable/useDatabase"
 import useProviderStore from "./provider.store"
 import useModelsStore from "./model.store"
@@ -21,6 +20,7 @@ import useSettingsStore from "./settings.store"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { Reactive, Ref } from "vue"
 import { cloneDeep } from "lodash"
+import PQueue from "p-queue"
 
 const useData = (
   topicList: Reactive<Array<ChatTopicTree>>,
@@ -29,6 +29,8 @@ const useData = (
   currentMessage: Ref<ChatMessage | undefined>,
   currentNodeKey: Ref<string>
 ) => {
+  const queue = markRaw(new PQueue({ concurrency: 1 }))
+  const mqueue = markRaw(new PQueue({ concurrency: 1 }))
   const settingsStore = useSettingsStore()
   function topicToTree(topic: ChatTopic): ChatTopicTree {
     return { id: topic.id, node: topic, children: [] }
@@ -52,9 +54,7 @@ const useData = (
     })
     return res
   }
-  const updateChatTopic = useDebounceFn(async (data: ChatTopic) => db.chatTopic.update(data.id, toRaw(data)), 500, {
-    maxWait: 2000,
-  })
+  const updateChatTopic = async (data: ChatTopic) => queue.add(() => db.chatTopic.update(data.id, toRaw(data)))
 
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(toRaw(data))
@@ -62,13 +62,7 @@ const useData = (
   async function addChatMessage(data: ChatMessage) {
     return db.chatMessage.add(toRaw(data))
   }
-  const updateChatMessage = useDebounceFn(
-    async (data: ChatMessage) => db.chatMessage.update(data.id, toRaw(data)),
-    500,
-    {
-      maxWait: 2000,
-    }
-  )
+  const updateChatMessage = async (data: ChatMessage) => mqueue.add(() => db.chatMessage.update(data.id, toRaw(data)))
   async function findChatMessage(id: string) {
     const res = await db.chatMessage.get(id)
     if (res) {
