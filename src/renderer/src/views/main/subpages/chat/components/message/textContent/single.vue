@@ -40,11 +40,9 @@ const isAssistant = computed(() => !!props.data.modelId)
         </el-affix>
         <div class="chat-item-content" :class="{ reverse: !isAssistant }">
           <el-card style="--el-card-padding: 1rem" shadow="never">
-            <template #header v-if="isAssistant">
-              <Loading :data></Loading>
-            </template>
+            <Loading v-if="isAssistant" :data></Loading>
             <MCPCall v-if="isAssistant" :data></MCPCall>
-            <Markdown v-if="isAssistant" :id="data.id" :content="data.content.content" :partial="!data.finish" />
+            <Markdown v-if="isAssistant" :content="data.content.content" />
             <el-text v-else type="primary" class="self-end!">
               {{ data.content.content }}
             </el-text>

@@ -9,6 +9,9 @@ import useSettingsStore from "@renderer/store/settings.store"
 import { chatMessageDefault } from "@renderer/store/default/chat.default"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { errorToText } from "@shared/error"
+import PQueue from "p-queue"
+import { useThrottleFn } from "@vueuse/core"
+
 function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
   return {
     id: uniqueId(),
@@ -57,6 +60,8 @@ export default (
   menuRef: Readonly<Ref<{ bounding: () => DOMRect | undefined } | null>>,
   treeRef: Readonly<Ref<TreeInstance | null>>
 ) => {
+  const queue = markRaw(new PQueue({ concurrency: 1 }))
+  const mqueue = markRaw(new PQueue({ concurrency: 1 }))
   const chatStore = useChatStore()
   const { t } = useI18n()
   // const { models } = storeToRefs(modelStore)
@@ -279,24 +284,45 @@ export default (
   })
   watch(
     currentTopic,
-    (val, old) => {
-      if (val) {
-        if (val === old) {
-          chatStore.api.updateChatTopic(val.node)
-        } else {
-          currentNodeKey.value = val.id
+    useThrottleFn(
+      (val, old) => {
+        if (val) {
+          if (val === old) {
+            queue.add(() => chatStore.api.updateChatTopic(val.node))
+          } else {
+            currentNodeKey.value = val.id
+          }
         }
-      }
-    },
+      },
+      200,
+      true
+    ),
     { deep: true }
   )
   watch(
     selectedTopic,
-    async (val, old) => {
-      if (val && val === old) {
-        await chatStore.api.updateChatTopic(val.node)
-      }
-    },
+    useThrottleFn(
+      (val, old) => {
+        if (val && val === old) {
+          queue.add(() => chatStore.api.updateChatTopic(val.node))
+        }
+      },
+      200,
+      true
+    ),
+    { deep: true }
+  )
+  watch(
+    currentMessage,
+    useThrottleFn(
+      (val, old) => {
+        if (val && val === old) {
+          mqueue.add(() => chatStore.api.updateChatMessage(val))
+        }
+      },
+      200,
+      true
+    ),
     { deep: true }
   )
   watch(
