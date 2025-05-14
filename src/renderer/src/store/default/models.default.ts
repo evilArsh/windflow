@@ -8,7 +8,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: ModelType.Chat,
       providerName: ProviderName.DeepSeek,
       subProviderName: ProviderName.DeepSeek,
-      active: true,
+      active: false,
     },
     {
       id: `${ProviderName.DeepSeek}_deepseek-reasoner`,
@@ -16,7 +16,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: ModelType.ChatReasoner,
       providerName: ProviderName.DeepSeek,
       subProviderName: ProviderName.DeepSeek,
-      active: true,
+      active: false,
     },
     {
       id: `${ProviderName.Volcengine}_deepseek-r1`,
@@ -24,7 +24,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: ModelType.ChatReasoner,
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
-      active: true,
+      active: false,
     },
     {
       id: `${ProviderName.Volcengine}_deepseek-v3`,
@@ -32,7 +32,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: ModelType.Chat,
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
-      active: true,
+      active: false,
     },
     {
       id: `${ProviderName.Volcengine}_deepseek-r1-distill-qwen-7b`,
@@ -40,7 +40,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: ModelType.ChatReasoner,
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
-      active: true,
+      active: false,
     },
     {
       id: `${ProviderName.Volcengine}_deepseek-r1-distill-qwen-32b`,
@@ -48,7 +48,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: ModelType.ChatReasoner,
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
-      active: true,
+      active: false,
     },
   ]
 }

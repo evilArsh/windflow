@@ -24,7 +24,8 @@
     "regenerate": "重新生成",
     "search": "搜索",
     "terminate": "终止",
-    "thinking": "思考中"
+    "thinking": "深度思考中",
+    "thinkingComplete": "思考完成"
   },
   "form": {
     "emptyValue": "不能存在空值",

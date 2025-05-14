@@ -24,7 +24,6 @@ const mdProcessor = unified()
   .use(remarkRehype, {
     allowDangerousHtml: true,
     allowDangerousCharacters: true,
-    format: "html",
   })
   .freeze()
 

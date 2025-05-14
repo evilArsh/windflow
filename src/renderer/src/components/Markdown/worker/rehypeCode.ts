@@ -26,6 +26,7 @@ export const rehypeUrlAttributes = () => {
   return tree => {
     visit(tree, (node, index, parent) => {
       if (isNumber(index) && parent) {
+        // ! eg:<img >
         if (node.type === "raw") {
           console.log("[visit raw]", node)
           parent.children[index] = { type: "text", value: node.value }

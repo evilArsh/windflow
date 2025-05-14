@@ -16,7 +16,8 @@
     "regenerate": "re-generate",
     "search": "search",
     "terminate": "terminate",
-    "thinking": "thinking"
+    "thinking": "deep thinking",
+    "thinkingComplete": "thinking finish"
   },
   "lang": {
     "en": "English",

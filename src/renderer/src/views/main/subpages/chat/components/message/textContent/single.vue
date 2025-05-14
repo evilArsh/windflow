@@ -25,6 +25,9 @@ const rawTextDlg = reactive({
   }),
 })
 const isAssistant = computed(() => !!props.data.modelId)
+const isPartial = computed(() => {
+  return props.data.status < 200 || props.data.status == 206
+})
 </script>
 <template>
   <MsgBubble :reverse="!isAssistant" :id>
@@ -43,7 +46,8 @@ const isAssistant = computed(() => !!props.data.modelId)
             <Loading v-if="isAssistant" :data></Loading>
             <MCPCall v-if="isAssistant" :data></MCPCall>
             <Markdown v-if="isAssistant" :content="data.content.content" />
-            <el-text v-else type="primary" class="self-end!">
+            <i-svg-spinners:pulse-3 v-if="isAssistant && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
+            <el-text v-if="!isAssistant" type="primary" class="self-end!">
               {{ data.content.content }}
             </el-text>
           </el-card>

@@ -1,46 +1,60 @@
 <script lang="ts" setup>
-import { useElementBounding, useScroll } from "@vueuse/core"
-
+import { useElementBounding } from "@vueuse/core"
 import { CSSProperties } from "@renderer/lib/shared/types"
+
 const emit = defineEmits<{
   (e: "scroll", x: number, y: number): void
   (e: "update:handlerHeight", height: number): void
 }>()
+
 const { handlerHeight = 0 } = defineProps<{
   handlerHeight?: string | number
 }>()
 
 const scaleRef = useTemplateRef("scale")
-
 const scrollRef = useTemplateRef("scroll")
-const behavior = ref<ScrollBehavior>("smooth")
-// scrollRef.value?.wrapRef 高度为视口高度
-// scrollRef.value?.wrapRef.firstChild 为完整高度，包含隐藏部分
+const shouldAutoScroll = ref(true)
+const threshold = 50
+// el-scrollbar 有三层
+//  1. 第二层 scrollRef.value?.wrapRef 高度为视口高度
+//  3. 第三层 id="scroll-view"设置到该层，scrollRef.value?.wrapRef.firstChild
+//     为完整高度，包含隐藏部分
+//  4. 为第四层 div.content--inner
 const { height } = useElementBounding(() => scrollRef.value?.wrapRef?.firstChild as HTMLElement)
-const { x, y, isScrolling, arrivedState } = useScroll(() => scrollRef.value?.wrapRef, {
-  behavior: () => behavior.value,
-})
-const scrollToBottom = (be: ScrollBehavior) => {
-  behavior.value = be
-  setTimeout(() => {
-    y.value = height.value * 2 // gurantee
-  }, 0)
+const scrollHdl = {
+  toBottom: (be: ScrollBehavior) => {
+    scrollHdl.to(height.value, be)
+  },
+  to: (y: number, be: ScrollBehavior) => {
+    scrollRef.value?.wrapRef?.scrollTo({
+      top: y,
+      behavior: be,
+    })
+  },
 }
-watchEffect(() => {
-  // console.log(scrollRef.value?.wrapRef)
-  // console.log(height.value, y.value)
-})
+const isNearBottom = () => {
+  if (!scrollRef.value?.wrapRef) return false
+  const el = scrollRef.value.wrapRef
+  return el.scrollHeight - el.scrollTop - el.clientHeight <= threshold
+}
+
+const handleScroll = (pos: { scrollTop: number; scrollLeft: number }) => {
+  emit("scroll", pos.scrollLeft, pos.scrollTop)
+  shouldAutoScroll.value = isNearBottom()
+}
+const scrollIfShould = (be: ScrollBehavior = "smooth") => {
+  if (shouldAutoScroll.value) {
+    scrollHdl.toBottom(be)
+  }
+}
 
 const handlerStyle = ref<CSSProperties>({
   height: px(toNumber(handlerHeight)),
 })
+
 const onAfterScale = () => {
   scrollRef.value?.update()
 }
-
-watchEffect(() => {
-  emit("scroll", x.value, y.value)
-})
 
 watch(
   () => handlerHeight,
@@ -61,19 +75,15 @@ watch(
 )
 
 defineExpose({
-  scrollToBottom,
-  isScrolling: () => !!isScrolling.value,
-  arrivedState: () => arrivedState,
-  currentY: () => y.value,
-  scrollTo: (be: ScrollBehavior, newY: number) => {
-    behavior.value = be
-    y.value = newY
-  },
+  scrollToBottom: scrollHdl.toBottom,
+  scrollTo: scrollHdl.to,
+  scrollIfShould,
   updateScroll: () => {
     scrollRef.value?.update()
   },
 })
 </script>
+
 <template>
   <div class="content-container">
     <div v-if="$slots.header" class="content-header">
@@ -81,7 +91,7 @@ defineExpose({
     </div>
     <div class="content-main">
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
-      <el-scrollbar ref="scroll" style="flex: 1" id="scroll-view">
+      <el-scrollbar ref="scroll" style="flex: 1" id="scroll-view" @scroll="handleScroll">
         <div class="content--inner">
           <slot></slot>
         </div>
@@ -94,6 +104,7 @@ defineExpose({
     </div>
   </div>
 </template>
+
 <style lang="scss" scoped>
 .content-container {
   --content-container-bg-color: #ffffff;

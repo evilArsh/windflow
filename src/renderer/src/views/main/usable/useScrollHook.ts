@@ -1,39 +1,41 @@
 import { ChatMessage, ChatTopicTree } from "@renderer/types"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
-import { useDebounceFn } from "@vueuse/core"
+import { useThrottleFn } from "@vueuse/core"
 export default (
   contentLayout: Ref<InstanceType<typeof ContentLayout> | null>,
   topic: Ref<ChatTopicTree | undefined>,
   message: Ref<ChatMessage | undefined>
 ) => {
   function scrollTo(topic: ChatTopicTree) {
-    setTimeout(() => {
-      if (topic.node.scrollY) {
-        contentLayout.value?.scrollTo("instant", topic.node.scrollY)
-      } else {
-        contentLayout.value?.scrollToBottom("instant")
-      }
-    }, 0)
+    if (topic.node.scrollY) {
+      contentLayout.value?.scrollTo(topic.node.scrollY, "instant")
+    } else {
+      contentLayout.value?.scrollToBottom("instant")
+    }
   }
-  const onScroll = useDebounceFn((_x: number, y: number) => {
+  const onScroll = useThrottleFn((_x: number, y: number) => {
     if (topic.value) {
       topic.value.node.scrollY = y
     }
-  }, 500)
+  }, 200)
 
-  watch(topic, (val, old) => {
-    if (val && val !== old) {
-      scrollTo(val)
-    }
-  })
+  watch(
+    topic,
+    val => {
+      nextTick(() => {
+        val && scrollTo(val)
+      })
+    },
+    { immediate: true }
+  )
   watch(
     message,
     (val, old) => {
-      if (val && val === old) {
-        if (!contentLayout.value?.isScrolling() && contentLayout.value?.arrivedState().bottom) {
-          contentLayout.value?.scrollToBottom("smooth")
+      nextTick(() => {
+        if (val && val === old) {
+          contentLayout.value?.scrollIfShould("smooth")
         }
-      }
+      })
     },
     { deep: true }
   )
