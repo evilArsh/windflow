@@ -21,8 +21,10 @@ const { html, parse } = useParser({
   code: CodeBlock,
 })
 function handleContent(content: LLMContent) {
-  if (!content) return
   if (!isString(content)) return
+  if (!content) {
+    html.value = ""
+  }
   parse(content)
 }
 watch(

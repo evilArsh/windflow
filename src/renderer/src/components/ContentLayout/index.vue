@@ -14,6 +14,8 @@ const scaleRef = useTemplateRef("scale")
 
 const scrollRef = useTemplateRef("scroll")
 const behavior = ref<ScrollBehavior>("smooth")
+// scrollRef.value?.wrapRef 高度为视口高度
+// scrollRef.value?.wrapRef.firstChild 为完整高度，包含隐藏部分
 const { height } = useElementBounding(() => scrollRef.value?.wrapRef?.firstChild as HTMLElement)
 const { x, y, isScrolling, arrivedState } = useScroll(() => scrollRef.value?.wrapRef, {
   behavior: () => behavior.value,
@@ -24,6 +26,10 @@ const scrollToBottom = (be: ScrollBehavior) => {
     y.value = height.value * 2 // gurantee
   }, 0)
 }
+watchEffect(() => {
+  // console.log(scrollRef.value?.wrapRef)
+  // console.log(height.value, y.value)
+})
 
 const handlerStyle = ref<CSSProperties>({
   height: px(toNumber(handlerHeight)),
