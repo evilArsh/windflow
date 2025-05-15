@@ -11,7 +11,7 @@ const types = [
   { name: "speech-to-text", type: ModelType.SpeechToText },
   { name: "text-to-video", type: ModelType.TextToVideo },
 ]
-const reasonerPattern = /deepseek-r1|qwq-32b|deepseek-reasoner/
+// const reasonerPattern = /deepseek-r1|qwq-32b|deepseek-reasoner|qwen3/
 
 export class SiliconFlow extends OpenAICompatible {
   constructor() {
@@ -44,12 +44,12 @@ export class SiliconFlow extends OpenAICompatible {
       res.push(
         items.data.map(v => ({
           id: `${provider.name}_${v.id}`,
-          type:
-            items.type === ModelType.Chat
-              ? reasonerPattern.test(v.id.toLowerCase())
-                ? ModelType.ChatReasoner
-                : ModelType.Chat
-              : items.type,
+          type: items.type,
+          // items.type === ModelType.Chat
+          //   ? reasonerPattern.test(v.id.toLowerCase())
+          //     ? ModelType.ChatReasoner
+          //     : ModelType.Chat
+          //   : items.type,
           modelName: v.id,
           providerName: provider.name,
           subProviderName: v.id.indexOf("/") > 0 ? v.id.slice(0, v.id.indexOf("/")) : provider.name,

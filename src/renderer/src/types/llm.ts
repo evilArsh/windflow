@@ -50,10 +50,6 @@ export interface LLMChatResponse extends LLMChatMessage {
    */
   msg?: string
   /**
-   * 是否是推理对话
-   */
-  reasoning?: boolean
-  /**
    * 是否是流式返回
    */
   stream?: boolean

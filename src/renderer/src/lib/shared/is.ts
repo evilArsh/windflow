@@ -25,7 +25,7 @@ export const uniqueId = (seed?: number): string => {
   return ulid(seed)
 }
 export const isIndexOutOfRange = (index: number, length: number): boolean => {
-  return index < 0 || index > length
+  return index < 0 || index >= length
 }
 
 export const isValidUrl = (url: string): boolean => {

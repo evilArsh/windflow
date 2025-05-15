@@ -1,59 +1,57 @@
 <script lang="ts" setup>
-import { useElementBounding } from "@vueuse/core"
 import { CSSProperties } from "@renderer/lib/shared/types"
-
 const emit = defineEmits<{
-  (e: "scroll", x: number, y: number): void
   (e: "update:handlerHeight", height: number): void
 }>()
 
-const { handlerHeight = 0 } = defineProps<{
+const { handlerHeight = 0, chatMode = false } = defineProps<{
   handlerHeight?: string | number
+  /**
+   * true: 内容反转：flex-direction:column-reverse
+   *
+   * false: 正常行为，使用el-scrollbar滚动条
+   */
+  chatMode?: boolean
 }>()
 
 const scaleRef = useTemplateRef("scale")
 const scrollRef = useTemplateRef("scroll")
-const shouldAutoScroll = ref(true)
-const threshold = 50
-// el-scrollbar 有三层
-//  1. 第二层 scrollRef.value?.wrapRef 高度为视口高度
-//  3. 第三层 id="scroll-view"设置到该层，scrollRef.value?.wrapRef.firstChild
-//     为完整高度，包含隐藏部分
-//  4. 为第四层 div.content--inner
-const { height } = useElementBounding(() => scrollRef.value?.wrapRef?.firstChild as HTMLElement)
+const scrollElRef = useTemplateRef("scrollEl")
+
+const height = computed(() => {
+  if (chatMode) {
+    return toNumber(scrollRef.value?.scrollHeight)
+  } else {
+    if (scrollElRef.value?.wrapRef?.firstChild) {
+      return toNumber(scrollElRef.value.wrapRef.firstElementChild?.scrollHeight)
+    }
+  }
+  return 0
+})
 const scrollHdl = {
-  toBottom: (be: ScrollBehavior) => {
+  toBottom: (be?: ScrollBehavior) => {
     scrollHdl.to(height.value, be)
   },
-  to: (y: number, be: ScrollBehavior) => {
-    scrollRef.value?.wrapRef?.scrollTo({
-      top: y,
-      behavior: be,
-    })
+  to: (y: number, be?: ScrollBehavior) => {
+    if (chatMode) {
+      scrollRef.value?.scrollTo({
+        top: y,
+        behavior: be,
+      })
+    } else {
+      scrollElRef.value?.wrapRef?.scrollTo({
+        top: y,
+        behavior: be,
+      })
+    }
   },
 }
-const isNearBottom = () => {
-  if (!scrollRef.value?.wrapRef) return false
-  const el = scrollRef.value.wrapRef
-  return el.scrollHeight - el.scrollTop - el.clientHeight <= threshold
-}
-
-const handleScroll = (pos: { scrollTop: number; scrollLeft: number }) => {
-  emit("scroll", pos.scrollLeft, pos.scrollTop)
-  shouldAutoScroll.value = isNearBottom()
-}
-const scrollIfShould = (be: ScrollBehavior = "smooth") => {
-  if (shouldAutoScroll.value) {
-    scrollHdl.toBottom(be)
-  }
-}
-
 const handlerStyle = ref<CSSProperties>({
   height: px(toNumber(handlerHeight)),
 })
 
 const onAfterScale = () => {
-  scrollRef.value?.update()
+  scrollElRef.value?.update()
 }
 
 watch(
@@ -77,10 +75,6 @@ watch(
 defineExpose({
   scrollToBottom: scrollHdl.toBottom,
   scrollTo: scrollHdl.to,
-  scrollIfShould,
-  updateScroll: () => {
-    scrollRef.value?.update()
-  },
 })
 </script>
 
@@ -91,10 +85,13 @@ defineExpose({
     </div>
     <div class="content-main">
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
-      <el-scrollbar ref="scroll" style="flex: 1" id="scroll-view" @scroll="handleScroll">
-        <div class="content--inner">
+      <div v-if="chatMode" class="scroll-bar">
+        <div ref="scroll" class="scroll-content">
           <slot></slot>
         </div>
+      </div>
+      <el-scrollbar v-else ref="scrollEl" style="flex: 1">
+        <slot></slot>
       </el-scrollbar>
       <slot v-if="$slots.contentRight" name="contentRight"></slot>
     </div>
@@ -106,6 +103,26 @@ defineExpose({
 </template>
 
 <style lang="scss" scoped>
+.scroll-bar {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+}
+.scroll-content {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  &:hover {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(144, 147, 153, 0.3);
+    }
+  }
+}
 .content-container {
   --content-container-bg-color: #ffffff;
   --content-bg-color: transparent;

@@ -7,7 +7,7 @@ const props = defineProps<{
 }>()
 const { t } = useI18n()
 const activeNames = ref<string[]>([])
-const thinking = computed(() => props.data.reasoning && !props.data.content.content)
+const thinking = computed(() => !props.data.content.content)
 watch(
   thinking,
   v => {
@@ -21,7 +21,7 @@ watch(
 )
 </script>
 <template>
-  <div v-if="data.reasoning" class="flex flex-col gap-0.5rem">
+  <div v-if="data.content.reasoning_content" class="flex flex-col gap-0.5rem">
     <el-collapse v-model="activeNames" accordion expand-icon-position="left">
       <el-collapse-item name="1">
         <template #title>

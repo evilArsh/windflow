@@ -7,7 +7,6 @@ import {
   ChatTopicTree,
   LLMChatMessage,
   LLMProvider,
-  ModelType,
   ProviderMeta,
   Role,
   Settings,
@@ -54,6 +53,9 @@ const useData = (
     })
     return res
   }
+  /**
+   * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
+   */
   const updateChatTopic = async (data: ChatTopic) => queue.add(() => db.chatTopic.update(data.id, toRaw(data)))
 
   async function addChatTopic(data: ChatTopic) {
@@ -62,6 +64,9 @@ const useData = (
   async function addChatMessage(data: ChatMessage) {
     return db.chatMessage.add(toRaw(data))
   }
+  /**
+   * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
+   */
   const updateChatMessage = async (data: ChatMessage) => mqueue.add(() => db.chatMessage.update(data.id, toRaw(data)))
   async function findChatMessage(id: string) {
     const res = await db.chatMessage.get(id)
@@ -197,7 +202,7 @@ const useContext = () => {
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
     const context: LLMChatMessage[] = []
     let sysTick = false
-    for (let i = message.length - 1; i >= 0; i--) {
+    for (let i = 0; i < message.length; i++) {
       const item = cloneDeep(message[i])
       // deepseek patch
       item.content.reasoning_content = undefined
@@ -318,7 +323,8 @@ export default defineStore("chat_topic", () => {
       let chatContext = findContext(topic.id, messageItem.id)
       const messageContextIndex = message.data.findIndex(item => item.id === messageParent.id)
       // 消息上下文
-      const messageContext = getMessageContext(topic, message.data.slice(0, messageContextIndex))
+      // TODO: contex在中间位置开始
+      const messageContext = getMessageContext(topic, message.data.slice(messageContextIndex + 1))
       messageItem.content = { role: "assistant", content: "", reasoning_content: "" }
       messageItem.finish = false
       messageItem.status = 100
@@ -337,7 +343,6 @@ export default defineStore("chat_topic", () => {
           messageItem.toolCallsChain.push(res)
         } else {
           messageItem.status = res.status
-          messageItem.reasoning = model.type === ModelType.ChatReasoner
           if (isString(res.content)) messageItem.content.content += res.content
           if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
           if (res.status == 206) {
@@ -403,12 +408,11 @@ export default defineStore("chat_topic", () => {
       return
     }
     const id = uniqueId()
-    message.data.push({
+    message.data.unshift({
       id,
       status: 200,
       time: formatSecond(new Date()),
       finish: true,
-      reasoning: false,
       content: { role: "user", content: topic.content },
       modelId: "",
     })
@@ -437,7 +441,7 @@ export default defineStore("chat_topic", () => {
     } else {
       newMessageData.modelId = availiableModels[0]
     }
-    message.data.push(newMessageData)
+    message.data.unshift(newMessageData)
     sendMessage(topic, message, newMessageData)
     topic.content = ""
   }
@@ -489,25 +493,22 @@ export default defineStore("chat_topic", () => {
       return
     }
     const current = message.data[msgIndex]
-    if (current.content.role === Role.System) {
-      console.warn(`[deleteSubMessage] system message cannot be deleted.${msgIndex}`)
-      return
-    } else if (current.content.role === Role.User) {
-      if (!isIndexOutOfRange(msgIndex + 1, message.data.length)) {
+    if (current.content.role === Role.User) {
+      if (!isIndexOutOfRange(msgIndex - 1, message.data.length)) {
         // 删除之前先终止
-        const chatContext = findContext(topic.id, message.data[msgIndex + 1].id)
+        const chatContext = findContext(topic.id, message.data[msgIndex - 1].id)
         if (chatContext) {
           chatContext.handler?.terminate()
         }
-        message.data.splice(msgIndex, 2)
+        message.data.splice(msgIndex - 1, 2)
       } else {
         message.data.splice(msgIndex, 1)
       }
     } else if (current.content.role === Role.Assistant) {
-      if (!isIndexOutOfRange(msgIndex - 1, message.data.length)) {
-        const prev = message.data[msgIndex - 1]
+      if (!isIndexOutOfRange(msgIndex + 1, message.data.length)) {
+        const prev = message.data[msgIndex + 1]
         if (prev.content.role === Role.User) {
-          message.data.splice(msgIndex - 1, 2)
+          message.data.splice(msgIndex + 1, 2)
         } else {
           message.data.splice(msgIndex, 1)
         }

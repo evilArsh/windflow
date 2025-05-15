@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
-import useScrollHook from "@renderer/views/main/usable/useScrollHook"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import ModelSelect from "../modelSelect/index.vue"
 import TextInput from "./textInput/index.vue"
@@ -15,13 +14,8 @@ const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("conten
 const shortcut = useShortcut()
 const chatStore = useChatStore()
 const { t } = useI18n()
-const { onScroll } = useScrollHook(contentLayout, currentTopic, currentMessage)
 const togglePanel = ref(true) // 右侧面板是否显示
 const message = computed(() => currentMessage.value?.data ?? [])
-
-const onRightResizeChange = () => {
-  contentLayout.value?.updateScroll()
-}
 const { key: sendShortcut, trigger: triggerSend } = shortcut.listen("ctrl+enter", async (res, done?: unknown) => {
   if (res.active && currentTopic.value?.node) {
     chatStore.send(currentTopic.value.node)
@@ -41,7 +35,7 @@ settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
 </script>
 <template>
   <div v-if="currentTopic" class="flex flex-1 overflow-hidden">
-    <ContentLayout v-model:handler-height="currentTopic.node.inputHeight" ref="contentLayout" @scroll="onScroll">
+    <ContentLayout v-model:handler-height="currentTopic.node.inputHeight" ref="contentLayout" chat-mode>
       <template #header>
         <el-card class="chat-header" shadow="never">
           <div class="flex justify-between">
@@ -57,9 +51,7 @@ settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
           </div>
         </el-card>
       </template>
-      <div class="flex flex-col gap2rem flex-1 overflow-hidden">
-        <TextContent v-for="data in message" :key="data.id" :data="data" />
-      </div>
+      <TextContent v-for="data in message" :key="data.id" :data="data" />
       <template #handler>
         <div class="chat-input-container" ref="scale">
           <div class="chat-input-header">
@@ -74,7 +66,7 @@ settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
         </div>
       </template>
     </ContentLayout>
-    <RightPanel v-show="togglePanel" v-model="currentTopic.node" @resize-change="onRightResizeChange"></RightPanel>
+    <RightPanel v-show="togglePanel" v-model="currentTopic.node"></RightPanel>
   </div>
   <div v-else class="flex flex-1 items-center justify-center">
     <el-empty />

@@ -20,10 +20,6 @@ export type ChatMessageData = {
    */
   msg?: string
   /**
-   * @description 是否是推理对话
-   */
-  reasoning?: boolean
-  /**
    * @description 消息内容,包含用户消息和模型返回的消息
    */
   content: LLMChatMessage
@@ -84,7 +80,7 @@ export type ChatTopic = {
   /**
    * @description 会话滚动位置
    */
-  scrollY?: number
+  // scrollY?: number
   /**
    * @description 会话输入框高度
    */
