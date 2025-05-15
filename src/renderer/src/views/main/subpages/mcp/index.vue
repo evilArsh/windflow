@@ -34,30 +34,28 @@ onMounted(routes.toDefaultPath)
   <SubNavLayout id="mcp.subNav">
     <template #submenu>
       <el-scrollbar>
-        <el-card style="--el-card-padding: 1rem" shadow="never">
-          <div class="flex flex-col">
-            <div class="my-1.2rem mb-2.4rem">
-              <ContentBox normal background>
-                <el-text class="text-2.6rem! font-600">MCP</el-text>
-                <template #footer>
-                  <el-text type="info">MCP服务配置</el-text>
-                </template>
-              </ContentBox>
-            </div>
-            <div class="flex flex-col gap-1rem">
-              <ContentBox
-                v-for="menu in menus"
-                :key="menu.path"
-                :default-lock="currentRoute == menu.path"
-                still-lock
-                :background="false"
-                @click="routes.toPath(menu.path)">
-                <template #icon><component :is="menu.icon"></component></template>
-                <el-text type="info">{{ menu.title }}</el-text>
-              </ContentBox>
-            </div>
+        <div class="flex flex-col p1rem">
+          <div class="my-1.2rem mb-2.4rem">
+            <ContentBox normal background>
+              <el-text class="text-2.6rem! font-600">MCP</el-text>
+              <template #footer>
+                <el-text type="info">MCP服务配置</el-text>
+              </template>
+            </ContentBox>
           </div>
-        </el-card>
+          <div class="flex flex-col gap-1rem">
+            <ContentBox
+              v-for="menu in menus"
+              :key="menu.path"
+              :default-lock="currentRoute == menu.path"
+              still-lock
+              :background="false"
+              @click="routes.toPath(menu.path)">
+              <template #icon><component :is="menu.icon"></component></template>
+              <el-text type="info">{{ menu.title }}</el-text>
+            </ContentBox>
+          </div>
+        </div>
       </el-scrollbar>
     </template>
     <template #content>

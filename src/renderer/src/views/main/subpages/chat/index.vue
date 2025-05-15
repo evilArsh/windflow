@@ -47,7 +47,7 @@ onBeforeUnmount(() => {
 <template>
   <SubNavLayout id="chat.subNav" :hide-submenu="!toggleMenu">
     <template #submenu>
-      <el-card class="chat-provider" body-class="flex flex-col overflow-hidden" shadow="never">
+      <div class="flex flex-col gap.5rem overflow-hidden">
         <div class="chat-provider-header">
           <div class="flex items-center gap-0.5rem">
             <el-input v-model="tree.searchKeyword" :placeholder="t('chat.search')" clearable />
@@ -97,21 +97,21 @@ onBeforeUnmount(() => {
             </el-tree>
           </el-scrollbar>
         </div>
-        <ScalePanel v-model="panelConfig" ref="scale" @mask-click="dlg.clickMask">
-          <MenuHandle
-            v-if="dlg.is === 'menu'"
-            ref="menuRef"
-            :focus="!!panelConfig.mask"
-            @edit="menu.onEdit"
-            @delete="menu.onDelete"
-            @add="menu.onAdd"></MenuHandle>
-          <EditTopic
-            ref="editTopicRef"
-            v-else-if="dlg.is === 'editTopic' && selectedTopic"
-            v-model="selectedTopic.node"
-            @close="dlg.clickMask"></EditTopic>
-        </ScalePanel>
-      </el-card>
+      </div>
+      <ScalePanel v-model="panelConfig" ref="scale" @mask-click="dlg.clickMask">
+        <MenuHandle
+          v-if="dlg.is === 'menu'"
+          ref="menuRef"
+          :focus="!!panelConfig.mask"
+          @edit="menu.onEdit"
+          @delete="menu.onDelete"
+          @add="menu.onAdd"></MenuHandle>
+        <EditTopic
+          ref="editTopicRef"
+          v-else-if="dlg.is === 'editTopic' && selectedTopic"
+          v-model="selectedTopic.node"
+          @close="dlg.clickMask"></EditTopic>
+      </ScalePanel>
     </template>
     <template #content>
       <MessagePanel>
@@ -128,16 +128,6 @@ onBeforeUnmount(() => {
   </SubNavLayout>
 </template>
 <style lang="scss" scoped>
-.chat-provider {
-  --el-card-border-color: transparent;
-  --el-card-border-radius: 0;
-  --el-card-padding: 0.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-height: 100%;
-  overflow: hidden;
-}
 .chat-provider-header {
   flex-shrink: 0;
   flex-direction: column;

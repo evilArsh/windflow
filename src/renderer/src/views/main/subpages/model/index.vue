@@ -46,33 +46,31 @@ settingsStore.api.dataWatcher<string | undefined>(
   <SubNavLayout id="model.subNav">
     <template #submenu>
       <el-scrollbar>
-        <el-card style="--el-card-padding: 1rem" shadow="never">
-          <div class="flex flex-col">
-            <div class="my-1.2rem mb-2.4rem">
-              <ContentBox normal background>
-                <el-text class="text-2.6rem! font-600">模型</el-text>
-                <template #footer>
-                  <el-text type="info">模型和提供商设置</el-text>
-                </template>
-              </ContentBox>
-            </div>
-            <div class="mb-1rem">
-              <Handler></Handler>
-            </div>
-            <div class="flex flex-col gap-1rem">
-              <ContentBox
-                v-for="meta in providerMetasList"
-                :key="meta.name"
-                :default-lock="currentProvider?.name == meta.name"
-                still-lock
-                :background="false"
-                @click.stop="onCardClick(meta.name)">
-                <template #icon><Svg :src="meta.logo" class="text-2rem"></Svg></template>
-                <el-text line-clamp="2">{{ t(meta.alias || "") }}</el-text>
-              </ContentBox>
-            </div>
+        <div class="flex flex-col p1rem">
+          <div class="my-1.2rem mb-2.4rem">
+            <ContentBox normal background>
+              <el-text class="text-2.6rem! font-600">模型</el-text>
+              <template #footer>
+                <el-text type="info">模型和提供商设置</el-text>
+              </template>
+            </ContentBox>
           </div>
-        </el-card>
+          <div class="mb-1rem">
+            <Handler></Handler>
+          </div>
+          <div class="flex flex-col gap-1rem">
+            <ContentBox
+              v-for="meta in providerMetasList"
+              :key="meta.name"
+              :default-lock="currentProvider?.name == meta.name"
+              still-lock
+              :background="false"
+              @click.stop="onCardClick(meta.name)">
+              <template #icon><Svg :src="meta.logo" class="text-2rem"></Svg></template>
+              <el-text line-clamp="2">{{ t(meta.alias || "") }}</el-text>
+            </ContentBox>
+          </div>
+        </div>
       </el-scrollbar>
     </template>
     <template #content>

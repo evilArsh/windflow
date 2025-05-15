@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { CSSProperties } from "@renderer/lib/shared/types"
-
 const {
   normal = false,
   wrapStyle = {},
@@ -39,24 +38,7 @@ const emit = defineEmits<{
   iconClick: [e: MouseEvent]
   click: [e: MouseEvent]
 }>()
-
-const boxShadowColor = ref("rgba(0, 0, 0, 0.1)")
-const activeShadowColor = ref("rgba(0, 0, 0, 0.2)")
-const iconHoverColor = ref("rgba(10, 205, 231, 0.1)")
-const iconActiveColor = ref("rgba(10, 205, 231, 0.2)")
-const bgColor = computed(() => (background ? unref(boxShadowColor) : "unset"))
-const activeBgColor = computed(() => (background ? unref(activeShadowColor) : "unset"))
 const active = ref(false)
-const boxStyle = computed<CSSProperties>(() => {
-  return {
-    "--box-shadow-color": normal ? "unset" : unref(boxShadowColor),
-    "--box-active-shadow-color": normal ? "unset" : unref(activeShadowColor),
-    "--box-icon-hover-color": unref(iconHoverColor),
-    "--box-icon-active-color": unref(iconActiveColor),
-    "--box-bg-color": normal ? "unset" : unref(bgColor),
-    "--box-active-bg-color": normal ? "unset" : unref(activeBgColor),
-  }
-})
 const handle = {
   toggleLock: (toggle?: boolean) => {
     if (stillLock) return
@@ -81,7 +63,7 @@ watch(
 )
 </script>
 <template>
-  <div class="box" :class="{ active: active }" :style="[boxStyle, wrapStyle]" @click="handle.click">
+  <div class="comp-content-box" :class="{ active, normal, background }" :style="wrapStyle" @click="handle.click">
     <div v-if="$slots.header" class="box-header">
       <slot name="header"></slot>
     </div>
@@ -96,7 +78,44 @@ watch(
   </div>
 </template>
 <style lang="scss" scoped>
-.box {
+.comp-content-box {
+  --box-shadow-color: rgba(0, 0, 0, 0.1);
+  --box-active-shadow-color: rgba(0, 0, 0, 0.2);
+  --box-icon-color: var(--el-text-color-regular);
+  --box-icon-hover-color: rgba(10, 205, 231, 0.1);
+  --box-icon-active-color: rgba(10, 205, 231, 0.2);
+  --box-bg-color: transparent;
+  --box-active-bg-color: transparent;
+  &.background {
+    --box-bg-color: var(--box-shadow-color);
+    --box-active-bg-color: var(--box-active-shadow-color);
+  }
+}
+html.dark .comp-content-box {
+  --box-shadow-color: rgba(255, 255, 255, 0.2);
+  --box-active-shadow-color: rgba(255, 255, 255, 0.3);
+  --box-icon-color: var(--el-text-color-regular);
+  --box-icon-hover-color: rgba(10, 205, 231, 0.3);
+  --box-icon-active-color: rgba(10, 205, 231, 0.4);
+  --box-bg-color: transparent;
+  --box-active-bg-color: transparent;
+  &.background {
+    --box-bg-color: var(--box-shadow-color);
+    --box-active-bg-color: var(--box-active-shadow-color);
+  }
+}
+
+.comp-content-box.normal {
+  --box-shadow-color: transparent;
+  --box-active-shadow-color: transparent;
+  --box-icon-color: var(--el-text-color-regular);
+  --box-icon-hover-color: rgba(10, 205, 255, 0.3);
+  --box-icon-active-color: rgba(10, 205, 255, 0.4);
+  --box-bg-color: transparent;
+  --box-active-bg-color: transparent;
+}
+
+.comp-content-box {
   user-select: none;
   cursor: pointer;
   flex: 1;
@@ -128,6 +147,7 @@ watch(
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--box-icon-color);
     &:hover {
       background-color: var(--box-icon-hover-color);
     }

@@ -106,7 +106,6 @@ onBeforeMount(() => {
   --el-menu-sub-item-height: auto;
   --el-menu-active-color: transparent;
   --el-menu-hover-bg-color: transparent;
-  --nav-container-nav-menu-item-icon-color: #333;
   --nav-container-bg-color: var(--el-card-bg-color);
 
   --el-card-border-color: transparent;
@@ -134,7 +133,6 @@ onBeforeMount(() => {
     cursor: pointer;
     .nav-menu-item-icon {
       font-size: 1.8rem;
-      color: var(--nav-container-nav-menu-item-icon-color);
     }
   }
   .nav-bottom {

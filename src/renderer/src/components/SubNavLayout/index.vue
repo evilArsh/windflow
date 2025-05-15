@@ -18,7 +18,9 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
 <template>
   <div class="subnav-container">
     <div class="subnav-provider" :style="[hideSub, handlerStyle]" ref="scale">
-      <slot name="submenu"></slot>
+      <el-card class="subnav-card" body-class="flex flex-1 flex-col overflow-hidden" shadow="never">
+        <slot name="submenu"></slot>
+      </el-card>
       <Resize v-model="handlerStyle" size="8px" direction="r" :target="scaleRef" />
     </div>
     <div class="subnav-content">
@@ -46,8 +48,16 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
     border-right: solid 1px var(--subnav-provider-border-color);
     position: relative;
   }
+  .subnav-card {
+    --el-card-border-color: transparent;
+    --el-card-border-radius: 0;
+    --el-card-padding: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow: hidden;
+  }
   .subnav-content {
-    flex-shrink: 0;
     background-color: var(--subnav-container-content-bg-color);
     overflow: hidden;
     display: flex;
