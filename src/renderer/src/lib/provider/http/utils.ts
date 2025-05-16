@@ -1,21 +1,19 @@
-import { errorToText } from "@shared/error"
+import { HttpStatusCode } from "@shared/code"
 
-export async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
-  try {
-    const reader = stream.getReader()
-    const decoder = new TextDecoder()
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      const lines = decoder
-        .decode(value, { stream: true })
-        .split(/\r?\n/)
-        .filter(v => !!v)
-      for (const line of lines) {
-        yield line
-      }
-    }
-  } catch (error) {
-    yield errorToText(error)
+export class AbortError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "AbortError"
+  }
+}
+export class HttpCodeError extends Error {
+  #code: HttpStatusCode
+  constructor(code: HttpStatusCode, message: string) {
+    super(message)
+    this.#code = code
+    this.name = "HttpCodeError"
+  }
+  code() {
+    return this.#code
   }
 }

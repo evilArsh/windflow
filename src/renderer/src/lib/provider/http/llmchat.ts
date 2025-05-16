@@ -1,24 +1,29 @@
 import { ProviderMeta, LLMProvider, LLMBaseRequest, LLMChatRequestHandler, LLMChatResponse } from "@renderer/types"
-import { ContentType, HttpStatusCode } from "@shared/code"
-import { readLines } from "./utils"
+import { ContentType } from "@shared/code"
+import { errorToText } from "@shared/error"
+import { AbortError, HttpCodeError } from "./utils"
 
-export class AbortError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = "AbortError"
+// FIXME: 完整的 data: {} 会被截断成 data: {...\r\n....},siliconflow:qwen3,deepseek
+export async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
+  try {
+    const reader = stream.getReader()
+    const decoder = new TextDecoder()
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const lines = decoder
+        .decode(value, { stream: true })
+        .split(/\r?\n/)
+        .filter(v => !!v)
+      for (const line of lines) {
+        yield line
+      }
+    }
+  } catch (error) {
+    yield errorToText(error)
   }
 }
-export class HttpCodeError extends Error {
-  #code: HttpStatusCode
-  constructor(code: HttpStatusCode, message: string) {
-    super(message)
-    this.#code = code
-    this.name = "HttpCodeError"
-  }
-  code() {
-    return this.#code
-  }
-}
+
 async function* request(
   body: LLMBaseRequest,
   abortController: AbortController,
