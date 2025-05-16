@@ -489,33 +489,22 @@ export default defineStore("chat_topic", () => {
     }
     const msgIndex = message.data.findIndex(item => item.id === currentId)
     if (isIndexOutOfRange(msgIndex, message.data.length)) {
-      console.warn(`[deleteSubMessage] msgIndex is out of range.${msgIndex}`)
+      console.warn(`[deleteSubMessage] cann't find message.${msgIndex},${currentId}`)
       return
     }
     const current = message.data[msgIndex]
-    if (current.content.role === Role.User) {
-      if (!isIndexOutOfRange(msgIndex - 1, message.data.length)) {
-        // 删除之前先终止
-        const chatContext = findContext(topic.id, message.data[msgIndex - 1].id)
-        if (chatContext) {
-          chatContext.handler?.terminate()
-        }
-        message.data.splice(msgIndex - 1, 2)
+    if (current.content.role === Role.Assistant) {
+      if (Array.isArray(current.children)) {
+        current.children.forEach(child => {
+          const chatContext = findContext(topic.id, child.id)
+          chatContext?.handler?.terminate()
+        })
       } else {
-        message.data.splice(msgIndex, 1)
-      }
-    } else if (current.content.role === Role.Assistant) {
-      if (!isIndexOutOfRange(msgIndex + 1, message.data.length)) {
-        const prev = message.data[msgIndex + 1]
-        if (prev.content.role === Role.User) {
-          message.data.splice(msgIndex + 1, 2)
-        } else {
-          message.data.splice(msgIndex, 1)
-        }
-      } else {
-        message.data.splice(msgIndex, 1)
+        const chatContext = findContext(topic.id, current.id)
+        chatContext?.handler?.terminate()
       }
     }
+    message.data.splice(msgIndex, 1)
     api.updateChatMessage(message)
   }
 
