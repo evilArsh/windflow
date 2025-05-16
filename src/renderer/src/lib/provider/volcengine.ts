@@ -1,8 +1,8 @@
 import { ProviderMeta, ModelMeta, ProviderName } from "@renderer/types"
 import { modelsDefault } from "@renderer/store/default/models.default"
-import { OpenAICompatible } from "./openai"
+import { Compatible } from "./compatible"
 
-export class Volcengine extends OpenAICompatible {
+export class Volcengine extends Compatible {
   constructor() {
     super()
   }

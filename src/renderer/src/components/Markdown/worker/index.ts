@@ -22,8 +22,8 @@ const mdProcessor = unified()
   .use(remarkEmoji)
   // 将mdast解析为hast
   .use(remarkRehype, {
-    allowDangerousHtml: true,
-    allowDangerousCharacters: true,
+    allowDangerousHtml: false,
+    allowDangerousCharacters: false,
   })
   .freeze()
 
@@ -33,8 +33,8 @@ export const createProcessor = () => {
     .use(rehypeHrToBr)
     .use(rehypeUrlAttributes)
     .use(rehypeStringify, {
-      allowDangerousHtml: true,
-      allowDangerousCharacters: true,
+      allowDangerousHtml: false,
+      allowDangerousCharacters: false,
     })
     .freeze()
 }

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ChatMessageData } from "@renderer/types/chat"
 import useChatStore from "@renderer/store/chat.store"
-import useProviderStore from "@renderer/store/provider.store"
-import useModelsStore from "@renderer/store/model.store"
+
 import { storeToRefs } from "pinia"
 defineProps<{
   data: ChatMessageData
@@ -12,19 +11,13 @@ defineEmits<{
 }>()
 const { t } = useI18n()
 const chatStore = useChatStore()
-const providerStore = useProviderStore()
-const modelsStore = useModelsStore()
+
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
 </script>
 <template>
-  <div class="flex flex-col gap1rem py1rem">
-    <ContentBox default-lock background>
-      <Svg
-        :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
-        class="text-3rem"></Svg>
-    </ContentBox>
-    <div class="flex flex-col gap0.5rem items-center">
-      <el-tooltip v-if="data.modelId" :content="t('chat.terminate')" placement="right">
+  <div class="flex gap1rem py1rem">
+    <div class="flex gap0.5rem items-center">
+      <el-tooltip v-if="data.modelId" :content="t('chat.terminate')" placement="bottom">
         <Button
           @click="done => chatStore.terminate(done, currentTopic?.node.id, data.id)"
           size="small"
@@ -36,7 +29,7 @@ const { currentTopic, currentMessage } = storeToRefs(useChatStore())
           <i-solar:stop-circle-bold class="text-1.4rem"></i-solar:stop-circle-bold>
         </Button>
       </el-tooltip>
-      <el-tooltip v-if="data.modelId" :content="t('chat.regenerate')" placement="right">
+      <el-tooltip v-if="data.modelId" :content="t('chat.regenerate')" placement="bottom">
         <el-button
           @click="chatStore.restart(currentTopic?.node, data.id)"
           size="small"
@@ -48,7 +41,7 @@ const { currentTopic, currentMessage } = storeToRefs(useChatStore())
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </el-button>
       </el-tooltip>
-      <el-tooltip :content="t('chat.editChat')" placement="right">
+      <el-tooltip :content="t('chat.editChat')" placement="bottom">
         <el-button size="small" :disabled="!data.finish" circle plain text type="primary" @click="$emit('edit')">
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
         </el-button>

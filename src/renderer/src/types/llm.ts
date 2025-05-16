@@ -1,5 +1,6 @@
 import { HttpStatusCode } from "@shared/code"
-import { LLMProvider, ProviderMeta } from "."
+import { ProviderMeta } from "."
+// import OpenAI from "openai"
 
 export enum Role {
   System = "system",
@@ -10,12 +11,19 @@ export enum Role {
 }
 
 export interface LLMBaseRequest {
-  stream?: boolean
+  messages: LLMChatMessage[]
+  model: string
+  stream: boolean
+  // temperature?: number
+  // top_p?: number
+  // presence_penalty?: number
+  // frequency_penalty?: number
   [x: string]: unknown
 }
 export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>
+// export type LLMChatMessage = OpenAI.Chat.ChatCompletionMessageParam
 export interface LLMChatMessage {
-  role: "system" | "user" | "assistant" | "tool" | "developer"
+  role: string
   /**
    * 消息内容
    */
@@ -24,10 +32,15 @@ export interface LLMChatMessage {
    * 推理内容
    */
   reasoning_content?: string
-  // Role.Tool response
+  /**
+   * Role.Tool response
+   */
   tool_call_id?: string
-  // Role.Assistant response
+  /**
+   * Role.Assistant response
+   */
   tool_calls?: Array<LLMToolCall>
+  [x: string]: unknown
 }
 
 export interface LLMToolCall {
@@ -66,7 +79,7 @@ export interface LLMChatResponse extends LLMChatMessage {
 }
 
 export interface LLMChatRequestHandler {
-  chat: (message: LLMBaseRequest, provider: LLMProvider, providerMeta: ProviderMeta) => AsyncGenerator<LLMChatResponse>
+  chat: (message: LLMBaseRequest, providerMeta: ProviderMeta) => AsyncGenerator<LLMChatResponse>
   terminate: () => void
 }
 

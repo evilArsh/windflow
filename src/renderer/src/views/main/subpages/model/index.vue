@@ -74,7 +74,7 @@ settingsStore.api.dataWatcher<string | undefined>(
       </el-scrollbar>
     </template>
     <template #content>
-      <ContentLayout>
+      <ContentLayout class="m-1rem">
         <component
           :key="currentProvider?.name"
           :is="getComponent(currentProvider?.name)"

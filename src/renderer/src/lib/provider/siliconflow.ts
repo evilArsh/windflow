@@ -1,6 +1,6 @@
 import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
-import { OpenAICompatible } from "./openai"
-import { patchInstance } from "./utils"
+import { Compatible } from "./compatible"
+import { patchAxios } from "./compatible/utils"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -13,13 +13,13 @@ const types = [
 ]
 // const reasonerPattern = /deepseek-r1|qwq-32b|deepseek-reasoner|qwen3/
 
-export class SiliconFlow extends OpenAICompatible {
+export class SiliconFlow extends Compatible {
   constructor() {
     super()
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
     const res: ModelMeta[][] = []
-    patchInstance(provider, this.axios)
+    patchAxios(provider, this.axios)
     const req = types.reduce(
       (acc, v) => {
         acc.push(

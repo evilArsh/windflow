@@ -1,0 +1,52 @@
+import {
+  LLMChatMessage,
+  LLMChatResponse,
+  LLMProvider,
+  ProviderMeta,
+  ModelMeta,
+  LLMBaseRequest,
+  Role,
+  LLMChatRequestHandler,
+} from "@renderer/types"
+import { createInstance } from "../http"
+import { useSingleLLMChat, makeRequest } from "./request"
+import { mergeRequestConfig, generateSummaryText } from "./utils"
+
+export abstract class Compatible implements LLMProvider {
+  axios = createInstance()
+  constructor() {}
+  abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
+  async chat(
+    messages: LLMChatMessage[],
+    modelMeta: ModelMeta,
+    providerMeta: ProviderMeta,
+    mcpServersIds: string[],
+    callback: (message: LLMChatResponse) => void,
+    reqConfig?: LLMBaseRequest
+  ): Promise<LLMChatRequestHandler> {
+    const requestHandler = useSingleLLMChat()
+    makeRequest(messages, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
+    return requestHandler
+  }
+
+  async titleSummary(
+    context: string,
+    modelMeta: ModelMeta,
+    provider: ProviderMeta,
+    reqConfig?: LLMBaseRequest
+  ): Promise<string> {
+    const requestData = mergeRequestConfig(
+      [{ role: Role.User, content: generateSummaryText(context) }],
+      modelMeta,
+      reqConfig
+    )
+    requestData.stream = false
+    const requestHandler = useSingleLLMChat()
+    for await (const content of requestHandler.chat(requestData, provider)) {
+      if (isString(content.content)) {
+        return content.content
+      }
+    }
+    return ""
+  }
+}

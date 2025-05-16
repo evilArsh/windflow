@@ -6,8 +6,10 @@ import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
 import ITerminal from "~icons/material-symbols/terminal"
 import useI18nWatch from "@renderer/usable/useI18nWatch"
+import useSettingsStore from "@renderer/store/settings.store"
 const { t } = useI18n()
 const route = useRoute()
+const settingsStore = useSettingsStore()
 const menuEv = {
   onSelect: (key: string) => {
     defaultRoute.value = key
@@ -15,9 +17,15 @@ const menuEv = {
 }
 const status = reactive({
   dark: false,
+  setTheme: () => {
+    if (status.dark) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  },
   toggleDark: () => {
     status.dark = !status.dark
-    document.documentElement.classList.toggle("dark", status.dark)
   },
 })
 const defaultRoute = ref("")
@@ -41,6 +49,7 @@ useI18nWatch(() => {
     },
   ]
 })
+settingsStore.api.dataWatcher<boolean>("global.themeDark", toRef(status, "dark"), false, status.setTheme)
 onBeforeMount(() => {
   const current = pageNav.value.find(v => route.path.startsWith(v.index))
   defaultRoute.value = current?.index ?? "/main/chat"
@@ -98,6 +107,11 @@ onBeforeMount(() => {
 }
 </style>
 <style lang="scss" scoped>
+html.dark {
+  .nav-container {
+    --nav-container-border-color: #141414;
+  }
+}
 .nav-container {
   --el-menu-base-level-padding: 0;
   --el-menu-horizontal-height: 100%;

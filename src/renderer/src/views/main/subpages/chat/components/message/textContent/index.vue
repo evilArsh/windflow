@@ -11,6 +11,6 @@ const hasChildren = computed(() => {
 </script>
 <template>
   <Multiple v-if="hasChildren" :parent="data" :data="data.children ?? []"></Multiple>
-  <Single v-else :data></Single>
+  <Single v-else :data header></Single>
 </template>
 <style lang="scss" scoped></style>

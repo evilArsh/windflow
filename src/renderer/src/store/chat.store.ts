@@ -313,10 +313,10 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 发送消息
    */
-  const sendMessage = (topic: ChatTopic, message: ChatMessage, messageParent: ChatMessageData) => {
+  const sendMessage = async (topic: ChatTopic, message: ChatMessage, messageParent: ChatMessageData) => {
     const messageGroup =
       isArray(messageParent.children) && messageParent.children.length > 0 ? messageParent.children : [messageParent]
-    messageGroup.forEach(messageItem => {
+    for (const messageItem of messageGroup) {
       const meta = getMeta(messageItem.modelId)
       if (!meta) return
       const { model, providerMeta, provider } = meta
@@ -337,7 +337,7 @@ export default defineStore("chat_topic", () => {
 
       const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
       topic.requestCount = Math.max(1, topic.requestCount + 1)
-      chatContext.handler = chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
+      chatContext.handler = await chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
         if (res.tool_calls_chain) {
           messageItem.toolCallsChain = messageItem.toolCallsChain ?? []
           messageItem.toolCallsChain.push(res)
@@ -367,7 +367,7 @@ export default defineStore("chat_topic", () => {
         }
         api.updateChatMessage(message)
       })
-    })
+    }
   }
   function restart(topic?: ChatTopic, messageDataId?: string) {
     if (!(topic && messageDataId)) {

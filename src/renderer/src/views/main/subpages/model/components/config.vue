@@ -108,114 +108,105 @@ watch(
 </script>
 <template>
   <MsgBubble v-if="data">
-    <template #head>
-      <el-avatar style="--el-avatar-size: 5rem">
-        <Svg :src="data.logo" class="text-3rem"></Svg>
-      </el-avatar>
-    </template>
-    <template #content>
-      <ContentLayout>
-        <template #header>
-          <div class="flex items-center">
-            <el-text type="primary" :id="data.name">{{ t(data.alias || "") }}</el-text>
-          </div>
-        </template>
-        <div class="model-setting">
-          <el-form :model="data" label-width="10rem" class="w-full" label-position="top">
-            <el-form-item :label="t('provider.apiUrl')" class="w-full">
-              <el-input v-model="data.apiUrl" />
-            </el-form-item>
-            <el-form-item :label="t('provider.apiKey')" class="w-full">
-              <el-input v-model="data.apiKey" show-password />
-            </el-form-item>
-            <el-form-item :label="t('provider.model.name')" class="w-full">
-              <el-card shadow="never" class="w-full">
-                <div class="flex flex-col gap-2rem w-full">
-                  <el-form-item :label="t('provider.model.type')" label-width="5rem">
-                    <el-checkbox
-                      style="margin-right: 2rem"
-                      size="small"
-                      v-model="check.allModelTypes"
-                      :indeterminate="check.isIndeterminateModelTypes"
-                      @change="check.onAllModelTypesChange">
-                      {{ t("tip.selectAll") }}
-                    </el-checkbox>
-                    <el-checkbox-group
-                      class="flex flex-wrap gap-1rem"
-                      v-model="data.selectedTypes"
-                      @change="check.onModelTypesChange"
-                      size="small">
-                      <el-checkbox
-                        border
-                        style="margin-right: 0"
-                        v-for="item in filter.typeKeys"
-                        :key="item"
-                        :label="t(`modelType.${item}`)"
-                        :value="item" />
-                    </el-checkbox-group>
-                  </el-form-item>
-                  <el-form-item :label="t('provider.model.subProvider')" label-width="5rem">
-                    <el-checkbox
-                      style="margin-right: 2rem"
-                      size="small"
-                      v-model="check.allSubProviders"
-                      :indeterminate="check.isIndeterminateSubProviders"
-                      @change="check.onAllSubProvidersChange">
-                      {{ t("tip.selectAll") }}
-                    </el-checkbox>
-                    <el-checkbox-group
-                      class="flex flex-wrap gap-1rem"
-                      v-model="data.selectedSubProviders"
-                      @change="check.onSubProvidersChange"
-                      size="small">
-                      <el-checkbox
-                        style="margin-right: 0"
-                        border
-                        v-for="item in filter.subProviders"
-                        :key="item"
-                        :label="item"
-                        :value="item" />
-                    </el-checkbox-group>
-                  </el-form-item>
-                  <el-form-item :label="t('provider.model.activeStatus')" label-width="5rem">
-                    <el-radio-group v-model="data.activeStatus" size="small">
-                      <el-radio-button :value="ModelActiveStatus.All">
-                        {{ t("provider.model.activeStatusAll") }}
-                      </el-radio-button>
-                      <el-radio-button :value="ModelActiveStatus.Active">
-                        {{ t("provider.model.activeStatusActive") }}
-                      </el-radio-button>
-                      <el-radio-button :value="ModelActiveStatus.Inactive">
-                        {{ t("provider.model.activeStatusInactive") }}
-                      </el-radio-button>
-                    </el-radio-group>
-                  </el-form-item>
-                  <el-form-item>
-                    <Button size="small" type="primary" plain @click="onRefreshModel">
-                      <i-ep:refresh></i-ep:refresh>
-                    </Button>
-                  </el-form-item>
-                  <ModelCard :data="filteredModels" :provider-name="data.name" />
-                </div>
-              </el-card>
-            </el-form-item>
-          </el-form>
+    <ContentLayout>
+      <template #header>
+        <div class="flex items-center p1rem">
+          <el-text type="primary" :id="data.name">{{ t(data.alias || "") }}</el-text>
         </div>
-      </ContentLayout>
-    </template>
+      </template>
+      <div class="model-setting">
+        <el-form :model="data" label-width="10rem" class="w-full" label-position="top">
+          <el-form-item :label="t('provider.apiUrl')" class="w-full">
+            <el-input v-model="data.apiUrl" />
+          </el-form-item>
+          <el-form-item :label="t('provider.apiKey')" class="w-full">
+            <el-input v-model="data.apiKey" show-password />
+          </el-form-item>
+          <el-form-item :label="t('provider.model.name')" class="w-full">
+            <el-card shadow="never" class="w-full">
+              <div class="flex flex-col gap-2rem w-full">
+                <el-form-item :label="t('provider.model.type')" label-width="5rem">
+                  <el-checkbox
+                    style="margin-right: 2rem"
+                    size="small"
+                    v-model="check.allModelTypes"
+                    :indeterminate="check.isIndeterminateModelTypes"
+                    @change="check.onAllModelTypesChange">
+                    {{ t("tip.selectAll") }}
+                  </el-checkbox>
+                  <el-checkbox-group
+                    class="flex flex-wrap gap-1rem"
+                    v-model="data.selectedTypes"
+                    @change="check.onModelTypesChange"
+                    size="small">
+                    <el-checkbox
+                      border
+                      style="margin-right: 0"
+                      v-for="item in filter.typeKeys"
+                      :key="item"
+                      :label="t(`modelType.${item}`)"
+                      :value="item" />
+                  </el-checkbox-group>
+                </el-form-item>
+                <el-form-item :label="t('provider.model.subProvider')" label-width="5rem">
+                  <el-checkbox
+                    style="margin-right: 2rem"
+                    size="small"
+                    v-model="check.allSubProviders"
+                    :indeterminate="check.isIndeterminateSubProviders"
+                    @change="check.onAllSubProvidersChange">
+                    {{ t("tip.selectAll") }}
+                  </el-checkbox>
+                  <el-checkbox-group
+                    class="flex flex-wrap gap-1rem"
+                    v-model="data.selectedSubProviders"
+                    @change="check.onSubProvidersChange"
+                    size="small">
+                    <el-checkbox
+                      style="margin-right: 0"
+                      border
+                      v-for="item in filter.subProviders"
+                      :key="item"
+                      :label="item"
+                      :value="item" />
+                  </el-checkbox-group>
+                </el-form-item>
+                <el-form-item :label="t('provider.model.activeStatus')" label-width="5rem">
+                  <el-radio-group v-model="data.activeStatus" size="small">
+                    <el-radio-button :value="ModelActiveStatus.All">
+                      {{ t("provider.model.activeStatusAll") }}
+                    </el-radio-button>
+                    <el-radio-button :value="ModelActiveStatus.Active">
+                      {{ t("provider.model.activeStatusActive") }}
+                    </el-radio-button>
+                    <el-radio-button :value="ModelActiveStatus.Inactive">
+                      {{ t("provider.model.activeStatusInactive") }}
+                    </el-radio-button>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item>
+                  <Button size="small" type="primary" plain @click="onRefreshModel">
+                    <i-ep:refresh></i-ep:refresh>
+                  </Button>
+                </el-form-item>
+                <ModelCard :data="filteredModels" :provider-name="data.name" />
+              </div>
+            </el-card>
+          </el-form-item>
+        </el-form>
+      </div>
+    </ContentLayout>
   </MsgBubble>
 </template>
 <style lang="scss" scoped>
 .model-setting {
   --model-setting-padding: 1rem;
-  --model-setting-bg-color: rgb(235, 235, 235);
 
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--model-setting-bg-color);
   padding: var(--model-setting-padding);
   border-radius: 1rem;
 }

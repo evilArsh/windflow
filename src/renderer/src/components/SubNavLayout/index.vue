@@ -29,6 +29,13 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
   </div>
 </template>
 <style lang="scss" scoped>
+html.dark {
+  .subnav-container {
+    --subnav-provider-bg-color: #141414;
+    --subnav-provider-border-color: #1d1d1d;
+    --subnav-container-content-bg-color: #1d1d1d;
+  }
+}
 .subnav-container {
   --subnav-container-bg-color: transparent;
   --subnav-provider-bg-color: #efefef;

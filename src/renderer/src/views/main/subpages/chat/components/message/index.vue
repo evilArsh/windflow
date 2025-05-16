@@ -51,7 +51,9 @@ settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
           </div>
         </el-card>
       </template>
-      <TextContent v-for="data in message" :key="data.id" :data="data" />
+      <div class="flex flex-col-reverse p-1.5rem gap2.5rem">
+        <TextContent v-for="data in message" :key="data.id" :data="data" />
+      </div>
       <template #handler>
         <div class="chat-input-container" ref="scale">
           <div class="chat-input-header">

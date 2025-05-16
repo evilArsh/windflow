@@ -119,9 +119,8 @@ export interface LLMProvider extends Provider {
     mcpServersIds: Array<string>,
     callback: (message: LLMChatResponse) => void,
     reqConfig?: LLMBaseRequest
-  ): LLMChatRequestHandler
+  ): Promise<LLMChatRequestHandler>
   titleSummary(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
-  parseResponse(text: string, stream: boolean): LLMChatResponse
 }
 
 // text-to-image

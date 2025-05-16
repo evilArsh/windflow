@@ -87,7 +87,9 @@ defineExpose({
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
       <div v-if="chatMode" class="scroll-bar">
         <div ref="scroll" class="scroll-content">
-          <slot></slot>
+          <div class="w-100% flex-1">
+            <slot></slot>
+          </div>
         </div>
       </div>
       <el-scrollbar v-else ref="scrollEl" style="flex: 1">
@@ -108,8 +110,10 @@ defineExpose({
   position: relative;
   display: flex;
   flex-direction: column-reverse;
+  width: 100%;
 }
 .scroll-content {
+  width: 100%;
   flex: 1;
   overflow: auto;
   display: flex;
@@ -121,6 +125,13 @@ defineExpose({
     &::-webkit-scrollbar-thumb {
       background-color: rgba(144, 147, 153, 0.3);
     }
+  }
+}
+html.dark {
+  .content-container {
+    --content-container-bg-color: #141414;
+    --content-handler-bg-color: #1d1d1d;
+    --content-handler-border-color: #1d1d1d;
   }
 }
 .content-container {

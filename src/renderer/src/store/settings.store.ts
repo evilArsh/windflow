@@ -36,7 +36,8 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
   function dataWatcher<T extends SettingsValue>(
     id: string,
     wrapData: Ref<T> | Reactive<T> | (() => T),
-    defaultValue: T
+    defaultValue: T,
+    callBack?: (data: T) => void
   ) {
     const configData = ref<Settings<T>>()
     get(id, defaultValue).then(res => {
@@ -48,6 +49,7 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
       } else {
         // TODO
       }
+      callBack?.(configData.value.value)
     })
     return watch(
       wrapData,
@@ -55,6 +57,7 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
         if (configData.value) {
           configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
           await update(configData.value)
+          callBack?.(configData.value.value)
         }
       },
       { deep: true }

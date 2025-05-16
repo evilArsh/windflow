@@ -19,6 +19,19 @@ pre {
     }
   }
 }
+html.dark {
+  .markdown-container {
+    table th {
+      background-color: #313131;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #000;
+    }
+
+  }
+}
 .markdown-container {
   line-height: 1.5;
   table {

@@ -43,11 +43,17 @@ watchEffect(() => {
   </div>
 </template>
 <style lang="scss">
+html.dark {
+  .markdown-code-block {
+    --code-block-border-color: #141414;
+  }
+}
 .markdown-code-block {
+  --code-block-border-color: #dce0e5;
   margin: 5px 0;
   .code-block {
     --el-card-padding: 1rem;
-    border: solid 1px #dce0e5;
+    border: solid 1px var(--code-block-border-color);
     border-radius: 0.5rem;
   }
   .code-block-header {

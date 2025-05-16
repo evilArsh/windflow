@@ -1,35 +1,31 @@
 <script lang="ts" setup>
-const props = defineProps<{
+defineProps<{
   reverse?: boolean
 }>()
 </script>
 <template>
-  <div class="msg-bubble" :class="{ reverse: props.reverse }">
-    <div class="bubble-head">
-      <slot name="head"></slot>
+  <el-card class="msg-bubble" shadow="never">
+    <template v-if="$slots.header" #header>
+      <div class="bubble-head" :class="{ reverse }">
+        <slot name="header"></slot>
+      </div>
+    </template>
+    <div class="bubble-content" :class="{ reverse }">
+      <slot></slot>
     </div>
-    <div class="bubble-content" :class="{ reverse: props.reverse }">
-      <slot name="content"></slot>
+    <div v-if="$slots.footer" class="bubble-footer" :class="{ reverse }">
+      <slot name="footer"></slot>
     </div>
-  </div>
+  </el-card>
 </template>
 <style lang="scss" scoped>
 .msg-bubble {
-  --bubble-head-pd: 0.5rem;
-  --msg-bubble-border-color: transparent;
-
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  border: 1px solid var(--msg-bubble-border-color);
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  &.reverse {
-    flex-direction: row-reverse;
-  }
+  --el-card-padding: 0;
   .bubble-head {
-    flex-shrink: 0;
-    padding: var(--bubble-head-pd);
+    display: flex;
+    &.reverse {
+      flex-direction: row-reverse;
+    }
   }
   .bubble-content {
     flex: 1;
@@ -37,6 +33,12 @@ const props = defineProps<{
     flex-direction: column;
     gap: 0.5rem;
     min-width: 0;
+    &.reverse {
+      flex-direction: row-reverse;
+    }
+  }
+  .bubble-footer {
+    display: flex;
     &.reverse {
       flex-direction: row-reverse;
     }
