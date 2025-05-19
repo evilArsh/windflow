@@ -13,14 +13,16 @@
     "mcpList": "配置列表",
     "new": "新增",
     "save": "保存",
-    "send": "发送",
+    "send": "发送({shortcut})",
     "sync": "同步"
   },
   "chat": {
     "addChat": "新的聊天",
     "addFailed": "添加失败",
+    "cleanContext": "清除上下文({shortcut})",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
+    "cleanMessage": "清空聊天({shortcut})",
     "regenerate": "重新生成",
     "rightPanel": {
       "mcp": "工具",

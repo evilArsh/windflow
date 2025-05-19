@@ -7,7 +7,7 @@ export enum SettingKeys {
   ChatTogglePanel = "chat.togglePanel", // 聊天右侧显隐
   ChatSendShortcut = "chat.sendShortcut", // 聊天发送快捷键
   ChatCleanContext = "chat.cleanContext", // 清除聊天上下文
-  ChatClear = "chat.clear", // 清空聊天信息
+  ChatCleanMessage = "chat.cleanMessage", // 清空聊天信息
   McpSubNav = "mcp.subNav", // mcp子菜单宽度配置
   ModelSubNav = "model.subNav", // 模型子菜单宽度配置
   ChatCurrentNodeKey = "chat.currentNodeKey", // 当前聊天节点key

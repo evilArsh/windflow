@@ -23,3 +23,8 @@ body {
 code {
   font-family: "Maple Mono CN", "Maple Mono CN Light", "Maple Mono CN Medium", "Maple Mono CN Thin";
 }
+
+svg:focus {
+  outline: none;
+  box-shadow: none;
+}
