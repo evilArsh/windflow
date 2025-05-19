@@ -7,11 +7,11 @@ export function mergeRequestConfig(
   req?: LLMBaseRequest
 ): LLMBaseRequest {
   const conf: LLMBaseRequest = {
-    messages,
-    model: modelMeta.modelName,
     // max_tokens: 4096,
     stream: true,
     ...req,
+    model: modelMeta.modelName,
+    messages,
     n: 1,
     response_format: { type: "text" },
   }

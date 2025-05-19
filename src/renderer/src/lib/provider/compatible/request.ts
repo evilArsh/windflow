@@ -144,6 +144,7 @@ export async function makeRequest(
     callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
     // 获取MCP工具列表
     const toolList = await loadMCPTools(mcpServersIds)
+    // console.log("[load local MCP tools]", toolList)
     // 调用MCP工具并返回的调用结果
     let reqToolsData: LLMChatMessage[] = []
     // LLM返回的需要调用的工具列表
@@ -170,12 +171,16 @@ export async function makeRequest(
       }
       // 没有触发MCP工具调用
       if (needCallTools.length == 0) return
-      console.log("[tools selected by LLM]", needCallTools)
+      // console.log("[tools selected by LLM]", needCallTools)
       // 调用MCP工具并返回调用结果
       reqToolsData = await callTools(needCallTools)
+      // console.log("[call local tools]", reqToolsData)
       if (reqToolsData.length == 0) return
-      callback(partialToolCalls.getResponse())
+      const response = partialToolCalls.getResponse()
+      // console.log("[first time response]", response)
       const mcpToolsCallResponseMessage = partialToolCalls.getChatMessage()
+      // console.log("[mcp tools call response]", mcpToolsCallResponseMessage)
+      callback(response)
       context.push(mcpToolsCallResponseMessage)
     }
     // 处理工具调用结果

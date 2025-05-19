@@ -89,7 +89,7 @@ defineExpose({
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
       <div v-if="chatMode" class="scroll-bar">
         <div ref="scroll" class="scroll-content">
-          <div class="w-100% flex-1 flex flex-col-reverse">
+          <div class="w-100% flex-1 flex flex-col-reverse justify-end">
             <slot></slot>
           </div>
         </div>

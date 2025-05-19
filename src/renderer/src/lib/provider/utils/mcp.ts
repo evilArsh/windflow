@@ -15,7 +15,6 @@ export async function loadMCPTools(mcpServersIds: string[]) {
       },
     }
   })
-  console.log("[load local MCP tools]", tools)
   return tools
 }
 export async function callTools(tools: LLMToolCall[]): Promise<LLMChatMessage[]> {
@@ -31,7 +30,6 @@ export async function callTools(tools: LLMToolCall[]): Promise<LLMChatMessage[]>
         tool_call_id: tool.id,
       })
     }
-    console.log("[call local tools]", results)
     return results
   } catch (error) {
     console.log("[call local tools error]", error)

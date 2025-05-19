@@ -13,30 +13,27 @@ import { normalizeFormula } from "./utils"
 import useMermaid from "../usable/useMermaid"
 import { toVueRuntime } from "./toVueRuntime/index"
 import { Components } from "./toVueRuntime/types"
-const mdProcessor = unified()
-  // 将Markdown解析为mdast
-  .use(remarkParse)
-  .use(remarkMath, { singleDollarTextMath: true })
-  .use(remarkSqueezeParagraphs)
-  .use(remarkGfm)
-  .use(remarkEmoji)
-  // 将mdast解析为hast
-  .use(remarkRehype, {
-    allowDangerousHtml: false,
-    allowDangerousCharacters: false,
-  })
-  .freeze()
-
 export const createProcessor = () => {
-  return mdProcessor()
-    .use(rehypeMathjax)
-    .use(rehypeHrToBr)
-    .use(rehypeUrlAttributes)
-    .use(rehypeStringify, {
-      allowDangerousHtml: false,
-      allowDangerousCharacters: false,
-    })
-    .freeze()
+  return (
+    unified()
+      .use(remarkParse) // 将Markdown解析为mdast
+      .use(remarkMath, { singleDollarTextMath: true })
+      .use(remarkSqueezeParagraphs)
+      .use(remarkGfm)
+      .use(remarkEmoji)
+      // 将mdast解析为hast
+      .use(remarkRehype, {
+        allowDangerousHtml: false,
+        allowDangerousCharacters: false,
+      })
+      .use(rehypeMathjax)
+      .use(rehypeHrToBr)
+      .use(rehypeUrlAttributes)
+      .use(rehypeStringify, {
+        allowDangerousHtml: false,
+        allowDangerousCharacters: false,
+      })
+  )
 }
 const parser = (components: Components) => {
   const mermaid = useMermaid()

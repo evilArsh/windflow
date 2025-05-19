@@ -333,7 +333,8 @@ export default defineStore("chat_topic", () => {
       topic.requestCount = Math.max(1, topic.requestCount + 1)
       chatContext.handler = await chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
         if (res.tool_calls_chain) {
-          messageItem.toolCallsChain = messageItem.toolCallsChain ?? []
+          console.log("[tool_calls_chain]", res)
+          if (!messageItem.toolCallsChain) messageItem.toolCallsChain = []
           messageItem.toolCallsChain.push(res)
         } else {
           messageItem.status = res.status
