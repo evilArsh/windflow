@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import I18n from "./i18n.vue"
-import { NavPage } from "@renderer/types"
+import { NavPage, SettingKeys } from "@renderer/types"
 import { useI18n } from "vue-i18n"
 import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
@@ -49,7 +49,7 @@ useI18nWatch(() => {
     },
   ]
 })
-settingsStore.api.dataWatcher<boolean>("global.themeDark", toRef(status, "dark"), false, status.setTheme)
+settingsStore.api.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
 onBeforeMount(() => {
   const current = pageNav.value.find(v => route.path.startsWith(v.index))
   defaultRoute.value = current?.index ?? "/main/chat"

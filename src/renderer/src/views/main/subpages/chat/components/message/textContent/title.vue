@@ -32,11 +32,9 @@ const providerStore = useProviderStore()
 html.dark {
   .chat-item-header {
     background-color: #1f1f1f;
-    --affix-shadow-color: rgba(255, 255, 255, 0.15);
   }
 }
 .chat-item-header {
-  --affix-shadow-color: rgba(0, 0, 0, 0.1);
   background-color: #fff;
   border-radius: 1rem;
   border-radius: 0 1rem 1rem 0;

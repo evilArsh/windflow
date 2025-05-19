@@ -5,6 +5,7 @@ import IGlobe from "~icons/material-symbols/globe"
 import IDisplaySettingsOutline from "~icons/material-symbols/display-settings-outline"
 import useI18nWatch from "@renderer/usable/useI18nWatch"
 import { type Component } from "vue"
+import { SettingKeys } from "@renderer/types"
 const { t } = useI18n()
 
 const currentRoute = ref("")
@@ -31,7 +32,7 @@ useI18nWatch(() => {
 onMounted(routes.toDefaultPath)
 </script>
 <template>
-  <SubNavLayout id="mcp.subNav">
+  <SubNavLayout :id="SettingKeys.McpSubNav">
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">

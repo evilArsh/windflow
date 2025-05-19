@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import { ChatTopicTree } from "@renderer/types"
+import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import MessagePanel from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
@@ -34,7 +34,7 @@ shortcut.listen("ctrl+b", res => {
     toggleMenu.value = !toggleMenu.value
   }
 })
-settingsStore.api.dataWatcher<boolean>("chat.toggleMenu", toggleMenu, true)
+settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, toggleMenu, true)
 chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
 onMounted(() => {
   window.defaultTopicTitle = t("chat.addChat")
@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <SubNavLayout id="chat.subNav" :hide-submenu="!toggleMenu">
+  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!toggleMenu">
     <template #submenu>
       <div class="flex flex-col gap.5rem overflow-hidden">
         <div class="chat-provider-header">

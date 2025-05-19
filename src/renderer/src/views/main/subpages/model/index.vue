@@ -6,6 +6,7 @@ import useSettingsStore from "@renderer/store/settings.store"
 import { storeToRefs } from "pinia"
 import { ProviderName } from "@renderer/types"
 import CnfDeepseek from "./components/config.vue"
+import { SettingKeys } from "@renderer/types"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
 const providerStore = useProviderStore()
@@ -37,13 +38,13 @@ function onCardClick(name: ProviderName) {
   currentProvider.value = providerMetas.value[name] ?? undefined
 }
 settingsStore.api.dataWatcher<string | undefined>(
-  "provider.currentSettingActive",
+  SettingKeys.ProviderCurrentSettingActive,
   () => currentProvider.value?.name,
   ""
 )
 </script>
 <template>
-  <SubNavLayout id="model.subNav">
+  <SubNavLayout :id="SettingKeys.ModelSubNav">
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">

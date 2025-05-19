@@ -67,8 +67,9 @@ self.onmessage = async (msg: MessageEvent<WorkerMessage>) => {
         asUri,
       },
       languagePlugins: [createVueLanguagePlugin(ts, compilerOptions, vueCompilerOptions, asFileName)],
+      //@ts-expect-error cannot fix it
       languageServicePlugins: getFullLanguageServicePlugins(ts),
-      setup({ project }) {
+      setup({ project }: any) {
         project.vue = { compilerOptions: vueCompilerOptions }
       },
     })

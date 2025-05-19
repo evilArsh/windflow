@@ -8,19 +8,21 @@ import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
 import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings.store"
+import { SettingKeys } from "@renderer/types"
 const settingsStore = useSettingsStore()
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
+const { settings } = storeToRefs(settingsStore)
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const shortcut = useShortcut()
 const chatStore = useChatStore()
 const { t } = useI18n()
 const togglePanel = ref(true) // 右侧面板是否显示
 const message = computed(() => currentMessage.value?.data ?? [])
-const { key: sendShortcut, trigger: triggerSend } = shortcut.listen("ctrl+enter", async (res, done?: unknown) => {
+const { key: sendShortcut, trigger: triggerSend } = shortcut.listen("enter", async (res, done?: unknown) => {
   if (res.active && currentTopic.value?.node) {
     chatStore.send(currentTopic.value.node)
     await nextTick()
-    contentLayout.value?.scrollToBottom("smooth")
+    contentLayout.value?.scrollToBottom("instant")
     if (isFunction(done)) done()
   }
 })
@@ -31,7 +33,16 @@ shortcut.listen("ctrl+shift+b", res => {
   }
 })
 
-settingsStore.api.dataWatcher<boolean>("chat.togglePanel", togglePanel, true)
+settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, togglePanel, true)
+watch(
+  settings,
+  val => {
+    if (val[SettingKeys.ChatSendShortcut]) {
+      sendShortcut.value = val[SettingKeys.ChatSendShortcut].value as string
+    }
+  },
+  { immediate: true, deep: true }
+)
 </script>
 <template>
   <div v-if="currentTopic" class="flex flex-1 overflow-hidden">

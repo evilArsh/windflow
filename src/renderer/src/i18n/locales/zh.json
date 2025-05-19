@@ -22,6 +22,10 @@
     "deleteFailed": "删除失败",
     "editChat": "编辑",
     "regenerate": "重新生成",
+    "rightPanel": {
+      "mcp": "工具",
+      "settings": "设置"
+    },
     "search": "搜索",
     "terminate": "终止",
     "thinking": "深度思考中",

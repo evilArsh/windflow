@@ -14,6 +14,10 @@
     "deleteFailed": "delete failed",
     "editChat": "edit",
     "regenerate": "re-generate",
+    "rightPanel": {
+      "mcp": "mcp",
+      "settings": "settings"
+    },
     "search": "search",
     "terminate": "terminate",
     "thinking": "deep thinking",

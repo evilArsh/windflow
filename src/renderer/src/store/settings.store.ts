@@ -30,6 +30,14 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
   }
 
   const update = useThrottleFn(async (data: Settings<SettingsValue>) => await db.settings.put(toRaw(data)), 300, true)
+  const updateValue = (id: string, val: Settings<SettingsValue>) => {
+    const data = settings[id]
+    if (data) {
+      data.value = val.value
+    } else {
+      settings[id] = val
+    }
+  }
   /**
    * 配置数据监听，实时更新到数据库
    */
@@ -50,6 +58,7 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
         // TODO
       }
       callBack?.(configData.value.value)
+      updateValue(id, configData.value)
     })
     return watch(
       wrapData,
@@ -58,6 +67,7 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
           configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
           await update(configData.value)
           callBack?.(configData.value.value)
+          updateValue(id, configData.value)
         }
       },
       { deep: true }
@@ -75,5 +85,6 @@ export default defineStore("settings", () => {
   const api = useData(settings)
   return {
     api,
+    settings,
   }
 })

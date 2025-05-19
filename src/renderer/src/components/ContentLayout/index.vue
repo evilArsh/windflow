@@ -33,17 +33,19 @@ const scrollHdl = {
     scrollHdl.to(height.value, be)
   },
   to: (y: number, be?: ScrollBehavior) => {
-    if (chatMode) {
-      scrollRef.value?.scrollTo({
-        top: y,
-        behavior: be,
-      })
-    } else {
-      scrollElRef.value?.wrapRef?.scrollTo({
-        top: y,
-        behavior: be,
-      })
-    }
+    setTimeout(() => {
+      if (chatMode) {
+        scrollRef.value?.scrollTo({
+          top: y * 2,
+          behavior: be,
+        })
+      } else {
+        scrollElRef.value?.wrapRef?.scrollTo({
+          top: y * 2,
+          behavior: be,
+        })
+      }
+    }, 0)
   },
 }
 const handlerStyle = ref<CSSProperties>({
@@ -87,7 +89,7 @@ defineExpose({
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
       <div v-if="chatMode" class="scroll-bar">
         <div ref="scroll" class="scroll-content">
-          <div class="w-100% flex-1">
+          <div class="w-100% flex-1 flex flex-col-reverse">
             <slot></slot>
           </div>
         </div>

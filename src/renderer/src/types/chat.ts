@@ -1,12 +1,40 @@
 import { HttpStatusCode } from "@shared/code"
 import { LLMChatMessage, LLMChatRequestHandler, LLMProvider } from "."
 import { MCPServerParam } from "@shared/types/mcp"
-
+export enum SettingKeys {
+  ChatSubNav = "chat.subNav", // 聊天子菜单宽度配置
+  ChatToggleMenu = "chat.toggleMenu", // 聊天列表显隐
+  ChatTogglePanel = "chat.togglePanel", // 聊天右侧显隐
+  ChatSendShortcut = "chat.sendShortcut", // 聊天发送快捷键
+  ChatCleanContext = "chat.cleanContext", // 清除聊天上下文
+  ChatClear = "chat.clear", // 清空聊天信息
+  McpSubNav = "mcp.subNav", // mcp子菜单宽度配置
+  ModelSubNav = "model.subNav", // 模型子菜单宽度配置
+  ChatCurrentNodeKey = "chat.currentNodeKey", // 当前聊天节点key
+  GlobalThemeDark = "global.themeDark", // 全局主题黑色开关
+  ProviderCurrentSettingActive = "provider.currentSettingActive", // 选中的提供商
+}
 export type ChatMessageData = {
   /**
    * @description 单个消息ID
    */
   id: string
+  /**
+   * @description 当前消息使用的模型配置id
+   */
+  modelId: string
+  /**
+   * @description 当前消息为上下文分界点
+   */
+  contextFlag?: boolean
+  /**
+   * @description 消息时间
+   */
+  time: string
+  /**
+   * @description 消息内容,包含用户消息和模型返回的消息
+   */
+  content: LLMChatMessage
   /**
    * @description 请求是否完成，不管是否成功
    */
@@ -20,10 +48,6 @@ export type ChatMessageData = {
    */
   msg?: string
   /**
-   * @description 消息内容,包含用户消息和模型返回的消息
-   */
-  content: LLMChatMessage
-  /**
    * @description tool_calls调用消息，只作为聊天上下文使用
    */
   toolCallsChain?: Array<LLMChatMessage>
@@ -32,14 +56,6 @@ export type ChatMessageData = {
    */
   children?: Array<ChatMessageData>
   parentId?: string
-  /**
-   * @description 当前消息使用的模型配置id
-   */
-  modelId: string
-  /**
-   * @description 消息时间
-   */
-  time: string
 }
 export type ChatMessage = {
   /**

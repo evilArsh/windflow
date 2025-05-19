@@ -9,6 +9,7 @@ import {
   LLMProvider,
   ProviderMeta,
   Role,
+  SettingKeys,
   Settings,
 } from "@renderer/types"
 import { chatMessageDefault, chatTopicDefault } from "./default/chat.default"
@@ -114,7 +115,7 @@ const useData = (
         }
       }
       // --- 恢复状态
-      const nodeKeyData = (await db.settings.get("chat.currentNodeKey")) as Settings<string> | undefined
+      const nodeKeyData = (await db.settings.get(SettingKeys.ChatCurrentNodeKey)) as Settings<string> | undefined
       currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
       topicList.push(
         ...assembleTopicTree(data, async item => {
@@ -141,7 +142,7 @@ const useData = (
       console.error(`[fetch chat topic] ${(error as Error).message}`)
     }
   }
-  settingsStore.api.dataWatcher<string>("chat.currentNodeKey", currentNodeKey, "")
+  settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
   return {
     fetch,
     topicToTree,
@@ -193,7 +194,6 @@ const useContext = () => {
 
   /**
    * @description 获取消息上下文，最后一个消息必须是`Role.User`,
-   * `DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现,
    * mcp调用中存在{tool_calls:[]}和{tool_call_id:""},存在`item.toolCallsChain`中，
    * 提交时作为消息上下文
    *
@@ -201,33 +201,27 @@ const useContext = () => {
    */
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
     const context: LLMChatMessage[] = []
-    let sysTick = false
-    for (let i = 0; i < message.length; i++) {
-      const item = cloneDeep(message[i])
-      // deepseek patch
-      item.content.reasoning_content = undefined
-      if (!sysTick) {
-        if (item.content.role == Role.User) {
-          sysTick = !sysTick
+    let userTurn = true // Role.User 已unshift,应该到Assistant数据
+    while (true) {
+      const data = message.shift()
+      if (!data) break
+      const item = cloneDeep(data)
+      item.content.reasoning_content = undefined // deepseek patch
+      if (userTurn) {
+        if (item.content.role === Role.User) {
+          userTurn = !userTurn
           context.unshift(item.content)
         } else {
-          break
+          // 丢弃该上下文，兼容deepseek-r1
+          //`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现,
         }
       } else {
         if (item.content.role == Role.Assistant) {
-          sysTick = !sysTick
+          userTurn = !userTurn
           context.unshift(item.content)
           if (isArray(item.toolCallsChain)) {
             context.unshift(...item.toolCallsChain)
           }
-        } else if (item.content.role == Role.System) {
-          context.unshift(item.content)
-          break
-        } else if (item.content.role == Role.Tool) {
-          context.unshift(item.content)
-          break
-        } else {
-          break
         }
       }
     }

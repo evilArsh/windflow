@@ -26,6 +26,7 @@ const id = useId()
 </template>
 <style lang="scss" scoped>
 .chat-item-content {
+  padding: 1rem;
   flex: 1;
   display: flex;
   font-size: 1.4rem;

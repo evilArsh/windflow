@@ -33,7 +33,7 @@ const isPartial = computed(() => {
 })
 const updateAffix = useThrottleFn(
   () => {
-    affixRef.value?.updateRoot()
+    // affixRef.value?.updateRoot()
     affixRef.value?.update()
   },
   200,
@@ -69,7 +69,19 @@ watch(
   </MsgBubble>
 </template>
 <style lang="scss" scoped>
+html.dark {
+  .chat-item-container {
+    --affix-shadow-color: transparent;
+    :deep(.el-affix--fixed) {
+      --affix-shadow-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
 .chat-item-container {
+  --affix-shadow-color: transparent;
+  :deep(.el-affix--fixed) {
+    --affix-shadow-color: rgba(0, 0, 0, 0.1);
+  }
   &.reverse {
     align-self: flex-end;
   }
