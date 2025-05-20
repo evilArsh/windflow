@@ -15,6 +15,7 @@ const props = defineProps<{
 const id = useId()
 const affixRef = useTemplateRef("affix")
 const rawDlg = useTemplateRef("rawDlg")
+const elObserver = shallowRef<IntersectionObserver>()
 const rawTextDlg = reactive({
   data: undefined as ChatMessageData | undefined,
   onChange: markRaw((value: string) => {
@@ -44,7 +45,25 @@ const onMdUpdate = async () => {
   await nextTick()
   updateAffix()
 }
+const elVisibleListener = () => {
+  const element = document.getElementById(id)
+  if (!element) return
+  elObserver.value = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) {
+        affixRef.value?.update()
+      }
+    })
+  })
+  elObserver.value.observe(element)
+}
 watch(() => props.data.content, onMdUpdate, { deep: true, immediate: true })
+onMounted(() => {
+  elVisibleListener()
+})
+onBeforeUnmount(() => {
+  elObserver.value?.disconnect()
+})
 </script>
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: !isAssistant }" :reverse="!isAssistant" :id>
