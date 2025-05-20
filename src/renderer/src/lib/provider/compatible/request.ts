@@ -237,7 +237,9 @@ export function usePartialToolCalls() {
         }
       })
     }
-    result.usage = data.usage
+    if (data.usage) {
+      result.usage = data.usage
+    }
     result.finish_reason = data.finish_reason
   }
   function getTools(): LLMToolCall[] {

@@ -56,6 +56,14 @@ export type ChatMessageData = {
    */
   children?: Array<ChatMessageData>
   parentId?: string
+  /**
+   * @description 本次请求中模型产生的token数
+   */
+  completionTokens?: number
+  /**
+   * @description 本次请求中用户输入的token数
+   */
+  promptTokens?: number
 }
 export type ChatMessage = {
   /**

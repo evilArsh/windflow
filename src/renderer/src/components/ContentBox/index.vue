@@ -158,7 +158,7 @@ html.dark .comp-content-box {
   .box-text {
     flex: 1;
     white-space: normal;
-    word-break: break-word;
+    // word-break: break-word;
     display: flex;
     align-items: center;
   }

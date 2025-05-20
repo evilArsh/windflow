@@ -2,21 +2,22 @@
 import { ChatMessageData } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model.store"
 import useProviderStore from "@renderer/store/provider.store"
-defineProps<{
+const props = defineProps<{
   data: ChatMessageData
 }>()
 const modelsStore = useModelsStore()
 const providerStore = useProviderStore()
+const isAssistant = computed(() => !!props.data.modelId)
 </script>
 <template>
-  <div class="chat-item-header" :class="{ reverse: !data.modelId }">
+  <div class="chat-item-header" :class="{ reverse: !isAssistant }">
     <ContentBox default-lock background>
       <Svg
         :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
         class="text-3rem"></Svg>
     </ContentBox>
-    <div class="chat-item-title" :class="{ reverse: !data.modelId }">
-      <div v-if="data.modelId" class="flex items-center gap-0.25rem">
+    <div class="chat-item-title" :class="{ reverse: !isAssistant }">
+      <div v-if="isAssistant" class="flex items-center gap-0.25rem">
         <el-text class="name">
           {{ modelsStore.find(data.modelId)?.providerName }}
         </el-text>
@@ -25,7 +26,23 @@ const providerStore = useProviderStore()
       </div>
       <el-text size="small" class="time">{{ data.time }}</el-text>
     </div>
+    <el-divider direction="vertical" border-style="dashed" />
     <slot></slot>
+    <div v-if="isAssistant" class="flex items-center">
+      <el-divider direction="vertical" border-style="dashed" />
+      <ContentBox>
+        <template #icon>
+          <i-material-symbols:arrow-upward-alt class="text-1.2rem"></i-material-symbols:arrow-upward-alt>
+        </template>
+        <el-text size="small">{{ toNumber(data.promptTokens) }}</el-text>
+      </ContentBox>
+      <ContentBox>
+        <template #icon>
+          <i-material-symbols:arrow-downward-alt class="text-1.2rem"></i-material-symbols:arrow-downward-alt>
+        </template>
+        <el-text size="small">{{ toNumber(data.completionTokens) }}</el-text>
+      </ContentBox>
+    </div>
   </div>
 </template>
 <style lang="scss" scoped>

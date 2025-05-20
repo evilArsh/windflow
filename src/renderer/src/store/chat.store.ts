@@ -339,6 +339,10 @@ export default defineStore("chat_topic", () => {
           messageItem.toolCallsChain.push(res)
         } else {
           messageItem.status = res.status
+          if (res.usage) {
+            messageItem.completionTokens = toNumber(res.usage.completion_tokens)
+            messageItem.promptTokens = toNumber(res.usage.prompt_tokens)
+          }
           if (isString(res.content)) messageItem.content.content += res.content
           if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
           if (res.status == 206) {
