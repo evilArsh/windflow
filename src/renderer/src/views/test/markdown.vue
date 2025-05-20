@@ -33,7 +33,7 @@ pause()
 <template>
   <el-row class="w-full h-full overflow-hidden">
     <el-col :span="20" class="h-full overflow-hidden">
-      <div class="flex w-full h-full">
+      <div class="flex w-full h-full border-solid border-1px border-gray">
         <ContentLayout>
           <Markdown :content="content" />
         </ContentLayout>

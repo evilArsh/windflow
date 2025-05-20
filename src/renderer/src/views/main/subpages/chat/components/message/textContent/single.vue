@@ -33,7 +33,7 @@ const isPartial = computed(() => {
 })
 const updateAffix = useThrottleFn(
   () => {
-    // affixRef.value?.updateRoot()
+    affixRef.value?.updateRoot()
     affixRef.value?.update()
   },
   200,

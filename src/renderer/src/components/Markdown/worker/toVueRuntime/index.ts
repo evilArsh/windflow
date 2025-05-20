@@ -1,5 +1,5 @@
 /**
- * @description changed origin: https://github.com/syntax-tree/hast-util-to-jsx-runtime.
+ * @description change origin: https://github.com/syntax-tree/hast-util-to-jsx-runtime.
  * for vue only
  * @author: arshdebian@163.com
  */
@@ -141,7 +141,8 @@ function element(state: State, node: Element): Child | undefined {
   const parentSchema = state.schema
   let schema = parentSchema
 
-  if (node.tagName.toLowerCase() === "svg" && parentSchema.space === "html") {
+  const tagName = node.tagName.toLowerCase()
+  if (tagName === "svg" && parentSchema.space === "html") {
     schema = svg
     state.schema = schema
   }
@@ -414,7 +415,7 @@ function createProperty(
 ): Field | undefined {
   const info = find(state.schema, prop)
   // Ignore nullish and `NaN` values.
-  if (value === null || value === undefined || !isNumber(value)) {
+  if (value === null || value === undefined || (typeof value === "number" && Number.isNaN(value))) {
     return
   }
   if (Array.isArray(value)) {
