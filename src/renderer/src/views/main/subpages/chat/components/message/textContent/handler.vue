@@ -3,7 +3,8 @@ import { ChatMessageData } from "@renderer/types/chat"
 import useChatStore from "@renderer/store/chat.store"
 
 import { storeToRefs } from "pinia"
-defineProps<{
+import { errorToText } from "@shared/error"
+const props = defineProps<{
   data: ChatMessageData
 }>()
 defineEmits<{
@@ -13,6 +14,16 @@ const { t } = useI18n()
 const chatStore = useChatStore()
 
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())
+async function deleteMessage() {
+  try {
+    if (currentMessage.value) {
+      chatStore.deleteSubMessage(currentTopic.value?.node, currentMessage.value, props.data.id)
+      chatStore.api.updateChatMessage(currentMessage.value)
+    }
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+  }
+}
 </script>
 <template>
   <div class="flex gap1rem py1rem">
@@ -46,9 +57,7 @@ const { currentTopic, currentMessage } = storeToRefs(useChatStore())
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
         </el-button>
       </el-tooltip>
-      <el-popconfirm
-        :title="t('tip.deleteConfirm')"
-        @confirm="chatStore.deleteSubMessage(currentTopic?.node, currentMessage, data.id)">
+      <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="deleteMessage">
         <template #reference>
           <el-button size="small" :disabled="!data.finish" circle plain text type="danger">
             <i-solar:trash-bin-trash-outline class="text-1.4rem"></i-solar:trash-bin-trash-outline>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import ModelSelect from "../../modelSelect/index.vue"
 import TextInput from "../textInput/index.vue"
@@ -8,29 +7,73 @@ import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings.store"
 import { SettingKeys } from "@renderer/types"
 import { ElMessageBox } from "element-plus"
+import { errorToText } from "@shared/error"
+const emit = defineEmits<{
+  (e: "messageSend"): void
+  (e: "contextClean"): void
+}>()
 const settingsStore = useSettingsStore()
-const { currentTopic } = storeToRefs(useChatStore())
 const { settings } = storeToRefs(settingsStore)
 const { t } = useI18n()
-const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const shortcut = useShortcut()
 const chatStore = useChatStore()
+const { currentTopic, currentMessage } = storeToRefs(chatStore)
 const handler = {
+  openTip: async (msg: string) => {
+    try {
+      await ElMessageBox.confirm(msg, t("tip.tip"), {
+        type: "warning",
+        confirmButtonText: t("btn.confirm"),
+        cancelButtonText: t("btn.cancel"),
+        cancelButtonClass: "mx-1rem",
+      })
+      return true
+    } catch (_e) {
+      return false
+    }
+  },
   cleanMessage: async (res: { active: boolean }) => {
-    if (res.active && currentTopic.value?.node) {
-      ElMessageBox.confirm
+    try {
+      if (res.active && currentTopic.value?.node) {
+        const confirm = await handler.openTip(`${t("tip.deleteConfirm", { message: t("chat.messageRecord") })}`)
+        if (confirm && currentMessage.value) {
+          for (const m of currentMessage.value.data) {
+            chatStore.deleteSubMessage(currentTopic.value?.node, currentMessage.value, m.id)
+          }
+          currentMessage.value.data = []
+          await chatStore.api.updateChatMessage(currentMessage.value)
+        }
+      }
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
     }
   },
   cleanContext: async (res: { active: boolean }) => {
-    if (res.active && currentTopic.value?.node) {
-      ElMessageBox.confirm
+    try {
+      if (res.active && currentTopic.value?.node) {
+        const confirm = await handler.openTip(`${t("tip.emptyConfirm", { message: t("chat.context") })}`)
+        if (confirm && currentMessage.value) {
+          currentMessage.value.data.unshift({
+            contextFlag: true,
+            id: uniqueId(),
+            modelId: "",
+            time: formatSecond(Date.now()),
+            content: { role: "", content: "" },
+            status: 200,
+          })
+          await chatStore.api.updateChatMessage(currentMessage.value)
+          emit("contextClean")
+        }
+      }
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
     }
   },
   send: async (res: { active: boolean }, done?: unknown) => {
     if (res.active && currentTopic.value?.node) {
       chatStore.send(currentTopic.value.node)
       await nextTick()
-      contentLayout.value?.scrollToBottom("instant")
+      emit("messageSend")
       if (isFunction(done)) done()
     }
   },

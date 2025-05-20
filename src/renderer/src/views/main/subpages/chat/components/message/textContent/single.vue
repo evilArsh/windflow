@@ -31,6 +31,7 @@ const isAssistant = computed(() => !!props.data.modelId)
 const isPartial = computed(() => {
   return props.data.status < 200 || props.data.status == 206
 })
+
 const updateAffix = useThrottleFn(
   () => {
     affixRef.value?.updateRoot()
@@ -39,13 +40,11 @@ const updateAffix = useThrottleFn(
   200,
   true
 )
-watch(
-  () => props.data.content,
-  () => {
-    nextTick(updateAffix)
-  },
-  { deep: true, immediate: true }
-)
+const onMdUpdate = async () => {
+  await nextTick()
+  updateAffix()
+}
+watch(() => props.data.content, onMdUpdate, { deep: true, immediate: true })
 </script>
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: !isAssistant }" :reverse="!isAssistant" :id>
@@ -59,7 +58,7 @@ watch(
     <div class="chat-item-content" :class="{ reverse: !isAssistant }">
       <Loading v-if="isAssistant" :data></Loading>
       <MCPCall v-if="isAssistant" :data></MCPCall>
-      <Markdown v-if="isAssistant" :content="data.content.content" @update="updateAffix" />
+      <Markdown v-if="isAssistant" :content="data.content.content" @update="onMdUpdate" />
       <i-svg-spinners:pulse-3 v-if="isAssistant && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
       <el-text v-if="!isAssistant" type="primary" class="self-end!">
         {{ data.content.content }}

@@ -20,6 +20,13 @@ shortcut.listen("ctrl+shift+b", res => {
   }
 })
 settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, togglePanel, true)
+const handler = {
+  onMessageSend: () => {
+    setTimeout(() => {
+      contentLayout.value?.scrollToBottom("instant")
+    }, 0)
+  },
+}
 </script>
 <template>
   <div v-if="currentTopic" class="flex flex-1 overflow-hidden">
@@ -43,7 +50,7 @@ settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, togglePanel,
         <TextContent v-for="data in message" :key="data.id" :data="data" />
       </div>
       <template #handler>
-        <Handler></Handler>
+        <Handler @message-send="handler.onMessageSend" @context-clean="handler.onMessageSend"></Handler>
       </template>
     </ContentLayout>
     <RightPanel v-show="togglePanel" v-model="currentTopic.node"></RightPanel>

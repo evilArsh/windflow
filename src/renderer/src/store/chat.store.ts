@@ -205,6 +205,7 @@ const useContext = () => {
     while (true) {
       const data = message.shift()
       if (!data) break
+      if (data.contextFlag) break
       const item = cloneDeep(data)
       item.content.reasoning_content = undefined // deepseek patch
       if (userTurn) {
@@ -479,7 +480,7 @@ export default defineStore("chat_topic", () => {
    */
   function deleteSubMessage(topic?: ChatTopic, message?: ChatMessage, currentId?: string) {
     if (!(message && currentId && topic)) {
-      console.warn(`[deleteSubMessage] message or currentId or topic is empty.${message} ${currentId} ${topic}`)
+      console.warn(`[deleteSubMessage] message or currentId or topic is empty.`, topic, message, currentId)
       return
     }
     const msgIndex = message.data.findIndex(item => item.id === currentId)
@@ -488,21 +489,18 @@ export default defineStore("chat_topic", () => {
       return
     }
     const current = message.data[msgIndex]
+    const chatContext = findContext(topic.id, current.id)
+    chatContext?.handler?.terminate()
     if (current.content.role === Role.Assistant) {
       if (Array.isArray(current.children)) {
         current.children.forEach(child => {
           const chatContext = findContext(topic.id, child.id)
           chatContext?.handler?.terminate()
         })
-      } else {
-        const chatContext = findContext(topic.id, current.id)
-        chatContext?.handler?.terminate()
       }
     }
     message.data.splice(msgIndex, 1)
-    api.updateChatMessage(message)
   }
-
   return {
     topicList,
     chatMessage,

@@ -19,10 +19,13 @@
   "chat": {
     "addChat": "新的聊天",
     "addFailed": "添加失败",
+    "contextDivider": "上下文已清空",
     "cleanContext": "清除上下文({shortcut})",
+    "cleanMessage": "清空聊天({shortcut})",
+    "context": "聊天上下文",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
-    "cleanMessage": "清空聊天({shortcut})",
+    "messageRecord": "聊天记录",
     "regenerate": "重新生成",
     "rightPanel": {
       "mcp": "工具",
@@ -104,14 +107,16 @@
     "status401": "身份验证失败，请检查配置信息"
   },
   "tip": {
-    "deleteConfirm": "要删除吗?",
-    "deleteFailed": "删除失败",
+    "deleteConfirm": "要删除{message}吗?",
+    "deleteFailed": "删除{message}失败",
+    "emptyConfirm": "要清空{message}吗?",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中",
     "reset": "即将重置?",
     "saveSuccess": "保存成功",
     "selectAll": "全选",
     "selectModel": "请选择模型",
+    "tip": "提示",
     "yes": "是的"
   },
   "topic": {
@@ -121,3 +126,4 @@
     "title": "标题"
   }
 }
+

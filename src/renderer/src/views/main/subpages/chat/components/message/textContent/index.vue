@@ -2,6 +2,7 @@
 import { ChatMessageData } from "@renderer/types/chat"
 import Single from "./single.vue"
 import Multiple from "./multiple.vue"
+import Divider from "./divider.vue"
 const props = defineProps<{
   data: ChatMessageData
 }>()
@@ -10,7 +11,8 @@ const hasChildren = computed(() => {
 })
 </script>
 <template>
-  <Multiple v-if="hasChildren" :parent="data" :data="data.children ?? []"></Multiple>
+  <Divider v-if="data.contextFlag" :data></Divider>
+  <Multiple v-else-if="hasChildren" :parent="data" :data="data.children ?? []"></Multiple>
   <Single v-else :data header></Single>
 </template>
 <style lang="scss" scoped></style>

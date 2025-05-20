@@ -2,6 +2,7 @@
 import { CSSProperties } from "@renderer/lib/shared/types"
 const emit = defineEmits<{
   (e: "update:handlerHeight", height: number): void
+  (e: "scroll", x: number, y: number): void
 }>()
 
 const { handlerHeight = 0, chatMode = false } = defineProps<{
@@ -22,7 +23,7 @@ const height = computed(() => {
   if (chatMode) {
     return toNumber(scrollRef.value?.scrollHeight)
   } else {
-    if (scrollElRef.value?.wrapRef?.firstChild) {
+    if (scrollElRef.value?.wrapRef?.firstElementChild) {
       return toNumber(scrollElRef.value.wrapRef.firstElementChild?.scrollHeight)
     }
   }
@@ -46,6 +47,13 @@ const scrollHdl = {
         })
       }
     }, 0)
+  },
+  chatModeOnScroll: (e: Event) => {
+    const tar = e.target as HTMLElement
+    emit("scroll", toNumber(tar.scrollLeft), toNumber(tar.scrollTop))
+  },
+  onScroll: (x: number, y: number) => {
+    emit("scroll", x, y)
   },
 }
 const handlerStyle = ref<CSSProperties>({
@@ -78,6 +86,16 @@ defineExpose({
   scrollToBottom: scrollHdl.toBottom,
   scrollTo: scrollHdl.to,
 })
+onMounted(() => {
+  if (chatMode) {
+    scrollRef.value?.addEventListener("scroll", scrollHdl.chatModeOnScroll)
+  }
+})
+onBeforeUnmount(() => {
+  if (chatMode) {
+    scrollRef.value?.removeEventListener("scroll", scrollHdl.chatModeOnScroll)
+  }
+})
 </script>
 
 <template>
@@ -94,7 +112,7 @@ defineExpose({
           </div>
         </div>
       </div>
-      <el-scrollbar v-else ref="scrollEl" style="flex: 1">
+      <el-scrollbar v-else ref="scrollEl" style="flex: 1" @scroll="e => scrollHdl.onScroll(e.scrollLeft, e.scrollTop)">
         <slot></slot>
       </el-scrollbar>
       <slot v-if="$slots.contentRight" name="contentRight"></slot>
