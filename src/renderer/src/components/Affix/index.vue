@@ -2,7 +2,17 @@
 import { CSSProperties } from "@renderer/lib/shared/types"
 import { useElementBounding, useIntersectionObserver } from "@vueuse/core"
 
-const props = defineProps<{
+const {
+  position = "top",
+  target = "",
+  offset = 0,
+} = defineProps<{
+  /**
+   * 选择top时,如果元素滚动到底部消失或即将消失，会回到原位置
+   *
+   * 选择bottom时和top行为一致
+   */
+  position?: "top" | "bottom"
   target?: string
   offset?: number
 }>()
@@ -27,18 +37,35 @@ const event = reactive({
     needFloat: false,
   },
 })
+const isElNearTop = (el?: HTMLElement | null): boolean => {
+  if (!el) return false
+  const rect = el.getBoundingClientRect()
+  return rect.y + rect.height / 2 <= window.innerHeight / 2
+}
+// const is
 function update() {
+  const isNearTop = isElNearTop(affixRef.value)
+  event.affix.needFloat = false
   if (hasTarget.value) {
-    event.affix.needFloat =
-      (event.target.isIntersecting && !event.affix.isIntersecting) ||
-      (event.target.isIntersecting && event.affix.isIntersecting && event.affix.intersectionRatio < 1)
+    if (
+      event.target.isIntersecting &&
+      (!event.affix.isIntersecting || (event.affix.isIntersecting && event.affix.intersectionRatio < 1))
+    ) {
+      event.affix.needFloat = position === "top" ? isNearTop : !isNearTop
+    }
   } else {
-    event.affix.needFloat = !event.affix.isIntersecting
+    if (!event.affix.isIntersecting || event.affix.intersectionRatio < 1) {
+      event.affix.needFloat = position === "top" ? isNearTop : !isNearTop
+    }
   }
   if (event.affix.needFloat) {
     affixStyle.value = {
-      top: px(props.offset),
       zIndex: 100,
+    }
+    if (position === "bottom") {
+      affixStyle.value.bottom = px(offset)
+    } else {
+      affixStyle.value.top = px(offset)
     }
     affixScale.value = {
       width: px(width.value),
@@ -72,8 +99,8 @@ const targetOb = useIntersectionObserver(
 )
 function init() {
   childEl.value = affixInner.value?.firstElementChild as HTMLElement | null
-  if (props.target) {
-    targetEl.value = document.querySelector(props.target) as HTMLElement | null
+  if (target) {
+    targetEl.value = document.querySelector(target) as HTMLElement | null
   }
 }
 onMounted(init)
