@@ -49,7 +49,7 @@ function update() {
     affixScale.value = {}
   }
 }
-useIntersectionObserver(
+const affixOb = useIntersectionObserver(
   affixRef,
   ([entry]) => {
     event.affix.isIntersecting = entry.isIntersecting
@@ -58,7 +58,7 @@ useIntersectionObserver(
   },
   { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] }
 )
-const { resume: targetResume, pause: targetPause } = useIntersectionObserver(
+const targetOb = useIntersectionObserver(
   targetEl,
   ([entry]) => {
     event.target.intersectionRatio = entry.intersectionRatio
@@ -74,11 +74,13 @@ function init() {
   childEl.value = affixInner.value?.firstElementChild as HTMLElement | null
   if (props.target) {
     targetEl.value = document.querySelector(props.target) as HTMLElement | null
-    targetEl.value && targetResume()
   }
 }
-targetPause()
 onMounted(init)
+onBeforeUnmount(() => {
+  affixOb.stop()
+  targetOb.stop()
+})
 </script>
 <template>
   <div class="comp-affix" :class="{ fix: event.affix.needFloat }" :style="affixScale" ref="affix">
