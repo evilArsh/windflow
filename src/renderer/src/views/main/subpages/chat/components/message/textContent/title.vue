@@ -53,14 +53,11 @@ html.dark {
 }
 .chat-item-header {
   background-color: #fff;
-  border-radius: 1rem;
   border-radius: 0 1rem 1rem 0;
   padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 2px 12px 0 var(--affix-shadow-color);
-  transition: box-shadow 0.3s;
   &.reverse {
     flex-direction: row-reverse;
     border-radius: 1rem 0 0 1rem;

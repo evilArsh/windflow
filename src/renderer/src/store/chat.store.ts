@@ -202,6 +202,12 @@ const useContext = () => {
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
     const context: LLMChatMessage[] = []
     let userTurn = true // Role.User 已unshift,应该到Assistant数据
+    // const lastUserData = message.shift()
+    // if (lastUserData && lastUserData.content.role === Role.User) {
+    //   const data = cloneDeep(lastUserData)
+    //   data.content.reasoning_content = undefined
+    //   context.unshift(data.content)
+    // }
     while (true) {
       const data = message.shift()
       if (!data) break
@@ -210,21 +216,31 @@ const useContext = () => {
       item.content.reasoning_content = undefined // deepseek patch
       if (userTurn) {
         if (item.content.role === Role.User) {
-          userTurn = !userTurn
           context.unshift(item.content)
+          userTurn = false
         } else {
-          // 丢弃该上下文，兼容deepseek-r1
-          //`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现,
+          // 丢弃上下文,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
+          if (context.length > 0) {
+            if (context[0].role === Role.Assistant) {
+              context.shift()
+            }
+          }
         }
       } else {
         if (item.content.role == Role.Assistant) {
-          userTurn = !userTurn
           context.unshift(item.content)
           if (isArray(item.toolCallsChain)) {
             context.unshift(...item.toolCallsChain)
           }
+          userTurn = true
+        } else {
+          // 丢弃
         }
       }
+    }
+    if (userTurn) {
+      // user-assistant消息pair中，无user消息，此时删除assistant消息
+      context.shift()
     }
     context.unshift({ role: Role.System, content: JSON.stringify([{ type: "text", content: topic.prompt }]) })
     return context
@@ -318,7 +334,6 @@ export default defineStore("chat_topic", () => {
       let chatContext = findContext(topic.id, messageItem.id)
       const messageContextIndex = message.data.findIndex(item => item.id === messageParent.id)
       // 消息上下文
-      // TODO: contex在中间位置开始
       const messageContext = getMessageContext(topic, message.data.slice(messageContextIndex + 1))
       messageItem.content = { role: "assistant", content: "", reasoning_content: "" }
       messageItem.finish = false
@@ -350,7 +365,7 @@ export default defineStore("chat_topic", () => {
           } else if (res.status == 200) {
             messageItem.finish = true
             topic.requestCount = Math.max(0, topic.requestCount - 1)
-            console.log(`[message done] ${res.status}`)
+            // console.log(`[message done] ${res.status}`)
             if (topic.label === window.defaultTopicTitle && chatContext.provider) {
               chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
                 if (res) topic.label = res
@@ -358,11 +373,11 @@ export default defineStore("chat_topic", () => {
             }
           } else if (res.status == 100) {
             messageItem.finish = false
-            console.log(`[message pending] ${res.status}`)
+            // console.log(`[message pending] ${res.status}`)
           } else {
             messageItem.finish = true
             topic.requestCount = Math.max(0, topic.requestCount - 1)
-            console.log(`[message] ${res.status}`)
+            // console.log(`[message] ${res.status}`)
           }
         }
         api.updateChatMessage(message)
