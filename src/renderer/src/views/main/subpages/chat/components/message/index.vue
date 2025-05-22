@@ -39,8 +39,9 @@ const handler = {
             </div>
             <div class="flex items-center gap1rem">
               <ContentBox @click="togglePanel = !togglePanel" background>
-                <i-mdi:arrow-collapse-left v-if="!togglePanel"></i-mdi:arrow-collapse-left>
-                <i-mdi:arrow-collapse-right v-else></i-mdi:arrow-collapse-right>
+                <i-material-symbols:left-panel-close-outline
+                  v-if="!togglePanel"></i-material-symbols:left-panel-close-outline>
+                <i-material-symbols:right-panel-close-outline v-else></i-material-symbols:right-panel-close-outline>
               </ContentBox>
             </div>
           </div>

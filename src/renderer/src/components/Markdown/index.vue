@@ -3,12 +3,6 @@ import mermaid from "mermaid"
 import useParser from "./worker"
 import CodeBlock from "./components/CodeBlock/index.vue"
 import { LLMContent } from "@renderer/types"
-const emit = defineEmits<{
-  /**
-   * 内容动态更新和首次渲染完成时触发
-   */
-  (e: "update"): void
-}>()
 const props = defineProps<{
   content: LLMContent
 }>()
@@ -38,13 +32,6 @@ watch(
   val => handleContent(val),
   { immediate: true }
 )
-onUpdated(() => {
-  emit("update")
-})
-onMounted(async () => {
-  await nextTick()
-  emit("update")
-})
 </script>
 <template>
   <div class="markdown-container">

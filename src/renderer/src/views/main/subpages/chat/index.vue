@@ -8,7 +8,7 @@ import useShortcut from "@renderer/views/main/usable/useShortcut"
 import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
-import useMenu from "@renderer/views/main/usable/useMenu"
+import useMenu from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings.store"
 const settingsStore = useSettingsStore()
@@ -70,7 +70,9 @@ onBeforeUnmount(() => {
               highlight-current
               :data="topicList"
               node-key="id"
+              draggable
               :props="tree.props"
+              @node-drop="tree.onNodeDrop"
               @node-click="tree.onNodeClick"
               @node-expand="tree.onNodeExpand"
               @node-collapse="tree.onNodeCollapse">
@@ -118,8 +120,9 @@ onBeforeUnmount(() => {
         <template #leftHandler>
           <teleport to="#toggleMenu" defer :disabled="!toggleMenu">
             <ContentBox @click="toggleMenu = !toggleMenu" background>
-              <i-mdi:arrow-collapse-right v-if="!toggleMenu"></i-mdi:arrow-collapse-right>
-              <i-mdi:arrow-collapse-left v-else></i-mdi:arrow-collapse-left>
+              <i-material-symbols:right-panel-close-outline
+                v-if="!toggleMenu"></i-material-symbols:right-panel-close-outline>
+              <i-material-symbols:left-panel-close-outline v-else></i-material-symbols:left-panel-close-outline>
             </ContentBox>
           </teleport>
         </template>
@@ -127,6 +130,13 @@ onBeforeUnmount(() => {
     </template>
   </SubNavLayout>
 </template>
+<style lang="scss">
+.el-tree-node.is-drop-inner {
+  .chat-tree-node {
+    border-color: var(--el-color-primary);
+  }
+}
+</style>
 <style lang="scss" scoped>
 .chat-provider-header {
   flex-shrink: 0;
@@ -141,18 +151,18 @@ onBeforeUnmount(() => {
     --el-tree-node-content-height: 3.5rem;
   }
 }
-
 .chat-tree-node {
   display: flex;
   gap: 0.5rem;
   flex: 1;
   padding-right: 1rem;
   overflow: hidden;
-  .chat-tree-handle {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+  border: solid 1px transparent;
+}
+.chat-tree-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>

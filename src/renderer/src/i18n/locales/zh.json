@@ -12,6 +12,7 @@
     "edit": "编辑",
     "mcpList": "配置列表",
     "new": "新增",
+    "pin": "置顶",
     "save": "保存",
     "send": "发送({shortcut})",
     "sync": "同步"
@@ -19,10 +20,10 @@
   "chat": {
     "addChat": "新的聊天",
     "addFailed": "添加失败",
-    "contextDivider": "上下文已清空",
     "cleanContext": "清除上下文({shortcut})",
     "cleanMessage": "清空聊天({shortcut})",
     "context": "聊天上下文",
+    "contextDivider": "上下文已清空",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
     "messageRecord": "聊天记录",
@@ -126,4 +127,3 @@
     "title": "标题"
   }
 }
-

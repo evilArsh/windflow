@@ -21,7 +21,7 @@ export function mergeRequestConfig(
 export function generateSummaryText(context: string) {
   return `
 Summarize a title in ${window.defaultLanguage ?? "简体中文"}
-within 15 characters without punctuation based on the following content:\n"${context}"
+within 15 characters without any punctuation and cut the crap,based on the following content:\n"${context}"
 `
 }
 

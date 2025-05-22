@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { CSSProperties } from "@renderer/lib/shared/types"
-import { useElementBounding, useIntersectionObserver } from "@vueuse/core"
+import { useElementBounding, useIntersectionObserver, useThrottleFn } from "@vueuse/core"
 
 const {
   position = "top",
@@ -42,40 +42,43 @@ const isElNearTop = (el?: HTMLElement | null): boolean => {
   const rect = el.getBoundingClientRect()
   return rect.y + rect.height / 2 <= window.innerHeight / 2
 }
-// const is
-function update() {
-  const isNearTop = isElNearTop(affixRef.value)
-  event.affix.needFloat = false
-  if (hasTarget.value) {
-    if (
-      event.target.isIntersecting &&
-      (!event.affix.isIntersecting || (event.affix.isIntersecting && event.affix.intersectionRatio < 1))
-    ) {
-      event.affix.needFloat = position === "top" ? isNearTop : !isNearTop
-    }
-  } else {
-    if (!event.affix.isIntersecting || event.affix.intersectionRatio < 1) {
-      event.affix.needFloat = position === "top" ? isNearTop : !isNearTop
-    }
-  }
-  if (event.affix.needFloat) {
-    affixStyle.value = {
-      zIndex: 100,
-    }
-    if (position === "bottom") {
-      affixStyle.value.bottom = px(offset)
+const update = useThrottleFn(
+  () => {
+    const isNearTop = isElNearTop(affixRef.value)
+    event.affix.needFloat = false
+    if (hasTarget.value) {
+      if (
+        event.target.isIntersecting &&
+        (!event.affix.isIntersecting || (event.affix.isIntersecting && event.affix.intersectionRatio < 0.5))
+      ) {
+        event.affix.needFloat = position === "top" ? isNearTop : !isNearTop
+      }
     } else {
-      affixStyle.value.top = px(offset)
+      if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
+        event.affix.needFloat = position === "top" ? isNearTop : !isNearTop
+      }
     }
-    affixScale.value = {
-      width: px(width.value),
-      height: px(height.value),
+    if (event.affix.needFloat) {
+      affixStyle.value = {
+        zIndex: 100,
+      }
+      if (position === "bottom") {
+        affixStyle.value.bottom = px(offset)
+      } else {
+        affixStyle.value.top = px(offset)
+      }
+      affixScale.value = {
+        width: px(width.value),
+        height: px(height.value),
+      }
+    } else {
+      affixStyle.value = {}
+      affixScale.value = {}
     }
-  } else {
-    affixStyle.value = {}
-    affixScale.value = {}
-  }
-}
+  },
+  150,
+  true
+)
 const affixOb = useIntersectionObserver(
   affixRef,
   ([entry]) => {

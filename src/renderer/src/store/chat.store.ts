@@ -39,7 +39,6 @@ const useData = (
     const res: ChatTopicTree[] = []
     const maps: Record<string, ChatTopicTree> = {}
     data.forEach(item => {
-      item.requestCount = 0
       maps[item.id] = topicToTree(item)
       cb(maps[item.id])
     })
@@ -119,6 +118,7 @@ const useData = (
       currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
       topicList.push(
         ...assembleTopicTree(data, async item => {
+          item.node.requestCount = 0
           if (item.id === currentNodeKey.value) {
             currentTopic.value = item
             let msg: ChatMessage | undefined = undefined
@@ -202,12 +202,6 @@ const useContext = () => {
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
     const context: LLMChatMessage[] = []
     let userTurn = true // Role.User 已unshift,应该到Assistant数据
-    // const lastUserData = message.shift()
-    // if (lastUserData && lastUserData.content.role === Role.User) {
-    //   const data = cloneDeep(lastUserData)
-    //   data.content.reasoning_content = undefined
-    //   context.unshift(data.content)
-    // }
     while (true) {
       const data = message.shift()
       if (!data) break

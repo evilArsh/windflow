@@ -102,10 +102,6 @@ export type ChatTopic = {
    */
   modelIds: string[]
   /**
-   * @description 会话滚动位置
-   */
-  // scrollY?: number
-  /**
    * @description 会话输入框高度
    */
   inputHeight?: number

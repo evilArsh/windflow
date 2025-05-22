@@ -1,4 +1,6 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
+import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
+import type Node from "element-plus/es/components/tree/src/model/node"
 import { ChatTopic, ChatTopicTree } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
@@ -264,6 +266,17 @@ export default (
     }),
     onNodeExpand: markRaw((node: ChatTopicTree) => tree.pushDefaultExpandedKeys(node.id)),
     onNodeCollapse: markRaw((node: ChatTopicTree) => tree.removeDefaultExpandedKeys(node.id)),
+    onNodeDrop: (draggingNode: Node, dropNode: Node, dropType: NodeDropType) => {
+      if (dropType === "before" || dropType === "after") {
+        draggingNode.data.node.parentId = dropNode.data.node.parentId
+        draggingNode.data.node.createAt =
+          dropType === "before" ? dropNode.data.node.createAt - 1 : dropNode.data.node.createAt + 1
+      } else if (dropType === "inner") {
+        draggingNode.data.node.parentId = dropNode.data.node.id
+        draggingNode.data.node.createAt = dropNode.data.node.createAt + 1
+      }
+      chatStore.api.updateChatTopic(draggingNode.data.node)
+    },
     filterNode: (value: string, data: TreeNodeData): boolean => {
       return data.node.label.includes(value)
     },
