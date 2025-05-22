@@ -7,15 +7,19 @@ import {
   LLMBaseRequest,
   Role,
   LLMChatRequestHandler,
+  TTIProvider,
 } from "@renderer/types"
 import { createInstance } from "../http"
 import { useSingleLLMChat, makeRequest } from "./request"
 import { mergeRequestConfig, generateSummaryText } from "./utils"
 
-export abstract class Compatible implements LLMProvider {
+export abstract class Compatible implements LLMProvider, TTIProvider {
   axios = createInstance()
   constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
+  /**
+   * @description `LLMProvider` implementation
+   */
   async chat(
     messages: LLMChatMessage[],
     modelMeta: ModelMeta,
@@ -28,7 +32,9 @@ export abstract class Compatible implements LLMProvider {
     makeRequest(messages, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
     return requestHandler
   }
-
+  /**
+   * @description `LLMProvider` implementation
+   */
   async titleSummary(
     context: string,
     modelMeta: ModelMeta,
@@ -47,6 +53,12 @@ export abstract class Compatible implements LLMProvider {
         return content.content
       }
     }
+    return ""
+  }
+  /**
+   * @description `TTIProvider`implementation
+   */
+  async textToImage(text: string, modelMeta: ModelMeta, provider: ProviderMeta): Promise<string> {
     return ""
   }
 }

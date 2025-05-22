@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import useModelStore from "@renderer/store/model.store"
 import { storeToRefs } from "pinia"
-import { ModelType, type ModelMeta } from "@renderer/types"
-import type { ChatTopic } from "@renderer/types"
+import type { ModelMeta, ChatTopic } from "@renderer/types"
 const props = defineProps<{
   modelValue: ChatTopic
 }>()
@@ -26,7 +25,7 @@ const pop = reactive({
 const activeModels = ref<Record<string, ModelMeta[]>>({})
 watchEffect(() => {
   activeModels.value = models.value
-    .filter(v => v.active && (v.type === ModelType.Chat || v.type === ModelType.ChatReasoner))
+    .filter(v => v.active)
     .reduce((acc, cur) => {
       if (acc[cur.providerName]) {
         acc[cur.providerName].push(cur)
@@ -39,7 +38,7 @@ watchEffect(() => {
 </script>
 <template>
   <div>
-    <el-popover placement="top" :width="400" trigger="click" v-model:visible="pop.show">
+    <el-popover placement="top" :width="400" trigger="hover" v-model:visible="pop.show">
       <template #reference>
         <el-badge :value="data.modelIds.length" type="primary">
           <el-button size="small">
@@ -61,7 +60,9 @@ watchEffect(() => {
                     <el-text>{{ t(`provider.name.${provider}`) }}</el-text>
                   </template>
                   <div class="flex flex-col gap5px">
-                    <el-checkbox v-for="model in item" :key="model.id" :value="model.id" :label="model.modelName" />
+                    <el-checkbox v-for="model in item" :key="model.id" :value="model.id" :label="model.modelName">
+                      <ModelName :data="model"></ModelName>
+                    </el-checkbox>
                   </div>
                 </el-card>
               </div>

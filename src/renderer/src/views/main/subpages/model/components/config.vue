@@ -24,7 +24,7 @@ const filteredModels = computed<ModelMeta[]>(() => {
   return scopeModels.value.filter(
     meta =>
       data.value &&
-      data.value.selectedTypes.includes(meta.type) &&
+      data.value.selectedTypes.some(t => (meta.type as string[]).includes(t)) &&
       data.value.selectedSubProviders.includes(meta.subProviderName) &&
       (data.value.activeStatus === ModelActiveStatus.All ||
         (data.value.activeStatus === ModelActiveStatus.Active && meta.active) ||

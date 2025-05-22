@@ -14,7 +14,7 @@ export class DeepSeek extends Compatible {
     })
     return res.data.data.map<ModelMeta>((v: ModelsResponse["data"][number]) => ({
       id: `${provider.name}_${v.id}`,
-      type: v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner,
+      type: [v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner],
       modelName: v.id,
       providerName: provider.name,
       subProviderName: provider.name,

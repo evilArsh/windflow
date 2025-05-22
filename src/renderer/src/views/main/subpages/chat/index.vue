@@ -157,7 +157,7 @@ onBeforeUnmount(() => {
   flex: 1;
   padding-right: 1rem;
   overflow: hidden;
-  border: solid 1px transparent;
+  border: dashed 1px transparent;
 }
 .chat-tree-handle {
   flex-shrink: 0;

@@ -39,7 +39,10 @@ const onModelChange = (row: ModelMeta) => {
           <el-table-column prop="modelName" width="400" :label="t('provider.model.name')" />
           <el-table-column prop="type" width="200" :label="t('provider.model.type')">
             <template #default="{ row }">
-              <el-text type="primary">{{ t(`modelType.${row.type}`) }}</el-text>
+              <div v-if="Array.isArray(row.type)" class="flex flex-wrap gap0.5rem">
+                <el-tag v-for="type in row.type" :key="type" type="primary">{{ t(`modelType.${type}`) }}</el-tag>
+              </div>
+              <el-tag v-else type="primary">{{ t(`modelType.${row.type}`) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column :label="t('provider.model.active')">

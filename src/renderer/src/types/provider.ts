@@ -3,12 +3,19 @@ import { LLMBaseRequest, LLMChatMessage, LLMChatRequestHandler, LLMChatResponse 
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
+
   Embedding = "Embedding",
+
   Reranker = "Reranker",
+
   TextToImage = "TextToImage",
+  ImageToText = "ImageToText",
   ImageToImage = "ImageToImage",
+
   TextToVideo = "TextToVideo",
+
   SpeechToText = "SpeechToText",
+  TextToSpeech = "TextToSpeech",
 }
 export enum ProviderName {
   System = "System",
@@ -26,9 +33,8 @@ export type ModelsResponse = {
   object: string
   data: {
     id: string
-    object: string
-    owned_by: string
-    created: number
+    object?: string
+    owned_by?: string
   }[]
 }
 export type ModelMeta = {
@@ -36,7 +42,7 @@ export type ModelMeta = {
   /**
    * @description 模型类型
    */
-  type: ModelType
+  type: Array<ModelType>
   /**
    * @description 厂商提供的模型名称(模型ID)
    */
@@ -111,6 +117,10 @@ export type ProviderMeta = {
 export interface Provider {
   fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 }
+/**
+ * Large language model provider
+ *
+ */
 export interface LLMProvider extends Provider {
   chat(
     messages: LLMChatMessage[],
@@ -123,8 +133,12 @@ export interface LLMProvider extends Provider {
   titleSummary(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
 }
 
-// text-to-image
-
+/**
+ * Text to Image provider
+ */
+export interface TTIProvider extends Provider {
+  textToImage(text: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
+}
 // image-to-text
 
 // image-to-image

@@ -8,7 +8,9 @@ const types = [
   { name: "reranker", type: ModelType.Reranker },
   { name: "text-to-image", type: ModelType.TextToImage },
   { name: "image-to-image", type: ModelType.ImageToImage },
+  { name: "image-to-text", type: ModelType.ImageToText },
   { name: "speech-to-text", type: ModelType.SpeechToText },
+  { name: "text-to-speech", type: ModelType.TextToSpeech },
   { name: "text-to-video", type: ModelType.TextToVideo },
 ]
 // const reasonerPattern = /deepseek-r1|qwq-32b|deepseek-reasoner|qwen3/
@@ -18,7 +20,6 @@ export class SiliconFlow extends Compatible {
     super()
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    const res: ModelMeta[][] = []
     patchAxios(provider, this.axios)
     const req = types.reduce(
       (acc, v) => {
@@ -31,7 +32,7 @@ export class SiliconFlow extends Compatible {
             })
             .then(res => ({
               type: v.type,
-              data: res.data.data,
+              data: res.data.data ?? [],
             }))
         )
         return acc
@@ -39,23 +40,23 @@ export class SiliconFlow extends Compatible {
       [] as Promise<{ type: ModelType; data: ModelsResponse["data"] }>[]
     )
     const dataRes = await Promise.all(req)
-
-    dataRes.forEach(items => {
-      res.push(
-        items.data.map(v => ({
-          id: `${provider.name}_${v.id}`,
-          type: items.type,
-          // items.type === ModelType.Chat
-          //   ? reasonerPattern.test(v.id.toLowerCase())
-          //     ? ModelType.ChatReasoner
-          //     : ModelType.Chat
-          //   : items.type,
-          modelName: v.id,
-          providerName: provider.name,
-          subProviderName: v.id.indexOf("/") > 0 ? v.id.slice(0, v.id.indexOf("/")) : provider.name,
-        }))
-      )
-    })
-    return res.flat()
+    const datas: Map<string, ModelMeta> = new Map()
+    for (let i = 0; i < dataRes.length; i++) {
+      for (let j = 0; j < dataRes[i].data.length; j++) {
+        const item = dataRes[i].data[j]
+        if (datas.has(item.id)) {
+          datas.get(item.id)!.type.push(dataRes[i].type)
+        } else {
+          datas.set(item.id, {
+            id: `${provider.name}_${item.id}`,
+            type: [dataRes[i].type],
+            modelName: item.id,
+            providerName: provider.name,
+            subProviderName: item.id.indexOf("/") > 0 ? item.id.slice(0, item.id.indexOf("/")) : provider.name,
+          })
+        }
+      }
+    }
+    return Array.from(datas.values())
   }
 }
