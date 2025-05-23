@@ -63,6 +63,7 @@ onBeforeMount(() => {
           <el-menu-item v-for="item in pageNav" :key="item.index" :index="item.index" :disabled="item.disabled">
             <div class="nav-menu-item">
               <ContentBox
+                class="flex-1"
                 :main-style="{ flexDirection: 'column' }"
                 background
                 still-lock

@@ -118,7 +118,6 @@ html.dark .comp-content-box {
 .comp-content-box {
   user-select: none;
   cursor: pointer;
-  flex: 1;
   padding: 5px;
   border-radius: 5px;
   transition: all 0.3s ease;

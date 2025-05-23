@@ -35,7 +35,18 @@
     "search": "搜索",
     "terminate": "终止",
     "thinking": "深度思考中",
-    "thinkingComplete": "思考完成"
+    "thinkingComplete": "思考完成",
+    "tti": {
+      "guidanceScale": "引导权重",
+      "guidanceScaleExp": "这个值用于控制生成图像与给定提示词匹配的程度。值越高，生成的图像越倾向于严格匹配文本提示。值越低，生成的图像越具有创造性且更加多样化，可能包含更多的意想不到的元素。",
+      "handlerTitle": "图片生成",
+      "imageSize": "图片大小",
+      "inferenceSteps": "推理步数",
+      "inferenceStepsExp": "推理步数越多,耗时越长",
+      "n": "生成数量",
+      "negativePrompt": "反向提示词",
+      "seed": "随机种子"
+    }
   },
   "form": {
     "emptyValue": "不能存在空值",
@@ -96,13 +107,6 @@
       "name": "模型",
       "subProvider": "模型标识",
       "type": "类型"
-    },
-    "name": {
-      "DeepSeek": "深度求索",
-      "OpenAI": "OpenAI",
-      "SiliconFlow": "硅基流动",
-      "System": "系统",
-      "Volcengine": "火山引擎"
     },
     "providerName": "提供商"
   },

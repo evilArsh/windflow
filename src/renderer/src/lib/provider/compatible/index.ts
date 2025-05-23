@@ -1,22 +1,24 @@
 import {
   LLMChatMessage,
   LLMChatResponse,
-  LLMProvider,
   ProviderMeta,
   ModelMeta,
   LLMBaseRequest,
   Role,
   LLMChatRequestHandler,
-  TTIProvider,
+  Provider,
 } from "@renderer/types"
 import { createInstance } from "../http"
 import { useSingleLLMChat, makeRequest } from "./request"
 import { mergeRequestConfig, generateSummaryText } from "./utils"
+import { BridgeResponse } from "@shared/types/bridge"
 
-export abstract class Compatible implements LLMProvider, TTIProvider {
+export abstract class Compatible implements Provider {
   axios = createInstance()
   constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
+  abstract name(): string
+  abstract textToImage(text: string, modelMeta: ModelMeta, provider: ProviderMeta): Promise<BridgeResponse<string>>
   /**
    * @description `LLMProvider` implementation
    */
@@ -53,12 +55,6 @@ export abstract class Compatible implements LLMProvider, TTIProvider {
         return content.content
       }
     }
-    return ""
-  }
-  /**
-   * @description `TTIProvider`implementation
-   */
-  async textToImage(text: string, modelMeta: ModelMeta, provider: ProviderMeta): Promise<string> {
     return ""
   }
 }

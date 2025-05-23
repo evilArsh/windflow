@@ -308,7 +308,7 @@ export default defineStore("chat_topic", () => {
       console.warn("[getMeta] model or providerMeta not found", modelId)
       return
     }
-    const provider = providerStore.providerManager.getLLMProvider(model.providerName)
+    const provider = providerStore.providerManager.getProvider(model.providerName)
     if (!provider) {
       console.warn("[getMeta] provider not found", model.providerName)
       return

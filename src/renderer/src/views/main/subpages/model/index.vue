@@ -4,37 +4,28 @@ import useProviderStore from "@renderer/store/provider.store"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings.store"
 import { storeToRefs } from "pinia"
-import { ProviderName } from "@renderer/types"
-import CnfDeepseek from "./components/config.vue"
+import Config from "./components/config.vue"
 import { SettingKeys } from "@renderer/types"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
 const providerStore = useProviderStore()
 const settingsStore = useSettingsStore()
 const { providerMetas, currentProvider } = storeToRefs(providerStore)
-const { t } = useI18n()
 const useConfigComponent = () => {
-  const componentsMap = shallowReactive({
-    [ProviderName.DeepSeek]: CnfDeepseek,
-    [ProviderName.SiliconFlow]: CnfDeepseek,
-    [ProviderName.Volcengine]: CnfDeepseek,
-    [ProviderName.OpenAI]: CnfDeepseek,
-    [ProviderName.System]: h(ElEmpty),
-  })
-  function getComponent(name?: ProviderName) {
+  function getComponent(name?: string) {
     if (!name) return h(ElEmpty)
-    const component = componentsMap[name]
-    if (!component) return h(ElEmpty)
-    return h(component)
+    if (!providerStore.providerManager.availableProviders().some(v => v.name() === name)) {
+      return h(ElEmpty)
+    }
+    return h(Config)
   }
   return {
-    componentsMap,
     getComponent,
   }
 }
 const providerMetasList = computed(() => Object.values(providerMetas.value))
 const { getComponent } = useConfigComponent()
-function onCardClick(name: ProviderName) {
+function onCardClick(name: string) {
   currentProvider.value = providerMetas.value[name] ?? undefined
 }
 settingsStore.api.dataWatcher<string | undefined>(
@@ -68,7 +59,7 @@ settingsStore.api.dataWatcher<string | undefined>(
               :background="false"
               @click.stop="onCardClick(meta.name)">
               <template #icon><Svg :src="meta.logo" class="text-2rem"></Svg></template>
-              <el-text line-clamp="2">{{ t(meta.alias || "") }}</el-text>
+              <el-text line-clamp="2">{{ meta.alias ?? meta.name }}</el-text>
             </ContentBox>
           </div>
         </div>

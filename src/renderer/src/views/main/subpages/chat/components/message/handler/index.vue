@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import ModelSelect from "../../modelSelect/index.vue"
+import TextToImage from "./textToImage.vue"
 import TextInput from "../textInput/index.vue"
 import useChatStore from "@renderer/store/chat.store"
 import { storeToRefs } from "pinia"
@@ -94,8 +95,9 @@ watch(
 <template>
   <div v-if="currentTopic" class="chat-input-container">
     <div class="chat-input-header">
-      <div>
+      <div class="flex items-center gap-1.5rem">
         <ModelSelect v-model="currentTopic.node" />
+        <TextToImage></TextToImage>
       </div>
       <div class="flex gap.5rem bg-#9f9f9f40 b-rd-.5rem">
         <ContentBox background @click="triggerCleanMessage">

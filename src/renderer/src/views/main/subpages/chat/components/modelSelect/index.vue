@@ -57,7 +57,7 @@ watchEffect(() => {
               <div v-for="(item, provider) in activeModels" :key="provider">
                 <el-card shadow="never" style="--el-card-padding: 1rem">
                   <template #header>
-                    <el-text>{{ t(`provider.name.${provider}`) }}</el-text>
+                    <el-text>{{ provider }}</el-text>
                   </template>
                   <div class="flex flex-col gap5px">
                     <el-checkbox v-for="model in item" :key="model.id" :value="model.id" :label="model.modelName">

@@ -1,4 +1,4 @@
-import { ModelMeta, ProviderName } from "@renderer/types"
+import { ModelMeta } from "@renderer/types"
 import { defineStore } from "pinia"
 import { modelsDefault } from "./default/models.default"
 import { db } from "@renderer/usable/useDatabase"
@@ -70,7 +70,7 @@ export default defineStore("model", () => {
     }
     return model
   }
-  function findByProvider(name: ProviderName): ModelMeta[] {
+  function findByProvider(name: string): ModelMeta[] {
     return models.filter(v => v.providerName === name)
   }
 

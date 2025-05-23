@@ -1,10 +1,14 @@
 import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
 import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
+import { BridgeResponse } from "@shared/types/bridge"
 
 export class DeepSeek extends Compatible {
   constructor() {
     super()
+  }
+  name(): string {
+    return "deepseek"
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
     patchAxios(provider, this.axios)
@@ -19,5 +23,8 @@ export class DeepSeek extends Compatible {
       providerName: provider.name,
       subProviderName: provider.name,
     }))
+  }
+  async textToImage(_text: string, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<BridgeResponse<string>> {
+    return { code: 404, msg: "not supported", data: "" }
   }
 }

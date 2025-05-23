@@ -1,5 +1,6 @@
 import { Method } from "axios"
-import { LLMBaseRequest, LLMChatMessage, LLMChatRequestHandler, LLMChatResponse } from "."
+import { LLMBaseRequest, LLMChatMessage, LLMChatRequestHandler, LLMChatResponse, TextToImageRequest } from "."
+import { BridgeResponse } from "@shared/types/bridge"
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
@@ -16,13 +17,6 @@ export enum ModelType {
 
   SpeechToText = "SpeechToText",
   TextToSpeech = "TextToSpeech",
-}
-export enum ProviderName {
-  System = "System",
-  DeepSeek = "DeepSeek",
-  SiliconFlow = "SiliconFlow",
-  Volcengine = "Volcengine",
-  OpenAI = "OpenAI",
 }
 export enum ModelActiveStatus {
   All = "All",
@@ -50,7 +44,7 @@ export type ModelMeta = {
   /**
    * @description 提供商名称
    */
-  providerName: ProviderName
+  providerName: string
   /**
    * @description 子提供商名称
    */
@@ -70,8 +64,11 @@ export type ProviderMeta = {
   /**
    * @description 提供商名称,unique
    */
-  name: ProviderName
+  name: string
   logo: string
+  /**
+   * @description 别名
+   */
   alias?: string
   /**
    * @description 是否是默认提供商
@@ -82,26 +79,19 @@ export type ProviderMeta = {
     key: string
     doc?: string
     /**
-     * @description 平台模型列表接口
+     * @description 模型列表接口
      */
-    models: {
-      method: Method
-      url: string
-    }
+    models: { method: Method; url: string }
+    llmChat: { method: Method; url: string }
+    textToImage: { method: Method; url: string }
+    imageToText: { method: Method; url: string }
+    textToVideo: { method: Method; url: string }
+    speechToText: { method: Method; url: string }
+    textToSpeech: { method: Method; url: string }
     /**
-     * @description 平台LLM聊天接口
+     * @description 账户信息接口
      */
-    llmChat: {
-      method: Method
-      url: string
-    }
-    /**
-     * @description 平台账户信息接口
-     */
-    balance: {
-      method: Method
-      url: string
-    }
+    balance: { method: Method; url: string }
   }
   /**
    * @description 模型列表中需要展示的模型类型
@@ -117,14 +107,11 @@ export type ProviderMeta = {
   activeStatus?: ModelActiveStatus
 }
 
-export interface Provider {
-  fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
-}
 /**
  * Large language model provider
  *
  */
-export interface LLMProvider extends Provider {
+export interface LLMProvider {
   chat(
     messages: LLMChatMessage[],
     model: ModelMeta,
@@ -139,8 +126,13 @@ export interface LLMProvider extends Provider {
 /**
  * Text to Image provider
  */
-export interface TTIProvider extends Provider {
-  textToImage(text: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
+export interface TTIProvider {
+  textToImage(
+    text: string,
+    model: ModelMeta,
+    provider: ProviderMeta,
+    reqConfig?: TextToImageRequest
+  ): Promise<BridgeResponse<string>>
 }
 // image-to-text
 
@@ -151,6 +143,11 @@ export interface TTIProvider extends Provider {
 // video-to-text
 
 // video-to-video
+
+export interface Provider extends LLMProvider, TTIProvider {
+  name(): string
+  fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
+}
 export type DeepSeekBalance = {
   /**
    * @description 当前账户是否有余额可供 API 调用

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ModelMeta, ProviderName } from "@renderer/types"
+import { ModelMeta } from "@renderer/types"
 import useModelStore from "@renderer/store/model.store"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
 import { errorToText } from "@shared/error"
 const props = defineProps<{
-  providerName: ProviderName
+  providerName: string
   data: ModelMeta[]
 }>()
 const { t } = useI18n()

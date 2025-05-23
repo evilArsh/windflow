@@ -1,40 +1,27 @@
-import { LLMProvider, Provider, ProviderName } from "@renderer/types"
+import { Provider } from "@renderer/types"
 import { DeepSeek } from "./deepseek"
 import { SiliconFlow } from "./siliconflow"
 import { Volcengine } from "./volcengine"
 import { OpenAI } from "./openai"
 export class ProviderManager {
-  #providers: Map<ProviderName, Provider>
-  #llmProviders: WeakSet<LLMProvider>
+  #providers: Map<string, Provider>
   constructor() {
     this.#providers = new Map()
-    this.#llmProviders = new WeakSet()
 
     const deepseek = markRaw(new DeepSeek())
     const siliconflow = markRaw(new SiliconFlow())
     const volcengine = markRaw(new Volcengine())
     const openai = markRaw(new OpenAI())
 
-    this.#providers.set(ProviderName.DeepSeek, deepseek)
-    this.#providers.set(ProviderName.SiliconFlow, siliconflow)
-    this.#providers.set(ProviderName.Volcengine, volcengine)
-    this.#providers.set(ProviderName.OpenAI, openai)
-
-    this.#llmProviders.add(deepseek)
-    this.#llmProviders.add(siliconflow)
-    this.#llmProviders.add(volcengine)
-    this.#llmProviders.add(openai)
+    this.#providers.set(deepseek.name(), deepseek)
+    this.#providers.set(siliconflow.name(), siliconflow)
+    this.#providers.set(volcengine.name(), volcengine)
+    this.#providers.set(openai.name(), openai)
   }
-  getLLMProvider(providerName: ProviderName): LLMProvider | undefined {
-    const provider = this.#providers.get(providerName)
-    if (!provider) return
-    if (this.#llmProviders.has(provider as LLMProvider)) {
-      return provider as LLMProvider
-    }
-    return undefined
+  getProvider(providerName: string): Provider | undefined {
+    return this.#providers.get(providerName)
   }
-  setLLMProvider(providerName: ProviderName, provider: LLMProvider) {
-    this.#providers.set(providerName, provider)
-    this.#llmProviders.add(provider)
+  availableProviders(): Provider[] {
+    return Array.from(this.#providers.values())
   }
 }

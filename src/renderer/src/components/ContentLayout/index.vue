@@ -159,7 +159,7 @@ html.dark {
   --content-bg-color: transparent;
   --content-header-bg-color: transparent;
   --content-header-height: 4rem;
-  --content-handler-bg-color: #f6f6f7;
+  --content-handler-bg-color: #ffffff;
   --content-handler-border-color: #d9d9d9;
 
   flex: 1;

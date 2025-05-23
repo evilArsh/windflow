@@ -11,7 +11,7 @@ const isAssistant = computed(() => !!props.data.modelId)
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse: !isAssistant }">
-    <ContentBox default-lock background>
+    <ContentBox class="w4rem h4rem" background>
       <Svg
         :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
         class="text-3rem"></Svg>

@@ -22,7 +22,12 @@
     "search": "search",
     "terminate": "terminate",
     "thinking": "deep thinking",
-    "thinkingComplete": "thinking finish"
+    "thinkingComplete": "thinking finish",
+    "tti": {
+      "guidanceScaleExp": "This value is used to control the degree of match between the generated image and the given prompt. The higher the value, the more the generated image will tend to strictly match the text prompt. The lower the value, the more creative and diverse the generated image will be, potentially containing more unexpected elements.",
+      "handlerTitle": "image generate",
+      "seed": "seed"
+    }
   },
   "lang": {
     "en": "English",
@@ -56,13 +61,6 @@
       "name": "models",
       "subProvider": "sub provider",
       "type": "type"
-    },
-    "name": {
-      "DeepSeek": "DeepSeek",
-      "OpenAI": "OpenAI",
-      "SiliconFlow": "SiliconFlow",
-      "System": "you",
-      "Volcengine": "Volcengine"
     },
     "providerName": "privoder name"
   },

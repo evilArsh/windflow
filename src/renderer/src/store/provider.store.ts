@@ -1,4 +1,4 @@
-import { ProviderMeta } from "@renderer/types"
+import { ProviderMeta, SettingKeys } from "@renderer/types"
 import { defineStore } from "pinia"
 import { providerDefault } from "./default/provider.default"
 import { ProviderManager } from "@renderer/lib/provider"
@@ -32,7 +32,7 @@ const useData = (metas: Reactive<Record<string, ProviderMeta>>, currentProvider:
           await add(item)
         }
       }
-      const current = (await db.settings.get("provider.currentSettingActive")) as Settings<string> | undefined
+      const current = (await db.settings.get(SettingKeys.ProviderCurrentSettingActive)) as Settings<string> | undefined
       if (current) {
         currentProvider.value = metas[current.value]
       } else if (defaultData.length > 0) {

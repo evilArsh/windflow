@@ -1,6 +1,7 @@
 import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
 import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
+import { BridgeResponse } from "@shared/types/bridge"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -18,6 +19,12 @@ const types = [
 export class SiliconFlow extends Compatible {
   constructor() {
     super()
+  }
+  name(): string {
+    return "siliconflow"
+  }
+  async textToImage(_text: string, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<BridgeResponse<string>> {
+    return { code: 404, msg: "not supported", data: "" }
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
     patchAxios(provider, this.axios)

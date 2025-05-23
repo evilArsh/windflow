@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ProviderMeta, ModelMeta, ProviderName, ModelType, ModelActiveStatus } from "@renderer/types"
+import { ProviderMeta, ModelMeta, ModelType, ModelActiveStatus } from "@renderer/types"
 import useModelStore from "@renderer/store/model.store"
 import useProviderStore from "@renderer/store/provider.store"
 import { storeToRefs } from "pinia"
@@ -9,7 +9,7 @@ import type { CheckboxValueType } from "element-plus"
 import { errorToText } from "@shared/error"
 const { t } = useI18n()
 const props = defineProps<{
-  providerName: ProviderName
+  providerName: string
 }>()
 const modelStore = useModelStore()
 const providerStore = useProviderStore()
@@ -75,7 +75,7 @@ const check = reactive({
 async function onRefreshModel(done: CallBackFn) {
   try {
     if (data.value) {
-      const provider = providerStore.providerManager.getLLMProvider(data.value.name)
+      const provider = providerStore.providerManager.getProvider(data.value.name)
       if (provider) {
         const models = await provider.fetchModels(data.value)
         if (models.length == 0) return

@@ -1,6 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
 import { ProviderMeta } from "."
-// import OpenAI from "openai"
 
 export enum Role {
   System = "system",
@@ -10,6 +9,7 @@ export enum Role {
   Developer = "developer",
 }
 
+// --- llm
 export interface LLMBaseRequest {
   messages: LLMChatMessage[]
   model: string
@@ -21,7 +21,6 @@ export interface LLMBaseRequest {
   [x: string]: unknown
 }
 export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>
-// export type LLMChatMessage = OpenAI.Chat.ChatCompletionMessageParam
 export interface LLMChatMessage {
   role: string
   /**
@@ -83,4 +82,23 @@ export interface LLMChatRequestHandler {
   terminate: () => void
 }
 
-// ---------------------
+// --- llm
+
+// --- tti
+export interface TextToImageRequest {
+  model: string
+  prompt: string
+  /**
+   * @description 图片尺寸
+   */
+  size?: string
+  /**
+   * @description 生成图片数量
+   */
+  n?: number
+  /**
+   * @description 随机种子
+   */
+  seed?: number
+  [x: string]: unknown
+}
