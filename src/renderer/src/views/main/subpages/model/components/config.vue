@@ -78,6 +78,11 @@ async function onRefreshModel(done: CallBackFn) {
       const provider = providerStore.providerManager.getLLMProvider(data.value.name)
       if (provider) {
         const models = await provider.fetchModels(data.value)
+        if (models.length == 0) return
+        // 设置默认logo
+        models.forEach(v => {
+          v.icon = providerStore.getProviderLogo(v.subProviderName)
+        })
         await modelStore.api.refresh(models)
       }
     }
@@ -117,10 +122,10 @@ watch(
       <div class="model-setting">
         <el-form :model="data" label-width="10rem" class="w-full" label-position="top">
           <el-form-item :label="t('provider.apiUrl')" class="w-full">
-            <el-input v-model="data.apiUrl" />
+            <el-input v-model="data.api.url" />
           </el-form-item>
           <el-form-item :label="t('provider.apiKey')" class="w-full">
-            <el-input v-model="data.apiKey" show-password />
+            <el-input v-model="data.api.key" show-password />
           </el-form-item>
           <el-form-item :label="t('provider.model.name')" class="w-full">
             <el-card shadow="never" class="w-full">

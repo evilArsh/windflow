@@ -9,8 +9,8 @@ export class DeepSeek extends Compatible {
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
     patchAxios(provider, this.axios)
     const res = await this.axios.request<ModelsResponse>({
-      method: provider.apiModelList.method,
-      url: provider.apiModelList.url,
+      method: provider.api.models.method,
+      url: provider.api.models.url,
     })
     return res.data.data.map<ModelMeta>((v: ModelsResponse["data"][number]) => ({
       id: `${provider.name}_${v.id}`,

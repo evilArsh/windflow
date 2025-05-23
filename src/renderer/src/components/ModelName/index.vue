@@ -13,6 +13,7 @@ import ear from "~icons/twemoji/ear-light-skin-tone"
 defineProps<{
   data: ModelMeta
 }>()
+
 const { t } = useI18n()
 const iconMap = {
   [ModelType.Chat]: h(speech),
@@ -28,8 +29,10 @@ const iconMap = {
 }
 </script>
 <template>
-  <!-- t(`modelType.${row.type}`) -->
-  <div class="flex gap.5rem">
+  <div class="flex gap.5rem items-center">
+    <ContentBox class="flex-none! w-3rem h-3rem flex items-center justify-center">
+      <Svg :src="data.icon" class="text-25px"></Svg>
+    </ContentBox>
     <el-text class="flex-1" line-clamp="1">{{ data.modelName }}</el-text>
     <div class="flex gap.5rem flex-shrink-0">
       <ContentBox v-for="type in data.type" :key="type">

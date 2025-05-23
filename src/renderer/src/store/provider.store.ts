@@ -13,7 +13,7 @@ const useData = (metas: Reactive<Record<string, ProviderMeta>>, currentProvider:
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
-  const update = useThrottleFn(async (data: ProviderMeta) => await db.providerMeta.put(toRaw(data)), 300, true)
+  const update = useThrottleFn(async (data: ProviderMeta) => db.providerMeta.update(data.name, toRaw(data)), 300, true)
   const add = async (data: ProviderMeta) => await db.providerMeta.add(toRaw(data))
 
   const fetch = async () => {

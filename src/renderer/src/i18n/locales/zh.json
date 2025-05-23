@@ -72,9 +72,9 @@
     "Embedding": "嵌入",
     "ImageToImage": "图片转图片",
     "ImageToText": "图片转文本",
-    "TextToImage": "文本转图片",
     "Reranker": "重排序",
     "SpeechToText": "语音转文本",
+    "TextToImage": "文本转图片",
     "TextToSpeech": "文本转语音",
     "TextToVideo": "文本转视频"
   },
@@ -92,6 +92,7 @@
       "activeStatusActive": "激活",
       "activeStatusAll": "全部",
       "activeStatusInactive": "未激活",
+      "icon": "图标",
       "name": "模型",
       "subProvider": "模型标识",
       "type": "类型"

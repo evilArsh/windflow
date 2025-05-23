@@ -29,7 +29,11 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
     }
   }
 
-  const update = useThrottleFn(async (data: Settings<SettingsValue>) => await db.settings.put(toRaw(data)), 300, true)
+  const update = useThrottleFn(
+    async (data: Settings<SettingsValue>) => db.settings.update(data.id, toRaw(data)),
+    300,
+    true
+  )
   const updateValue = (id: string, val: Settings<SettingsValue>) => {
     const data = settings[id]
     if (data) {

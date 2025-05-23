@@ -6,21 +6,23 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
     {
       name: ProviderName.DeepSeek,
       alias: `provider.name.${ProviderName.DeepSeek}`,
-      logo: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek-color"),
-      apiDoc: "https://api-docs.deepseek.com/zh-cn/",
-      apiUrl: "https://api.deepseek.com",
-      apiKey: "",
-      apiModelList: {
-        method: "GET",
-        url: "/models",
-      },
-      apiLLMChat: {
-        method: "POST",
-        url: "/chat/completions",
-      },
-      apiBalance: {
-        method: "GET",
-        url: "/user/balance",
+      logo: getIconHTML(providerSvgIcon, "deepseek-color"),
+      api: {
+        doc: "https://api-docs.deepseek.com/zh-cn/",
+        url: "https://api.deepseek.com",
+        key: "",
+        models: {
+          method: "GET",
+          url: "/models",
+        },
+        llmChat: {
+          method: "POST",
+          url: "/chat/completions",
+        },
+        balance: {
+          method: "GET",
+          url: "/user/balance",
+        },
       },
       selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
       selectedSubProviders: [ProviderName.DeepSeek],
@@ -29,21 +31,23 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
     {
       name: ProviderName.SiliconFlow,
       alias: `provider.name.${ProviderName.SiliconFlow}`,
-      logo: getIconHTML(providerSvgIcon as IconifyJSON, "siliconflow"),
-      apiDoc: "https://docs.siliconflow.cn/cn/api-reference",
-      apiUrl: "https://api.siliconflow.cn/v1",
-      apiKey: "",
-      apiModelList: {
-        method: "GET",
-        url: "/models",
-      },
-      apiLLMChat: {
-        method: "POST",
-        url: "/chat/completions",
-      },
-      apiBalance: {
-        method: "GET",
-        url: "/user/info",
+      logo: getIconHTML(providerSvgIcon, "siliconflow"),
+      api: {
+        doc: "https://docs.siliconflow.cn/cn/api-reference",
+        url: "https://api.siliconflow.cn/v1",
+        key: "",
+        models: {
+          method: "GET",
+          url: "/models",
+        },
+        llmChat: {
+          method: "POST",
+          url: "/chat/completions",
+        },
+        balance: {
+          method: "GET",
+          url: "/user/info",
+        },
       },
       selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
       selectedSubProviders: [],
@@ -52,21 +56,23 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
     {
       name: ProviderName.Volcengine,
       alias: `provider.name.${ProviderName.Volcengine}`,
-      logo: getIconHTML(providerSvgIcon as IconifyJSON, "volcengine-color"),
-      apiDoc: "https://www.volcengine.com/docs/82379/1263272",
-      apiUrl: "https://ark.cn-beijing.volces.com/api/v3",
-      apiKey: "",
-      apiModelList: {
-        method: "GET",
-        url: "",
-      },
-      apiLLMChat: {
-        method: "POST",
-        url: "/chat/completions",
-      },
-      apiBalance: {
-        method: "GET",
-        url: "",
+      logo: getIconHTML(providerSvgIcon, "volcengine-color"),
+      api: {
+        doc: "https://www.volcengine.com/docs/82379/1263272",
+        url: "https://ark.cn-beijing.volces.com/api/v3",
+        key: "",
+        models: {
+          method: "GET",
+          url: "",
+        },
+        llmChat: {
+          method: "POST",
+          url: "/chat/completions",
+        },
+        balance: {
+          method: "GET",
+          url: "",
+        },
       },
       selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
       selectedSubProviders: [],
@@ -75,24 +81,27 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
     {
       name: ProviderName.OpenAI,
       alias: `provider.name.${ProviderName.OpenAI}`,
-      logo: getIconHTML(providerSvgIcon as IconifyJSON, "openai"),
-      apiDoc: "https://platform.openai.com/docs/api-reference",
-      apiUrl: "https://api.openai.com",
-      apiKey: "",
-      apiModelList: {
-        method: "GET",
-        url: "/models",
-      },
-      apiLLMChat: {
-        method: "POST",
-        url: "/chat/completions",
-      },
-      apiBalance: {
-        method: "GET",
-        url: "",
+      logo: getIconHTML(providerSvgIcon, "openai"),
+      api: {
+        doc: "https://platform.openai.com/docs/api-reference",
+        url: "https://api.openai.com",
+        key: "",
+        models: {
+          method: "GET",
+          url: "/models",
+        },
+        llmChat: {
+          method: "POST",
+          url: "/chat/completions",
+        },
+        balance: {
+          method: "GET",
+          url: "",
+        },
       },
       selectedTypes: [],
       selectedSubProviders: [],
+      activeStatus: ModelActiveStatus.All,
     },
   ]
 }

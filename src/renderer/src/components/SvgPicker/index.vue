@@ -5,6 +5,8 @@ import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
 import Svg from "@renderer/components/Svg/index.vue"
 import { IconifyJSON } from "@iconify/types"
 import { getIconHTML } from "./index"
+import { ScaleInstance } from "../ScalePanel/types"
+import useScale from "./useScale"
 const providerSvgIcon = inject(providerSvgIconKey)
 defineProps<{
   modelValue: string
@@ -12,11 +14,14 @@ defineProps<{
 const emit = defineEmits<{
   (e: "update:modelValue", value: string): void
 }>()
+const scaleRef = useTemplateRef<ScaleInstance>("scale")
+const svgRef = useTemplateRef("svgRef")
 
 const key = ref("")
 const tabs = reactive({
   active: "fluentEmojiFlat",
 })
+const { panelConfig, open, clickMask } = useScale(scaleRef, svgRef)
 iconMap.provider = {
   title: h(Svg, { style: "font-size: 3rem", src: getIconHTML(providerSvgIcon as IconifyJSON, "deepseek-color") }),
   icons: providerSvgIcon as IconifyJSON,
@@ -24,27 +29,35 @@ iconMap.provider = {
 }
 </script>
 <template>
-  <div class="flex flex-col gap-1rem w-full">
-    <div class="flex gap-1rem">
-      <el-button class="p-0! w-3.5rem h-3.5rem">
-        <Svg :src="modelValue" class="text-25px"></Svg>
-      </el-button>
-      <el-input v-model="key"></el-input>
-    </div>
-    <el-tabs class="emoji-tabs" v-model="tabs.active">
-      <el-tab-pane v-for="(item, name) in iconMap" :label="name" :name="name" :key="name">
-        <template #label>
-          <el-button>
-            <component class="text-20px" :is="item.title"></component>
-          </el-button>
-        </template>
-      </el-tab-pane>
-    </el-tabs>
-    <SvgPanel
-      :icon-map="iconMap[tabs.active].icons"
-      :icons-keys="iconMap[tabs.active].iconsKeys"
-      :keyword="key"
-      @change="emit('update:modelValue', $event)"></SvgPanel>
+  <div>
+    <ContentBox @click.stop="e => open(e.clientX, e.clientY)" class="w-3rem h-3rem flex items-center justify-center">
+      <Svg :src="modelValue" class="text-25px"></Svg>
+    </ContentBox>
+    <teleport to="body">
+      <ScalePanel v-model="panelConfig" ref="scale" @mask-click="clickMask">
+        <el-card style="--el-card-padding: 0" shadow="never">
+          <div ref="svgRef" class="flex flex-col gap-1rem p1.5rem w-full h-full">
+            <div class="flex gap-1rem">
+              <el-input v-model="key"></el-input>
+            </div>
+            <el-tabs class="emoji-tabs" v-model="tabs.active">
+              <el-tab-pane v-for="(item, name) in iconMap" :label="name" :name="name" :key="name">
+                <template #label>
+                  <el-button>
+                    <component class="text-20px" :is="item.title"></component>
+                  </el-button>
+                </template>
+              </el-tab-pane>
+            </el-tabs>
+            <SvgPanel
+              :icon-map="iconMap[tabs.active].icons"
+              :icons-keys="iconMap[tabs.active].iconsKeys"
+              :keyword="key"
+              @change="emit('update:modelValue', $event)"></SvgPanel>
+          </div>
+        </el-card>
+      </ScalePanel>
+    </teleport>
   </div>
 </template>
 <style lang="scss" scoped>

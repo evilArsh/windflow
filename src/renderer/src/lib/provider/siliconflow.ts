@@ -26,8 +26,8 @@ export class SiliconFlow extends Compatible {
         acc.push(
           this.axios
             .request<ModelsResponse>({
-              method: provider.apiModelList.method,
-              url: provider.apiModelList.url,
+              method: provider.api.models.method,
+              url: provider.api.models.url,
               params: { sub_type: v.name },
             })
             .then(res => ({

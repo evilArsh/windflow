@@ -81,12 +81,12 @@ async function* request(
   abortController: AbortController,
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMChatResponse> {
-  const { apiUrl, apiKey, apiLLMChat } = providerMeta
-  const response = await fetch(resolvePath([apiUrl, apiLLMChat.url], false), {
-    method: apiLLMChat.method,
+  const { api } = providerMeta
+  const response = await fetch(resolvePath([api.url, api.llmChat.url], false), {
+    method: api.llmChat.method,
     headers: {
       "Content-Type": ContentType.ApplicationJson,
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${api.key}`,
     },
     body: JSON.stringify(body),
     signal: abortController.signal,

@@ -61,6 +61,7 @@ export type ModelMeta = {
   active?: boolean
   // TODO:
   children?: ModelMeta[]
+  icon?: string
 }
 /**
  * 服务提供商
@@ -72,34 +73,36 @@ export type ProviderMeta = {
   name: ProviderName
   logo: string
   alias?: string
-  apiUrl: string
-  apiKey: string
   /**
    * @description 是否是默认提供商
    */
   default?: boolean
-  /**
-   * @description 平台模型列表接口
-   */
-  apiModelList: {
-    method: Method
+  api: {
     url: string
+    key: string
+    doc?: string
+    /**
+     * @description 平台模型列表接口
+     */
+    models: {
+      method: Method
+      url: string
+    }
+    /**
+     * @description 平台LLM聊天接口
+     */
+    llmChat: {
+      method: Method
+      url: string
+    }
+    /**
+     * @description 平台账户信息接口
+     */
+    balance: {
+      method: Method
+      url: string
+    }
   }
-  /**
-   * @description 平台LLM聊天接口
-   */
-  apiLLMChat: {
-    method: Method
-    url: string
-  }
-  /**
-   * @description 平台账户信息接口
-   */
-  apiBalance: {
-    method: Method
-    url: string
-  }
-  apiDoc?: string
   /**
    * @description 模型列表中需要展示的模型类型
    */

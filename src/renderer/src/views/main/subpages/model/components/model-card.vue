@@ -3,6 +3,7 @@ import { ModelMeta, ProviderName } from "@renderer/types"
 import useModelStore from "@renderer/store/model.store"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat.store"
+import { errorToText } from "@shared/error"
 const props = defineProps<{
   providerName: ProviderName
   data: ModelMeta[]
@@ -23,9 +24,17 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
   }, {})
 })
 
-const onModelChange = (row: ModelMeta) => {
-  modelStore.api.update(row)
-  chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
+const onModelChange = async (row: ModelMeta) => {
+  try {
+    await modelStore.api.update(row)
+    chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+  }
+}
+const onModelIconChange = (icon: string, row: ModelMeta) => {
+  row.icon = icon
+  onModelChange(row)
 }
 </script>
 <template>
@@ -36,13 +45,19 @@ const onModelChange = (row: ModelMeta) => {
           <el-text type="primary">{{ key }}</el-text>
         </template>
         <el-table :data="item" border stripe row-key="id" default-expand-all table-layout="auto">
-          <el-table-column prop="modelName" width="400" :label="t('provider.model.name')" />
-          <el-table-column prop="type" width="200" :label="t('provider.model.type')">
-            <template #default="{ row }">
-              <div v-if="Array.isArray(row.type)" class="flex flex-wrap gap0.5rem">
+          <el-table-column prop="modelName" :label="t('provider.model.name')" />
+          <el-table-column prop="icon" :label="t('provider.model.icon')">
+            <template #default="{ row }: { row: ModelMeta }">
+              <SvgPicker
+                :model-value="row.icon ?? ''"
+                @update:model-value="icon => onModelIconChange(icon, row)"></SvgPicker>
+            </template>
+          </el-table-column>
+          <el-table-column prop="type" :label="t('provider.model.type')">
+            <template #default="{ row }: { row: ModelMeta }">
+              <div class="flex flex-wrap gap0.5rem">
                 <el-tag v-for="type in row.type" :key="type" type="primary">{{ t(`modelType.${type}`) }}</el-tag>
               </div>
-              <el-tag v-else type="primary">{{ t(`modelType.${row.type}`) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column :label="t('provider.model.active')">

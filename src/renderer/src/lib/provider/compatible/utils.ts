@@ -26,6 +26,6 @@ within 15 characters without any punctuation and cut the crap,based on the follo
 }
 
 export function patchAxios(provider: ProviderMeta, instance: AxiosInstance) {
-  instance.defaults.baseURL = provider.apiUrl
-  instance.defaults.headers.common["Authorization"] = `Bearer ${provider.apiKey}`
+  instance.defaults.baseURL = provider.api.url
+  instance.defaults.headers.common["Authorization"] = `Bearer ${provider.api.key}`
 }

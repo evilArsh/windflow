@@ -38,7 +38,7 @@ watchEffect(() => {
 </script>
 <template>
   <div>
-    <el-popover placement="top" :width="400" trigger="hover" v-model:visible="pop.show">
+    <el-popover placement="top" :width="400" trigger="click" v-model:visible="pop.show">
       <template #reference>
         <el-badge :value="data.modelIds.length" type="primary">
           <el-button size="small">

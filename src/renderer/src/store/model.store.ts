@@ -4,8 +4,14 @@ import { modelsDefault } from "./default/models.default"
 import { db } from "@renderer/usable/useDatabase"
 import { useThrottleFn } from "@vueuse/core"
 import { Reactive } from "vue"
+import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
+import { IconifyJSON } from "@iconify/types"
+import useProviderStore from "@renderer/store/provider.store"
+
 const useData = (models: Reactive<ModelMeta[]>) => {
-  const update = useThrottleFn(async (data: ModelMeta) => await db.model.put(toRaw(data)), 300, true)
+  const providerSvgIcon = inject(providerSvgIconKey)
+  const providerStore = useProviderStore()
+  const update = useThrottleFn(async (data: ModelMeta) => db.model.update(data.id, toRaw(data)), 300, true)
   async function refresh(newModels: ModelMeta[]) {
     await db.model.bulkPut(newModels)
     await fetch()
@@ -18,9 +24,12 @@ const useData = (models: Reactive<ModelMeta[]>) => {
   const fetch = async () => {
     try {
       models.length = 0
-      const defaultData = modelsDefault()
+      const defaultData = modelsDefault(providerSvgIcon as IconifyJSON)
       const data = await db.model.toArray()
       data.forEach(v => {
+        if (!v.icon) {
+          v.icon = providerStore.getProviderLogo(v.subProviderName)
+        }
         models.push(v)
       })
       for (const v of defaultData) {

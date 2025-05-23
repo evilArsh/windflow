@@ -1,6 +1,8 @@
 import { ModelMeta, ModelType, ProviderName } from "@renderer/types"
+import { IconifyJSON } from "@iconify/types"
+import { getIconHTML } from "@renderer/components/SvgPicker"
 
-export const modelsDefault = (): ModelMeta[] => {
+export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
   return [
     {
       id: `${ProviderName.DeepSeek}_deepseek-chat`,
@@ -8,6 +10,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: [ModelType.Chat],
       providerName: ProviderName.DeepSeek,
       subProviderName: ProviderName.DeepSeek,
+      icon: getIconHTML(providerSvgIcon, "deepseek-color"),
       active: false,
     },
     {
@@ -16,6 +19,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: ProviderName.DeepSeek,
       subProviderName: ProviderName.DeepSeek,
+      icon: getIconHTML(providerSvgIcon, "deepseek-color"),
       active: false,
     },
     {
@@ -24,6 +28,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
+      icon: getIconHTML(providerSvgIcon, "deepseek-color"),
       active: false,
     },
     {
@@ -32,6 +37,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: [ModelType.Chat],
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
+      icon: getIconHTML(providerSvgIcon, "deepseek-color"),
       active: false,
     },
     {
@@ -40,6 +46,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
+      icon: getIconHTML(providerSvgIcon, "deepseek-color"),
       active: false,
     },
     {
@@ -48,6 +55,7 @@ export const modelsDefault = (): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: ProviderName.Volcengine,
       subProviderName: ProviderName.DeepSeek,
+      icon: getIconHTML(providerSvgIcon, "deepseek-color"),
       active: false,
     },
   ]
