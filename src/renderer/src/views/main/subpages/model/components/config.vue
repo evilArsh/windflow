@@ -78,12 +78,13 @@ async function onRefreshModel(done: CallBackFn) {
       const provider = providerStore.providerManager.getProvider(data.value.name)
       if (provider) {
         const models = await provider.fetchModels(data.value)
-        if (models.length == 0) return
-        // 设置默认logo
-        models.forEach(v => {
-          v.icon = providerStore.getProviderLogo(v.subProviderName)
-        })
-        await modelStore.api.refresh(models)
+        if (models.length !== 0) {
+          // 设置默认logo
+          models.forEach(v => {
+            v.icon = providerStore.getProviderLogo(v.providerName)
+          })
+          await modelStore.api.refresh(models)
+        }
       }
     }
     done()
@@ -116,7 +117,7 @@ watch(
     <ContentLayout>
       <template #header>
         <div class="flex items-center p1rem">
-          <el-text type="primary" :id="data.name">{{ t(data.alias || "") }}</el-text>
+          <el-text type="primary" :id="data.name">{{ data.alias ?? data.name }}</el-text>
         </div>
       </template>
       <div class="model-setting">

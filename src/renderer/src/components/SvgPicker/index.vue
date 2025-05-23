@@ -10,6 +10,10 @@ import useScale from "./useScale"
 const providerSvgIcon = inject(providerSvgIconKey)
 defineProps<{
   modelValue: string
+  /**
+   * 该模式下只能通过暴露的方法调用
+   */
+  invokeMode?: boolean
 }>()
 const emit = defineEmits<{
   (e: "update:modelValue", value: string): void
@@ -27,10 +31,16 @@ iconMap.provider = {
   icons: providerSvgIcon as IconifyJSON,
   iconsKeys: Object.keys((providerSvgIcon as IconifyJSON).icons),
 }
+defineExpose({
+  open,
+})
 </script>
 <template>
   <div>
-    <ContentBox @click.stop="e => open(e.clientX, e.clientY)" class="w-3rem h-3rem flex items-center justify-center">
+    <ContentBox
+      v-if="!invokeMode"
+      @click.stop="e => open(e.clientX, e.clientY)"
+      class="w-3rem h-3rem flex items-center justify-center">
       <Svg :src="modelValue" class="text-25px"></Svg>
     </ContentBox>
     <teleport to="body">

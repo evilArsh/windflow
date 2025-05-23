@@ -140,7 +140,6 @@ html.dark {
     overflow: hidden;
   }
   .nav-menu-item {
-    margin: 0.5rem;
     flex: 1;
     display: flex;
     align-items: center;

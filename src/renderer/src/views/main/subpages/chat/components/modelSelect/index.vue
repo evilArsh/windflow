@@ -38,7 +38,7 @@ watchEffect(() => {
 </script>
 <template>
   <div>
-    <el-popover placement="top" :width="400" trigger="click" v-model:visible="pop.show">
+    <el-popover placement="top" :width="450" trigger="click" v-model:visible="pop.show">
       <template #reference>
         <el-badge :value="data.modelIds.length" type="primary">
           <el-button size="small">
@@ -53,7 +53,7 @@ watchEffect(() => {
       <template #default>
         <el-scrollbar max-height="500px">
           <el-checkbox-group v-model="data.modelIds" class="line-height-unset! text-inherit">
-            <div class="flex flex-col gap-0.5rem">
+            <div class="select-wrap">
               <div v-for="(item, provider) in activeModels" :key="provider">
                 <el-card shadow="never" style="--el-card-padding: 1rem">
                   <template #header>
@@ -73,4 +73,16 @@ watchEffect(() => {
     </el-popover>
   </div>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  :deep(.el-checkbox) {
+    margin-right: 0;
+  }
+  :deep(.el-checkbox__label) {
+    overflow: hidden;
+  }
+}
+</style>

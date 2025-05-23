@@ -31,7 +31,7 @@ const iconMap = {
 <template>
   <div class="flex gap.5rem items-center">
     <ContentBox class="flex-none! w-3rem h-3rem flex items-center justify-center">
-      <Svg :src="data.icon" class="text-25px"></Svg>
+      <Svg :src="data.icon" class="text-1.8rem"></Svg>
     </ContentBox>
     <el-text class="flex-1" line-clamp="1">{{ data.modelName }}</el-text>
     <div class="flex gap.5rem flex-shrink-0">

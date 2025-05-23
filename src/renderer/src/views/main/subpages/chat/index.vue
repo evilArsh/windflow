@@ -78,14 +78,14 @@ onBeforeUnmount(() => {
               @node-collapse="tree.onNodeCollapse">
               <template #default="{ data }: { data: ChatTopicTree }">
                 <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
-                  <ContentBox normal @icon-click="menu.openQuickEdit($event, data)">
+                  <ContentBox class="m-2px! p1px! flex-1" normal @icon-click="menu.openQuickEdit($event, data)">
                     <template #icon>
-                      <Svg :src="data.node.icon" class="text-18px"></Svg>
+                      <Svg class="max-w4rem h2rem" :src="data.node.icon"></Svg>
                     </template>
                     <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
                       <i-eos-icons:bubble-loading
                         v-show="data.node.requestCount > 0"
-                        class="text-1.2rem"></i-eos-icons:bubble-loading>
+                        class="flex-shrink-0 text-1.2rem"></i-eos-icons:bubble-loading>
                       <el-text line-clamp="1">{{ data.node.label }}</el-text>
                     </div>
                   </ContentBox>
@@ -148,7 +148,7 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow: hidden;
   .el-tree {
-    --el-tree-node-content-height: 3.5rem;
+    --el-tree-node-content-height: auto;
   }
 }
 .chat-tree-node {
