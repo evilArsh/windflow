@@ -1,7 +1,9 @@
 <template>
   <el-popover v-model:visible="toggle" placement="right" trigger="click">
     <template #reference>
-      <i-ic:baseline-translate class="text-1.4rem"></i-ic:baseline-translate>
+      <ContentBox background>
+        <i-ic:baseline-translate class="text-1.4rem"></i-ic:baseline-translate>
+      </ContentBox>
     </template>
     <div class="flex flex-col gap0.2rem">
       <div v-for="i in i18n.availableLocales" :key="i">

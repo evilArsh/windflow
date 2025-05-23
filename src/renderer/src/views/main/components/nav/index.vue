@@ -79,17 +79,13 @@ onBeforeMount(() => {
       </el-scrollbar>
     </div>
     <div class="nav-bottom">
-      <ContentBox background>
-        <div class="nav-bottom-item" @click="status.toggleDark">
+      <ContentBox background @click="status.toggleDark">
+        <div class="nav-bottom-item">
           <i-ic:baseline-mode-night v-if="status.dark" class="text-1.4rem"></i-ic:baseline-mode-night>
           <i-ic:twotone-light-mode v-else class="text-1.4rem"></i-ic:twotone-light-mode>
         </div>
       </ContentBox>
-      <ContentBox background>
-        <div class="nav-bottom-item">
-          <I18n></I18n>
-        </div>
-      </ContentBox>
+      <I18n></I18n>
       <ContentBox background>
         <div class="nav-bottom-item">
           <i-mdi:settings class="text-1.4rem"></i-mdi:settings>

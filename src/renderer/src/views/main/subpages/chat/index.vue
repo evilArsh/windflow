@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
               @node-collapse="tree.onNodeCollapse">
               <template #default="{ data }: { data: ChatTopicTree }">
                 <div class="chat-tree-node" @mouseenter="tree.onMouseEnter(data)" @mouseleave="tree.onMouseLeave">
-                  <ContentBox class="m-2px! p1px! flex-1" normal @icon-click="menu.openQuickEdit($event, data)">
+                  <ContentBox class="m-2px! p1px! flex-1" @icon-click="menu.openQuickEdit($event, data)">
                     <template #icon>
                       <Svg class="max-w4rem h2rem" :src="data.node.icon"></Svg>
                     </template>
