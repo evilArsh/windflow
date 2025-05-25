@@ -18,7 +18,7 @@ export interface LLMBaseRequest {
   // top_p?: number
   // presence_penalty?: number
   // frequency_penalty?: number
-  [x: string]: unknown
+  // [x: string]: unknown
 }
 export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>
 export interface LLMChatMessage {
@@ -39,7 +39,7 @@ export interface LLMChatMessage {
    * Role.Assistant response
    */
   tool_calls?: Array<LLMToolCall>
-  [x: string]: unknown
+  // [x: string]: unknown
 }
 
 export interface LLMToolCall {
@@ -65,10 +65,6 @@ export interface LLMChatResponse extends LLMChatMessage {
    * 是否是流式返回
    */
   stream?: boolean
-  /**
-   * 是否属于tool_calls调用链的消息
-   */
-  tool_calls_chain?: boolean
   finish_reason?: string
   usage?: {
     completion_tokens: number
@@ -100,5 +96,5 @@ export interface TextToImageRequest {
    * @description 随机种子
    */
   seed?: number
-  [x: string]: unknown
+  // [x: string]: unknown
 }

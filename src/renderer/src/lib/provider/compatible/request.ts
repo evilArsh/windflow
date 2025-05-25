@@ -13,6 +13,7 @@ import { ContentType } from "@shared/code"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
 import { mergeRequestConfig } from "./utils"
+import { usePartialData } from "./partial"
 
 function parseResponse(text: string, stream: boolean): LLMChatResponse {
   try {
@@ -138,7 +139,7 @@ export async function makeRequest(
   callback: (message: LLMChatResponse) => void,
   requestBody?: LLMBaseRequest
 ) {
-  const partialToolCalls = usePartialToolCalls()
+  const partial = usePartialData()
   const requestData = mergeRequestConfig(context, modelMeta, requestBody)
   try {
     callback({ status: 100, content: "", stream: requestData.stream, role: Role.Assistant })
@@ -151,14 +152,19 @@ export async function makeRequest(
     let needCallTools: LLMToolCall[] = []
     if (toolList.length > 0) {
       // 携带tools信息请求
-      for await (const content of requestHandler.chat(
-        // tools:deepseek,tool_calls:openai
-        { ...requestData, tools: toolList, tool_calls: toolList },
-        providerMeta
-      )) {
-        partialToolCalls.add(content)
+      const req = { ...requestData, tools: toolList, tool_calls: toolList }
+      for await (const content of requestHandler.chat(req, providerMeta)) {
+        partial.add(content)
+        if (content.reasoning_content) {
+          callback(content)
+        } else {
+          if (content.status == 200) {
+          } else {
+            callback(content)
+          }
+        }
         if (content.status == 200) {
-          needCallTools = partialToolCalls.getTools()
+          needCallTools = partial.getTools()
           if (needCallTools.length == 0) {
             callback(content)
           }
@@ -176,15 +182,15 @@ export async function makeRequest(
       reqToolsData = await callTools(needCallTools)
       // console.log("[call local tools]", reqToolsData)
       if (reqToolsData.length == 0) return
-      const response = partialToolCalls.getResponse()
+      const response = partial.getResponse()
       // console.log("[first time response]", response)
-      const mcpToolsCallResponseMessage = partialToolCalls.getChatMessage()
+      const mcpToolsCallResponseMessage = partial.getChatMessage()
       // console.log("[mcp tools call response]", mcpToolsCallResponseMessage)
       callback(response)
       context.push(mcpToolsCallResponseMessage)
     }
     reqToolsData.forEach(toolData => {
-      callback({ ...toolData, status: 206, tool_calls_chain: true, stream: requestData.stream })
+      callback({ ...toolData, status: 206, stream: requestData.stream })
     })
     // 处理工具调用结果
     const reqBody = mergeRequestConfig(context.concat(reqToolsData), modelMeta, requestData)
@@ -201,72 +207,4 @@ export async function makeRequest(
       callback({ status: 500, content: errorToText(error), stream: requestData.stream, role: Role.Assistant })
     }
   }
-}
-
-export function usePartialToolCalls() {
-  const result: LLMChatResponse = {
-    role: Role.Assistant,
-    status: 206,
-    content: "",
-  }
-  let tools: Record<number, LLMToolCall> = {}
-  function clear() {
-    tools = {}
-    result.content = ""
-    result.usage = undefined
-    result.finish_reason = undefined
-    result.tool_calls = undefined
-  }
-  function add(data: LLMChatResponse) {
-    // 分片消息每次返回的消息都是完整的数据结构,只是同一个字段的字符串是分批返回的
-    if (isString(data.content)) {
-      result.content += data.content
-    } else {
-      console.warn("[PartialToolCalls] content is not string", data.content)
-    }
-    if (data.tool_calls) {
-      data.tool_calls.forEach(tool => {
-        if (isNumber(tool.index)) {
-          const mapTool = tools[tool.index]
-          if (mapTool) {
-            mapTool.function.arguments += tool.function.arguments
-            // name
-          } else {
-            tools[tool.index] = tool
-          }
-        }
-      })
-    }
-    if (data.usage) {
-      result.usage = data.usage
-    }
-    result.finish_reason = data.finish_reason
-  }
-  function getTools(): LLMToolCall[] {
-    return Object.values(tools)
-  }
-  /**
-   * @description 返回结果是一个完整的消息结构,包含tool_calls列表和消息内容，
-   * 是LLM的一次响应
-   * @returns LLMChatResponse
-   */
-  function getResponse(): LLMChatResponse {
-    return {
-      ...result,
-      tool_calls: Object.values(tools),
-      tool_calls_chain: true,
-      status: 206,
-    }
-  }
-  /**
-   * @description 返回的工具列表消息用作下次带上工具响应结果请求的上下文
-   */
-  function getChatMessage(): LLMChatMessage {
-    return {
-      role: result.role,
-      content: result.content,
-      tool_calls: Object.values(tools),
-    } as LLMChatMessage
-  }
-  return { clear, add, getTools, getResponse, getChatMessage }
 }

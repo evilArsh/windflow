@@ -84,7 +84,7 @@ export default defineStore("chat_topic", () => {
             topic.requestCount = Math.max(0, topic.requestCount - 1)
             // console.log(`[message done] ${res.status}`)
             if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-              chatContext.provider.titleSummary(JSON.stringify(messageItem), model, providerMeta).then(res => {
+              chatContext.provider.summarize(JSON.stringify(messageItem), model, providerMeta).then(res => {
                 if (res) topic.label = res
               })
             }

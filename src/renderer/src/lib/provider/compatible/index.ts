@@ -37,7 +37,7 @@ export abstract class Compatible implements Provider {
   /**
    * @description `LLMProvider` implementation
    */
-  async titleSummary(
+  async summarize(
     context: string,
     modelMeta: ModelMeta,
     provider: ProviderMeta,

@@ -31,7 +31,7 @@ export class OpenAI implements Provider {
     throw new Error("Method not implemented.")
   }
 
-  async titleSummary(
+  async summarize(
     _context: string,
     _modelMeta: ModelMeta,
     _provider: ProviderMeta,
