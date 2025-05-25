@@ -2,11 +2,11 @@
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import Handler from "./handler/index.vue"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
-import useChatStore from "@renderer/store/chat.store"
+import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
 import { storeToRefs } from "pinia"
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 import { SettingKeys } from "@renderer/types"
 const settingsStore = useSettingsStore()
 const { currentTopic, currentMessage } = storeToRefs(useChatStore())

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import useProviderStore from "@renderer/store/provider.store"
+import useProviderStore from "@renderer/store/provider"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import Config from "./components/config.vue"
 import { SettingKeys } from "@renderer/types"

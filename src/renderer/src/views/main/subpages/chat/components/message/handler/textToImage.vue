@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 import { SettingKeys } from "@renderer/types"
 import Chance from "chance"
 const settingsStore = useSettingsStore()
@@ -77,11 +77,11 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
         <i-fluent-emoji-flat:framed-picture class="text-1.4rem"></i-fluent-emoji-flat:framed-picture>
       </ContentBox>
     </template>
-    <el-card>
+    <el-card style="--el-card-padding: 1rem">
       <template #header>
         <el-text>{{ t("chat.tti.handlerTitle") }}</el-text>
       </template>
-      <div class="tti-wrap h-400px overflow-hidden w-full">
+      <div class="tti-wrap max-h-400px overflow-hidden w-full">
         <el-scrollbar>
           <el-form label-width="115">
             <el-form-item>

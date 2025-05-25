@@ -1,10 +1,9 @@
-import { MCPServerParam } from "@shared/types/mcp"
-import { defineStore } from "pinia"
-import { Reactive } from "vue"
-import { mcpStdioDefault } from "./default/mcp.default"
 import { db } from "@renderer/usable/useDatabase"
+import { MCPServerParam } from "@shared/types/mcp"
+import { Reactive } from "vue"
+import { mcpStdioDefault } from "./default"
 
-const useData = (servers: Reactive<MCPServerParam[]>) => {
+export const useData = (servers: Reactive<MCPServerParam[]>) => {
   async function update(data: MCPServerParam) {
     try {
       return db.mcpServer.update(data.id, data)
@@ -58,11 +57,3 @@ const useData = (servers: Reactive<MCPServerParam[]>) => {
     getAll,
   }
 }
-export default defineStore("mcp", () => {
-  const servers = reactive<MCPServerParam[]>([])
-  const api = useData(servers)
-  return {
-    servers,
-    api,
-  }
-})

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 import { SettingKeys } from "@renderer/types"
 const sendShortcut = ref("")
 const settingsStore = useSettingsStore()

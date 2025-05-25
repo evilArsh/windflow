@@ -183,11 +183,11 @@ export async function makeRequest(
       callback(response)
       context.push(mcpToolsCallResponseMessage)
     }
-    // 处理工具调用结果
-    const reqBody = mergeRequestConfig(context.concat(reqToolsData), modelMeta, requestData)
     reqToolsData.forEach(toolData => {
       callback({ ...toolData, status: 206, tool_calls_chain: true, stream: requestData.stream })
     })
+    // 处理工具调用结果
+    const reqBody = mergeRequestConfig(context.concat(reqToolsData), modelMeta, requestData)
     // 携带mcp调用结果请求
     for await (const content of requestHandler.chat(reqBody, providerMeta)) {
       callback(content)

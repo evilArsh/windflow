@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ModelMeta } from "@renderer/types"
-import useModelStore from "@renderer/store/model.store"
+import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
-import useChatStore from "@renderer/store/chat.store"
+import useChatStore from "@renderer/store/chat"
 import { errorToText } from "@shared/error"
 const props = defineProps<{
   providerName: string

@@ -2,7 +2,7 @@
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import MessagePanel from "./components/message/index.vue"
-import useChatStore from "@renderer/store/chat.store"
+import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import EditTopic from "./components/editTopic/index.vue"
@@ -10,7 +10,7 @@ import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const shortcut = useShortcut()

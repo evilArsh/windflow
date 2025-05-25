@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { CSSProperties } from "@renderer/lib/shared/types"
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 import { SettingsValue } from "@renderer/types"
 const props = defineProps<{
   id: string

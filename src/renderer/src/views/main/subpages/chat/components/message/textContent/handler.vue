@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChatMessageData } from "@renderer/types/chat"
-import useChatStore from "@renderer/store/chat.store"
+import useChatStore from "@renderer/store/chat"
 
 import { storeToRefs } from "pinia"
 import { errorToText } from "@shared/error"

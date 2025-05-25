@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import MonacoEditor from "@renderer/components/MonacoEditor/index.vue"
-import useMcpStore from "@renderer/store/mcp.store"
+import useMcpStore from "@renderer/store/mcp"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
 import { errorToText } from "@shared/error"
 import { storeToRefs } from "pinia"

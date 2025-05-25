@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import useMcpStore from "@renderer/store/mcp.store"
+import useMcpStore from "@renderer/store/mcp"
 import { MCPServerParam } from "@shared/types/mcp"
 import ITerminal from "~icons/material-symbols/terminal"
 import { storeToRefs } from "pinia"

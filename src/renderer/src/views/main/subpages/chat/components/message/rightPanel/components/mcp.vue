@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
-import useMcpStore from "@renderer/store/mcp.store"
-import useChatStore from "@renderer/store/chat.store"
+import useMcpStore from "@renderer/store/mcp"
+import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import ContentBox from "@renderer/components/ContentBox/index.vue"

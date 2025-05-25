@@ -19,6 +19,10 @@ export async function loadMCPTools(mcpServersIds: string[]) {
 }
 export async function callTools(tools: LLMToolCall[]): Promise<LLMChatMessage[]> {
   try {
+    if (!window.api) {
+      console.warn("[call tools] window.api not found")
+      return []
+    }
     const results: LLMChatMessage[] = []
     for (const tool of tools) {
       const args = JSON.parse(tool.function.arguments)

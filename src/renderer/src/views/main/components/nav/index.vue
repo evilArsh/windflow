@@ -6,7 +6,7 @@ import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
 import ITerminal from "~icons/material-symbols/terminal"
 import useI18nWatch from "@renderer/usable/useI18nWatch"
-import useSettingsStore from "@renderer/store/settings.store"
+import useSettingsStore from "@renderer/store/settings"
 const { t } = useI18n()
 const route = useRoute()
 const settingsStore = useSettingsStore()

@@ -3,12 +3,12 @@ import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type
 import type Node from "element-plus/es/components/tree/src/model/node"
 import { ChatTopic, ChatTopicTree } from "@renderer/types"
 import { storeToRefs } from "pinia"
-import useChatStore from "@renderer/store/chat.store"
+import useChatStore from "@renderer/store/chat"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
 import type { TreeInstance, TreeNodeData } from "element-plus"
 import { cloneDeep } from "lodash-es"
-import useSettingsStore from "@renderer/store/settings.store"
-import { chatMessageDefault } from "@renderer/store/default/chat.default"
+import useSettingsStore from "@renderer/store/settings"
+import { chatMessageDefault } from "@renderer/store/chat/default"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { errorToText } from "@shared/error"
 import { useThrottleFn } from "@vueuse/core"
@@ -330,7 +330,7 @@ export default (
           chatStore.api.updateChatMessage(val)
         }
       },
-      200,
+      500,
       true
     ),
     { deep: true }

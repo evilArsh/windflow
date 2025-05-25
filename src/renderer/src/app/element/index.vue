@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import zhCn from "element-plus/es/locale/lang/zh-cn"
-import useProviderStore from "@renderer/store/provider.store"
-import useModelsStore from "@renderer/store/model.store"
-import useChatTopicStore from "@renderer/store/chat.store"
-import useMCPStore from "@renderer/store/mcp.store"
+import useProviderStore from "@renderer/store/provider"
+import useModelsStore from "@renderer/store/model"
+import useChatTopicStore from "@renderer/store/chat"
+import useMCPStore from "@renderer/store/mcp"
 const ready = ref(false)
 async function init() {
   try {

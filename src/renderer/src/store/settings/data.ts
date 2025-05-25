@@ -1,10 +1,9 @@
-import { defineStore } from "pinia"
 import { db } from "@renderer/usable/useDatabase"
 import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
 
-const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
+export const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
   /**
    * Get a setting value
    * @param id - The name of the setting
@@ -83,12 +82,3 @@ const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) =>
     dataWatcher,
   }
 }
-
-export default defineStore("settings", () => {
-  const settings = reactive<Record<string, Settings<SettingsValue>>>({})
-  const api = useData(settings)
-  return {
-    api,
-    settings,
-  }
-})

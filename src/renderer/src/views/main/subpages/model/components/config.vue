@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ProviderMeta, ModelMeta, ModelType, ModelActiveStatus } from "@renderer/types"
-import useModelStore from "@renderer/store/model.store"
-import useProviderStore from "@renderer/store/provider.store"
+import useModelStore from "@renderer/store/model"
+import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
 import { ElMessage } from "element-plus"
 import ModelCard from "./model-card.vue"

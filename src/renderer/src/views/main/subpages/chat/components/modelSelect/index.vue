@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import useModelStore from "@renderer/store/model.store"
+import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@renderer/types"
+import useProviderStore from "@renderer/store/provider"
 const props = defineProps<{
   modelValue: ChatTopic
 }>()
@@ -13,6 +14,7 @@ const data = computed<ChatTopic>({
   set: val => emit("update:modelValue", val),
 })
 const { t } = useI18n()
+const providerStore = useProviderStore()
 const modelStore = useModelStore()
 const { models } = storeToRefs(modelStore)
 
@@ -57,7 +59,12 @@ watchEffect(() => {
               <div v-for="(item, provider) in activeModels" :key="provider">
                 <el-card shadow="never" style="--el-card-padding: 1rem">
                   <template #header>
-                    <el-text>{{ provider }}</el-text>
+                    <ContentBox>
+                      <template #icon>
+                        <Svg :src="providerStore.getProviderLogo(provider)"></Svg>
+                      </template>
+                      <el-text>{{ provider }}</el-text>
+                    </ContentBox>
                   </template>
                   <div class="flex flex-col gap5px">
                     <el-checkbox v-for="model in item" :key="model.id" :value="model.id" :label="model.modelName">

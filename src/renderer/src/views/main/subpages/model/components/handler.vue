@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import useProviderStore from "@renderer/store/provider.store"
+import useProviderStore from "@renderer/store/provider"
 const providerStore = useProviderStore()
 const { t } = useI18n()
 function onReset() {

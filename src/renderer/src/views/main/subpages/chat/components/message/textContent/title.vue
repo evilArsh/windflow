@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ChatMessageData } from "@renderer/types/chat"
-import useModelsStore from "@renderer/store/model.store"
-import useProviderStore from "@renderer/store/provider.store"
+import useModelsStore from "@renderer/store/model"
+import useProviderStore from "@renderer/store/provider"
 const props = defineProps<{
   data: ChatMessageData
 }>()
@@ -11,10 +11,10 @@ const isAssistant = computed(() => !!props.data.modelId)
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse: !isAssistant }">
-    <ContentBox class="w4rem h4rem" background>
+    <ContentBox class="w3.5rem h3.5rem" background>
       <Svg
         :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
-        class="text-3rem"></Svg>
+        class="flex-1"></Svg>
     </ContentBox>
     <div class="chat-item-title" :class="{ reverse: !isAssistant }">
       <div v-if="isAssistant" class="flex items-center gap-0.25rem">

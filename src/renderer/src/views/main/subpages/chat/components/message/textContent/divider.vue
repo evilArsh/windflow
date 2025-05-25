@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ChatMessageData } from "@renderer/types"
-import useChatStore from "@renderer/store/chat.store"
+import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { errorToText } from "@shared/error"
 const props = defineProps<{

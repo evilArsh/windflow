@@ -1,15 +1,17 @@
+import { IconifyJSON } from "@iconify/types"
+import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
+import { getIconHTML } from "@renderer/components/SvgPicker"
 import { ProviderMeta, SettingKeys } from "@renderer/types"
-import { defineStore } from "pinia"
-import { providerDefault } from "./default/provider.default"
-import { ProviderManager } from "@renderer/lib/provider"
 import { db } from "@renderer/usable/useDatabase"
 import { useThrottleFn } from "@vueuse/core"
-import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
-import { IconifyJSON } from "@iconify/types"
-import { getIconHTML } from "@renderer/components/SvgPicker"
 import { Reactive } from "vue"
+import { providerDefault } from "./default"
 import { Settings } from "@renderer/types"
-const useData = (metas: Reactive<Record<string, ProviderMeta>>, currentProvider: Ref<ProviderMeta | undefined>) => {
+
+export const useData = (
+  metas: Reactive<Record<string, ProviderMeta>>,
+  currentProvider: Ref<ProviderMeta | undefined>
+) => {
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
@@ -54,24 +56,3 @@ const useData = (metas: Reactive<Record<string, ProviderMeta>>, currentProvider:
     update,
   }
 }
-export default defineStore("provider", () => {
-  const currentProvider = ref<ProviderMeta>() // 模型页选中的提供商
-  const metas = reactive<Record<string, ProviderMeta>>({})
-  const manager = markRaw<ProviderManager>(new ProviderManager())
-
-  const api = useData(metas, currentProvider)
-  function getProviderLogo(name?: string) {
-    if (!name) {
-      return api.defaultLogo
-    }
-    const provider = metas[name]
-    return provider?.logo || api.userLogo
-  }
-  return {
-    getProviderLogo,
-    providerMetas: metas,
-    providerManager: manager,
-    currentProvider,
-    api,
-  }
-})

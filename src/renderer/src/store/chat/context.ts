@@ -1,0 +1,141 @@
+import {
+  ChatContext,
+  ChatMessage,
+  ChatMessageData,
+  ChatTopic,
+  LLMChatMessage,
+  LLMProvider,
+  Role,
+} from "@renderer/types"
+import { cloneDeep } from "lodash"
+
+export const useContext = () => {
+  // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key
+  const llmChats = reactive<Record<string, ChatContext[]>>({})
+  const fetchTopicContext = (
+    topicId: string,
+    modelId: string,
+    messageDataId: string,
+    messageId: string,
+    provider: LLMProvider
+  ) => {
+    if (!llmChats[topicId]) {
+      llmChats[topicId] = []
+      llmChats[topicId].push({
+        modelId: modelId,
+        provider: markRaw(provider),
+        messageId: messageId,
+        messageDataId: messageDataId,
+      })
+      return llmChats[topicId][0]
+    }
+    const res = llmChats[topicId].find(item => item.messageId === messageId && item.messageDataId === messageDataId)
+    if (!res) {
+      llmChats[topicId].push({
+        modelId: modelId,
+        provider: markRaw(provider),
+        messageId: messageId,
+        messageDataId: messageDataId,
+      })
+      return llmChats[topicId].slice(-1)[0]
+    } else {
+      if (!res.provider) {
+        res.provider = provider
+      }
+    }
+    return res
+  }
+
+  /**
+   * @description 获取消息上下文，最后一个消息必须是`Role.User`,
+   * mcp调用中存在{tool_calls:[]}和{tool_call_id:""},存在`item.toolCallsChain`中，
+   * 提交时作为消息上下文
+   *
+   * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
+   */
+  const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
+    const context: LLMChatMessage[] = []
+    let userTurn = true // Role.User 已unshift,应该到Assistant数据
+    while (true) {
+      const data = message.shift()
+      if (!data) break
+      if (data.contextFlag) break
+      const item = cloneDeep(data)
+      item.content.reasoning_content = undefined // deepseek patch
+      if (userTurn) {
+        if (item.content.role === Role.User) {
+          context.unshift(item.content)
+          userTurn = false
+        } else {
+          // 丢弃上下文,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
+          if (context.length > 0) {
+            if (context[0].role === Role.Assistant) {
+              context.shift()
+            }
+          }
+        }
+      } else {
+        if (item.content.role == Role.Assistant) {
+          context.unshift(item.content)
+          if (isArray(item.toolCallsChain)) {
+            context.unshift(...item.toolCallsChain)
+          }
+          userTurn = true
+        } else {
+          // 丢弃
+        }
+      }
+    }
+    if (userTurn) {
+      // user-assistant消息pair中，无user消息，此时删除assistant消息
+      context.shift()
+    }
+    context.unshift({ role: Role.System, content: JSON.stringify([{ type: "text", content: topic.prompt }]) })
+    return context
+  }
+  function mountContext(val: ChatTopic, message: ChatMessage) {
+    if (!val.chatMessageId) {
+      console.warn("[mountContext] chatMessageId is empty")
+      return
+    }
+    if (!llmChats[val.id]) {
+      llmChats[val.id] = message.data.map<ChatContext>(msgData => {
+        return {
+          messageId: val.chatMessageId,
+          messageDataId: msgData.id,
+          modelId: msgData.modelId,
+          provider: undefined,
+          handler: undefined,
+        } as ChatContext
+      })
+    }
+  }
+  function hasTopic(topicId: string) {
+    return llmChats[topicId]
+  }
+  function findContext(topicId: string, messageDataId: string) {
+    if (hasTopic(topicId)) {
+      return llmChats[topicId].find(item => item.messageDataId === messageDataId)
+    }
+    console.warn(`[findContext] topicId not found.${topicId} ${messageDataId}`)
+    return undefined
+  }
+  function findTopic(topicId: string) {
+    return llmChats[topicId]
+  }
+  function initContext(topicId: string) {
+    if (!llmChats[topicId]) {
+      llmChats[topicId] = []
+    }
+  }
+
+  return {
+    fetchTopicContext,
+    getMessageContext,
+    mountContext,
+    hasTopic,
+    findContext,
+    findTopic,
+    initContext,
+  }
+}
