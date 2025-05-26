@@ -110,6 +110,7 @@ export const useData = (
             }
             if (!msg) {
               msg = chatMessageDefault()
+              await db.chatMessage.add(msg)
             }
             chatMessage[msg.id] = msg
             currentMessage.value = msg

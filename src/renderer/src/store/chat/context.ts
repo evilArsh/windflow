@@ -1,12 +1,4 @@
-import {
-  ChatContext,
-  ChatMessage,
-  ChatMessageData,
-  ChatTopic,
-  LLMChatMessage,
-  LLMProvider,
-  Role,
-} from "@renderer/types"
+import { ChatContext, ChatMessage, ChatMessageData, ChatTopic, LLMMessage, LLMProvider, Role } from "@renderer/types"
 import { cloneDeep } from "lodash"
 
 export const useContext = () => {
@@ -54,8 +46,17 @@ export const useContext = () => {
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
-    const context: LLMChatMessage[] = []
+    const context: LLMMessage[] = []
     let userTurn = true // Role.User 已unshift,应该到Assistant数据
+    const extractData = (data: LLMMessage): LLMMessage => {
+      return {
+        role: data.role,
+        content: data.content,
+      }
+    }
+    const arrayAndNotEmpty = (data: unknown): data is Array<unknown> => {
+      return Array.isArray(data) && data.length > 0
+    }
     while (true) {
       const data = message.shift()
       if (!data) break
@@ -64,7 +65,7 @@ export const useContext = () => {
       item.content.reasoning_content = undefined // deepseek patch
       if (userTurn) {
         if (item.content.role === Role.User) {
-          context.unshift(item.content)
+          context.unshift(extractData(item.content))
           userTurn = false
         } else {
           // 丢弃上下文,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
@@ -76,10 +77,14 @@ export const useContext = () => {
         }
       } else {
         if (item.content.role == Role.Assistant) {
-          context.unshift(item.content)
-          if (isArray(item.toolCallsChain)) {
-            context.unshift(...item.toolCallsChain)
+          const content = extractData(item.content)
+          if (arrayAndNotEmpty(item.content.tool_calls) && arrayAndNotEmpty(item.content.tool_calls_chain)) {
+            for (let i = item.content.tool_calls_chain.length - 1; i >= 0; i--) {
+              context.unshift(item.content.tool_calls_chain[i])
+            }
+            content.tool_calls = item.content.tool_calls
           }
+          context.unshift(item.content)
           userTurn = true
         } else {
           // 丢弃

@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
-import { LLMChatMessage, LLMChatRequestHandler, LLMProvider } from "."
+import { LLMMessage, LLMRequestHandler, LLMProvider } from "."
 import { MCPServerParam } from "@shared/types/mcp"
 export type ChatMessageData = {
   /**
@@ -21,7 +21,7 @@ export type ChatMessageData = {
   /**
    * @description 消息内容,包含用户消息和模型返回的消息
    */
-  content: LLMChatMessage
+  content: LLMMessage
   /**
    * @description 请求是否完成，不管是否成功
    */
@@ -34,10 +34,6 @@ export type ChatMessageData = {
    * @description 消息错误信息
    */
   msg?: string
-  /**
-   * @description tool_calls调用消息，只作为聊天上下文使用
-   */
-  toolCallsChain?: Array<LLMChatMessage>
   /**
    * @description 多个模型同时请求
    */
@@ -127,5 +123,5 @@ export interface ChatContext {
    */
   messageDataId: string
   provider?: LLMProvider
-  handler?: LLMChatRequestHandler
+  handler?: LLMRequestHandler
 }

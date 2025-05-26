@@ -1,11 +1,11 @@
 import {
-  LLMChatMessage,
-  LLMChatResponse,
+  LLMMessage,
+  LLMResponse,
   ProviderMeta,
   ModelMeta,
-  LLMBaseRequest,
+  LLMRequest,
   Role,
-  LLMChatRequestHandler,
+  LLMRequestHandler,
   Provider,
 } from "@renderer/types"
 import { createInstance } from "../http"
@@ -23,13 +23,13 @@ export abstract class Compatible implements Provider {
    * @description `LLMProvider` implementation
    */
   async chat(
-    messages: LLMChatMessage[],
+    messages: LLMMessage[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
     mcpServersIds: string[],
-    callback: (message: LLMChatResponse) => void,
-    reqConfig?: LLMBaseRequest
-  ): Promise<LLMChatRequestHandler> {
+    callback: (message: LLMResponse) => void,
+    reqConfig?: LLMRequest
+  ): Promise<LLMRequestHandler> {
     const requestHandler = useSingleLLMChat()
     makeRequest(messages, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
     return requestHandler
@@ -41,7 +41,7 @@ export abstract class Compatible implements Provider {
     context: string,
     modelMeta: ModelMeta,
     provider: ProviderMeta,
-    reqConfig?: LLMBaseRequest
+    reqConfig?: LLMRequest
   ): Promise<string> {
     const requestData = mergeRequestConfig(
       [{ role: Role.User, content: generateSummaryText(context) }],
@@ -51,8 +51,9 @@ export abstract class Compatible implements Provider {
     requestData.stream = false
     const requestHandler = useSingleLLMChat()
     for await (const content of requestHandler.chat(requestData, provider)) {
-      if (isString(content.content)) {
-        return content.content
+      const { data } = content
+      if (isString(data.content)) {
+        return data.content
       }
     }
     return ""

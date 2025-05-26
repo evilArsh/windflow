@@ -7,7 +7,11 @@ const props = defineProps<{
 }>()
 const { t } = useI18n()
 const activeNames = ref<string[]>([])
-const thinking = computed(() => !props.data.content.content)
+const regex = /[\r\n ]+/g
+const content = computed<string>(() => props.data.content.content as string)
+const thinking = computed(
+  () => !content.value || (content.value.length < 5 && content.value.replace(regex, "").length == 0)
+)
 watch(
   thinking,
   v => {

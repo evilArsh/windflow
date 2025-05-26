@@ -8,10 +8,17 @@ import Title from "./title.vue"
 import Loading from "./loading.vue"
 import MCPCall from "./mcpcall.vue"
 import Affix from "@renderer/components/Affix/index.vue"
+import useChatStore from "@renderer/store/chat"
+import { storeToRefs } from "pinia"
+
 const props = defineProps<{
   data: ChatMessageData
   header?: boolean
 }>()
+
+const chatStore = useChatStore()
+const { currentMessage } = storeToRefs(chatStore)
+
 const id = useId()
 const rawDlg = useTemplateRef("rawDlg")
 const elObserver = shallowRef<IntersectionObserver>()
@@ -20,6 +27,7 @@ const rawTextDlg = reactive({
   onChange: markRaw((value: string) => {
     if (rawTextDlg.data) {
       rawTextDlg.data.content.content = value
+      currentMessage.value && chatStore.api.updateChatMessage(currentMessage.value)
     }
   }),
   edit: markRaw((msg: ChatMessageData) => {

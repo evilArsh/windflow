@@ -1,32 +1,20 @@
 <script setup lang="ts">
-import { Role } from "@renderer/types"
 import { ChatMessageData } from "@renderer/types/chat"
 import ITerminal from "~icons/material-symbols/terminal"
 const props = defineProps<{
   data: ChatMessageData
 }>()
 const calls = computed(() => {
-  // TODO: 展示内容
-  return (props.data.toolCallsChain ?? [])
-    .filter(val => val.role === Role.Assistant)
-    .map(call => {
-      return call.tool_calls ?? []
-    })
-    .flat()
-    .map(call => {
-      return {
-        name: call.function.name,
-      }
-    })
+  return props.data.content.tool_calls ?? []
 })
 </script>
 <template>
   <div v-if="calls.length > 0" class="flex flex-col gap.5rem my-1rem">
-    <ContentBox v-for="call in calls" default-lock :key="call.name">
+    <ContentBox v-for="call in calls" default-lock :key="call.id">
       <template #icon>
         <ITerminal class="text-1.4rem" />
       </template>
-      <el-text size="small" type="info">MCP: {{ call.name }}</el-text>
+      <el-text size="small" type="info">{{ call.function.name }}</el-text>
     </ContentBox>
   </div>
 </template>

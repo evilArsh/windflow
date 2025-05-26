@@ -81,7 +81,7 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
       <template #header>
         <el-text>{{ t("chat.tti.handlerTitle") }}</el-text>
       </template>
-      <div class="tti-wrap max-h-400px overflow-hidden w-full">
+      <div class="tti-wrap h-300px overflow-hidden w-full">
         <el-scrollbar>
           <el-form label-width="115">
             <el-form-item>

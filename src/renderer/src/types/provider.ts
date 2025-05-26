@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMBaseRequest, LLMChatMessage, LLMChatRequestHandler, LLMChatResponse, TextToImageRequest } from "."
+import { LLMRequest, LLMMessage, LLMRequestHandler, LLMResponse, TextToImageRequest } from "."
 import { BridgeResponse } from "@shared/types/bridge"
 export enum ModelType {
   Chat = "Chat",
@@ -113,14 +113,14 @@ export type ProviderMeta = {
  */
 export interface LLMProvider {
   chat(
-    messages: LLMChatMessage[],
+    messages: LLMMessage[],
     model: ModelMeta,
     provider: ProviderMeta,
     mcpServersIds: Array<string>,
-    callback: (message: LLMChatResponse) => void,
-    reqConfig?: LLMBaseRequest
-  ): Promise<LLMChatRequestHandler>
-  summarize(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMBaseRequest): Promise<string>
+    callback: (message: LLMResponse) => void,
+    reqConfig?: LLMRequest
+  ): Promise<LLMRequestHandler>
+  summarize(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMRequest): Promise<string>
 }
 
 /**

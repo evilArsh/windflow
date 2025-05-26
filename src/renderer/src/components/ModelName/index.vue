@@ -30,11 +30,11 @@ const iconMap = {
 </script>
 <template>
   <div class="flex gap.5rem items-center">
-    <ContentBox class="flex-none! w-3rem h-3rem flex items-center justify-center">
-      <Svg :src="data.icon" class="text-1.8rem"></Svg>
+    <ContentBox class="flex-none! flex items-center justify-center">
+      <Svg class="w-1.8rem h-1.8rem" :src="data.icon"></Svg>
     </ContentBox>
     <el-text class="flex-1" line-clamp="1">{{ data.modelName }}</el-text>
-    <div class="flex gap.5rem flex-shrink-0">
+    <div class="flex gap.25rem flex-shrink-0">
       <ContentBox v-for="type in data.type" :key="type">
         <el-tooltip :content="t(`modelType.${type}`)" placement="top">
           <component :is="iconMap[type]"></component>

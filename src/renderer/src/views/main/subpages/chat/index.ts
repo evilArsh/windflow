@@ -323,19 +323,6 @@ export default (
     { deep: true }
   )
   watch(
-    currentMessage,
-    useThrottleFn(
-      (val, old) => {
-        if (val && val === old) {
-          chatStore.api.updateChatMessage(val)
-        }
-      },
-      500,
-      true
-    ),
-    { deep: true }
-  )
-  watch(
     () => tree.searchKeyword,
     v => {
       treeRef.value?.filter(v)

@@ -1,11 +1,11 @@
 import {
-  LLMChatMessage,
-  LLMChatResponse,
+  LLMMessage,
+  LLMResponse,
   Provider,
   ProviderMeta,
   ModelMeta,
-  LLMBaseRequest,
-  LLMChatRequestHandler,
+  LLMRequest,
+  LLMRequestHandler,
   TextToImageRequest,
 } from "@renderer/types"
 import { BridgeResponse } from "@shared/types/bridge"
@@ -21,13 +21,13 @@ export class OpenAI implements Provider {
     return []
   }
   async chat(
-    _messages: LLMChatMessage[],
+    _messages: LLMMessage[],
     _modelMeta: ModelMeta,
     _providerMeta: ProviderMeta,
     _mcpServersIds: string[],
-    _callback: (message: LLMChatResponse) => void,
-    _reqConfig?: LLMBaseRequest
-  ): Promise<LLMChatRequestHandler> {
+    _callback: (message: LLMResponse) => void,
+    _reqConfig?: LLMRequest
+  ): Promise<LLMRequestHandler> {
     throw new Error("Method not implemented.")
   }
 
@@ -35,7 +35,7 @@ export class OpenAI implements Provider {
     _context: string,
     _modelMeta: ModelMeta,
     _provider: ProviderMeta,
-    _reqConfig?: LLMBaseRequest
+    _reqConfig?: LLMRequest
   ): Promise<string> {
     return ""
   }

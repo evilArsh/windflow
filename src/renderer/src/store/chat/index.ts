@@ -40,6 +40,7 @@ export default defineStore("chat_topic", () => {
    * @description 发送消息
    */
   const sendMessage = async (topic: ChatTopic, message: ChatMessage, messageParent: ChatMessageData) => {
+    api.updateChatMessage(message)
     const messageGroup =
       isArray(messageParent.children) && messageParent.children.length > 0 ? messageParent.children : [messageParent]
     for (const messageItem of messageGroup) {
@@ -63,39 +64,29 @@ export default defineStore("chat_topic", () => {
       const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
       topic.requestCount = Math.max(1, topic.requestCount + 1)
       chatContext.handler = await chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
-        if (res.tool_calls_chain) {
-          console.log("[tool_calls_chain]", res)
-          if (!messageItem.toolCallsChain) messageItem.toolCallsChain = []
-          messageItem.toolCallsChain.push(res)
-          // role:assistant usage
-          // role:tool
+        const { data, status } = res
+        messageItem.completionTokens = toNumber(data.usage?.completion_tokens)
+        messageItem.promptTokens = toNumber(data.usage?.prompt_tokens)
+        messageItem.status = status
+        messageItem.content = data
+        if (status == 206) {
+          messageItem.finish = false
+        } else if (status == 200) {
+          messageItem.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          // console.log(`[message done] ${status}`)
+          if (topic.label === window.defaultTopicTitle && chatContext.provider) {
+            chatContext.provider.summarize(JSON.stringify(messageItem), model, providerMeta).then(res => {
+              if (res) topic.label = res
+            })
+          }
+        } else if (status == 100) {
+          messageItem.finish = false
+          // console.log(`[message pending] ${status}`)
         } else {
-          messageItem.status = res.status
-          if (res.usage) {
-            messageItem.completionTokens = toNumber(res.usage.completion_tokens)
-            messageItem.promptTokens = toNumber(res.usage.prompt_tokens)
-          }
-          if (isString(res.content)) messageItem.content.content += res.content
-          if (res.reasoning_content) messageItem.content.reasoning_content += res.reasoning_content
-          if (res.status == 206) {
-            messageItem.finish = false
-          } else if (res.status == 200) {
-            messageItem.finish = true
-            topic.requestCount = Math.max(0, topic.requestCount - 1)
-            // console.log(`[message done] ${res.status}`)
-            if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-              chatContext.provider.summarize(JSON.stringify(messageItem), model, providerMeta).then(res => {
-                if (res) topic.label = res
-              })
-            }
-          } else if (res.status == 100) {
-            messageItem.finish = false
-            // console.log(`[message pending] ${res.status}`)
-          } else {
-            messageItem.finish = true
-            topic.requestCount = Math.max(0, topic.requestCount - 1)
-            // console.log(`[message] ${res.status}`)
-          }
+          messageItem.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          // console.log(`[message] ${status}`)
         }
         api.updateChatMessage(message)
       })
@@ -121,7 +112,6 @@ export default defineStore("chat_topic", () => {
       console.warn(`[restart] messageItem not found.${messageDataId}`)
       return
     }
-    messageData.toolCallsChain = []
     sendMessage(topic, message, messageData)
   }
   function send(topic?: ChatTopic) {

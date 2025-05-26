@@ -10,18 +10,18 @@ export enum Role {
 }
 
 // --- llm
-export interface LLMBaseRequest {
-  messages: LLMChatMessage[]
+export interface LLMRequest {
+  messages: LLMMessage[]
   model: string
   stream: boolean
   // temperature?: number
   // top_p?: number
   // presence_penalty?: number
   // frequency_penalty?: number
-  // [x: string]: unknown
+  [x: string]: unknown
 }
 export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>
-export interface LLMChatMessage {
+export interface LLMMessage {
   role: string
   /**
    * 消息内容
@@ -39,6 +39,20 @@ export interface LLMChatMessage {
    * Role.Assistant response
    */
   tool_calls?: Array<LLMToolCall>
+  /**
+   * mcp工具调用结果
+   */
+  tool_calls_chain?: Array<LLMMessage>
+  /**
+   * 是否是流式返回
+   */
+  stream?: boolean
+  finish_reason?: string
+  usage?: {
+    completion_tokens: number
+    prompt_tokens: number
+    total_tokens: number
+  }
   // [x: string]: unknown
 }
 
@@ -52,7 +66,8 @@ export interface LLMToolCall {
   index?: number
 }
 
-export interface LLMChatResponse extends LLMChatMessage {
+export interface LLMResponse {
+  data: LLMMessage
   /**
    * 当前消息对应的状态码
    */
@@ -61,20 +76,10 @@ export interface LLMChatResponse extends LLMChatMessage {
    * 状态码对应的提示信息
    */
   msg?: string
-  /**
-   * 是否是流式返回
-   */
-  stream?: boolean
-  finish_reason?: string
-  usage?: {
-    completion_tokens: number
-    prompt_tokens: number
-    total_tokens: number
-  }
 }
 
-export interface LLMChatRequestHandler {
-  chat: (message: LLMBaseRequest, providerMeta: ProviderMeta) => AsyncGenerator<LLMChatResponse>
+export interface LLMRequestHandler {
+  chat: (message: LLMRequest, providerMeta: ProviderMeta) => AsyncGenerator<LLMResponse>
   terminate: () => void
 }
 
