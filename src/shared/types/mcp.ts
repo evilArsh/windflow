@@ -1,3 +1,4 @@
+export const NameSeprator = "___"
 export type MCPServerType = "sse" | "streamable" | "stdio"
 export interface MCPRequestParams {
   /**
@@ -80,10 +81,6 @@ export interface MCPToolDetail {
    * tool name
    */
   name: string
-  /**
-   * tool from which server
-   */
-  id: string
   inputSchema?: {
     [x: string]: unknown
   }

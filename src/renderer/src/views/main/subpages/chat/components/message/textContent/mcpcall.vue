@@ -1,21 +1,105 @@
 <script setup lang="ts">
+import { LLMToolCall } from "@renderer/types"
 import { ChatMessageData } from "@renderer/types/chat"
-import ITerminal from "~icons/material-symbols/terminal"
+import useMcpStore from "@renderer/store/mcp"
+import { storeToRefs } from "pinia"
+import { useToolName } from "@shared/mcp"
+import { cloneDeep } from "lodash"
+
 const props = defineProps<{
   data: ChatMessageData
 }>()
-const calls = computed(() => {
-  return props.data.content.tool_calls ?? []
-})
+type CallStatus = LLMToolCall & {
+  status: Status
+  content: string
+  serverId: string
+}
+enum Status {
+  InProgress = "inProgress",
+  Completed = "completed",
+}
+const mcp = useMcpStore()
+const { servers } = storeToRefs(mcp)
+const callsData = ref<Record<string, CallStatus>>({})
+const calls = computed(() => Object.values(callsData.value))
+const toolName = useToolName()
+const { t } = useI18n()
+const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.serverName ?? "")
+watch(
+  () => props.data.content.tool_calls,
+  (v, old) => {
+    if (!isArray(v)) {
+      callsData.value = {}
+      return
+    }
+    if (v !== old) {
+      callsData.value = {}
+    }
+    v.forEach(call => {
+      if (!call.id) return
+      const { name, serverId } = toolName.split(call.function.name)
+      if (!callsData.value[call.id]) {
+        callsData.value[call.id] = {
+          function: {
+            arguments: "",
+            name: "",
+          },
+          type: "function",
+          serverId,
+
+          content: "",
+          status: Status.InProgress,
+        }
+      }
+      callsData.value[call.id] = { ...callsData.value[call.id], ...cloneDeep(call) }
+      callsData.value[call.id].function.name = name
+    })
+  },
+  { deep: true, immediate: true }
+)
+watch(
+  () => props.data.content.tool_calls_chain,
+  v => {
+    if (!isArray(v)) return
+    v.forEach(call => {
+      if (!call.tool_call_id) return
+      if (!callsData.value[call.tool_call_id]) return
+      callsData.value[call.tool_call_id].status = Status.Completed
+      callsData.value[call.tool_call_id].content = call.content as string
+    })
+  },
+  { deep: true, immediate: true }
+)
 </script>
 <template>
-  <div v-if="calls.length > 0" class="flex flex-col gap.5rem my-1rem">
-    <ContentBox v-for="call in calls" default-lock :key="call.id">
-      <template #icon>
-        <ITerminal class="text-1.4rem" />
-      </template>
-      <el-text size="small" type="info">{{ call.function.name }}</el-text>
-    </ContentBox>
+  <div v-if="calls.length > 0" class="my-1rem">
+    <el-collapse expand-icon-position="left">
+      <el-collapse-item v-for="call in calls" :key="call.id" :name="call.id">
+        <template #title>
+          <div class="flex items-center gap-0.5rem">
+            <i-eos-icons:bubble-loading v-show="call.status === Status.InProgress" class="flex-shrink-0 text-1.2rem" />
+            <i-twemoji:hammer-and-wrench class="text-1.2rem" />
+            <el-text size="small" type="primary">{{ serverName(call.serverId) }}</el-text>
+            <el-text size="small" type="danger">|</el-text>
+            <el-text size="small" type="info">{{ call.function.name }}</el-text>
+          </div>
+        </template>
+        <div class="flex flex-col gap.5rem">
+          <ContentBox>
+            <el-text size="small" type="primary">{{ t("chat.mcpCall.arguments") }}</el-text>
+            <template #footer>
+              <el-text size="small">{{ call.function.arguments }}</el-text>
+            </template>
+          </ContentBox>
+          <ContentBox>
+            <el-text size="small" type="primary">{{ t("chat.mcpCall.content") }}</el-text>
+            <template #footer>
+              <el-text size="small">{{ call.content }}</el-text>
+            </template>
+          </ContentBox>
+        </div>
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
 <style lang="scss" scoped></style>

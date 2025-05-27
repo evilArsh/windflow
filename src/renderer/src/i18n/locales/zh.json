@@ -26,6 +26,10 @@
     "contextDivider": "上下文已清空",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
+    "mcpCall": {
+      "arguments": "请求参数",
+      "content": "请求结果"
+    },
     "messageRecord": "聊天记录",
     "regenerate": "重新生成",
     "rightPanel": {

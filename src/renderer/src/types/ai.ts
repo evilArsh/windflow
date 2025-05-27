@@ -55,7 +55,22 @@ export interface LLMMessage {
   }
   // [x: string]: unknown
 }
-
+export function defaultLLMMessage(): LLMMessage {
+  return {
+    role: Role.Assistant,
+    content: "",
+    reasoning_content: "",
+    tool_call_id: "",
+    tool_calls: [],
+    tool_calls_chain: [],
+    finish_reason: "",
+    usage: {
+      completion_tokens: 0,
+      prompt_tokens: 0,
+      total_tokens: 0,
+    },
+  }
+}
 export interface LLMToolCall {
   function: {
     arguments: string

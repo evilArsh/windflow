@@ -1,4 +1,5 @@
 import { LLMMessage, LLMToolCall, Role } from "@renderer/types"
+import { useToolCall } from "@shared/mcp"
 import json5 from "json5"
 export async function loadMCPTools(mcpServersIds: string[]) {
   if (!window.api) {
@@ -25,7 +26,7 @@ export async function callTools(tools: LLMToolCall[]): Promise<LLMMessage[]> {
     }
     const results: LLMMessage[] = []
     for (const tool of tools) {
-      const args = json5.parse(tool.function.arguments)
+      const args = json5.parse(useToolCall().normalizetoolCallArgs(tool.function.arguments))
       const result = await window.api.mcp.callTool(tool.function.name, args)
       results.push({
         role: Role.Tool,

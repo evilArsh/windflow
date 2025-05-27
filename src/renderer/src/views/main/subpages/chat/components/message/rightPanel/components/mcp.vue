@@ -163,7 +163,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
     <div class="flex-shrink-0 flex gap1rem">
       <Button size="small" @click="serverHandler.syncServers">{{ t("btn.sync") }}</Button>
-      <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
+      <Button size="small" @click="serverHandler.test">测试</Button>
     </div>
     <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>

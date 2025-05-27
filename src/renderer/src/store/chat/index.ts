@@ -1,5 +1,13 @@
 import { defineStore, storeToRefs } from "pinia"
-import { ChatMessage, ChatMessageData, ChatTopic, ChatTopicTree, ProviderMeta, Role } from "@renderer/types"
+import {
+  ChatMessage,
+  ChatMessageData,
+  ChatTopic,
+  ChatTopicTree,
+  defaultLLMMessage,
+  ProviderMeta,
+  Role,
+} from "@renderer/types"
 import useProviderStore from "@renderer/store/provider"
 import useModelsStore from "@renderer/store/model"
 import { CallBackFn } from "@renderer/lib/shared/types"
@@ -51,7 +59,7 @@ export default defineStore("chat_topic", () => {
       const messageContextIndex = message.data.findIndex(item => item.id === messageParent.id)
       // 消息上下文
       const messageContext = getMessageContext(topic, message.data.slice(messageContextIndex + 1))
-      messageItem.content = { role: "assistant", content: "", reasoning_content: "" }
+      messageItem.content = defaultLLMMessage()
       messageItem.finish = false
       messageItem.status = 100
       messageItem.time = formatSecond(new Date())
@@ -141,7 +149,7 @@ export default defineStore("chat_topic", () => {
     const newMessageData = reactive<ChatMessageData>({
       id: uniqueId(),
       status: 200,
-      content: { role: "assistant", content: "", reasoning_content: "" },
+      content: defaultLLMMessage(),
       modelId: "",
       time: formatSecond(new Date()),
       children: [],
@@ -154,7 +162,7 @@ export default defineStore("chat_topic", () => {
             id: uniqueId(),
             parentId: id,
             status: 200,
-            content: { role: "assistant", content: "", reasoning_content: "" },
+            content: defaultLLMMessage(),
             modelId,
             time: formatSecond(new Date()),
           })

@@ -3,6 +3,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
+// import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory'
 import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
 import { errorToText } from "@shared/error"
@@ -68,11 +69,11 @@ export function availableClients(
   })
   return res
 }
-export async function requestWithId<T>(id: string, request: () => Promise<T>): Promise<{ id: string; data: T }> {
+export async function requestWithId<T>(serverId: string, request: () => Promise<T>): Promise<{ id: string; data: T }> {
   const req = request()
   if (req instanceof Promise) {
     const data = await req
-    return { id, data }
+    return { id: serverId, data }
   }
-  return { id, data: req }
+  return { id: serverId, data: req }
 }

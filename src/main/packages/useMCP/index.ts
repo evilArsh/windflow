@@ -1,4 +1,5 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
+
 import { serializeError } from "serialize-error"
 import {
   MCPStdioServerParam,
@@ -32,11 +33,14 @@ import {
   requestWithId,
 } from "./utils"
 import { MCPClientContext } from "./types"
+import { useToolCall, useToolName } from "@shared/mcp"
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
 export default (): MCPService => {
   const context = new Map<string, MCPClientContext>()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
+  const toolName = useToolName()
+  const toolCall = useToolCall()
   async function registerServer(params: MCPServerParam): Promise<BridgeStatusResponse> {
     try {
       if (!isAvailableServerParams(params)) {
@@ -132,11 +136,10 @@ export default (): MCPService => {
         const res = await Promise.allSettled(asyncReqs)
         res.forEach(res => {
           if (res.status === "fulfilled") {
-            const dst = res.value.data.tools.map<MCPToolDetail>(tool =>
-              Object.assign(tool, {
-                id: res.value.id,
-              })
-            )
+            const dst = res.value.data.tools.map<MCPToolDetail>(tool => ({
+              ...tool,
+              name: toolName.patch(tool.name, res.value.id),
+            }))
             results.push(dst)
             cachedTools[res.value.id] = dst
             log.debug("[MCP listTools]", `${res.value.id} tools cached`)
@@ -163,7 +166,12 @@ export default (): MCPService => {
       const res = await Promise.allSettled(asyncReqs)
       res.forEach(r => {
         if (r.status === "fulfilled") {
-          results.prompts.push(...r.value.data.prompts)
+          results.prompts.push(
+            ...r.value.data.prompts.map(res => ({
+              ...res,
+              name: toolName.patch(res.name, r.value.id),
+            }))
+          )
         }
       })
       return responseData(200, "ok", results)
@@ -186,7 +194,12 @@ export default (): MCPService => {
       const res = await Promise.allSettled(asyncReqs)
       res.forEach(r => {
         if (r.status === "fulfilled") {
-          results.resources.push(...r.value.data.resources)
+          results.resources.push(
+            ...r.value.data.resources.map(res => ({
+              ...res,
+              name: toolName.patch(res.name, r.value.id),
+            }))
+          )
         }
       })
       return responseData(200, "ok", results)
@@ -209,7 +222,12 @@ export default (): MCPService => {
       const res = await Promise.allSettled(asyncReqs)
       res.forEach(r => {
         if (r.status === "fulfilled") {
-          results.resourceTemplates.push(...r.value.data.resourceTemplates)
+          results.resourceTemplates.push(
+            ...r.value.data.resourceTemplates.map(res => ({
+              ...res,
+              name: toolName.patch(res.name, r.value.id),
+            }))
+          )
         }
       })
       return responseData(200, "ok", results)
@@ -225,16 +243,21 @@ export default (): MCPService => {
       const tools = await listTools()
       const tool = tools.data.find(tool => tool.name === toolname)
       if (tool) {
-        let ctx = context.get(tool.id)
+        const { serverId, name } = toolName.split(tool.name)
+        let ctx = context.get(serverId)
         if (!ctx) {
-          const msg = `server [${tool.id}] not found`
+          const msg = `server [${serverId}] not found`
           return responseData(500, msg, { content: { type: "text", text: msg } })
+        }
+        const validArgs = toolCall.validate(tool, args)
+        if (!validArgs) {
+          return responseData(200, "ok", { content: { type: "text", text: "arguments validate failed" } })
         }
         const res = await registerServer(ctx.params)
         if (code2xx(res.code)) {
-          ctx = context.get(tool.id)!
+          ctx = context.get(serverId)!
           const res = (await ctx.client!.callTool({
-            name: toolname,
+            name,
             arguments: args,
           })) as MCPCallToolResult
           return responseData(200, "ok", res)
@@ -243,13 +266,12 @@ export default (): MCPService => {
           content: { type: "text", text: res.msg },
         })
       } else {
-        const msg = `tool ${toolname} not found`
+        const msg = `tool [${name}] not found`
         return responseData(404, msg, { content: { type: "text", text: msg } })
       }
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), {
-        content: { type: "text", text: errorToText(error) },
-      })
+      const errorText = errorToText(error)
+      return responseData(500, errorText, { content: { type: "text", text: errorText } })
     }
   }
   function registerIpc() {
