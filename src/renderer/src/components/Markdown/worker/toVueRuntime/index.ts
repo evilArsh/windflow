@@ -86,15 +86,15 @@ function createVnode(_: string | undefined): Create {
      *  bar: () => [h('span', 'one'), h('span', 'two')]
      * })
      */
-    // ! type: 为传入的 Compomnent
+    // 借鉴缓存思路
+    // https://github.com/shikijs/shiki/blob/main/packages/rehype/src/core.ts
     const children = props.children
-    if (isString(type)) {
-      delete props.children
-      return h(type, props, children)
-    } else if (type === Fragment) {
+    // console.log(_, type, props)
+    if (isString(type) || type === Fragment) {
       delete props.children
       return h(type, props, children)
     } else {
+      // ! type: 为传入的 Compomnent
       return h(type, props, {
         default: () => children,
       })
@@ -203,7 +203,7 @@ function addNode(
 ): void {
   // If this is swapped out for a component:
   // ! 当tagName有component单独处理时,eg:components: { code: Component},type为Component
-  // ! node为当前tabName的hast:
+  // ! node为当前tagName的hast,会被传入type为Component的node属性中
   if (!isString(type) && type !== Fragment && state.passNode) {
     props.node = node
   }

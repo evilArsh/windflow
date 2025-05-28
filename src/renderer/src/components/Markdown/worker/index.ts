@@ -47,7 +47,6 @@ const parser = (components: Components) => {
     const content = preHandleContent(newContent)
     file.value = content
     const hast = processor.runSync(processor.parse(file))
-    // console.log("[hast]", hast)
     html.value = toVueRuntime(hast, {
       components,
       ignoreInvalidStyle: true,

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { errorToText } from "@shared/error"
-import useCopy from "./useCopy"
-import useDownload from "./useDownload"
+import useCopy from "./usable/useCopy"
+import useDownload from "./usable/useDownload"
 import { useShiki } from "@renderer/usable/useShiki"
-import { cloneVNode } from "vue"
+import { toVueRuntime } from "../../worker/toVueRuntime"
 const props = defineProps<{
   code: string
   lang: string
@@ -11,8 +11,7 @@ const props = defineProps<{
 const Mermaid = defineAsyncComponent(() => import("./mermaid.vue"))
 const { copied, onCopy } = useCopy()
 const { download } = useDownload()
-const { codeToHtml } = useShiki()
-const Code = h("div")
+const { codeToAst } = useShiki()
 const vnode = shallowRef<VNode>()
 const id = useId()
 watchEffect(() => {
@@ -22,9 +21,16 @@ watchEffect(() => {
       lang: props.lang,
     })
   } else {
-    codeToHtml(props.code, props.lang)
-      .then(res => (vnode.value = cloneVNode(Code, { innerHTML: res })))
-      .catch(err => (vnode.value = cloneVNode(Code, { innerHTML: errorToText(err) })))
+    codeToAst(props.code, props.lang)
+      .then(res => {
+        vnode.value = toVueRuntime(res, {
+          ignoreInvalidStyle: true,
+          stylePropertyNameCase: "css",
+          passKeys: true,
+          passNode: true,
+        })
+      })
+      .catch(err => (vnode.value = h("div", { innerHTML: errorToText(err) })))
   }
 })
 </script>

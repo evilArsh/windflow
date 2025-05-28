@@ -1,9 +1,11 @@
 import { App } from "vue"
 import { createHighlighter } from "shiki"
 import type { InjectionKey } from "vue"
+import type { Root } from "hast"
 
 export interface Highlight {
   codeToHtml(code: string, lang: string, theme?: string): Promise<string>
+  codeToAst(code: string, lang: string, theme?: string): Promise<Root>
 }
 function langPatch(lang: string): string {
   switch (lang) {
@@ -27,11 +29,33 @@ function shikiInstance(): Highlight {
       return code
     }
   }
+  async function codeToAst(code: string, lang: string, theme?: string): Promise<Root> {
+    try {
+      const highlighter = await highlighterPromise
+      return highlighter.codeToHast(code, {
+        lang: langPatch(lang),
+        theme: theme ?? "github-dark",
+      })
+    } catch (_e) {
+      return {
+        type: "root",
+        children: [
+          {
+            type: "element",
+            tagName: "div",
+            properties: {},
+            children: [],
+          },
+        ],
+      }
+    }
+  }
   return {
     codeToHtml,
+    codeToAst,
   }
 }
-const HighlighterKey: InjectionKey<Highlight> = Symbol()
+const HighlighterKey: InjectionKey<Highlight> = Symbol("useShiki")
 const highlighterPromise = createHighlighter({
   themes: [
     "github-dark",
@@ -83,6 +107,10 @@ export function createShiki() {
   function install(app: App): void {
     const instance = shikiInstance()
     app.provide(HighlighterKey, instance)
+    onBeforeUnmount(async () => {
+      const hl = await highlighterPromise
+      hl.dispose()
+    })
   }
   return {
     install,
