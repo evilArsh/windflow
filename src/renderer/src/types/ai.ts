@@ -61,8 +61,8 @@ export function defaultLLMMessage(): LLMMessage {
     content: "",
     reasoning_content: "",
     tool_call_id: "",
-    tool_calls: [],
-    tool_calls_chain: [],
+    tool_calls: undefined,
+    tool_calls_chain: undefined,
     finish_reason: "",
     usage: {
       completion_tokens: 0,

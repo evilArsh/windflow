@@ -27,13 +27,10 @@ const { t } = useI18n()
 const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.serverName ?? "")
 watch(
   () => props.data.content.tool_calls,
-  (v, old) => {
+  v => {
     if (!isArray(v)) {
       callsData.value = {}
       return
-    }
-    if (v !== old) {
-      callsData.value = {}
     }
     v.forEach(call => {
       if (!call.id) return

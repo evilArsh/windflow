@@ -22,7 +22,7 @@ export function usePartialData() {
   function assembleData(result: LLMResponse): LLMResponse {
     result.data.content = content
     result.data.reasoning_content = reasoning_content
-    const tool = getArchiveTools()
+    const tool = getArchiveTools().concat(getTools())
     result.data.tool_calls = tool.length > 0 ? tool : undefined
     result.data.usage = usage
     result.data.tool_calls_chain = tool_calls_chain
@@ -50,13 +50,13 @@ export function usePartialData() {
     Object.assign(result, res)
     if (data.tool_calls) {
       data.tool_calls.forEach(tool => {
-        if (isString(tool.id)) {
-          const mapTool = tools[tool.id]
+        if (isNumber(tool.index)) {
+          const mapTool = tools[tool.index]
           if (mapTool) {
             mapTool.function.arguments += tool.function.arguments
             // mapTool.function.name
           } else {
-            tools[tool.id] = tool
+            tools[tool.index] = tool
           }
         }
       })

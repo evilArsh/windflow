@@ -26,7 +26,9 @@ export async function callTools(tools: LLMToolCall[]): Promise<LLMMessage[]> {
     }
     const results: LLMMessage[] = []
     for (const tool of tools) {
-      const args = json5.parse(useToolCall().normalizetoolCallArgs(tool.function.arguments))
+      const args = tool.function.arguments
+        ? json5.parse(useToolCall().normalizetoolCallArgs(tool.function.arguments))
+        : tool.function.arguments
       const result = await window.api.mcp.callTool(tool.function.name, args)
       results.push({
         role: Role.Tool,

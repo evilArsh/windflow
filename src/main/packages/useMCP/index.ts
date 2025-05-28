@@ -87,7 +87,7 @@ export default (): MCPService & ServiceCore => {
       context.set(id, ctx)
       return responseCode(200)
     } catch (error) {
-      console.log(error)
+      log.debug("[MCP registerServer error]", error)
       return responseCode(500, JSON.stringify(serializeError(error)))
     }
   }

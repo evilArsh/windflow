@@ -78,13 +78,19 @@ export const useContext = () => {
       } else {
         if (item.content.role == Role.Assistant) {
           const content = extractData(item.content)
+          context.unshift(content)
           if (arrayAndNotEmpty(item.content.tool_calls) && arrayAndNotEmpty(item.content.tool_calls_chain)) {
             for (let i = item.content.tool_calls_chain.length - 1; i >= 0; i--) {
-              context.unshift(item.content.tool_calls_chain[i])
+              const chain = extractData(item.content.tool_calls_chain[i])
+              chain.tool_call_id = item.content.tool_calls_chain[i].tool_call_id
+              context.unshift(chain)
             }
-            content.tool_calls = item.content.tool_calls
+            context.unshift({
+              role: content.role,
+              content: "",
+              tool_calls: item.content.tool_calls,
+            })
           }
-          context.unshift(item.content)
           userTurn = true
         } else {
           // 丢弃
