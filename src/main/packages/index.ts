@@ -1,7 +1,17 @@
-import { BaseService } from "@shared/types/service"
+import { ServiceCore } from "@main/types"
 import useMcp from "./useMCP"
-export function registerService() {
-  const mcp: BaseService = useMcp()
+import { BrowserWindow } from "electron"
+export function registerService(_mainWindow: BrowserWindow): ServiceCore {
+  const mcp: ServiceCore = useMcp()
 
-  mcp.registerIpc()
+  function dispose() {
+    mcp.dispose()
+  }
+  function registerIpc(): void {
+    mcp.registerIpc()
+  }
+  return {
+    dispose,
+    registerIpc,
+  }
 }

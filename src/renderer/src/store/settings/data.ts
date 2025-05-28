@@ -63,7 +63,7 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
       callBack?.(configData.value.value)
       updateValue(id, configData.value)
     })
-    return watch(
+    const watcher = watch(
       wrapData,
       async val => {
         if (configData.value) {
@@ -75,6 +75,9 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
       },
       { deep: true }
     )
+    onBeforeUnmount(() => {
+      watcher.stop()
+    })
   }
   return {
     get,

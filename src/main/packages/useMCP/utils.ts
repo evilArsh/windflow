@@ -3,7 +3,6 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
-// import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory'
 import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
 import { errorToText } from "@shared/error"
@@ -15,10 +14,11 @@ export function createClient(name: string, version: string) {
 export async function createStdioTransport(client: Client, params: MCPStdioServerParam) {
   try {
     const transport = new StdioClientTransport(modifyPlatformCMD(params).params)
-    await client.connect(transport)
     transport.onerror = error => {
       log.error("[MCP stdio transport]", errorToText(error))
     }
+    await client.connect(transport)
+    return transport
   } catch (error) {
     log.error("[createStdioTransport failed]", errorToText(error))
     throw error
@@ -27,10 +27,11 @@ export async function createStdioTransport(client: Client, params: MCPStdioServe
 export async function createStreamableTransport(client: Client, params: MCPStreamableServerParam) {
   try {
     const transport = new StreamableHTTPClientTransport(new URL(params.params.url))
-    await client.connect(transport)
     transport.onerror = error => {
       log.error("[MCP streamable transport]", errorToText(error))
     }
+    await client.connect(transport)
+    return transport
   } catch (error) {
     log.error("[createStreamableTransport failed]", errorToText(error))
     throw error
@@ -39,10 +40,11 @@ export async function createStreamableTransport(client: Client, params: MCPStrea
 export async function createSseTransport(client: Client, params: MCPStreamableServerParam) {
   try {
     const transport = new SSEClientTransport(new URL(params.params.url))
-    await client.connect(transport)
     transport.onerror = error => {
       log.error("[MCP sse transport]", errorToText(error))
     }
+    await client.connect(transport)
+    return transport
   } catch (error) {
     log.error("[createSseTransport failed]", errorToText(error))
     throw error

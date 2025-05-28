@@ -34,9 +34,10 @@ import {
 } from "./utils"
 import { MCPClientContext } from "./types"
 import { useToolCall, useToolName } from "@shared/mcp"
+import { ServiceCore } from "@main/types"
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
-export default (): MCPService => {
+export default (): MCPService & ServiceCore => {
   const context = new Map<string, MCPClientContext>()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolName = useToolName()
@@ -66,15 +67,15 @@ export default (): MCPService => {
       }
       const client = createClient(name, version)
       if (isStdioServerParams(ctx.params)) {
-        await createStdioTransport(client, ctx.params)
+        ctx.transport = await createStdioTransport(client, ctx.params)
         log.debug("[MCP register stdio server]", `[${serverName}]created`)
       } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
-          await createStreamableTransport(client, ctx.params)
+          ctx.transport = await createStreamableTransport(client, ctx.params)
           log.debug("[MCP register streamable server]", `[${serverName}]created`)
         } catch (_e) {
           log.warn("[MCP register streamable server error,attempt sse type]")
-          await createSseTransport(client, ctx.params)
+          ctx.transport = await createSseTransport(client, ctx.params)
           log.debug("[MCP register sse server]", `[${serverName}]created`)
         }
       } else {
@@ -306,6 +307,12 @@ export default (): MCPService => {
       }
     )
   }
+  function dispose() {
+    context.forEach(ctx => {
+      ctx.client?.close()
+    })
+    context.clear()
+  }
   return {
     registerServer,
     toggleServer,
@@ -315,5 +322,6 @@ export default (): MCPService => {
     listResources,
     listResourceTemplates,
     registerIpc,
+    dispose,
   }
 }

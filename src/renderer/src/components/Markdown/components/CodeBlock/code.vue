@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { errorToText } from "@shared/error"
 import useCopy from "./useCopy"
+import useDownload from "./useDownload"
 import { useShiki } from "@renderer/usable/useShiki"
-
+import { cloneVNode } from "vue"
 const props = defineProps<{
   code: string
   lang: string
 }>()
 const Mermaid = defineAsyncComponent(() => import("./mermaid.vue"))
 const { copied, onCopy } = useCopy()
+const { download } = useDownload()
 const { codeToHtml } = useShiki()
 const Code = h("div")
 const vnode = shallowRef<VNode>()
-
+const id = useId()
 watchEffect(() => {
   if (props.lang === "mermaid") {
     vnode.value = h(Mermaid, {
@@ -21,8 +23,8 @@ watchEffect(() => {
     })
   } else {
     codeToHtml(props.code, props.lang)
-      .then(res => (vnode.value = h(Code, { innerHTML: res })))
-      .catch(err => (vnode.value = h(Code, { innerHTML: errorToText(err) })))
+      .then(res => (vnode.value = cloneVNode(Code, { innerHTML: res })))
+      .catch(err => (vnode.value = cloneVNode(Code, { innerHTML: errorToText(err) })))
   }
 })
 </script>
@@ -32,10 +34,15 @@ watchEffect(() => {
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang }}</el-tag>
-          <el-button type="primary" @click="onCopy(code)" size="small" round plain circle>
-            <i-ic:outline-check v-if="copied"></i-ic:outline-check>
-            <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>
-          </el-button>
+          <div class="flex gap1rem items-center">
+            <el-button type="primary" @click="onCopy(code)" size="small" round plain circle>
+              <i-ic:outline-check v-if="copied"></i-ic:outline-check>
+              <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>
+            </el-button>
+            <el-button type="primary" @click="download(code, lang, id)" size="small" round plain circle>
+              <i-ic:baseline-download></i-ic:baseline-download>
+            </el-button>
+          </div>
         </div>
       </template>
       <component :is="vnode"></component>

@@ -3,6 +3,7 @@ import { join } from "path"
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils"
 import icon from "../../resources/icon.png?asset"
 import { registerService } from "./packages"
+import { ServiceCore } from "./types"
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 1366,
@@ -36,6 +37,7 @@ function createWindow(): BrowserWindow {
 }
 
 function init() {
+  let serviceCore: ServiceCore | undefined
   if (!app.requestSingleInstanceLock()) {
     app.quit()
     process.exit(0)
@@ -49,13 +51,17 @@ function init() {
       app.on("activate", function () {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
       })
-      createWindow()
-      registerService()
+      const mainWindow = createWindow()
+      serviceCore = registerService(mainWindow)
+      serviceCore.registerIpc()
     })
     app.on("window-all-closed", () => {
       if (process.platform !== "darwin") {
         app.quit()
       }
+    })
+    app.on("before-quit", () => {
+      serviceCore?.dispose()
     })
   }
 }

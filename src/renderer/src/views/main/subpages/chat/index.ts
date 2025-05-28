@@ -328,14 +328,7 @@ export default (
       treeRef.value?.filter(v)
     }
   )
-  const watchKeys = settingsStore.api.dataWatcher<string[]>(
-    "chat.defaultExpandedKeys",
-    toRef(tree, "defaultExpandedKeys"),
-    []
-  )
-  onBeforeUnmount(() => {
-    watchKeys.stop()
-  })
+  settingsStore.api.dataWatcher<string[]>("chat.defaultExpandedKeys", toRef(tree, "defaultExpandedKeys"), [])
   return {
     menu,
     dlg,
