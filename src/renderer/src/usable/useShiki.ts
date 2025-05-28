@@ -107,10 +107,6 @@ export function createShiki() {
   function install(app: App): void {
     const instance = shikiInstance()
     app.provide(HighlighterKey, instance)
-    onBeforeUnmount(async () => {
-      const hl = await highlighterPromise
-      hl.dispose()
-    })
   }
   return {
     install,

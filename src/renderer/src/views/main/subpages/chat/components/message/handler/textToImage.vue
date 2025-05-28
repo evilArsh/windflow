@@ -6,43 +6,43 @@ const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const chance = markRaw(new Chance())
 const sizeOptions = ref([
+  // {
+  //   label: "siliconflow",
+  //   options: [
   {
-    label: "siliconflow",
-    options: [
-      {
-        value: "1024x1024",
-        label: "1:1 (1024×1024)",
-      },
-      {
-        value: "1024x2048",
-        label: "1:2 (1024×2048)",
-      },
-      {
-        value: "1536x1024",
-        label: "3:2 (1536×1024)",
-      },
-      {
-        value: "768x1024",
-        label: "3:4 (768×1024)",
-      },
-      {
-        value: "1820x1024",
-        label: "16:9 (1820×1024)",
-      },
-      {
-        value: "1024x1820",
-        label: "9:16 (1024×1820)",
-      },
-      {
-        value: "1365x1024",
-        label: "4:3 (1365×1024)",
-      },
-      {
-        value: "1024x1365",
-        label: "3:4 (1024×1365)",
-      },
-    ],
+    value: "1024x1024",
+    label: "1:1 (1024×1024)",
   },
+  {
+    value: "1024x2048",
+    label: "1:2 (1024×2048)",
+  },
+  {
+    value: "1536x1024",
+    label: "3:2 (1536×1024)",
+  },
+  {
+    value: "768x1024",
+    label: "3:4 (768×1024)",
+  },
+  {
+    value: "1820x1024",
+    label: "16:9 (1820×1024)",
+  },
+  {
+    value: "1024x1820",
+    label: "9:16 (1024×1820)",
+  },
+  {
+    value: "1365x1024",
+    label: "4:3 (1365×1024)",
+  },
+  {
+    value: "1024x1365",
+    label: "3:4 (1024×1365)",
+  },
+  //   ],
+  // },
 ])
 const defaultConfig = () => ({
   size: "",
@@ -71,7 +71,7 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
 )
 </script>
 <template>
-  <el-popover placement="top" :width="500" trigger="click" popper-style="--el-popover-padding: 0">
+  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
         <i-fluent-emoji-flat:framed-picture class="text-1.4rem"></i-fluent-emoji-flat:framed-picture>
@@ -83,18 +83,27 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
       </template>
       <div class="tti-wrap h-300px overflow-hidden w-full">
         <el-scrollbar>
-          <el-form label-width="115">
+          <el-form label-position="top">
             <el-form-item>
               <template #label>
                 <ContentBox>
                   <el-text>{{ t("chat.tti.imageSize") }}</el-text>
                 </ContentBox>
               </template>
-              <el-select v-model="config.size" @change="onChange">
+              <el-radio-group v-model="config.size" size="small" @change="onChange" class="gap0.5rem">
+                <el-radio
+                  border
+                  class="mr-0!"
+                  v-for="item in sizeOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value" />
+              </el-radio-group>
+              <!-- <el-select v-model="config.size" @change="onChange">
                 <el-option-group v-for="group in sizeOptions" :key="group.label" :label="group.label">
                   <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value" />
                 </el-option-group>
-              </el-select>
+              </el-select> -->
             </el-form-item>
             <el-form-item>
               <template #label>
@@ -102,7 +111,9 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
                   <el-text>{{ t("chat.tti.n") }}</el-text>
                 </ContentBox>
               </template>
-              <el-slider class="w-90%!" @change="onChange" v-model="config.n" :min="1" :max="4"></el-slider>
+              <div class="px-1.5rem w-full flex">
+                <el-slider @change="onChange" v-model="config.n" :min="1" :max="4"></el-slider>
+              </div>
             </el-form-item>
             <el-form-item>
               <template #label>
@@ -127,7 +138,9 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
                   </template>
                 </ContentBox>
               </template>
-              <el-slider class="w-90%!" v-model="config.num_inference_steps" :min="1" :max="100"></el-slider>
+              <div class="px-1.5rem w-full flex">
+                <el-slider v-model="config.num_inference_steps" :min="1" :max="100"></el-slider>
+              </div>
             </el-form-item>
             <el-form-item>
               <template #label>
@@ -140,7 +153,9 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
                   </template>
                 </ContentBox>
               </template>
-              <el-slider class="w-90%!" v-model="config.guidance_scale" :min="0" :max="20"></el-slider>
+              <div class="px-1.5rem w-full flex">
+                <el-slider v-model="config.guidance_scale" :min="0" :max="20"></el-slider>
+              </div>
             </el-form-item>
             <el-form-item>
               <template #label>

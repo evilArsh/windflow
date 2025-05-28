@@ -150,7 +150,7 @@ onBeforeUnmount(() => {
 html.dark {
   .content-container {
     --content-container-bg-color: #141414;
-    --content-handler-bg-color: #1d1d1d;
+    --content-handler-bg-color: #161616;
     --content-handler-border-color: #1d1d1d;
   }
 }
