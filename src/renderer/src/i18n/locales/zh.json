@@ -77,6 +77,9 @@
       "servers": "服务列表"
     },
     "serverName": "名称",
+    "settings": {
+      "npmMirror": "npm镜像"
+    },
     "status": "状态",
     "type": "类型",
     "url": "url"

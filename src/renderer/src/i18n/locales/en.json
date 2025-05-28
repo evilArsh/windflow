@@ -33,6 +33,11 @@
     "en": "English",
     "zh": "简体中文"
   },
+  "mcp": {
+    "settings": {
+      "npmMirror": "npm registry"
+    }
+  },
   "modelType": {
     "Chat": "Chat",
     "ChatReasoner": "Chat-Reasoner",
