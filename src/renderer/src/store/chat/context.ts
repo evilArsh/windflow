@@ -47,7 +47,7 @@ export const useContext = () => {
    */
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
     const context: LLMMessage[] = []
-    let userTurn = true // Role.User 已unshift,应该到Assistant数据
+    let userTurn = true
     const extractData = (data: LLMMessage): LLMMessage => {
       return {
         role: data.role,
@@ -93,7 +93,9 @@ export const useContext = () => {
     }
     if (userTurn) {
       // user-assistant消息pair中，无user消息，此时删除assistant消息
-      context.shift()
+      if (context.length > 0 && context[0].role === Role.Assistant) {
+        context.shift()
+      }
     }
     context.unshift({ role: Role.System, content: JSON.stringify([{ type: "text", content: topic.prompt }]) })
     return context

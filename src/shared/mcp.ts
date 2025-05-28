@@ -1,6 +1,7 @@
 import { MCPToolDetail, NameSeprator } from "./types/mcp"
-import Ajv from "ajv"
+import Ajv, { ErrorObject } from "ajv"
 import AjvErrors from "ajv-errors"
+// import addFormats from "ajv-formats"
 
 /**
  * @description 处理listTools,listPrompts,listResources,listResourceTemplates
@@ -27,8 +28,9 @@ export function useToolName() {
 
 export function useToolCall() {
   const ajv = new Ajv({
-    strict: true, // 强制校验 Schema 本身的合法性
-    allErrors: true, // 收集所有错误
+    coerceTypes: true,
+    // strict: true,
+    allErrors: true,
     verbose: false,
     formats: {
       uri: true,
@@ -41,6 +43,7 @@ export function useToolCall() {
     },
   })
   AjvErrors(ajv)
+  // addFormats(ajv)
   /**
    * @description llm返回的函数调用参数处理
    */
@@ -51,10 +54,14 @@ export function useToolCall() {
   /**
    * @description  验证llm返回的函数调用参数
    */
-  function validate(tool: MCPToolDetail, args?: Record<string, unknown>): boolean {
-    if (!tool.inputSchema) return true
+  function validate(
+    tool: MCPToolDetail,
+    args?: Record<string, unknown>
+  ): [boolean, Array<ErrorObject> | null | undefined] {
+    if (!tool.inputSchema) return [true, null]
     const validate = ajv.compile(tool.inputSchema)
-    return validate(args)
+    const valid = validate(args)
+    return [valid, validate.errors]
   }
   return {
     validate,

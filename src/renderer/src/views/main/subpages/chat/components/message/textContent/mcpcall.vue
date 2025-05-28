@@ -85,13 +85,13 @@ watch(
           </div>
         </template>
         <div class="flex flex-col gap.5rem">
-          <ContentBox>
+          <ContentBox class="select-unset!">
             <el-text size="small" type="primary">{{ t("chat.mcpCall.arguments") }}</el-text>
             <template #footer>
               <el-text size="small">{{ call.function.arguments }}</el-text>
             </template>
           </ContentBox>
-          <ContentBox>
+          <ContentBox class="select-unset!">
             <el-text size="small" type="primary">{{ t("chat.mcpCall.content") }}</el-text>
             <template #footer>
               <el-text size="small">{{ call.content }}</el-text>

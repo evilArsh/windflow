@@ -5,7 +5,8 @@ import { HttpStatusCode } from "@shared/code"
 
 export function usePartialData() {
   let result: LLMResponse = defaultData()
-  let tools: Record<number, LLMToolCall> = {}
+  const toolsHistory: LLMToolCall[][] = []
+  let tools: Record<string, LLMToolCall> = {}
   let content = ""
   let reasoning_content = ""
   const tool_calls_chain: LLMMessage[] = []
@@ -21,7 +22,7 @@ export function usePartialData() {
   function assembleData(result: LLMResponse): LLMResponse {
     result.data.content = content
     result.data.reasoning_content = reasoning_content
-    const tool = getTools()
+    const tool = getArchiveTools()
     result.data.tool_calls = tool.length > 0 ? tool : undefined
     result.data.usage = usage
     result.data.tool_calls_chain = tool_calls_chain
@@ -49,24 +50,37 @@ export function usePartialData() {
     Object.assign(result, res)
     if (data.tool_calls) {
       data.tool_calls.forEach(tool => {
-        if (isNumber(tool.index)) {
-          const mapTool = tools[tool.index]
+        if (isString(tool.id)) {
+          const mapTool = tools[tool.id]
           if (mapTool) {
             mapTool.function.arguments += tool.function.arguments
             // mapTool.function.name
           } else {
-            tools[tool.index] = tool
+            tools[tool.id] = tool
           }
         }
       })
     }
     calcTokens(data)
   }
+  /**
+   * @description 归档当前tools,开启下一轮的tool_calls
+   */
+  function archiveTools() {
+    const val = Object.values(tools)
+    if (val.length > 0) {
+      toolsHistory.push(Object.values(tools))
+    }
+    tools = {}
+  }
   function addLocalMCPCallResults(data: LLMMessage) {
     tool_calls_chain.push(data)
   }
   function getTools(): LLMToolCall[] {
     return Object.values(tools)
+  }
+  function getArchiveTools(): LLMToolCall[] {
+    return toolsHistory.flat()
   }
   function getResponse(): LLMResponse {
     return assembleData(result)
@@ -84,6 +98,8 @@ export function usePartialData() {
   return {
     clear,
     add,
+    archiveTools,
+    getArchiveTools,
     addLocalMCPCallResults,
     getTools,
     getResponse,

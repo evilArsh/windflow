@@ -104,48 +104,59 @@ export async function makeRequest(
     // 调用MCP工具并返回的调用结果
     let reqToolsData: LLMMessage[] = []
     // LLM返回的需要调用的工具列表
-    let needCallTools: LLMToolCall[] = []
-    if (toolList.length > 0) {
-      // 携带tools信息请求
-      const req = { ...requestData, tools: toolList, tool_calls: toolList }
-      for await (const content of requestHandler.chat(req, providerMeta)) {
-        partial.add({ ...content, status: content.status == 200 ? 206 : content.status })
-        callback(partial.getResponse())
+    let neededCallTools: LLMToolCall[] = []
+    while (true) {
+      if (toolList.length > 0) {
+        if (neededCallTools.length == 0) {
+          // 携带tools信息请求
+          const req = { ...requestData, tools: toolList, tool_calls: toolList }
+          for await (const content of requestHandler.chat(req, providerMeta)) {
+            partial.add({ ...content, status: content.status == 200 ? 206 : content.status })
+            callback(partial.getResponse())
+          }
+          neededCallTools = partial.getTools()
+          // 没有触发MCP工具调用
+          if (neededCallTools.length == 0) {
+            partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
+            callback(partial.getResponse())
+            return
+          }
+        }
+        console.log("[tools selected by LLM]", neededCallTools)
+        // 调用MCP工具并返回调用结果
+        reqToolsData = await callTools(neededCallTools)
+        console.log("[call local tools]", reqToolsData)
+        if (reqToolsData.length == 0) {
+          partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
+          callback(partial.getResponse())
+          return
+        }
+        // 添加大模型选择的tool_calls作为上下文
+        context.push({
+          role: Role.Assistant,
+          tool_calls: neededCallTools,
+          content: "",
+        })
       }
-      needCallTools = partial.getTools()
-      // 没有触发MCP工具调用
-      if (needCallTools.length == 0) {
-        partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
-        callback(partial.getResponse())
-        return
-      }
-      console.log("[tools selected by LLM]", needCallTools)
-      // 调用MCP工具并返回调用结果
-      reqToolsData = await callTools(needCallTools)
-      console.log("[call local tools]", reqToolsData)
-      if (reqToolsData.length == 0) {
-        partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
-        callback(partial.getResponse())
-        return
-      }
-      // 添加大模型选择的tool_calls作为上下文
-      context.push({
-        role: Role.Assistant,
-        tool_calls: needCallTools,
-        content: "",
+      reqToolsData.forEach(toolData => {
+        partial.addLocalMCPCallResults({ ...toolData, stream: requestData.stream })
+        context.push(toolData)
       })
-    }
-    reqToolsData.forEach(toolData => {
-      partial.addLocalMCPCallResults({ ...toolData, stream: requestData.stream })
-      context.push(toolData)
-    })
-    callback(partial.getResponse())
-    // 处理工具调用结果
-    const reqBody = mergeRequestConfig(context, modelMeta, requestData)
-    // 携带mcp调用结果请求
-    for await (const content of requestHandler.chat(reqBody, providerMeta)) {
-      partial.add(content)
       callback(partial.getResponse())
+      // 处理工具调用结果
+      const reqBody = mergeRequestConfig(context, modelMeta, requestData)
+      partial.archiveTools()
+      // 携带mcp调用结果请求
+      for await (const content of requestHandler.chat(reqBody, providerMeta)) {
+        partial.add(content)
+        callback(partial.getResponse())
+      }
+      const tools = partial.getTools()
+      if (tools.length > 0) {
+        neededCallTools = tools
+      } else {
+        break
+      }
     }
   } catch (error) {
     if (error instanceof AbortError) {

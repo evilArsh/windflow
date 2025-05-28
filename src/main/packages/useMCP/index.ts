@@ -250,9 +250,11 @@ export default (): MCPService & ServiceCore => {
           const msg = `server [${serverId}] not found`
           return responseData(500, msg, { content: { type: "text", text: msg } })
         }
-        const validArgs = toolCall.validate(tool, args)
+        const [validArgs, validErrors] = toolCall.validate(tool, args)
         if (!validArgs) {
-          return responseData(200, "ok", { content: { type: "text", text: "arguments validate failed" } })
+          return responseData(200, "args vailid error", {
+            content: { type: "text", text: JSON.stringify(validErrors ?? []) },
+          })
         }
         const res = await registerServer(ctx.params)
         if (code2xx(res.code)) {
