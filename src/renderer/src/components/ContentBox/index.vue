@@ -81,26 +81,25 @@ watch(
 .comp-content-box {
   --box-shadow-color: rgba(0, 0, 0, 0.1);
   --box-active-shadow-color: rgba(0, 0, 0, 0.2);
-  --box-icon-color: var(--el-text-color-regular);
-  --box-icon-hover-color: rgba(10, 205, 231, 0.1);
-  --box-icon-active-color: rgba(10, 205, 231, 0.2);
+
   --box-bg-color: transparent;
-  --box-active-bg-color: transparent;
+  --box-hover-bg-color: rgba(249, 249, 249, 0.6);
+  --box-active-bg-color: rgba(249, 249, 249, 0.9);
   &.background {
-    --box-bg-color: var(--box-shadow-color);
-    --box-active-bg-color: var(--box-active-shadow-color);
+    --box-bg-color: transparent;
+    --box-hover-bg-color: rgba(235, 235, 235, 1);
+    --box-active-bg-color: rgba(219, 219, 219, 1);
   }
 }
 html.dark .comp-content-box {
   --box-shadow-color: rgba(255, 255, 255, 0.2);
   --box-active-shadow-color: rgba(255, 255, 255, 0.3);
-  --box-icon-color: var(--el-text-color-regular);
-  --box-icon-hover-color: rgba(10, 205, 231, 0.3);
-  --box-icon-active-color: rgba(10, 205, 231, 0.4);
+
   --box-bg-color: transparent;
+  --box-hover-bg-color: transparent;
   --box-active-bg-color: transparent;
   &.background {
-    --box-bg-color: var(--box-shadow-color);
+    --box-hover-bg-color: var(--box-shadow-color);
     --box-active-bg-color: var(--box-active-shadow-color);
   }
 }
@@ -108,10 +107,9 @@ html.dark .comp-content-box {
 .comp-content-box.normal {
   --box-shadow-color: transparent;
   --box-active-shadow-color: transparent;
-  --box-icon-color: var(--el-text-color-regular);
-  --box-icon-hover-color: rgba(10, 205, 255, 0.3);
-  --box-icon-active-color: rgba(10, 205, 255, 0.4);
+
   --box-bg-color: transparent;
+  --box-hover-bg-color: transparent;
   --box-active-bg-color: transparent;
 }
 
@@ -125,8 +123,13 @@ html.dark .comp-content-box {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  background-color: var(--box-bg-color);
+
+  --box-icon-color: var(--el-text-color-regular);
+  --box-icon-hover-color: rgba(10, 205, 255, 0.3);
+  --box-icon-active-color: rgba(10, 205, 255, 0.4);
   &:hover {
-    background-color: var(--box-bg-color);
+    background-color: var(--box-hover-bg-color);
     box-shadow: 0 0 3px var(--box-shadow-color);
   }
   &:active,

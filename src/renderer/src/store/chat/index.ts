@@ -213,27 +213,31 @@ export default defineStore("chat_topic", () => {
    * @description 删除一条消息列表的消息
    */
   function deleteSubMessage(topic?: ChatTopic, message?: ChatMessage, currentId?: string) {
-    if (!(message && currentId && topic)) {
-      console.warn(`[deleteSubMessage] message or currentId or topic is empty.`, topic, message, currentId)
-      return
-    }
-    const msgIndex = message.data.findIndex(item => item.id === currentId)
-    if (isIndexOutOfRange(msgIndex, message.data.length)) {
-      console.warn(`[deleteSubMessage] cann't find message.${msgIndex},${currentId}`)
-      return
-    }
-    const current = message.data[msgIndex]
-    const chatContext = findContext(topic.id, current.id)
-    chatContext?.handler?.terminate()
-    if (current.content.role === Role.Assistant) {
-      if (Array.isArray(current.children)) {
-        current.children.forEach(child => {
-          const chatContext = findContext(topic.id, child.id)
-          chatContext?.handler?.terminate()
-        })
+    try {
+      if (!(message && currentId && topic)) {
+        console.warn(`[deleteSubMessage] message or currentId or topic is empty.`, topic, message, currentId)
+        return
       }
+      const msgIndex = message.data.findIndex(item => item.id === currentId)
+      if (isIndexOutOfRange(msgIndex, message.data.length)) {
+        console.warn(`[deleteSubMessage] cann't find message.${msgIndex},${currentId}`)
+        return
+      }
+      const current = message.data[msgIndex]
+      const chatContext = findContext(topic.id, current.id)
+      chatContext?.handler?.terminate()
+      if (current.content.role === Role.Assistant) {
+        if (Array.isArray(current.children)) {
+          current.children.forEach(child => {
+            const chatContext = findContext(topic.id, child.id)
+            chatContext?.handler?.terminate()
+          })
+        }
+      }
+      message.data.splice(msgIndex, 1)
+    } catch (error) {
+      console.log("[deleteSubMessage error]", error)
     }
-    message.data.splice(msgIndex, 1)
   }
   return {
     topicList,

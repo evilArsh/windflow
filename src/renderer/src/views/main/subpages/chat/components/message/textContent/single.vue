@@ -17,11 +17,10 @@ const props = defineProps<{
 }>()
 
 const chatStore = useChatStore()
-const { currentMessage } = storeToRefs(chatStore)
+const { currentMessage, currentTopic } = storeToRefs(chatStore)
 
 const id = useId()
 const rawDlg = useTemplateRef("rawDlg")
-const elObserver = shallowRef<IntersectionObserver>()
 const rawTextDlg = reactive({
   data: undefined as ChatMessageData | undefined,
   onChange: markRaw((value: string) => {
@@ -34,13 +33,16 @@ const rawTextDlg = reactive({
     rawTextDlg.data = msg
     rawDlg.value?.open()
   }),
+  del: markRaw((msg: ChatMessageData) => {
+    if (currentMessage.value) {
+      chatStore.deleteSubMessage(currentTopic.value?.node, currentMessage.value, msg.id)
+      chatStore.api.updateChatMessage(currentMessage.value)
+    }
+  }),
 })
 const isAssistant = computed(() => !!props.data.modelId)
 const isPartial = computed(() => {
   return props.data.status < 200 || props.data.status == 206
-})
-onBeforeUnmount(() => {
-  elObserver.value?.disconnect()
 })
 </script>
 <template>
@@ -48,7 +50,7 @@ onBeforeUnmount(() => {
     <template v-if="header" #header>
       <Affix :offset="40" :target="`#${id}`">
         <Title :data>
-          <Handler :data @edit="rawTextDlg.edit(data)"></Handler>
+          <Handler :data @delete="rawTextDlg.del(data)" @edit="rawTextDlg.edit(data)"></Handler>
         </Title>
       </Affix>
     </template>

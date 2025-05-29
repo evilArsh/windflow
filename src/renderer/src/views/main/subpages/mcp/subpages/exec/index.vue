@@ -11,7 +11,7 @@ const settings = reactive({
 <template>
   <ContentLayout>
     <div class="mx-auto my-1rem max-w-1024px flex flex-col gap1rem">
-      <ContentBox class="p1rem!">
+      <ContentBox class="p1rem!" style="--box-bg-color: #f7f7f7">
         <div class="flex-1">
           <el-text type="primary" size="large">{{ t("mcp.settings.npmMirror") }}</el-text>
         </div>

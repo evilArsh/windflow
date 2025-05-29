@@ -5,7 +5,7 @@ import Single from "./single.vue"
 // import Handler from "./handler.vue"
 // import Title from "./title.vue"
 defineProps<{
-  data: ChatMessageData[]
+  data?: ChatMessageData[]
   parent: ChatMessageData
 }>()
 const id = useId()

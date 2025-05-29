@@ -12,7 +12,7 @@ const hasChildren = computed(() => {
 </script>
 <template>
   <Divider v-if="data.contextFlag" :data></Divider>
-  <Multiple v-else-if="hasChildren" :parent="data" :data="data.children ?? []"></Multiple>
+  <Multiple v-else-if="hasChildren" :parent="data" :data="data.children"></Multiple>
   <Single v-else :data header></Single>
 </template>
 <style lang="scss" scoped></style>

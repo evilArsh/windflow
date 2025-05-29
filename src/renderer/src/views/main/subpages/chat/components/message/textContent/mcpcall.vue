@@ -48,7 +48,7 @@ watch(
           status: Status.InProgress,
         }
       }
-      callsData.value[call.id] = { ...callsData.value[call.id], ...cloneDeep(call) }
+      Object.assign(callsData.value[call.id], cloneDeep(call))
       callsData.value[call.id].function.name = name
     })
   },

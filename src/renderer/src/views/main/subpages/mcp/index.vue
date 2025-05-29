@@ -53,7 +53,7 @@ onMounted(routes.toDefaultPath)
               :background="false"
               @click="routes.toPath(menu.path)">
               <template #icon><component :is="menu.icon"></component></template>
-              <el-text type="info">{{ menu.title }}</el-text>
+              <el-text>{{ menu.title }}</el-text>
             </ContentBox>
           </div>
         </div>

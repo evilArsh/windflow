@@ -168,3 +168,8 @@ export interface MCPListResourceTemplatesResponse {
 // -- resource template end ---
 
 // --- mcp call result end ---
+
+// --- mcp Environment start ---
+export interface MCPEnvironment {
+  npmRegistry: string
+}
