@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ChatMessageData } from "@renderer/types/chat"
+import { ChatMessage, ChatMessageData, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"
 // import Handler from "./handler.vue"
 // import Title from "./title.vue"
 defineProps<{
-  data?: ChatMessageData[]
-  parent: ChatMessageData
+  message: ChatMessage
+  messageItem: ChatMessageData
+  topic: ChatTopic
 }>()
 const id = useId()
 </script>
@@ -20,7 +21,13 @@ const id = useId()
       </el-affix>
     </template>
     <div class="chat-item-content">
-      <Single v-for="item in data" :data="item" :key="item.id" class="flex-1"></Single>
+      <Single
+        v-for="item in messageItem.children"
+        :topic
+        :message
+        :message-item="item"
+        :key="item.id"
+        class="flex-1"></Single>
     </div>
   </MsgBubble>
 </template>

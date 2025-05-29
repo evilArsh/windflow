@@ -93,7 +93,7 @@ export const useContext = () => {
           }
           userTurn = true
         } else {
-          // 丢弃
+          // drop
         }
       }
     }
@@ -107,33 +107,39 @@ export const useContext = () => {
     return context
   }
   function mountContext(val: ChatTopic, message: ChatMessage) {
-    if (!val.chatMessageId) {
-      console.warn("[mountContext] chatMessageId is empty")
-      return
+    if (val.chatMessageId !== message.id) {
+      console.warn(`[mountContext] current chatTopic's chatMessageId is not equal to message's id.set it to current`)
+      val.chatMessageId = message.id
     }
     if (!llmChats[val.id]) {
       llmChats[val.id] = message.data.map<ChatContext>(msgData => {
         return {
-          messageId: val.chatMessageId,
+          messageId: message.id,
           messageDataId: msgData.id,
           modelId: msgData.modelId,
           provider: undefined,
           handler: undefined,
         } as ChatContext
       })
+    } else {
+      llmChats[val.id].forEach(ctx => {
+        if (ctx.messageDataId !== message.id) {
+          ctx.messageDataId = message.id
+        }
+      })
     }
   }
   function hasTopic(topicId: string) {
-    return llmChats[topicId]
+    return !!llmChats[topicId]
   }
-  function findContext(topicId: string, messageDataId: string) {
+  function findContext(topicId: string, messageDataId: string): ChatContext | undefined {
     if (hasTopic(topicId)) {
       return llmChats[topicId].find(item => item.messageDataId === messageDataId)
     }
     console.warn(`[findContext] topicId not found.${topicId} ${messageDataId}`)
     return undefined
   }
-  function findTopic(topicId: string) {
+  function findTopicContext(topicId: string): ChatContext[] | undefined {
     return llmChats[topicId]
   }
   function initContext(topicId: string) {
@@ -148,7 +154,7 @@ export const useContext = () => {
     mountContext,
     hasTopic,
     findContext,
-    findTopic,
+    findTopicContext,
     initContext,
   }
 }

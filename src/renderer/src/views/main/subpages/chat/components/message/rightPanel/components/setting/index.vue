@@ -1,17 +1,10 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
 import ShortCut from "./shortcut.vue"
-
 const props = defineProps<{
-  modelValue: ChatTopic
+  topic: ChatTopic
 }>()
-const emit = defineEmits<{
-  "update:modelValue": [ChatTopic]
-}>()
-computed<ChatTopic>({
-  get: () => props.modelValue,
-  set: val => emit("update:modelValue", val),
-})
+const _topicData = computed<ChatTopic>(() => props.topic)
 </script>
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">

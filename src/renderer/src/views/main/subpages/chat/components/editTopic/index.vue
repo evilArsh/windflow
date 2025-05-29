@@ -2,21 +2,28 @@
 import { ChatTopic } from "@renderer/types"
 import ModelSelect from "../modelSelect/index.vue"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
+import { errorToText } from "@shared/error"
+import useChatStore from "@renderer/store/chat"
+import { useThrottleFn } from "@vueuse/core"
+import { cloneDeep } from "lodash-es"
 const props = defineProps<{
-  modelValue: ChatTopic
+  topic: ChatTopic
 }>()
-const emit = defineEmits<{
-  (e: "update:modelValue", value: ChatTopic): void
-  (e: "close"): void
-}>()
+const form = computed(() => props.topic)
 const { t } = useI18n()
-const form = computed<ChatTopic>({
-  get: () => props.modelValue,
-  set: (v: ChatTopic) => {
-    emit("update:modelValue", v)
-  },
-})
 const cardRef = useTemplateRef<HTMLElement>("card")
+const chatStore = useChatStore()
+const onTopicUpdate = useThrottleFn(async () => {
+  try {
+    await chatStore.api.updateChatTopic(cloneDeep(form.value))
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+  }
+})
+const onIconChange = async (icon: string) => {
+  form.value.icon = icon
+  onTopicUpdate()
+}
 defineExpose({
   bounding: () => {
     return cardRef.value?.getBoundingClientRect()
@@ -28,16 +35,20 @@ defineExpose({
     <el-card style="--el-card-padding: 1rem">
       <el-form ref="formRef" :model="form" class="w-100% h-100%" label-width="7rem">
         <el-form-item prop="label" :label="t('topic.title')">
-          <el-input v-model="form.label" />
+          <el-input v-model="form.label" @input="onTopicUpdate" />
         </el-form-item>
         <el-form-item prop="prompt" :label="t('topic.prompt')">
-          <el-input v-model="form.prompt" type="textarea" :autosize="{ minRows: 4, maxRows: 10 }" />
+          <el-input
+            @input="onTopicUpdate"
+            v-model="form.prompt"
+            type="textarea"
+            :autosize="{ minRows: 4, maxRows: 10 }" />
         </el-form-item>
         <el-form-item prop="modelIds" :label="t('topic.model')">
-          <ModelSelect v-model="form"></ModelSelect>
+          <ModelSelect :topic="form" @change="onTopicUpdate"></ModelSelect>
         </el-form-item>
         <el-form-item prop="icon" :label="t('topic.icon')">
-          <SvgPicker v-model="form.icon"></SvgPicker>
+          <SvgPicker :model-value="form.icon" @update:model-value="onIconChange"></SvgPicker>
         </el-form-item>
       </el-form>
     </el-card>

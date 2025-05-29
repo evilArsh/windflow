@@ -6,19 +6,28 @@ import TextInput from "../textInput/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@renderer/types"
+import { ChatMessage, ChatTopic, SettingKeys } from "@renderer/types"
 import { ElMessageBox } from "element-plus"
 import { errorToText } from "@shared/error"
+import { useThrottleFn } from "@vueuse/core"
+import { cloneDeep } from "lodash-es"
 const emit = defineEmits<{
-  (e: "messageSend"): void
-  (e: "contextClean"): void
+  messageSend: []
+  contextClean: []
+}>()
+const props = defineProps<{
+  message: ChatMessage
+  topic: ChatTopic
 }>()
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
 const { t } = useI18n()
 const shortcut = useShortcut()
 const chatStore = useChatStore()
-const { currentTopic, currentMessage } = storeToRefs(chatStore)
+
+const message = computed(() => props.message)
+const topic = computed(() => props.topic)
+
 const handler = {
   openTip: async (msg: string) => {
     try {
@@ -35,14 +44,14 @@ const handler = {
   },
   cleanMessage: async (res: { active: boolean }) => {
     try {
-      if (res.active && currentTopic.value?.node) {
+      if (res.active) {
         const confirm = await handler.openTip(`${t("tip.deleteConfirm", { message: t("chat.messageRecord") })}`)
-        if (confirm && currentMessage.value) {
-          for (const m of currentMessage.value.data) {
-            chatStore.deleteSubMessage(currentTopic.value?.node, currentMessage.value, m.id)
+        if (confirm && message.value) {
+          for (const messageItem of message.value.data) {
+            chatStore.deleteSubMessage(topic.value, messageItem.id)
           }
-          currentMessage.value.data = []
-          await chatStore.api.updateChatMessage(currentMessage.value)
+          message.value.data = []
+          await chatStore.api.updateChatMessage(message.value)
         }
       }
     } catch (error) {
@@ -51,10 +60,10 @@ const handler = {
   },
   cleanContext: async (res: { active: boolean }) => {
     try {
-      if (res.active && currentTopic.value?.node) {
+      if (res.active) {
         const confirm = await handler.openTip(`${t("tip.emptyConfirm", { message: t("chat.context") })}`)
-        if (confirm && currentMessage.value) {
-          currentMessage.value.data.unshift({
+        if (confirm && message.value) {
+          message.value.data.unshift({
             contextFlag: true,
             id: uniqueId(),
             modelId: "",
@@ -62,7 +71,7 @@ const handler = {
             content: { role: "", content: "" },
             status: 200,
           })
-          await chatStore.api.updateChatMessage(currentMessage.value)
+          await chatStore.api.updateChatMessage(message.value)
           emit("contextClean")
         }
       }
@@ -71,13 +80,20 @@ const handler = {
     }
   },
   send: async (res: { active: boolean }, done?: unknown) => {
-    if (res.active && currentTopic.value?.node) {
-      chatStore.send(currentTopic.value.node)
+    if (res.active) {
+      chatStore.send(topic.value)
       await nextTick()
       emit("messageSend")
       if (isFunction(done)) done()
     }
   },
+  onTopicUpdate: useThrottleFn(async () => {
+    try {
+      await chatStore.api.updateChatTopic(cloneDeep(topic.value))
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+    }
+  }),
 }
 const { key: cleanMessageKey, trigger: triggerCleanMessage } = shortcut.listen("ctrl+l", handler.cleanMessage)
 const { key: cleanContextKey, trigger: triggerCleanContext } = shortcut.listen("ctrl+k", handler.cleanContext)
@@ -93,10 +109,10 @@ watch(
 )
 </script>
 <template>
-  <div v-if="currentTopic" class="chat-input-container">
+  <div class="chat-input-container">
     <div class="chat-input-header">
       <div class="flex items-center gap-1.5rem">
-        <ModelSelect v-model="currentTopic.node" />
+        <ModelSelect :topic @change="handler.onTopicUpdate" />
         <TextToImage></TextToImage>
       </div>
       <div class="flex gap.5rem bg-#9f9f9f40 b-rd-.5rem">
@@ -112,7 +128,7 @@ watch(
         </ContentBox>
       </div>
     </div>
-    <TextInput v-model="currentTopic.node.content" />
+    <TextInput v-model="topic.content" @input="handler.onTopicUpdate" />
     <div class="chat-input-actions">
       <Button size="small" type="default" plain @click="done => triggerSend(done)">
         {{ t("btn.send", { shortcut: sendShortcut }) }}

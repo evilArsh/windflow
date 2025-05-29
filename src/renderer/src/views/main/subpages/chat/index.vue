@@ -11,23 +11,20 @@ import MenuHandle from "./components/menuHandle/index.vue"
 import useMenu from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings"
+import { errorToText } from "@shared/error"
+import { ElLoading } from "element-plus"
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const shortcut = useShortcut()
 const chatStore = useChatStore()
-const { topicList, currentTopic } = storeToRefs(chatStore)
+const { topicList } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
 const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, createNewTopic } = useMenu(
-  scaleRef,
-  scrollRef,
-  editTopicRef,
-  menuRef,
-  treeRef
-)
+const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, setCurrentTopic, currentTopic, createNewTopic } =
+  useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const toggleMenu = ref(true) // 左侧菜单是否显示
 shortcut.listen("ctrl+b", res => {
   if (res.active) {
@@ -35,10 +32,30 @@ shortcut.listen("ctrl+b", res => {
   }
 })
 settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, toggleMenu, true)
-chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
+async function init() {
+  await nextTick()
+  const loading = ElLoading.service({
+    lock: true,
+    text: "Loading",
+    background: "rgba(0, 0, 0, 0.7)",
+  })
+  try {
+    if (currentNodeKey.value) {
+      const topicTree = treeRef.value?.getCurrentNode()
+      if (topicTree) {
+        await setCurrentTopic(topicTree as ChatTopicTree)
+      }
+    }
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+  } finally {
+    loading.close()
+  }
+}
 onMounted(() => {
   window.defaultTopicTitle = t("chat.addChat")
   window.addEventListener("resize", dlg.clickMask)
+  init()
 })
 onBeforeUnmount(() => {
   window.removeEventListener("resize", dlg.clickMask)
@@ -111,12 +128,11 @@ onBeforeUnmount(() => {
         <EditTopic
           ref="editTopicRef"
           v-else-if="dlg.is === 'editTopic' && selectedTopic"
-          v-model="selectedTopic.node"
-          @close="dlg.clickMask"></EditTopic>
+          :topic="selectedTopic.node"></EditTopic>
       </ScalePanel>
     </template>
     <template #content>
-      <MessagePanel>
+      <MessagePanel :topic="currentTopic?.node">
         <template #leftHandler>
           <teleport to="#toggleMenu" defer :disabled="!toggleMenu">
             <ContentBox @click="toggleMenu = !toggleMenu" background>

@@ -5,15 +5,25 @@ import useShortcut from "@renderer/views/main/usable/useShortcut"
 import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
-import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@renderer/types"
+import { ChatTopic, SettingKeys } from "@renderer/types"
+const props = defineProps<{
+  topic?: ChatTopic
+}>()
 const settingsStore = useSettingsStore()
-const { currentTopic, currentMessage } = storeToRefs(useChatStore())
+const chatStore = useChatStore()
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const shortcut = useShortcut()
+
+const topic = computed(() => props.topic)
+const message = computed(() => {
+  if (topic.value) {
+    return chatStore.utils.findChatMessageByTopic(topic.value)
+  }
+  return undefined
+})
+
 const togglePanel = ref(true) // 右侧面板是否显示
-const message = computed(() => currentMessage.value?.data ?? [])
 shortcut.listen("ctrl+shift+b", res => {
   if (res.active) {
     togglePanel.value = !togglePanel.value
@@ -26,11 +36,21 @@ const handler = {
       contentLayout.value?.scrollToBottom("instant")
     }, 0)
   },
+  onHandlerHeightChange: (height: number) => {
+    if (topic.value) {
+      topic.value.inputHeight = height
+      chatStore.api.updateChatTopic(topic.value)
+    }
+  },
 }
 </script>
 <template>
-  <div v-if="currentTopic" class="flex flex-1 overflow-hidden">
-    <ContentLayout v-model:handler-height="currentTopic.node.inputHeight" ref="contentLayout" chat-mode>
+  <div v-if="topic" class="flex flex-1 overflow-hidden">
+    <ContentLayout
+      :handler-height="topic.inputHeight"
+      @update:handler-height="handler.onHandlerHeightChange"
+      ref="contentLayout"
+      chat-mode>
       <template #header>
         <el-card class="chat-header" shadow="never">
           <div class="flex justify-between">
@@ -47,14 +67,14 @@ const handler = {
           </div>
         </el-card>
       </template>
-      <div class="flex flex-col-reverse p-1.5rem gap2.5rem">
-        <TextContent v-for="data in message" :key="data.id" :data="data" />
+      <div v-if="message" class="flex flex-col-reverse p-1.5rem gap2.5rem">
+        <TextContent v-for="messageItem in message.data" :key="messageItem.id" :topic :message :message-item />
       </div>
-      <template #handler>
-        <Handler @message-send="handler.onMessageSend" @context-clean="handler.onMessageSend"></Handler>
+      <template v-if="message" #handler>
+        <Handler :topic :message @message-send="handler.onMessageSend" @context-clean="handler.onMessageSend"></Handler>
       </template>
     </ContentLayout>
-    <RightPanel v-show="togglePanel" v-model="currentTopic.node"></RightPanel>
+    <RightPanel v-show="togglePanel" :topic></RightPanel>
   </div>
   <div v-else class="flex flex-1 items-center justify-center">
     <el-empty />

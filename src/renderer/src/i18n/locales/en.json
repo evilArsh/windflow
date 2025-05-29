@@ -14,6 +14,7 @@
     "addFailed": "add failed",
     "deleteFailed": "delete failed",
     "editChat": "edit",
+    "messageCreateFailed": "create message failed",
     "regenerate": "re-generate",
     "rightPanel": {
       "mcp": "mcp",

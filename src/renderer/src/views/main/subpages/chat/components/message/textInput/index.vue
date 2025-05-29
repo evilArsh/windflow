@@ -3,7 +3,9 @@ const props = defineProps<{
   modelValue: string
 }>()
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void
+  "update:modelValue": [string]
+  change: [string]
+  input: [string]
 }>()
 const { t } = useI18n()
 const content = computed({
@@ -16,6 +18,8 @@ const content = computed({
     <el-input
       class="textarea"
       input-style="border: none;height: 100%"
+      @change="emit('change', $event)"
+      @input="emit('input', $event)"
       style="display: flex"
       :autosize="false"
       clearable

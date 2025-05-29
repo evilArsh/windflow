@@ -12,15 +12,9 @@ import { PopoverInstance } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
 import { code5xx } from "@shared/types/bridge"
 const props = defineProps<{
-  modelValue: ChatTopic
+  topic: ChatTopic
 }>()
-const emit = defineEmits<{
-  "update:modelValue": [ChatTopic]
-}>()
-const node = computed<ChatTopic>({
-  get: () => props.modelValue,
-  set: val => emit("update:modelValue", val),
-})
+const topic = computed<ChatTopic>(() => props.topic)
 const { t } = useI18n()
 const mcp = useMcpStore()
 const chatStore = useChatStore()
@@ -34,7 +28,7 @@ const popover = reactive({
   triggerRef: undefined as HTMLElement | undefined,
   onClick: markRaw((index: number) => {
     popover.triggerRef = popover.refs[index]
-    popover.server = node.value.mcpServers[index]
+    popover.server = topic.value.mcpServers[index]
     popover.visible = true
   }),
 })
@@ -52,7 +46,7 @@ const formHandler = {
           if (code5xx(res.code)) throw new Error(res.msg)
         }
       }
-      const count = await chatStore.api.updateChatTopic(cloneDeep(node.value))
+      const count = await chatStore.api.updateChatTopic(cloneDeep(topic.value))
       if (count == 0) {
         throw new Error("update failed")
       }
@@ -66,7 +60,7 @@ const formHandler = {
   onServerChange: async (data: MCPServerParam) => {
     try {
       popover.server && Object.assign(popover.server, data)
-      await chatStore.api.updateChatTopic(cloneDeep(node.value))
+      await chatStore.api.updateChatTopic(cloneDeep(topic.value))
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }
@@ -78,7 +72,7 @@ const formHandler = {
 const serverHandler = {
   test: async (done: CallBackFn) => {
     try {
-      const ids = node.value.mcpServers.map(v => v.id)
+      const ids = topic.value.mcpServers.map(v => v.id)
       const listTools = await window.api.mcp.listTools(ids)
       const listPrompts = await window.api.mcp.listPrompts(ids)
       const listResources = await window.api.mcp.listResources(ids)
@@ -97,11 +91,11 @@ const serverHandler = {
     try {
       for (const server of servers.value) {
         if (server.disabled) continue
-        if (node.value.mcpServers.findIndex(item => item.id === server.id) === -1) {
-          node.value.mcpServers.push(cloneDeep({ ...server, disabled: true }))
+        if (topic.value.mcpServers.findIndex(item => item.id === server.id) === -1) {
+          topic.value.mcpServers.push(cloneDeep({ ...server, disabled: true }))
         }
       }
-      await chatStore.api.updateChatTopic(cloneDeep(node.value))
+      await chatStore.api.updateChatTopic(cloneDeep(topic.value))
       await serverHandler.loadMCP()
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
@@ -113,7 +107,7 @@ const serverHandler = {
     try {
       loading.value = true
       const asyncReq: Promise<unknown>[] = []
-      for (const server of props.modelValue.mcpServers) {
+      for (const server of topic.value.mcpServers) {
         if (server.disabled) continue
         asyncReq.push(window.api.mcp.registerServer(cloneDeep(server)))
       }
@@ -154,10 +148,10 @@ const serverHandler = {
     }
   },
   del: (index: number) => {
-    node.value.mcpServers.splice(index, 1)
+    topic.value.mcpServers.splice(index, 1)
   },
 }
-watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
+watch(topic, serverHandler.loadMCP, { immediate: true })
 </script>
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
@@ -167,7 +161,7 @@ watch(() => props.modelValue, serverHandler.loadMCP, { immediate: true })
     </div>
     <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
-        <div v-for="(server, index) in node.mcpServers" :key="server.id">
+        <div v-for="(server, index) in topic.mcpServers" :key="server.id">
           <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
             <template #icon>
               <Switch

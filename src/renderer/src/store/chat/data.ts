@@ -2,23 +2,21 @@ import { ChatMessage, ChatTopic, ChatTopicTree, SettingKeys, Settings } from "@r
 import { db } from "@renderer/usable/useDatabase"
 import PQueue from "p-queue"
 import { Reactive } from "vue"
-import { chatTopicDefault, chatMessageDefault } from "./default"
+import { chatMessageDefault, chatTopicDefault } from "./default"
 import useSettingsStore from "@renderer/store/settings"
 
 export const useData = (
   topicList: Reactive<Array<ChatTopicTree>>,
   chatMessage: Reactive<Record<string, ChatMessage>>,
-  currentTopic: Ref<ChatTopicTree | undefined>,
-  currentMessage: Ref<ChatMessage | undefined>,
   currentNodeKey: Ref<string>
 ) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const mqueue = markRaw(new PQueue({ concurrency: 1 }))
   const settingsStore = useSettingsStore()
-  function topicToTree(topic: ChatTopic): ChatTopicTree {
+  const topicToTree = (topic: ChatTopic): ChatTopicTree => {
     return { id: topic.id, node: topic, children: [] }
   }
-  function assembleTopicTree(data: ChatTopic[], cb: (item: ChatTopicTree) => void): ChatTopicTree[] {
+  const assembleTopicTree = (data: ChatTopic[], cb: (item: ChatTopicTree) => void): ChatTopicTree[] => {
     const res: ChatTopicTree[] = []
     const maps: Record<string, ChatTopicTree> = {}
     data.forEach(item => {
@@ -47,12 +45,20 @@ export const useData = (
   async function addChatMessage(data: ChatMessage) {
     return db.chatMessage.add(toRaw(data))
   }
+  async function createNewMessage() {
+    const msg = chatMessageDefault()
+    await addChatMessage(msg)
+    return msg
+  }
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
   const updateChatMessage = async (data: ChatMessage) => mqueue.add(() => db.chatMessage.update(data.id, toRaw(data)))
-  async function findChatMessage(id: string) {
-    const res = await db.chatMessage.get(id)
+  /**
+   * @description 查找对应的聊天消息
+   */
+  async function getChatMessage(messageId: string) {
+    const res = await db.chatMessage.get(messageId)
     if (res) {
       res.data.forEach(item => {
         item.finish = true
@@ -60,6 +66,9 @@ export const useData = (
       })
     }
     return res
+  }
+  async function getTopic(topicId: string) {
+    return db.chatTopic.get(topicId)
   }
   /**
    * @description 删除对应的聊天组和聊天消息
@@ -102,24 +111,6 @@ export const useData = (
       topicList.push(
         ...assembleTopicTree(data, async item => {
           item.node.requestCount = 0
-          if (item.id === currentNodeKey.value) {
-            currentTopic.value = item
-            let msg: ChatMessage | undefined = undefined
-            if (item.node.chatMessageId) {
-              msg = await db.chatMessage.get(item.node.chatMessageId)
-            }
-            if (!msg) {
-              msg = chatMessageDefault()
-              await db.chatMessage.add(msg)
-            }
-            chatMessage[msg.id] = msg
-            currentMessage.value = msg
-            item.node.chatMessageId = msg.id
-            msg.data.forEach(v => {
-              v.finish = true
-              v.status = 200
-            })
-          }
         })
       )
     } catch (error) {
@@ -129,13 +120,13 @@ export const useData = (
   settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
   return {
     fetch,
-    topicToTree,
-    assembleTopicTree,
     updateChatTopic,
     addChatTopic,
+    getTopic,
     addChatMessage,
     updateChatMessage,
-    findChatMessage,
+    getChatMessage,
     delChatTopic,
+    createNewMessage,
   }
 }

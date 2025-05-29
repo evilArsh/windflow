@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ModelMeta } from "@renderer/types"
 import useModelStore from "@renderer/store/model"
-import { storeToRefs } from "pinia"
-import useChatStore from "@renderer/store/chat"
 import { errorToText } from "@shared/error"
 const props = defineProps<{
   providerName: string
@@ -10,8 +8,6 @@ const props = defineProps<{
 }>()
 const { t } = useI18n()
 const modelStore = useModelStore()
-const chatStore = useChatStore()
-const { currentTopic } = storeToRefs(chatStore)
 const svgRef = useTemplateRef("svg")
 const icon = reactive({
   current: "",
@@ -43,7 +39,6 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
 const onModelChange = async (row: ModelMeta) => {
   try {
     await modelStore.api.update(row)
-    chatStore.refreshChatTopicModelIds(currentTopic.value?.node)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

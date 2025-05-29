@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ChatMessageData } from "@renderer/types/chat"
+import { ChatMessageData, ChatTopic } from "@renderer/types/chat"
 import useChatStore from "@renderer/store/chat"
 
-import { storeToRefs } from "pinia"
-defineProps<{
-  data: ChatMessageData
+import { CallBackFn } from "@renderer/lib/shared/types"
+const props = defineProps<{
+  messageItem: ChatMessageData
+  topic: ChatTopic
 }>()
 defineEmits<{
   edit: []
@@ -13,16 +14,25 @@ defineEmits<{
 const { t } = useI18n()
 const chatStore = useChatStore()
 
-const { currentTopic } = storeToRefs(useChatStore())
+const topic = computed(() => props.topic)
+const messageItem = computed(() => props.messageItem)
+
+function terminate(done: CallBackFn) {
+  chatStore.terminate(topic.value, messageItem.value.id)
+  done()
+}
+function restart() {
+  chatStore.restart(topic.value, messageItem.value.id)
+}
 </script>
 <template>
   <div class="flex gap1rem py1rem">
     <div class="flex gap0.5rem items-center">
-      <el-tooltip v-if="data.modelId" :content="t('chat.terminate')" placement="bottom">
+      <el-tooltip v-if="messageItem.modelId" :content="t('chat.terminate')" placement="bottom">
         <Button
-          @click="done => chatStore.terminate(done, currentTopic?.node.id, data.id)"
+          @click="done => terminate(done)"
           size="small"
-          :disabled="!(data.status == 206 || data.status == 100)"
+          :disabled="!(messageItem.status == 206 || messageItem.status == 100)"
           circle
           plain
           text
@@ -30,26 +40,19 @@ const { currentTopic } = storeToRefs(useChatStore())
           <i-solar:stop-circle-bold class="text-1.4rem"></i-solar:stop-circle-bold>
         </Button>
       </el-tooltip>
-      <el-tooltip v-if="data.modelId" :content="t('chat.regenerate')" placement="bottom">
-        <el-button
-          @click="chatStore.restart(currentTopic?.node, data.id)"
-          size="small"
-          :disabled="!data.finish"
-          circle
-          plain
-          text
-          type="primary">
+      <el-tooltip v-if="messageItem.modelId" :content="t('chat.regenerate')" placement="bottom">
+        <el-button @click="restart" size="small" :disabled="!messageItem.finish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </el-button>
       </el-tooltip>
       <el-tooltip :content="t('chat.editChat')" placement="bottom">
-        <el-button size="small" :disabled="!data.finish" circle plain text type="primary" @click="$emit('edit')">
+        <el-button size="small" :disabled="!messageItem.finish" circle plain text type="primary" @click="$emit('edit')">
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
         </el-button>
       </el-tooltip>
       <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="$emit('delete')">
         <template #reference>
-          <el-button size="small" :disabled="!data.finish" circle plain text type="danger">
+          <el-button size="small" :disabled="!messageItem.finish" circle plain text type="danger">
             <i-solar:trash-bin-trash-outline class="text-1.4rem"></i-solar:trash-bin-trash-outline>
           </el-button>
         </template>

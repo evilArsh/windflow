@@ -1,14 +1,21 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
+import useChatStore from "@renderer/store/chat"
+import { errorToText } from "@shared/error"
+import { cloneDeep } from "lodash-es"
+import { useThrottleFn } from "@vueuse/core"
+const chatStore = useChatStore()
+
 const props = defineProps<{
-  modelValue: ChatTopic
+  topic: ChatTopic
 }>()
-const emit = defineEmits<{
-  "update:modelValue": [ChatTopic]
-}>()
-const data = computed<ChatTopic>({
-  get: () => props.modelValue,
-  set: val => emit("update:modelValue", val),
+const topic = computed<ChatTopic>(() => props.topic)
+const onPromptChange = useThrottleFn(async () => {
+  try {
+    await chatStore.api.updateChatTopic(cloneDeep(topic.value))
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+  }
 })
 </script>
 <template>
@@ -21,8 +28,9 @@ const data = computed<ChatTopic>({
     </ContentBox>
     <el-input
       type="textarea"
-      v-model="data.prompt"
+      v-model="topic.prompt"
       resize="vertical"
+      @input="onPromptChange"
       :autosize="{ minRows: 5, maxRows: 15 }"></el-input>
   </div>
 </template>

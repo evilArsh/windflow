@@ -5,16 +5,12 @@ import MCP from "./components/mcp.vue"
 import Setting from "./components/setting/index.vue"
 import Prompt from "./components/prompt.vue"
 const props = defineProps<{
-  modelValue: ChatTopic
+  topic: ChatTopic
 }>()
 const emit = defineEmits<{
   resizeChange: []
-  "update:modelValue": [ChatTopic]
 }>()
-const data = computed<ChatTopic>({
-  get: () => props.modelValue,
-  set: val => emit("update:modelValue", val),
-})
+const topic = computed<ChatTopic>(() => props.topic)
 const { t } = useI18n()
 const rightNavRef = useTemplateRef("rightNav")
 const resizeStyle = ref<CSSProperties>({
@@ -28,14 +24,14 @@ const tabs = reactive({
   <div ref="rightNav" :style="resizeStyle" class="right-panel">
     <Resize v-model="resizeStyle" @after-scale="emit('resizeChange')" size="8px" direction="l" :target="rightNavRef" />
     <div class="flex flex-col flex-1">
-      <Prompt v-model="data"></Prompt>
+      <Prompt :topic></Prompt>
       <el-divider class="my1.5rem!"></el-divider>
       <el-tabs class="flex-1 overflow-hidden" type="border-card" v-model="tabs.active">
         <el-tab-pane class="max-h-100% overflow-hidden flex" name="mcp" :label="t('chat.rightPanel.mcp')">
-          <MCP v-model="data"></MCP>
+          <MCP :topic></MCP>
         </el-tab-pane>
         <el-tab-pane class="max-h-100% overflow-hidden flex" name="settings" :label="t('chat.rightPanel.settings')">
-          <Setting v-model="data"></Setting>
+          <Setting :topic></Setting>
         </el-tab-pane>
       </el-tabs>
     </div>

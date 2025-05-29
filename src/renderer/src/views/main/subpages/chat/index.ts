@@ -1,59 +1,15 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
 import type Node from "element-plus/es/components/tree/src/model/node"
-import { ChatTopic, ChatTopicTree } from "@renderer/types"
+import { ChatMessage, ChatTopicTree } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
 import type { TreeInstance, TreeNodeData } from "element-plus"
-import { cloneDeep } from "lodash-es"
 import useSettingsStore from "@renderer/store/settings"
-import { chatMessageDefault } from "@renderer/store/chat/default"
-import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { errorToText } from "@shared/error"
 import { useThrottleFn } from "@vueuse/core"
 
-function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
-  return {
-    id: uniqueId(),
-    label,
-    parentId,
-    icon: getDefaultIcon(),
-    content: "",
-    modelIds: cloneDeep(modelIds),
-    prompt: "you are a helpful assistant",
-    chatMessageId: "",
-    createAt: Date.now(),
-    requestCount: 0,
-    mcpServers: [],
-  }
-}
-function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
-  return cloneDeep({
-    ...topic,
-    id: uniqueId(),
-    label,
-    parentId,
-    chatMessageId: "",
-    requestCount: 0,
-  })
-}
-function topicToTree(topic: ChatTopic): ChatTopicTree {
-  return {
-    id: topic.id,
-    node: topic,
-    children: [],
-  }
-}
-function getAllNodes(current: ChatTopicTree): ChatTopic[] {
-  const res: ChatTopic[] = []
-  res.push(current.node)
-  current.children.forEach(item => {
-    res.push(item.node)
-    res.push(...getAllNodes(item))
-  })
-  return res
-}
 export default (
   scaleRef: Readonly<Ref<ScaleInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -63,10 +19,10 @@ export default (
 ) => {
   const chatStore = useChatStore()
   const { t } = useI18n()
-  // const { models } = storeToRefs(modelStore)
   const settingsStore = useSettingsStore()
-  const { topicList, chatMessage, currentTopic, currentMessage, currentNodeKey } = storeToRefs(chatStore)
+  const { topicList, chatMessage, currentNodeKey } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
+  const currentTopic = ref<ChatTopicTree>()
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({
     hideFirst: true,
@@ -104,43 +60,33 @@ export default (
       tree.currentHover = ""
     }),
   })
-  const newMessage = async () => {
-    const msg = chatMessageDefault()
-    await chatStore.api.addChatMessage(msg)
-    return msg
-  }
-  const setCurrentTopic = async (topic?: ChatTopicTree) => {
+
+  async function setCurrentTopic(topic: ChatTopicTree) {
     try {
-      if (topic) {
-        if (currentTopic.value && topic.id === currentTopic.value.id) return
-        if (topic.node.chatMessageId) {
-          const cached = chatMessage.value[topic.node.chatMessageId]
-          if (cached) {
-            currentMessage.value = cached
-          } else {
-            const data = await chatStore.api.findChatMessage(topic.node.chatMessageId)
-            if (data) {
-              chatMessage.value[topic.node.chatMessageId] = data
-              currentMessage.value = chatMessage.value[topic.node.chatMessageId]
-            } else {
-              const msg = await newMessage()
-              chatMessage.value[msg.id] = msg
-              topic.node.chatMessageId = msg.id
-              currentMessage.value = chatMessage.value[msg.id]
-            }
+      if (currentTopic.value && topic.id === currentTopic.value.id) return
+      let message: ChatMessage | undefined
+      if (topic.node.chatMessageId) {
+        message = chatStore.utils.findChatMessage(topic.node.chatMessageId)
+        if (!message) {
+          message = await chatStore.api.getChatMessage(topic.node.chatMessageId)
+          if (!message) {
+            message = await chatStore.api.createNewMessage()
+            topic.node.chatMessageId = message.id
           }
-        } else {
-          const msg = await newMessage()
-          chatMessage.value[msg.id] = msg
-          topic.node.chatMessageId = msg.id
-          currentMessage.value = chatMessage.value[msg.id]
+          chatMessage.value[message.id] = message
         }
-        chatStore.mountContext(topic.node, currentMessage.value)
+      } else {
+        message = await chatStore.api.createNewMessage()
+        chatMessage.value[message.id] = message
+        topic.node.chatMessageId = message.id
       }
+      chatStore.mountContext(topic.node, message)
       currentTopic.value = topic
-      chatStore.refreshChatTopicModelIds(topic?.node)
+      currentNodeKey.value = topic.id
+      chatStore.refreshChatTopicModelIds(topic.node)
     } catch (error) {
       console.log("[setCurrentTopic] error", error)
+      msg({ code: 500, msg: errorToText(error) })
     }
   }
   const menu = {
@@ -156,28 +102,24 @@ export default (
     onDelete: async (done: CallBackFn) => {
       try {
         if (selectedTopic.value) {
-          const nodes = getAllNodes(selectedTopic.value)
-          nodes.forEach(item => {
+          const nodes = chatStore.utils.getAllNodes(selectedTopic.value)
+          for (const item of nodes) {
             // 删除展开的节点key
             tree.removeDefaultExpandedKeys(item.id)
             // 终止请求
-            chatStore.terminateAll(item.id)
+            chatStore.terminateAll(item)
             // 删除消息缓存
             if (item.chatMessageId) {
               delete chatMessage.value[item.chatMessageId]
             }
-          })
+          }
           treeRef.value?.remove(selectedTopic.value)
           const res = await chatStore.api.delChatTopic(nodes)
           if (!res) {
             throw new Error(t("chat.deleteFailed"))
           }
-          // 删除当前打开的消息
-          if (currentMessage.value?.id === selectedTopic.value?.node.chatMessageId) {
-            currentMessage.value = undefined
-          }
           if (selectedTopic.value === currentTopic.value) {
-            setCurrentTopic(undefined)
+            currentTopic.value = undefined
           }
         }
         dlg.clickMask()
@@ -223,11 +165,11 @@ export default (
     try {
       const topic =
         parentId && selectedTopic.value
-          ? cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
-          : newTopic(parentId ?? null, [], t("chat.addChat"))
+          ? chatStore.utils.cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
+          : chatStore.utils.newTopic(parentId ?? null, [], t("chat.addChat"))
       if (parentId) tree.pushDefaultExpandedKeys(parentId)
       await chatStore.api.addChatTopic(topic)
-      const newNode: ChatTopicTree = topicToTree(topic)
+      const newNode: ChatTopicTree = chatStore.utils.topicToTree(topic)
       if (parentId) {
         treeRef.value?.append(newNode, parentId)
       } else {
@@ -293,40 +235,8 @@ export default (
     }),
   })
   watch(
-    currentTopic,
-    useThrottleFn(
-      (val, old) => {
-        if (val) {
-          if (val === old) {
-            chatStore.api.updateChatTopic(val.node)
-          } else {
-            currentNodeKey.value = val.id
-          }
-        }
-      },
-      200,
-      true
-    ),
-    { deep: true }
-  )
-  watch(
-    selectedTopic,
-    useThrottleFn(
-      (val, old) => {
-        if (val && val === old) {
-          chatStore.api.updateChatTopic(val.node)
-        }
-      },
-      200,
-      true
-    ),
-    { deep: true }
-  )
-  watch(
     () => tree.searchKeyword,
-    v => {
-      treeRef.value?.filter(v)
-    }
+    useThrottleFn(v => treeRef.value?.filter(v))
   )
   settingsStore.api.dataWatcher<string[]>("chat.defaultExpandedKeys", toRef(tree, "defaultExpandedKeys"), [])
   return {
@@ -335,7 +245,9 @@ export default (
     panelConfig,
     tree,
     currentNodeKey,
+    currentTopic,
     selectedTopic,
     createNewTopic,
+    setCurrentTopic,
   }
 }

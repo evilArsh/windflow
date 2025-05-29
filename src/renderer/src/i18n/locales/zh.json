@@ -30,6 +30,7 @@
       "arguments": "请求参数",
       "content": "请求结果"
     },
+    "messageCreateFailed": "消息创建失败",
     "messageRecord": "聊天记录",
     "regenerate": "重新生成",
     "rightPanel": {

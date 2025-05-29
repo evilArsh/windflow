@@ -1,22 +1,23 @@
 <script lang="ts" setup>
-import { ChatMessageData } from "@renderer/types"
+import { ChatMessageData, ChatTopic, ChatMessage } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
-import { storeToRefs } from "pinia"
 import { errorToText } from "@shared/error"
+import { CallBackFn } from "@renderer/lib/shared/types"
 const props = defineProps<{
-  data: ChatMessageData
+  message: ChatMessage
+  messageItem: ChatMessageData
+  topic: ChatTopic
 }>()
 const chatStore = useChatStore()
-const { currentTopic, currentMessage } = storeToRefs(chatStore)
 const { t } = useI18n()
-async function undoContext() {
+async function undoContext(done: CallBackFn) {
   try {
-    if (currentMessage.value) {
-      chatStore.deleteSubMessage(currentTopic.value?.node, currentMessage.value, props.data.id)
-      chatStore.api.updateChatMessage(currentMessage.value)
-    }
+    chatStore.deleteSubMessage(props.topic, props.messageItem.id)
+    await chatStore.api.updateChatMessage(props.message)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
+  } finally {
+    done()
   }
 }
 </script>
@@ -25,7 +26,9 @@ async function undoContext() {
     <ContentBox>
       <div class="flex items-center gap.5rem">
         <el-text>{{ t("chat.contextDivider") }}</el-text>
-        <i-mdi:undo-variant class="text-1.4rem" @click="undoContext"></i-mdi:undo-variant>
+        <Button text @click="undoContext">
+          <i-mdi:undo-variant class="text-1.4rem"></i-mdi:undo-variant>
+        </Button>
       </div>
     </ContentBox>
   </el-divider>

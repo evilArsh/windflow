@@ -3,12 +3,12 @@ import { ChatMessageData } from "@renderer/types/chat"
 import Markdown from "@renderer/components/Markdown/index.vue"
 
 const props = defineProps<{
-  data: ChatMessageData
+  messageItem: ChatMessageData
 }>()
 const { t } = useI18n()
 const activeNames = ref<string[]>([])
 const regex = /[\r\n ]+/g
-const content = computed<string>(() => props.data.content.content as string)
+const content = computed<string>(() => props.messageItem.content.content as string)
 const thinking = computed(
   () => !content.value || (content.value.length < 5 && content.value.replace(regex, "").length == 0)
 )
@@ -25,7 +25,7 @@ watch(
 )
 </script>
 <template>
-  <div v-if="data.content.reasoning_content" class="flex flex-col gap-0.5rem">
+  <div v-if="messageItem.content.reasoning_content" class="flex flex-col gap-0.5rem">
     <el-collapse v-model="activeNames" accordion expand-icon-position="left">
       <el-collapse-item name="1">
         <template #title>
@@ -37,7 +37,9 @@ watch(
             </el-text>
           </div>
         </template>
-        <Markdown v-if="data.content.reasoning_content" :content="data.content.reasoning_content"></Markdown>
+        <Markdown
+          v-if="messageItem.content.reasoning_content"
+          :content="messageItem.content.reasoning_content"></Markdown>
       </el-collapse-item>
     </el-collapse>
   </div>

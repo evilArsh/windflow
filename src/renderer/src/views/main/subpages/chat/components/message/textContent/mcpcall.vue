@@ -7,7 +7,7 @@ import { useToolName } from "@shared/mcp"
 import { cloneDeep } from "lodash"
 
 const props = defineProps<{
-  data: ChatMessageData
+  messageItem: ChatMessageData
 }>()
 type CallStatus = LLMToolCall & {
   status: Status
@@ -26,7 +26,7 @@ const toolName = useToolName()
 const { t } = useI18n()
 const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.serverName ?? "")
 watch(
-  () => props.data.content.tool_calls,
+  () => props.messageItem.content.tool_calls,
   v => {
     if (!isArray(v)) {
       callsData.value = {}
@@ -55,7 +55,7 @@ watch(
   { deep: true, immediate: true }
 )
 watch(
-  () => props.data.content.tool_calls_chain,
+  () => props.messageItem.content.tool_calls_chain,
   v => {
     if (!isArray(v)) return
     v.forEach(call => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageData } from "@renderer/types/chat"
+import { ChatMessage, ChatMessageData, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
 import RawTextEdit from "../rawTextEdit/index.vue"
@@ -9,15 +9,18 @@ import Loading from "./loading.vue"
 import MCPCall from "./mcpcall.vue"
 import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
-import { storeToRefs } from "pinia"
 
 const props = defineProps<{
-  data: ChatMessageData
+  message: ChatMessage
+  messageItem: ChatMessageData
+  topic: ChatTopic
   header?: boolean
 }>()
 
 const chatStore = useChatStore()
-const { currentMessage, currentTopic } = storeToRefs(chatStore)
+
+const message = computed(() => props.message)
+const topic = computed(() => props.topic)
 
 const id = useId()
 const rawDlg = useTemplateRef("rawDlg")
@@ -26,7 +29,7 @@ const rawTextDlg = reactive({
   onChange: markRaw((value: string) => {
     if (rawTextDlg.data) {
       rawTextDlg.data.content.content = value
-      currentMessage.value && chatStore.api.updateChatMessage(currentMessage.value)
+      chatStore.api.updateChatMessage(message.value)
     }
   }),
   edit: markRaw((msg: ChatMessageData) => {
@@ -34,33 +37,38 @@ const rawTextDlg = reactive({
     rawDlg.value?.open()
   }),
   del: markRaw((msg: ChatMessageData) => {
-    if (currentMessage.value) {
-      chatStore.deleteSubMessage(currentTopic.value?.node, currentMessage.value, msg.id)
-      chatStore.api.updateChatMessage(currentMessage.value)
+    if (message.value) {
+      chatStore.deleteSubMessage(topic.value, msg.id)
+      chatStore.api.updateChatMessage(message.value)
     }
   }),
 })
-const isAssistant = computed(() => !!props.data.modelId)
+const isAssistant = computed(() => !!props.messageItem.modelId)
 const isPartial = computed(() => {
-  return props.data.status < 200 || props.data.status == 206
+  return props.messageItem.status < 200 || props.messageItem.status == 206
 })
 </script>
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: !isAssistant }" :reverse="!isAssistant" :id>
     <template v-if="header" #header>
       <Affix :offset="40" :target="`#${id}`">
-        <Title :data>
-          <Handler :data @delete="rawTextDlg.del(data)" @edit="rawTextDlg.edit(data)"></Handler>
+        <Title :message-item>
+          <Handler
+            :topic
+            :message
+            :message-item
+            @delete="rawTextDlg.del(messageItem)"
+            @edit="rawTextDlg.edit(messageItem)"></Handler>
         </Title>
       </Affix>
     </template>
     <div class="chat-item-content" :class="{ reverse: !isAssistant }">
-      <Loading v-if="isAssistant" :data></Loading>
-      <MCPCall v-if="isAssistant" :data></MCPCall>
-      <Markdown v-if="isAssistant" :content="data.content.content" />
+      <Loading v-if="isAssistant" :message-item></Loading>
+      <MCPCall v-if="isAssistant" :message-item :topic></MCPCall>
+      <Markdown v-if="isAssistant" :content="messageItem.content.content" />
       <i-svg-spinners:pulse-3 v-if="isAssistant && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
       <el-text v-if="!isAssistant" type="primary" class="self-end!">
-        {{ data.content.content }}
+        {{ messageItem.content.content }}
       </el-text>
     </div>
     <RawTextEdit ref="rawDlg" @change="rawTextDlg.onChange" :data="rawTextDlg.data?.content.content"></RawTextEdit>

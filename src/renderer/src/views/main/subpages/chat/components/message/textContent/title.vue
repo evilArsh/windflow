@@ -3,28 +3,32 @@ import { ChatMessageData } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 const props = defineProps<{
-  data: ChatMessageData
+  messageItem: ChatMessageData
 }>()
 const modelsStore = useModelsStore()
 const providerStore = useProviderStore()
-const isAssistant = computed(() => !!props.data.modelId)
+const isAssistant = computed(() => !!props.messageItem.modelId)
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse: !isAssistant }">
     <ContentBox class="w3.5rem h3.5rem" background>
       <Svg
-        :src="providerStore.getProviderLogo(data.modelId ? modelsStore.find(data.modelId)?.providerName : 'user')"
+        :src="
+          providerStore.getProviderLogo(
+            messageItem.modelId ? modelsStore.find(messageItem.modelId)?.providerName : 'user'
+          )
+        "
         class="flex-1"></Svg>
     </ContentBox>
     <div class="chat-item-title" :class="{ reverse: !isAssistant }">
       <div v-if="isAssistant" class="flex items-center gap-0.25rem">
         <el-text class="name">
-          {{ modelsStore.find(data.modelId)?.providerName }}
+          {{ modelsStore.find(messageItem.modelId)?.providerName }}
         </el-text>
         <el-text type="danger">|</el-text>
-        <el-text type="primary">{{ modelsStore.find(data.modelId)?.modelName }}</el-text>
+        <el-text type="primary">{{ modelsStore.find(messageItem.modelId)?.modelName }}</el-text>
       </div>
-      <el-text size="small" class="time">{{ data.time }}</el-text>
+      <el-text size="small" class="time">{{ messageItem.time }}</el-text>
     </div>
     <el-divider direction="vertical" border-style="dashed" />
     <slot></slot>
@@ -34,13 +38,13 @@ const isAssistant = computed(() => !!props.data.modelId)
         <template #icon>
           <i-material-symbols:arrow-upward-alt class="text-1.2rem"></i-material-symbols:arrow-upward-alt>
         </template>
-        <el-text size="small">{{ toNumber(data.promptTokens) }}</el-text>
+        <el-text size="small">{{ toNumber(messageItem.promptTokens) }}</el-text>
       </ContentBox>
       <ContentBox>
         <template #icon>
           <i-material-symbols:arrow-downward-alt class="text-1.2rem"></i-material-symbols:arrow-downward-alt>
         </template>
-        <el-text size="small">{{ toNumber(data.completionTokens) }}</el-text>
+        <el-text size="small">{{ toNumber(messageItem.completionTokens) }}</el-text>
       </ContentBox>
     </div>
   </div>

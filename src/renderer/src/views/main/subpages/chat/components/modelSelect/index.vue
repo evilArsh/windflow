@@ -3,16 +3,13 @@ import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider"
-const props = defineProps<{
-  modelValue: ChatTopic
-}>()
 const emit = defineEmits<{
-  (e: "update:modelValue", value: ChatTopic): void
+  (e: "change", topic: ChatTopic): void
 }>()
-const data = computed<ChatTopic>({
-  get: () => props.modelValue,
-  set: val => emit("update:modelValue", val),
-})
+const props = defineProps<{
+  topic: ChatTopic
+}>()
+const data = computed(() => props.topic)
 const { t } = useI18n()
 const providerStore = useProviderStore()
 const modelStore = useModelStore()
@@ -54,7 +51,10 @@ watchEffect(() => {
       </template>
       <template #default>
         <el-scrollbar max-height="500px">
-          <el-checkbox-group v-model="data.modelIds" class="line-height-unset! text-inherit">
+          <el-checkbox-group
+            v-model="data.modelIds"
+            @change="emit('change', data)"
+            class="line-height-unset! text-inherit">
             <div class="select-wrap">
               <div v-for="(item, provider) in activeModels" :key="provider">
                 <el-card shadow="never" style="--el-card-padding: 1rem">
