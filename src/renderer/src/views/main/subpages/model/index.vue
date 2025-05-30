@@ -10,6 +10,7 @@ import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
 const providerStore = useProviderStore()
 const settingsStore = useSettingsStore()
+const { t } = useI18n()
 const { providerMetas, currentProvider } = storeToRefs(providerStore)
 const useConfigComponent = () => {
   function getComponent(name?: string) {
@@ -41,9 +42,9 @@ settingsStore.api.dataWatcher<string | undefined>(
         <div class="flex flex-col p1rem">
           <div class="my-1.2rem mb-2.4rem">
             <ContentBox normal background>
-              <el-text class="text-2.6rem! font-600">模型</el-text>
+              <el-text class="text-2.6rem! font-600">{{ t("model.title") }}</el-text>
               <template #footer>
-                <el-text type="info">模型和提供商设置</el-text>
+                <el-text type="info">{{ t("model.subTitle") }}</el-text>
               </template>
             </ContentBox>
           </div>
@@ -57,7 +58,7 @@ settingsStore.api.dataWatcher<string | undefined>(
               :default-lock="currentProvider?.name == meta.name"
               still-lock
               :background="false"
-              @click.stop="onCardClick(meta.name)">
+              @click="onCardClick(meta.name)">
               <template #icon><Svg :src="meta.logo" class="text-2rem"></Svg></template>
               <el-text line-clamp="2">{{ meta.alias ?? meta.name }}</el-text>
             </ContentBox>

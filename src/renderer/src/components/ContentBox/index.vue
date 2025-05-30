@@ -8,6 +8,7 @@ const {
   needLock = false,
   stillLock = false,
   background = false,
+  // disabled = false,
 } = defineProps<{
   wrapStyle?: CSSProperties
   mainStyle?: CSSProperties
@@ -28,6 +29,10 @@ const {
    * 是否有背景
    */
   background?: boolean
+  /**
+   * 是否禁用
+   */
+  // disabled?: boolean
 }>()
 const emit = defineEmits<{
   /**
@@ -47,6 +52,7 @@ const handle = {
     emit("lock", active.value)
   },
   click: (e: MouseEvent) => {
+    // if (disabled) return
     handle.toggleLock()
     emit("click", e)
   },
@@ -78,39 +84,49 @@ watch(
   </div>
 </template>
 <style lang="scss" scoped>
-.comp-content-box {
-  --box-shadow-color: rgba(0, 0, 0, 0.1);
-  --box-active-shadow-color: rgba(0, 0, 0, 0.2);
-
-  --box-bg-color: transparent;
-  --box-hover-bg-color: rgba(249, 249, 249, 0.6);
-  --box-active-bg-color: rgba(249, 249, 249, 0.9);
-  &.background {
-    --box-bg-color: transparent;
-    --box-hover-bg-color: rgba(235, 235, 235, 1);
-    --box-active-bg-color: rgba(219, 219, 219, 1);
-  }
-}
-html.dark .comp-content-box {
-  --box-shadow-color: rgba(255, 255, 255, 0.2);
-  --box-active-shadow-color: rgba(255, 255, 255, 0.3);
-
-  --box-bg-color: transparent;
-  --box-hover-bg-color: transparent;
-  --box-active-bg-color: transparent;
-  &.background {
-    --box-hover-bg-color: var(--box-shadow-color);
-    --box-active-bg-color: var(--box-active-shadow-color);
-  }
-}
-
-.comp-content-box.normal {
+.normal {
   --box-shadow-color: transparent;
   --box-active-shadow-color: transparent;
 
   --box-bg-color: transparent;
   --box-hover-bg-color: transparent;
   --box-active-bg-color: transparent;
+}
+html {
+  .comp-content-box {
+    --box-shadow-color: rgba(0, 0, 0, 0.1);
+    --box-active-shadow-color: rgba(0, 0, 0, 0.2);
+
+    --box-bg-color: transparent;
+    --box-hover-bg-color: rgba(249, 249, 249, 0.6);
+    --box-active-bg-color: rgba(249, 249, 249, 0.9);
+    &.background {
+      --box-bg-color: transparent;
+      --box-hover-bg-color: rgba(235, 235, 235, 1);
+      --box-active-bg-color: rgba(219, 219, 219, 1);
+    }
+    &.normal {
+      @extend .normal;
+    }
+  }
+}
+
+html.dark {
+  .comp-content-box {
+    --box-shadow-color: rgba(255, 255, 255, 0.2);
+    --box-active-shadow-color: rgba(255, 255, 255, 0.3);
+
+    --box-bg-color: transparent;
+    --box-hover-bg-color: transparent;
+    --box-active-bg-color: transparent;
+    &.background {
+      --box-hover-bg-color: var(--box-shadow-color);
+      --box-active-bg-color: var(--box-active-shadow-color);
+    }
+    &.normal {
+      @extend .normal;
+    }
+  }
 }
 
 .comp-content-box {

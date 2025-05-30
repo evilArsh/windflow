@@ -152,6 +152,7 @@ export interface MCPListPromptsResponse {
 // -- prompt end ---
 
 // -- resource template start ---
+
 export interface MCPListResourceTemplatesParams {
   cursor?: string
   [x: string]: unknown
@@ -171,5 +172,20 @@ export interface MCPListResourceTemplatesResponse {
 
 // --- mcp Environment start ---
 export interface MCPEnvironment {
-  npmRegistry: string
+  npm: {
+    registry: string
+    mirrors: Array<{ label: string; value: string }>
+  }
+  node: {
+    path: string
+  }
+  python: {
+    path: string
+    uvPath: string
+    uvxPath: string
+  }
+  bun: {
+    path: string
+  }
+  [x: string]: any
 }

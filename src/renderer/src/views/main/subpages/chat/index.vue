@@ -12,7 +12,7 @@ import useMenu from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings"
 import { errorToText } from "@shared/error"
-import { ElLoading } from "element-plus"
+// import { ElLoading } from "element-plus"
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const shortcut = useShortcut()
@@ -34,11 +34,11 @@ shortcut.listen("ctrl+b", res => {
 settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, toggleMenu, true)
 async function init() {
   await nextTick()
-  const loading = ElLoading.service({
-    lock: true,
-    text: "Loading",
-    background: "rgba(0, 0, 0, 0.7)",
-  })
+  // const loading = ElLoading.service({
+  //   lock: true,
+  //   text: "Loading",
+  //   background: "rgba(0, 0, 0, 0.7)",
+  // })
   try {
     if (currentNodeKey.value) {
       const topicTree = treeRef.value?.getCurrentNode()
@@ -49,7 +49,7 @@ async function init() {
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   } finally {
-    loading.close()
+    // loading.close()
   }
 }
 onMounted(() => {

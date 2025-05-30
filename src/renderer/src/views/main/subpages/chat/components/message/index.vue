@@ -18,6 +18,7 @@ const shortcut = useShortcut()
 const topic = computed(() => props.topic)
 const message = computed(() => {
   if (topic.value) {
+    handler.onToBottom()
     return chatStore.utils.findChatMessageByTopic(topic.value)
   }
   return undefined
@@ -31,7 +32,7 @@ shortcut.listen("ctrl+shift+b", res => {
 })
 settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, togglePanel, true)
 const handler = {
-  onMessageSend: () => {
+  onToBottom: () => {
     setTimeout(() => {
       contentLayout.value?.scrollToBottom("instant")
     }, 0)
@@ -71,7 +72,7 @@ const handler = {
         <TextContent v-for="messageItem in message.data" :key="messageItem.id" :topic :message :message-item />
       </div>
       <template v-if="message" #handler>
-        <Handler :topic :message @message-send="handler.onMessageSend" @context-clean="handler.onMessageSend"></Handler>
+        <Handler :topic :message @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>
     </ContentLayout>
     <RightPanel v-show="togglePanel" :topic></RightPanel>

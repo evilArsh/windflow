@@ -53,15 +53,15 @@ const onModelChange = async (row: ModelMeta) => {
           <el-text type="primary">{{ key }}</el-text>
         </template>
         <el-table :data="item" border stripe row-key="id" default-expand-all table-layout="auto">
-          <el-table-column prop="icon" width="100" :label="t('provider.model.icon')">
+          <el-table-column prop="icon" width="80" :label="t('provider.model.icon')">
             <template #default="{ row }: { row: ModelMeta }">
               <el-button @click="icon.onClick($event, row)">
                 <Svg class="text-2.5rem" :src="row.icon"></Svg>
               </el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="modelName" width="500" :label="t('provider.model.name')" />
-          <el-table-column prop="type" width="300" :label="t('provider.model.type')">
+          <el-table-column prop="modelName" width="300" :label="t('provider.model.name')" />
+          <el-table-column prop="type" width="200" :label="t('provider.model.type')">
             <template #default="{ row }: { row: ModelMeta }">
               <div class="flex flex-wrap gap0.5rem">
                 <el-tag v-for="type in row.type" :key="type" type="primary">{{ t(`modelType.${type}`) }}</el-tag>

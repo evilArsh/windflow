@@ -32,15 +32,15 @@ useI18nWatch(() => {
 onMounted(routes.toDefaultPath)
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.McpSubNav">
+  <SubNavLayout :id="SettingKeys.MCPSubNav">
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">
           <div class="my-1.2rem mb-2.4rem">
             <ContentBox normal background>
-              <el-text class="text-2.6rem! font-600">MCP</el-text>
+              <el-text class="text-2.6rem! font-600">{{ t("mcp.title") }}</el-text>
               <template #footer>
-                <el-text type="info">MCP服务配置</el-text>
+                <el-text type="info">{{ t("mcp.subTitle") }}</el-text>
               </template>
             </ContentBox>
           </div>

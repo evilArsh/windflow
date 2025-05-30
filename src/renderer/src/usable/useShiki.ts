@@ -13,6 +13,10 @@ function langPatch(lang: string): string {
       return "wasm"
     case "nasm":
       return "asm"
+    case "c++":
+      return "cpp"
+    case "cxx":
+      return "cpp"
     default:
       return lang
   }
@@ -87,7 +91,6 @@ const highlighterPromise = createHighlighter({
     "rust",
     "c",
     "cpp",
-    "java",
     "kotlin",
     "scala",
     "swift",
@@ -98,9 +101,20 @@ const highlighterPromise = createHighlighter({
     "vb",
     "csharp",
     "fsharp",
-    "markdown",
     "vue",
     "vue-html",
+    "sass",
+    "scss",
+    "less",
+    "jsx",
+    "tsx",
+    "svelte",
+    "dockerfile",
+    "toml",
+    "ini",
+    "diff",
+    "regex",
+    "xml",
   ],
 })
 export function createShiki() {

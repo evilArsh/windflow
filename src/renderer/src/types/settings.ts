@@ -8,7 +8,8 @@ export enum SettingKeys {
   ChatCleanContext = "chat.cleanContext", // 清除聊天上下文
   ChatCleanMessage = "chat.cleanMessage", // 清空聊天信息
   ChatTextToImageConfig = "chat.textToImageConfig", // !文本转图片配置
-  McpSubNav = "mcp.subNav", // mcp子菜单宽度配置
+  MCPSubNav = "mcp.subNav", // mcp子菜单宽度配置
+  MCPEnvironment = "mcp.environment", // mcp环境配置
   ModelSubNav = "model.subNav", // 模型子菜单宽度配置
   ChatCurrentNodeKey = "chat.currentNodeKey", // 当前聊天节点key
   GlobalThemeDark = "global.themeDark", // 全局主题黑色开关

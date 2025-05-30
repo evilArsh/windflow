@@ -43,3 +43,5 @@ export interface MCPService {
     options?: MCPRequestParams
   ) => Promise<BridgeResponse<MCPListResourceTemplatesResponse>>
 }
+
+// export interface EnvService {}

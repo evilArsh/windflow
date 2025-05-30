@@ -79,11 +79,33 @@
     },
     "serverName": "名称",
     "settings": {
-      "npmMirror": "npm镜像"
+      "node": {
+        "npmMirror": {
+          "desc": "选择合适的npm镜像地址，用于加速npx命令的执行",
+          "title": "npm镜像"
+        },
+        "title": "Node环境"
+      },
+      "python": {
+        "title": "Python环境",
+        "uv": {
+          "autoScan": "自动扫描",
+          "desc": "用于执行python包",
+          "manualChoose": "手动选择",
+          "onlineDownload": "官网下载",
+          "title": "uvx命令配置"
+        }
+      }
     },
     "status": "状态",
+    "subTitle": "MCP服务配置",
+    "title": "MCP",
     "type": "类型",
     "url": "url"
+  },
+  "model": {
+    "subTitle": "模型和提供商设置",
+    "title": "模型"
   },
   "modelType": {
     "Chat": "对话",
