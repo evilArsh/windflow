@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import Npm from "./npm.vue"
 import Python from "./python.vue"
+import useEnvStore from "@renderer/store/env"
+const envStore = useEnvStore()
+
+envStore.checkEnv()
 </script>
 <template>
   <ContentLayout>

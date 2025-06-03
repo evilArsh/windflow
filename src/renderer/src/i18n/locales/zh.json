@@ -79,21 +79,32 @@
     },
     "serverName": "名称",
     "settings": {
-      "node": {
+      "js": {
+        "bun": {
+          "desc": "bun命令用于下载并执行npm仓库中的库，作为npx命令的替代",
+          "lack": "本机缺失bun运行环境，请下载",
+          "lackTitle": "bun缺失",
+          "title": "bun命令配置",
+          "version": "本机当前bun版本可用"
+        },
         "npmMirror": {
           "desc": "选择合适的npm镜像地址，用于加速npx命令的执行",
           "title": "npm镜像"
         },
-        "title": "Node环境"
+        "test": "测试命令",
+        "title": "Js环境"
       },
       "python": {
         "title": "Python环境",
         "uv": {
-          "autoScan": "自动扫描",
           "desc": "用于执行python包",
+          "lack": "本机缺失uv运行环境，请下载",
+          "lackTitle": "uv缺失",
           "manualChoose": "手动选择",
           "onlineDownload": "官网下载",
-          "title": "uvx命令配置"
+          "test": "测试命令",
+          "title": "uv命令配置",
+          "version": "本机当前uv版本可用"
         }
       }
     },

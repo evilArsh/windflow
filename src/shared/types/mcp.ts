@@ -169,23 +169,3 @@ export interface MCPListResourceTemplatesResponse {
 // -- resource template end ---
 
 // --- mcp call result end ---
-
-// --- mcp Environment start ---
-export interface MCPEnvironment {
-  npm: {
-    registry: string
-    mirrors: Array<{ label: string; value: string }>
-  }
-  node: {
-    path: string
-  }
-  python: {
-    path: string
-    uvPath: string
-    uvxPath: string
-  }
-  bun: {
-    path: string
-  }
-  [x: string]: any
-}

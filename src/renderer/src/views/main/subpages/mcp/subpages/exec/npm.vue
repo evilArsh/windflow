@@ -1,21 +1,20 @@
 <script lang="ts" setup>
-import useMcpStore from "@renderer/store/mcp"
+import useEnvStore from "@renderer/store/env"
 import { storeToRefs } from "pinia"
-const mcp = useMcpStore()
-const { env } = storeToRefs(mcp)
-
+const envStore = useEnvStore()
+const { env } = storeToRefs(envStore)
 const { t } = useI18n()
 </script>
 <template>
   <el-card shadow="never">
     <template #header>
-      <el-text type="primary" size="large">{{ t("mcp.settings.node.title") }}</el-text>
+      <el-text type="primary" size="large">{{ t("mcp.settings.js.title") }}</el-text>
     </template>
     <div class="flex flex-col gap-0.5rem">
-      <ContentBox class="p1rem!">
-        <el-text type="primary">{{ t("mcp.settings.node.npmMirror.title") }}</el-text>
+      <ContentBox class="p1rem! gap1rem!">
+        <el-text type="primary">{{ t("mcp.settings.js.npmMirror.title") }}</el-text>
         <template #footer>
-          <ContentBox normal>
+          <ContentBox class="m0! p0!" normal>
             <el-select v-model="env.npm.registry">
               <el-option v-for="item in env.npm.mirrors" :key="item.value" :label="item.value" :value="item.value">
                 <div class="flex items-center">
@@ -27,7 +26,41 @@ const { t } = useI18n()
               </el-option>
             </el-select>
             <template #footer>
-              <el-text size="small">{{ t("mcp.settings.node.npmMirror.desc") }}</el-text>
+              <el-text size="small">{{ t("mcp.settings.js.npmMirror.desc") }}</el-text>
+            </template>
+          </ContentBox>
+        </template>
+      </ContentBox>
+      <ContentBox class="p1rem! gap1rem!">
+        <div class="flex gap-1rem">
+          <el-text type="primary">{{ t("mcp.settings.js.bun.title") }}</el-text>
+          <el-tooltip :content="t(`mcp.settings.js.test`)" placement="top">
+            <Button class="m0!" size="small" text @click="done => envStore.checkEnv(done)">
+              <i-ic:baseline-terminal class="text-1.4rem"></i-ic:baseline-terminal>
+            </Button>
+          </el-tooltip>
+        </div>
+        <template #footer>
+          <ContentBox class="m0! p0!" normal>
+            <div class="flex flex-col gap1rem flex-1">
+              <el-input v-model="env.bun.path"></el-input>
+              <el-alert
+                v-if="env.bun.status"
+                :closable="false"
+                :title="env.bun.version"
+                type="primary"
+                :description="t('mcp.settings.js.bun.version')"
+                show-icon />
+              <el-alert
+                v-else
+                :closable="false"
+                :title="t('mcp.settings.js.bun.lackTitle')"
+                type="warning"
+                :description="t('mcp.settings.js.bun.lack')"
+                show-icon />
+            </div>
+            <template #footer>
+              <el-text size="small">{{ t("mcp.settings.js.bun.desc") }}</el-text>
             </template>
           </ContentBox>
         </template>

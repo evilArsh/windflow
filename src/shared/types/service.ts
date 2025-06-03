@@ -1,4 +1,5 @@
 import { BridgeResponse, BridgeStatusResponse } from "./bridge"
+import { ToolEnvironment, ToolEnvTestResult } from "./env"
 import {
   MCPCallToolResult,
   MCPListPromptsRequestParams,
@@ -21,6 +22,7 @@ export const IpcChannel = {
   McpListResources: "mcp.listResources",
   McpListPrompts: "mcp.listPrompts",
   McpListResourceTemplates: "mcp.listResourceTemplates",
+  EnvTestEnv: "env.testEnv",
 }
 export interface MCPService {
   registerServer: (params: MCPServerParam) => Promise<BridgeStatusResponse>
@@ -44,4 +46,6 @@ export interface MCPService {
   ) => Promise<BridgeResponse<MCPListResourceTemplatesResponse>>
 }
 
-// export interface EnvService {}
+export interface EnvService {
+  testEnv: (args: ToolEnvironment) => Promise<BridgeResponse<ToolEnvTestResult>>
+}

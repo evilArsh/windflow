@@ -1,7 +1,7 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
 import type Node from "element-plus/es/components/tree/src/model/node"
-import { ChatMessage, ChatTopicTree } from "@renderer/types"
+import { ChatMessage, ChatTopicTree, SettingKeys } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
@@ -238,7 +238,7 @@ export default (
     () => tree.searchKeyword,
     useThrottleFn(v => treeRef.value?.filter(v))
   )
-  settingsStore.api.dataWatcher<string[]>("chat.defaultExpandedKeys", toRef(tree, "defaultExpandedKeys"), [])
+  settingsStore.api.dataWatcher<string[]>(SettingKeys.ChatDefaultExpandedKeys, toRef(tree, "defaultExpandedKeys"), [])
   return {
     menu,
     dlg,

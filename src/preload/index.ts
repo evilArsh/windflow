@@ -14,6 +14,7 @@ for (const key of Object.values(IpcChannel)) {
   let root = api
   let prevRoot: Record<string, unknown> | null = null
   let prevProp = ""
+  // 迭代添加Record键值对
   while (true) {
     const prop = path.shift()
     if (prop) {

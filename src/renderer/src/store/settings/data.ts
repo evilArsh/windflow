@@ -57,8 +57,6 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
         wrapData.value = configData.value.value
       } else if (isReactive(wrapData)) {
         Object.assign(wrapData, configData.value.value)
-      } else {
-        // TODO
       }
       callBack?.(configData.value.value)
       updateValue(id, configData.value)

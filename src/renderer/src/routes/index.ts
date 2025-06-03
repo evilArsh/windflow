@@ -27,9 +27,4 @@ const router = createRouter({
     { path: "/:pathMatch(.*)*", redirect: defaultPath },
   ],
 })
-
-router.beforeEach(async (_to, _from, next) => {
-  next()
-})
-router.afterEach(async () => {})
 export default router

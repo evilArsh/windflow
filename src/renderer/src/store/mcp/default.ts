@@ -1,4 +1,4 @@
-import { MCPEnvironment, MCPServerParam } from "@shared/types/mcp"
+import { MCPServerParam } from "@shared/types/mcp"
 
 export const mcpStdioDefault = (): MCPServerParam[] => {
   return [
@@ -26,24 +26,3 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
     },
   ]
 }
-
-export const defaultEnv = (): MCPEnvironment => ({
-  npm: {
-    registry: "https://registry.npmmirror.com",
-    mirrors: [
-      { label: "taobao", value: "https://registry.npmmirror.com" },
-      { label: "npm", value: "https://registry.npmjs.org" },
-    ],
-  },
-  node: {
-    path: "node",
-  },
-  python: {
-    path: "python",
-    uvPath: "uv",
-    uvxPath: "uvx",
-  },
-  bun: {
-    path: "bun",
-  },
-})
