@@ -1,4 +1,5 @@
-import "./modules/execa/index"
+import "./modules/mcp/index"
+// import "./modules/execa/index"
 if (import.meta.hot) {
   import.meta.hot.accept(() => {
     // console.log("[accept]")

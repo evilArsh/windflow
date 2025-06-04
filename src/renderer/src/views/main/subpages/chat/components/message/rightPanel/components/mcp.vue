@@ -37,12 +37,12 @@ const formHandler = {
   onServerToggle: async (data: MCPServerParam): Promise<boolean> => {
     try {
       if (data.disabled) {
-        const res = await window.api.mcp.toggleServer(data.id, {
+        const res = await window.api.mcp.toggleServer(props.topic.id, data.id, {
           command: "start",
         })
         if (code5xx(res.code)) throw new Error(res.msg)
         if (res.code == 404) {
-          const res = await window.api.mcp.registerServer(cloneDeep(data))
+          const res = await window.api.mcp.registerServer(props.topic.id, cloneDeep(data))
           if (code5xx(res.code)) throw new Error(res.msg)
         }
       }

@@ -27,8 +27,9 @@ export const IpcChannel = {
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => void
-  registerServer: (params: MCPServerParam) => Promise<BridgeStatusResponse>
-  toggleServer: (id: string, command: MCPClientHandleCommand) => Promise<BridgeStatusResponse>
+  getReference: (id: string) => Promise<BridgeResponse<Array<string>>>
+  registerServer: (topicId: string, params: MCPServerParam) => Promise<BridgeStatusResponse>
+  toggleServer: (topicId: string, id: string, command: MCPClientHandleCommand) => Promise<BridgeStatusResponse>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
   listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (

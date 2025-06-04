@@ -2,11 +2,11 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
-import { MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
+import { MCPServerParam, MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
 import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
 import { errorToText } from "@shared/error"
-import { MCPClientContext } from "./types"
+import { MCPClientContext, MCPClientStatus } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
 
 export function createClient(name: string, version: string) {
@@ -81,4 +81,45 @@ export async function requestWithId<T>(serverId: string, request: () => Promise<
     return { id: serverId, data }
   }
   return { id: serverId, data: req }
+}
+
+export function useMCPContext() {
+  const context = new Map<string, MCPClientContext>()
+  function addContextRefCount(topicId: string, contextId: string) {
+    const ctx = context.get(contextId)
+    if (!ctx) return
+    if (!ctx.reference.includes(topicId)) {
+      ctx.reference.push(topicId)
+    }
+  }
+  function getContext(contextId: string) {
+    return context.get(contextId)
+  }
+  function createContext(params: MCPServerParam): MCPClientContext {
+    const ctx = {
+      params,
+      reference: [],
+      status: MCPClientStatus.Disconnected,
+    }
+    context.set(params.id, ctx)
+    return ctx
+  }
+  function removeContext(contextId: string) {
+    const ctx = context.get(contextId)
+    if (ctx) {
+      ctx.client?.close()
+      context.delete(contextId)
+    }
+  }
+  function getReference(contextId: string): Array<string> {
+    return context.get(contextId)?.reference ?? []
+  }
+  return {
+    context,
+    addContextRefCount,
+    getContext,
+    createContext,
+    removeContext,
+    getReference,
+  }
 }
