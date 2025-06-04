@@ -4,6 +4,9 @@ import useProviderStore from "@renderer/store/provider"
 import useModelsStore from "@renderer/store/model"
 import useChatTopicStore from "@renderer/store/chat"
 import useMCPStore from "@renderer/store/mcp"
+import useEnvStore from "@renderer/store/env"
+import { ElNotification } from "element-plus"
+import { errorToText } from "@shared/error"
 const ready = ref(false)
 async function init() {
   try {
@@ -12,9 +15,16 @@ async function init() {
       useModelsStore().api.fetch(),
       useChatTopicStore().api.fetch(),
       useMCPStore().api.fetch(),
+      useEnvStore().api.fetch(),
     ])
   } catch (error) {
-    console.error(`[init] ${(error as Error).message}`)
+    console.error(`[init error]`, error)
+    ElNotification({
+      title: "init error",
+      message: errorToText(error),
+      duration: 5,
+      type: "error",
+    })
   } finally {
     ready.value = true
   }

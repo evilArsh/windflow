@@ -23,8 +23,10 @@ export const IpcChannel = {
   McpListPrompts: "mcp.listPrompts",
   McpListResourceTemplates: "mcp.listResourceTemplates",
   EnvTestEnv: "env.testEnv",
+  FileChooseFilePath: "file.chooseFilePath",
 }
 export interface MCPService {
+  updateEnv: (env: ToolEnvironment) => void
   registerServer: (params: MCPServerParam) => Promise<BridgeStatusResponse>
   toggleServer: (id: string, command: MCPClientHandleCommand) => Promise<BridgeStatusResponse>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
@@ -48,4 +50,8 @@ export interface MCPService {
 
 export interface EnvService {
   testEnv: (args: ToolEnvironment) => Promise<BridgeResponse<ToolEnvTestResult>>
+}
+
+export interface FileService {
+  chooseFilePath: () => Promise<BridgeResponse<string>>
 }

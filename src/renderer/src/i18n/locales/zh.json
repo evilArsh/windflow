@@ -5,6 +5,7 @@
   "btn": {
     "add": "添加",
     "cancel": "取消",
+    "chooseFile": "选择文件",
     "clear": "清空",
     "close": "关闭",
     "confirm": "确定",
@@ -95,6 +96,10 @@
         "title": "Js环境"
       },
       "python": {
+        "mirror": {
+          "desc": "选择合适的python镜像源，加速uv命令的执行",
+          "title": "python镜像源"
+        },
         "title": "Python环境",
         "uv": {
           "desc": "用于执行python包",
@@ -173,5 +178,10 @@
     "model": "模型",
     "prompt": "提示词",
     "title": "标题"
+  },
+  "window": {
+    "api": {
+      "notFound": "该功能只在桌面端被支持"
+    }
   }
 }

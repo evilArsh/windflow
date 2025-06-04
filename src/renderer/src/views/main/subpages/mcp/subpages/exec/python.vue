@@ -1,9 +1,52 @@
 <script lang="ts" setup>
+import { CallBackFn } from "@renderer/lib/shared/types"
 import useEnvStore from "@renderer/store/env"
+import { code2xx } from "@shared/types/bridge"
 import { storeToRefs } from "pinia"
 const envStore = useEnvStore()
 const { env } = storeToRefs(envStore)
 const { t } = useI18n()
+
+const doc = ref(`
+## macOS or Linux
+### curl
+\`\`\`shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+\`\`\`
+### wget
+\`\`\`shell
+wget -qO- https://astral.sh/uv/install.sh | sh
+\`\`\`
+## Windows
+\`\`\`shell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+\`\`\`
+> Changing the [execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7.4#powershell-execution-policies) allows running a script from the internet.
+## Github
+\`\`\`shell
+https://github.com/astral-sh/uv/releases
+\`\`\`
+`)
+
+async function onFileChoose(done: CallBackFn) {
+  try {
+    if (window.api) {
+      const res = await window.api.file.chooseFilePath()
+      if (code2xx(res.code)) {
+        env.value.uv.path = res.data
+        envStore.checkEnv()
+      } else {
+        msg({ code: res.code, msg: res.msg })
+      }
+    } else {
+      msg({ code: 404, msg: t("window.api.notFound") })
+    }
+  } catch (error) {
+    console.log(error)
+  } finally {
+    done()
+  }
+}
 </script>
 <template>
   <el-card shadow="never">
@@ -11,6 +54,26 @@ const { t } = useI18n()
       <el-text type="primary" size="large">{{ t("mcp.settings.python.title") }}</el-text>
     </template>
     <div class="flex flex-col gap-0.5rem">
+      <ContentBox class="p1rem! gap1rem!">
+        <el-text type="primary">{{ t("mcp.settings.python.mirror.title") }}</el-text>
+        <template #footer>
+          <ContentBox class="m0! p0!" normal>
+            <el-select v-model="env.python.registry">
+              <el-option v-for="item in env.python.mirrors" :key="item.value" :label="item.value" :value="item.value">
+                <div class="flex items-center">
+                  <el-tag class="mr-1rem w-8rem" size="small">
+                    {{ item.label }}
+                  </el-tag>
+                  <span>{{ item.value }}</span>
+                </div>
+              </el-option>
+            </el-select>
+            <template #footer>
+              <el-text size="small">{{ t("mcp.settings.python.mirror.desc") }}</el-text>
+            </template>
+          </ContentBox>
+        </template>
+      </ContentBox>
       <ContentBox class="p1rem! gap1rem!">
         <div class="flex gap-1rem">
           <el-text type="primary">{{ t("mcp.settings.python.uv.title") }}</el-text>
@@ -23,9 +86,9 @@ const { t } = useI18n()
         <template #footer>
           <ContentBox class="m0! p0!" normal>
             <div class="flex flex-col gap1rem flex-1">
-              <el-input v-model="env.uv.path"></el-input>
+              <el-input v-model="env.uv.path" @change="_ => envStore.checkEnv()"></el-input>
               <el-alert
-                v-if="!env.uv.status"
+                v-if="env.uv.status"
                 :closable="false"
                 :title="env.uv.version"
                 type="primary"
@@ -38,16 +101,18 @@ const { t } = useI18n()
                 type="warning"
                 show-icon>
                 <ContentBox normal>
-                  <div class="flex fle-col gap-1rem">
-                    <el-card shadow="never">
+                  <div class="flex flex-col gap-1rem flex-1">
+                    <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
                       <template #header>
                         <el-text>{{ t("mcp.settings.python.uv.manualChoose") }}</el-text>
                       </template>
+                      <Button size="small" @click="onFileChoose">{{ t("btn.chooseFile") }}</Button>
                     </el-card>
-                    <el-card shadow="never">
+                    <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
                       <template #header>
                         <el-text>{{ t("mcp.settings.python.uv.onlineDownload") }}</el-text>
                       </template>
+                      <Markdown :content="doc"></Markdown>
                     </el-card>
                   </div>
                   <template #footer>
@@ -65,4 +130,8 @@ const { t } = useI18n()
     </div>
   </el-card>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-alert__content) {
+  flex: 1;
+}
+</style>

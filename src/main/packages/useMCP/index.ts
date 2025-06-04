@@ -35,9 +35,13 @@ import {
 import { MCPClientContext } from "./types"
 import { useToolCall, useToolName } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
+import { ToolEnvironment } from "@shared/types/env"
+import { defaultEnv } from "@shared/env"
+import { cloneDeep } from "lodash"
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
 export default (): MCPService & ServiceCore => {
+  let env: ToolEnvironment = defaultEnv()
   const context = new Map<string, MCPClientContext>()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolName = useToolName()
@@ -67,7 +71,7 @@ export default (): MCPService & ServiceCore => {
       }
       const client = createClient(name, version)
       if (isStdioServerParams(ctx.params)) {
-        ctx.transport = await createStdioTransport(client, ctx.params)
+        ctx.transport = await createStdioTransport(client, env, ctx.params)
         log.debug("[MCP register stdio server]", `[${serverName}]created`)
       } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
@@ -277,6 +281,9 @@ export default (): MCPService & ServiceCore => {
       return responseData(500, errorText, { content: { type: "text", text: errorText } })
     }
   }
+  function updateEnv(newEnv: ToolEnvironment) {
+    env = cloneDeep(newEnv)
+  }
   function registerIpc() {
     ipcMain.handle(IpcChannel.McpRegisterServer, async (_, params: MCPStdioServerParam) => {
       return registerServer(params)
@@ -316,6 +323,7 @@ export default (): MCPService & ServiceCore => {
     context.clear()
   }
   return {
+    updateEnv,
     registerServer,
     toggleServer,
     listTools,

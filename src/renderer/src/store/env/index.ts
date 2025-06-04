@@ -1,12 +1,11 @@
 import { ToolEnvironment } from "@shared/types/env"
-import useSettingsStore from "@renderer/store/settings"
 import { defineStore } from "pinia"
-import { defaultEnv } from "./default"
-import { SettingKeys } from "@renderer/types"
 import { CallBackFn } from "@renderer/lib/shared/types"
+import { useData } from "./data"
+import { defaultEnv } from "@shared/env"
 export default defineStore("env", () => {
-  const settingsStore = useSettingsStore()
   const env = reactive<ToolEnvironment>(defaultEnv())
+  const api = useData(env)
 
   async function checkEnv(cb?: CallBackFn) {
     if (window.api.mcp) {
@@ -19,9 +18,9 @@ export default defineStore("env", () => {
     cb?.()
   }
 
-  settingsStore.api.dataWatcher<ToolEnvironment>(SettingKeys.ToolEnvironment, env, defaultEnv())
   return {
     env,
     checkEnv,
+    api,
   }
 })

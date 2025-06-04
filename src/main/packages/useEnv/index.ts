@@ -3,8 +3,9 @@ import { BridgeResponse, BridgeStatusResponse } from "@shared/types/bridge"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { EnvService, IpcChannel } from "@shared/types/service"
 import { ipcMain } from "electron"
-import { execCommand } from "./exec"
+import { execCommand, resolvePath } from "./exec"
 import { errorToText } from "@shared/error"
+// import log from "electron-log"
 export default (): EnvService & ServiceCore => {
   async function testEnv(args: ToolEnvironment): Promise<BridgeResponse<ToolEnvTestResult>> {
     const data: BridgeResponse<ToolEnvTestResult> = {
@@ -17,9 +18,10 @@ export default (): EnvService & ServiceCore => {
     }
     try {
       const { uv, bun } = args
+      // log.debug("[testEnv]", args)
       const req: Array<Promise<BridgeStatusResponse>> = [
-        execCommand(data.data.uv, `${uv.path} --version`),
-        execCommand(data.data.bun, `${bun.path} --version`),
+        execCommand(data.data.uv, resolvePath(uv.path), "--version"),
+        execCommand(data.data.bun, resolvePath(bun.path), "--version"),
       ]
       await Promise.all(req)
       return data

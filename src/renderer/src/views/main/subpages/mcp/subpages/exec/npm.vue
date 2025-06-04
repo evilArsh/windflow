@@ -18,7 +18,7 @@ const { t } = useI18n()
             <el-select v-model="env.npm.registry">
               <el-option v-for="item in env.npm.mirrors" :key="item.value" :label="item.value" :value="item.value">
                 <div class="flex items-center">
-                  <el-tag class="mr-1rem w-5rem" size="small">
+                  <el-tag class="mr-1rem w-8rem" size="small">
                     {{ item.label }}
                   </el-tag>
                   <span>{{ item.value }}</span>
@@ -43,7 +43,7 @@ const { t } = useI18n()
         <template #footer>
           <ContentBox class="m0! p0!" normal>
             <div class="flex flex-col gap1rem flex-1">
-              <el-input v-model="env.bun.path"></el-input>
+              <el-input v-model="env.bun.path" @change="_ => envStore.checkEnv()"></el-input>
               <el-alert
                 v-if="env.bun.status"
                 :closable="false"

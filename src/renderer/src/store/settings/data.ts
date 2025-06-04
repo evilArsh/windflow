@@ -2,8 +2,10 @@ import { db } from "@renderer/usable/useDatabase"
 import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
+import PQueue from "p-queue"
 
 export const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
+  const queue = markRaw(new PQueue({ concurrency: 1 }))
   /**
    * Get a setting value
    * @param id - The name of the setting
@@ -28,10 +30,8 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
     }
   }
 
-  const update = useThrottleFn(
-    async (data: Settings<SettingsValue>) => db.settings.update(data.id, toRaw(data)),
-    300,
-    true
+  const update = useThrottleFn(async (data: Settings<SettingsValue>) =>
+    queue.add(() => db.settings.update(data.id, toRaw(data)))
   )
   const updateValue = (id: string, val: Settings<SettingsValue>) => {
     const data = settings[id]
@@ -51,16 +51,6 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
     callBack?: (data: T) => void
   ) {
     const configData = ref<Settings<T>>()
-    get(id, defaultValue).then(res => {
-      configData.value = res
-      if (isRef(wrapData)) {
-        wrapData.value = configData.value.value
-      } else if (isReactive(wrapData)) {
-        Object.assign(wrapData, configData.value.value)
-      }
-      callBack?.(configData.value.value)
-      updateValue(id, configData.value)
-    })
     const watcher = watch(
       wrapData,
       async val => {
@@ -71,8 +61,16 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
           updateValue(id, configData.value)
         }
       },
-      { deep: true }
+      { deep: true, immediate: true }
     )
+    get(id, defaultValue).then(res => {
+      configData.value = res
+      if (isRef(wrapData)) {
+        wrapData.value = configData.value.value
+      } else if (isReactive(wrapData)) {
+        Object.assign(wrapData, configData.value.value)
+      }
+    })
     onBeforeUnmount(() => {
       watcher.stop()
     })

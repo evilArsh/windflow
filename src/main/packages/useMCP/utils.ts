@@ -7,13 +7,16 @@ import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
 import { errorToText } from "@shared/error"
 import { MCPClientContext } from "./types"
+import { ToolEnvironment } from "@shared/types/env"
 
 export function createClient(name: string, version: string) {
   return new Client({ name, version })
 }
-export async function createStdioTransport(client: Client, params: MCPStdioServerParam) {
+export async function createStdioTransport(client: Client, env: ToolEnvironment, params: MCPStdioServerParam) {
   try {
-    const transport = new StdioClientTransport(modifyPlatformCMD(params).params)
+    const patchedParams = modifyPlatformCMD(env, params)
+    log.debug("[MCP createStdioTransport]", patchedParams)
+    const transport = new StdioClientTransport(patchedParams.params)
     transport.onerror = error => {
       log.error("[MCP stdio transport]", errorToText(error))
     }

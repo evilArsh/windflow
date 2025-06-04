@@ -3,6 +3,10 @@ export interface ToolEnvironment {
     registry: string
     mirrors: Array<{ label: string; value: string }>
   }
+  python: {
+    registry: string
+    mirrors: Array<{ label: string; value: string }>
+  }
   uv: {
     path: string
     status?: boolean
