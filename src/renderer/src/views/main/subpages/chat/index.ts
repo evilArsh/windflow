@@ -104,6 +104,11 @@ export default (
         if (selectedTopic.value) {
           const nodes = chatStore.utils.getAllNodes(selectedTopic.value)
           for (const item of nodes) {
+            if (window.api) {
+              item.mcpServers.forEach(server => {
+                window.api.mcp.toggleServer(item.id, server.id, { command: "stop" })
+              })
+            }
             // 删除展开的节点key
             tree.removeDefaultExpandedKeys(item.id)
             // 终止请求

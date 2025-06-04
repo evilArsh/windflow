@@ -79,6 +79,11 @@
       "servers": "服务列表"
     },
     "serverName": "名称",
+    "service": {
+      "connecting": "服务[{{service}}]启动中,请稍后重试",
+      "deleteConfirm": "要重启吗?使用该服务的聊天将会被影响?已使用个数:{{count}}",
+      "disconnected": "服务[{{service}}]启动失败:{{message}}"
+    },
     "settings": {
       "js": {
         "bun": {
@@ -140,6 +145,13 @@
     "mcp": "MCP",
     "modelSetting": "模型"
   },
+  "notify": {
+    "title": {
+      "error": "错误",
+      "info": "提示",
+      "warning": "警告"
+    }
+  },
   "provider": {
     "apiKey": "API Key",
     "apiUrl": "API 地址",
@@ -185,3 +197,4 @@
     }
   }
 }
+

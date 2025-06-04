@@ -15,7 +15,7 @@ export function createClient(name: string, version: string) {
 export async function createStdioTransport(client: Client, env: ToolEnvironment, params: MCPStdioServerParam) {
   try {
     const patchedParams = modifyPlatformCMD(env, params)
-    log.debug("[MCP createStdioTransport]", patchedParams)
+    // log.debug("[MCP createStdioTransport]", patchedParams)
     const transport = new StdioClientTransport(patchedParams.params)
     transport.onerror = error => {
       log.error("[MCP stdio transport]", errorToText(error))
@@ -104,15 +104,21 @@ export function useMCPContext() {
     context.set(params.id, ctx)
     return ctx
   }
-  function removeContext(contextId: string) {
+  async function removeContext(contextId: string) {
     const ctx = context.get(contextId)
     if (ctx) {
-      ctx.client?.close()
+      await ctx.client?.close()
       context.delete(contextId)
     }
   }
-  function getReference(contextId: string): Array<string> {
+  function getTopicReference(contextId: string): Array<string> {
     return context.get(contextId)?.reference ?? []
+  }
+  function removeReference(id: string, topicId: string) {
+    const ctx = context.get(id)
+    if (ctx) {
+      ctx.reference = ctx.reference.filter(item => item !== topicId)
+    }
   }
   return {
     context,
@@ -120,6 +126,7 @@ export function useMCPContext() {
     getContext,
     createContext,
     removeContext,
-    getReference,
+    getTopicReference,
+    removeReference,
   }
 }

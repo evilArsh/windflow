@@ -22,6 +22,8 @@ export const IpcChannel = {
   McpListResources: "mcp.listResources",
   McpListPrompts: "mcp.listPrompts",
   McpListResourceTemplates: "mcp.listResourceTemplates",
+  McpUpdateEnv: "mcp.updateEnv",
+  McpGetReference: "mcp.getReference",
   EnvTestEnv: "env.testEnv",
   FileChooseFilePath: "file.chooseFilePath",
 }
