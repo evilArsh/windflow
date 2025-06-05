@@ -159,19 +159,19 @@ export interface MCPListPromptsResponse {
 // -- prompt end ---
 
 // -- resource template start ---
-
+export interface MCPResourceTemplatesItem {
+  uriTemplate: string
+  name: string
+  description?: string
+  mimeType?: string
+}
 export interface MCPListResourceTemplatesParams {
   cursor?: string
   [x: string]: unknown
 }
 export interface MCPListResourceTemplatesResponse {
   nextCursor?: string
-  resourceTemplates: Array<{
-    uriTemplate: string
-    name: string
-    description?: string
-    mimeType?: string
-  }>
+  resourceTemplates: Array<MCPResourceTemplatesItem>
 }
 // -- resource template end ---
 

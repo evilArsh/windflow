@@ -86,7 +86,7 @@
       "disabled": "工具已禁用，请先启用",
       "disconnected": "工具[{service}]启动失败:{message}",
       "tabs": {
-        "config": "编辑",
+        "config": "配置",
         "prompt": "提示",
         "resource": "资源",
         "resourceTemplates": "资源模板",

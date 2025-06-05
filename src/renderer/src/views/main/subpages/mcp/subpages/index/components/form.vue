@@ -4,10 +4,12 @@ import Env from "./env.vue"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { cloneDeep } from "lodash-es"
-import { FormRules } from "element-plus"
+import { FormProps, FormRules } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
 const props = defineProps<{
+  hideCloseBtn?: boolean
   data?: MCPServerParam
+  formProps?: Partial<FormProps>
 }>()
 const emit = defineEmits<{
   close: []
@@ -85,7 +87,7 @@ watch(() => props.data, handler.init, { immediate: true })
 </script>
 <template>
   <DialogPanel>
-    <el-form ref="form" :rules="formRules" :model="clonedData" label-width="8rem" class="w-full">
+    <el-form ref="form" :rules="formRules" :model="clonedData" label-width="8rem" class="w-full" v-bind="formProps">
       <el-form-item :label="t('mcp.serverName')" required prop="serverName">
         <el-input v-model="clonedData.serverName"></el-input>
       </el-form-item>
@@ -125,7 +127,7 @@ watch(() => props.data, handler.init, { immediate: true })
     <template #footer>
       <div class="flex justify-end">
         <Button type="primary" @click="handler.save">{{ t("btn.save") }}</Button>
-        <el-button @click="handler.close">{{ t("btn.close") }}</el-button>
+        <el-button v-if="!hideCloseBtn" @click="handler.close">{{ t("btn.close") }}</el-button>
       </div>
     </template>
   </DialogPanel>
