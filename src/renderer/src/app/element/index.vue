@@ -22,7 +22,7 @@ async function init() {
     ElNotification({
       title: "init error",
       message: errorToText(error),
-      duration: 5,
+      duration: 5000,
       type: "error",
     })
   } finally {

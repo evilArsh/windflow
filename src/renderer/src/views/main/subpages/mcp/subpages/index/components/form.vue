@@ -123,7 +123,7 @@ watch(() => props.data, handler.init, { immediate: true })
       </el-form-item>
     </el-form>
     <template #footer>
-      <div class="flex gap1rem justify-end">
+      <div class="flex justify-end">
         <Button type="primary" @click="handler.save">{{ t("btn.save") }}</Button>
         <el-button @click="handler.close">{{ t("btn.close") }}</el-button>
       </div>

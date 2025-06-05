@@ -27,7 +27,7 @@ function restart() {
 </script>
 <template>
   <div class="flex gap1rem py1rem">
-    <div class="flex gap0.5rem items-center">
+    <div class="flex items-center">
       <el-tooltip v-if="messageItem.modelId" :content="t('chat.terminate')" placement="bottom">
         <Button
           @click="done => terminate(done)"

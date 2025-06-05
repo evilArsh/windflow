@@ -80,9 +80,10 @@
     },
     "serverName": "名称",
     "service": {
-      "connecting": "服务[{{service}}]启动中,请稍后重试",
-      "deleteConfirm": "要重启吗?使用该服务的聊天将会被影响?已使用个数:{{count}}",
-      "disconnected": "服务[{{service}}]启动失败:{{message}}"
+      "connecting": "工具[{service}]启动中,请稍后重试",
+      "deleteConfirm": "要重启吗?已使用该工具的聊天个数:{count}",
+      "disabled": "工具已禁用，请先启用",
+      "disconnected": "工具[{service}]启动失败:{message}"
     },
     "settings": {
       "js": {
@@ -197,4 +198,3 @@
     }
   }
 }
-

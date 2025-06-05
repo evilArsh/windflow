@@ -48,7 +48,7 @@ defineExpose({
       </el-scrollbar>
     </div>
     <template #footer>
-      <div class="flex gap1rem justify-end">
+      <div class="flex justify-end">
         <el-button type="primary" @click="onConfirm">{{ t("btn.confirm") }}</el-button>
         <el-button @click="onCancel">{{ t("btn.cancel") }}</el-button>
       </div>

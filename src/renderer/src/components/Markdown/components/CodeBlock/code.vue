@@ -40,7 +40,7 @@ watchEffect(() => {
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang }}</el-tag>
-          <div class="flex gap1rem items-center">
+          <div class="flex items-center">
             <el-button type="primary" @click="onCopy(code)" size="small" round plain circle>
               <i-ic:outline-check v-if="copied"></i-ic:outline-check>
               <i-ic:baseline-content-copy v-else></i-ic:baseline-content-copy>

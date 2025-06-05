@@ -86,7 +86,7 @@ const dlg = {
   <ContentLayout>
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
-        <div class="flex items-center gap1rem">
+        <div class="flex items-center">
           <el-button type="primary" size="small" @click="open">{{ t("btn.new") }}</el-button>
           <el-button type="warning" size="small" @click="listDlgOpen">{{ t("btn.mcpList") }}</el-button>
         </div>
@@ -118,7 +118,7 @@ const dlg = {
               <el-text type="info">{{ server.description }}</el-text>
             </el-scrollbar>
             <template #footer>
-              <div class="flex gap1rem">
+              <div class="flex">
                 <el-button @click.stop="onCardClick(server)">{{ t("btn.edit") }}</el-button>
                 <el-popconfirm :title="t('tip.deleteConfirm')">
                   <template #reference>

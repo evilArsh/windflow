@@ -20,7 +20,6 @@ const { t } = useI18n()
 const mcp = useMcpStore()
 const chatStore = useChatStore()
 const { servers } = storeToRefs(mcp)
-const loading = ref(false) // 正在启动mcp
 const popover = reactive({
   visible: false,
   ref: undefined as PopoverInstance | undefined,
@@ -46,6 +45,11 @@ const formHandler = {
           const res = await window.api.mcp.registerServer(props.topic.id, cloneDeep(data))
           if (code5xx(res.code)) throw new Error(res.msg)
         }
+      } else {
+        const res = await window.api.mcp.toggleServer(props.topic.id, data.id, {
+          command: "stop",
+        })
+        if (code5xx(res.code)) throw new Error(res.msg)
       }
       const count = await chatStore.api.updateChatTopic(cloneDeep(topic.value))
       if (count == 0) {
@@ -106,7 +110,6 @@ const serverHandler = {
   },
   loadMCP: async () => {
     try {
-      loading.value = true
       const asyncReq: Array<Promise<{ server: MCPServerParam; data: Awaited<BridgeStatusResponse> }>> = []
       const requestWithParam = async (server: MCPServerParam, request: () => Promise<BridgeStatusResponse>) => {
         const req = request()
@@ -128,6 +131,7 @@ const serverHandler = {
               message: t("mcp.service.connecting", {
                 service: item.value.server.serverName,
               }),
+              duration: 5000,
               type: "info",
             })
           } else if (code5xx(item.value.data.code)) {
@@ -137,8 +141,10 @@ const serverHandler = {
                 service: item.value.server.serverName,
                 message: item.value.data.msg,
               }),
+              duration: 5000,
               type: "error",
             })
+            item.value.server.disabled = true
           }
         }
       }
@@ -149,21 +155,22 @@ const serverHandler = {
         message: errorToText(error),
         type: "warning",
       })
-    } finally {
-      loading.value = false
     }
   },
   restart: async (done: CallBackFn, server: MCPServerParam) => {
     try {
       if (server.disabled) {
-        throw new Error("Server is disabled")
+        msg({ code: 500, msg: t("mcp.service.disabled") })
+        return
       }
       const refs = (await window.api.mcp.getReference(server.id)).data
-      await ElMessageBox.confirm(t("mcp.service.deleteConfirm", { count: refs.length }), t("notify.title.warning"), {
-        confirmButtonText: t("btn.confirm"),
-        cancelButtonText: t("btn.cancel"),
-        type: "warning",
-      })
+      if (refs.length > 0) {
+        await ElMessageBox.confirm(t("mcp.service.deleteConfirm", { count: refs.length }), t("notify.title.warning"), {
+          confirmButtonText: t("btn.confirm"),
+          cancelButtonText: t("btn.cancel"),
+          type: "warning",
+        })
+      }
       const toggleRes = await window.api.mcp.toggleServer(props.topic.id, server.id, {
         command: "restart",
       })
@@ -179,7 +186,6 @@ const serverHandler = {
     } catch (error) {
       console.log("[restart]", error)
     } finally {
-      loading.value = false
       done()
     }
   },
@@ -195,11 +201,11 @@ watch(topic, serverHandler.loadMCP, { immediate: true })
 </script>
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
-    <div class="flex-shrink-0 flex gap1rem">
+    <div class="flex-shrink-0 flex">
       <Button size="small" @click="serverHandler.syncServers">{{ t("btn.sync") }}</Button>
-      <Button size="small" @click="serverHandler.test">测试</Button>
+      <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     </div>
-    <div v-loading="loading" class="flex flex-1 overflow-hidden flex-col">
+    <div class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
         <div v-for="(server, index) in topic.mcpServers" :key="server.id">
           <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
@@ -214,7 +220,7 @@ watch(topic, serverHandler.loadMCP, { immediate: true })
             </template>
             <McpName :data="server"></McpName>
             <template #footer>
-              <div class="flex items-center gap-.5rem" @click.stop>
+              <div class="flex items-center" @click.stop>
                 <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index)">
                   <i class="i-ep:edit"></i>
                 </ContentBox>
