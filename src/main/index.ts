@@ -56,7 +56,7 @@ function init() {
       serviceCore.registerIpc()
     })
     app.on("window-all-closed", () => {
-      if (process.platform !== "darwin") {
+      if (platform.isMacOS) {
         app.quit()
       }
     })

@@ -1,9 +1,32 @@
 <script lang="ts" setup>
 import useEnvStore from "@renderer/store/env"
 import { storeToRefs } from "pinia"
+import { onFileChoose } from "./utils"
 const envStore = useEnvStore()
 const { env } = storeToRefs(envStore)
 const { t } = useI18n()
+const doc = ref(`
+## macOS or Linux
+### curl
+\`\`\`shell
+curl -fsSL https://bun.sh/install | bash
+\`\`\`
+## Windows
+\`\`\`shell
+powershell -c "irm bun.sh/install.ps1 | iex"
+\`\`\`
+> Changing the [execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7.4#powershell-execution-policies) allows running a script from the internet.
+## Github
+\`\`\`shell
+https://github.com/oven-sh/bun/releases
+\`\`\`
+`)
+function chooseFile(done: CallBackFn) {
+  onFileChoose(done, (path: string) => {
+    env.value.bun.path = path
+    envStore.checkEnv()
+  })
+}
 </script>
 <template>
   <el-card shadow="never">
@@ -43,7 +66,7 @@ const { t } = useI18n()
         <template #footer>
           <ContentBox class="m0! p0!" normal>
             <div class="flex flex-col gap1rem flex-1">
-              <el-input v-model="env.bun.path" @change="_ => envStore.checkEnv()"></el-input>
+              <el-input v-model="env.bun.path" readonly @change="_ => envStore.checkEnv()"></el-input>
               <el-alert
                 v-if="env.bun.status"
                 :closable="false"
@@ -57,7 +80,27 @@ const { t } = useI18n()
                 :title="t('mcp.settings.js.bun.lackTitle')"
                 type="warning"
                 :description="t('mcp.settings.js.bun.lack')"
-                show-icon />
+                show-icon>
+                <ContentBox normal>
+                  <div class="flex flex-col gap-1rem flex-1">
+                    <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
+                      <template #header>
+                        <el-text>{{ t("mcp.settings.python.uv.manualChoose") }}</el-text>
+                      </template>
+                      <Button size="small" @click="chooseFile">{{ t("btn.chooseFile") }}</Button>
+                    </el-card>
+                    <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
+                      <template #header>
+                        <el-text>{{ t("mcp.settings.python.uv.onlineDownload") }}</el-text>
+                      </template>
+                      <Markdown :content="doc"></Markdown>
+                    </el-card>
+                  </div>
+                  <template #footer>
+                    <el-text type="info" size="small">{{ t("mcp.settings.python.uv.lack") }}</el-text>
+                  </template>
+                </ContentBox>
+              </el-alert>
             </div>
             <template #footer>
               <el-text size="small">{{ t("mcp.settings.js.bun.desc") }}</el-text>
@@ -68,4 +111,8 @@ const { t } = useI18n()
     </div>
   </el-card>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-alert__content) {
+  flex: 1;
+}
+</style>

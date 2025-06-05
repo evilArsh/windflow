@@ -28,25 +28,25 @@ const {
   width: "70vw",
 })
 const currentServer = ref<MCPServerParam>()
-const onCardClick = (current: MCPServerParam) => {
-  currentServer.value = current
-  open()
-}
-const onCardDelete = async (done: CallBackFn, current: MCPServerParam, index: number) => {
-  try {
-    const res = await mcp.api.del(current.id)
-    if (res == 0) {
-      msg({ code: 200, msg: t("tip.deleteFailed") })
-      return
-    }
-    servers.value.splice(index, 1)
-  } catch (error) {
-    msg(errorToText(error))
-  } finally {
-    done()
-  }
-}
 const serverHandler = {
+  onCardClick: (current: MCPServerParam) => {
+    currentServer.value = current
+    open()
+  },
+  onCardDelete: async (done: CallBackFn, current: MCPServerParam, index: number) => {
+    try {
+      const res = await mcp.api.del(current.id)
+      if (res == 0) {
+        msg({ code: 200, msg: t("tip.deleteFailed") })
+        return
+      }
+      servers.value.splice(index, 1)
+    } catch (error) {
+      msg(errorToText(error))
+    } finally {
+      done()
+    }
+  },
   onSwitchChange: async (server: MCPServerParam) => {
     try {
       await mcp.api.update(cloneDeep(server))
@@ -81,45 +81,50 @@ const dlg = {
     }
   },
 }
+const tabs = reactive({
+  active: "1",
+})
+const search = reactive({
+  keyword: "",
+})
 </script>
 <template>
-  <ContentLayout>
+  <ContentLayout custom>
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
         <div class="flex items-center">
           <el-button type="primary" size="small" @click="open">{{ t("btn.new") }}</el-button>
           <el-button type="warning" size="small" @click="listDlgOpen">{{ t("btn.mcpList") }}</el-button>
         </div>
-        <el-divider class="my-1rem!"></el-divider>
       </div>
     </template>
-    <el-row>
-      <el-col :xl="4" :lg="6" :md="8" :sm="12" :xs="24" v-for="(server, index) in servers" :key="server.id">
+    <div class="flex flex-1 overflow-hidden gap1rem">
+      <div class="flex flex-col overflow-hidden w-30rem">
         <div class="p1rem">
-          <el-card shadow="hover" style="--el-card-padding: 1rem">
-            <template #header>
-              <ContentBox>
-                <template #icon>
-                  <ITerminal class="text-2rem"></ITerminal>
-                </template>
-                <McpName :data="server"></McpName>
-                <template #footer>
-                  <el-switch
-                    v-model="server.disabled"
-                    :active-value="false"
-                    :inactive-value="true"
-                    :active-action-icon="ILight"
-                    :inactive-action-icon="IProhibited"
-                    @change="serverHandler.onSwitchChange(server)" />
-                </template>
-              </ContentBox>
-            </template>
-            <el-scrollbar height="100px">
-              <el-text type="info">{{ server.description }}</el-text>
-            </el-scrollbar>
-            <template #footer>
+          <el-input v-model="search.keyword" :placeholder="t('mcp.search')" clearable />
+        </div>
+        <el-scrollbar>
+          <div class="flex flex-col gap-1rem p1rem">
+            <el-card v-for="(server, index) in servers" :key="server.id" shadow="hover" style="--el-card-padding: 1rem">
+              <template #header>
+                <ContentBox>
+                  <template #icon>
+                    <ITerminal class="text-2rem"></ITerminal>
+                  </template>
+                  <McpName :data="server"></McpName>
+                  <template #footer>
+                    <el-switch
+                      v-model="server.disabled"
+                      :active-value="false"
+                      :inactive-value="true"
+                      :active-action-icon="ILight"
+                      :inactive-action-icon="IProhibited"
+                      @change="serverHandler.onSwitchChange(server)" />
+                  </template>
+                </ContentBox>
+              </template>
               <div class="flex">
-                <el-button @click.stop="onCardClick(server)">{{ t("btn.edit") }}</el-button>
+                <el-button @click.stop="serverHandler.onCardClick(server)">{{ t("btn.edit") }}</el-button>
                 <el-popconfirm :title="t('tip.deleteConfirm')">
                   <template #reference>
                     <el-button type="danger">
@@ -128,7 +133,10 @@ const dlg = {
                   </template>
                   <template #actions="{ cancel }">
                     <div class="flex justify-between">
-                      <Button type="danger" size="small" @click="done => onCardDelete(done, server, index)">
+                      <Button
+                        type="danger"
+                        size="small"
+                        @click="done => serverHandler.onCardDelete(done, server, index)">
                         {{ t("tip.yes") }}
                       </Button>
                       <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
@@ -136,11 +144,20 @@ const dlg = {
                   </template>
                 </el-popconfirm>
               </div>
-            </template>
-          </el-card>
-        </div>
-      </el-col>
-    </el-row>
+            </el-card>
+          </div>
+        </el-scrollbar>
+      </div>
+      <div class="flex-1">
+        <el-tabs v-model="tabs.active">
+          <el-tab-pane :label="t('mcp.service.tabs.config')" name="1">User</el-tab-pane>
+          <el-tab-pane :label="t('mcp.service.tabs.tool')" name="2">User</el-tab-pane>
+          <el-tab-pane :label="t('mcp.service.tabs.prompt')" name="3">User</el-tab-pane>
+          <el-tab-pane :label="t('mcp.service.tabs.resource')" name="4">User</el-tab-pane>
+          <el-tab-pane :label="t('mcp.service.tabs.resourceTemplates')" name="5">User</el-tab-pane>
+        </el-tabs>
+      </div>
+    </div>
     <el-dialog v-bind="dlgProps" v-on="dlgEvent">
       <Form class="h-70vh" @close="dlg.onFormClose" @change="dlg.onFormChange" :data="currentServer"></Form>
     </el-dialog>

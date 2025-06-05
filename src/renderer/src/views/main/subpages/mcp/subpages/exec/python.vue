@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { CallBackFn } from "@renderer/lib/shared/types"
 import useEnvStore from "@renderer/store/env"
-import { code2xx } from "@shared/types/bridge"
 import { storeToRefs } from "pinia"
+import { onFileChoose } from "./utils"
+
 const envStore = useEnvStore()
 const { env } = storeToRefs(envStore)
 const { t } = useI18n()
@@ -28,24 +28,11 @@ https://github.com/astral-sh/uv/releases
 \`\`\`
 `)
 
-async function onFileChoose(done: CallBackFn) {
-  try {
-    if (window.api) {
-      const res = await window.api.file.chooseFilePath()
-      if (code2xx(res.code)) {
-        env.value.uv.path = res.data
-        envStore.checkEnv()
-      } else {
-        msg({ code: res.code, msg: res.msg })
-      }
-    } else {
-      msg({ code: 404, msg: t("window.api.notFound") })
-    }
-  } catch (error) {
-    console.log(error)
-  } finally {
-    done()
-  }
+function chooseFile(done: CallBackFn) {
+  onFileChoose(done, (path: string) => {
+    env.value.uv.path = path
+    envStore.checkEnv()
+  })
 }
 </script>
 <template>
@@ -86,7 +73,7 @@ async function onFileChoose(done: CallBackFn) {
         <template #footer>
           <ContentBox class="m0! p0!" normal>
             <div class="flex flex-col gap1rem flex-1">
-              <el-input v-model="env.uv.path" @change="_ => envStore.checkEnv()"></el-input>
+              <el-input readonly v-model="env.uv.path" @change="_ => envStore.checkEnv()"></el-input>
               <el-alert
                 v-if="env.uv.status"
                 :closable="false"
@@ -106,7 +93,7 @@ async function onFileChoose(done: CallBackFn) {
                       <template #header>
                         <el-text>{{ t("mcp.settings.python.uv.manualChoose") }}</el-text>
                       </template>
-                      <Button size="small" @click="onFileChoose">{{ t("btn.chooseFile") }}</Button>
+                      <Button size="small" @click="chooseFile">{{ t("btn.chooseFile") }}</Button>
                     </el-card>
                     <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
                       <template #header>

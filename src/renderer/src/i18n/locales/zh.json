@@ -78,12 +78,20 @@
       "market": "发现",
       "servers": "服务列表"
     },
+    "search": "搜索mcp服务",
     "serverName": "名称",
     "service": {
       "connecting": "工具[{service}]启动中,请稍后重试",
       "deleteConfirm": "要重启吗?已使用该工具的聊天个数:{count}",
       "disabled": "工具已禁用，请先启用",
-      "disconnected": "工具[{service}]启动失败:{message}"
+      "disconnected": "工具[{service}]启动失败:{message}",
+      "tabs": {
+        "config": "编辑",
+        "prompt": "提示",
+        "resource": "资源",
+        "resourceTemplates": "资源模板",
+        "tool": "工具"
+      }
     },
     "settings": {
       "js": {

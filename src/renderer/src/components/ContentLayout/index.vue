@@ -5,8 +5,16 @@ const emit = defineEmits<{
   (e: "scroll", x: number, y: number): void
 }>()
 
-const { handlerHeight = 0, chatMode = false } = defineProps<{
+const {
+  handlerHeight = 0,
+  custom = false,
+  chatMode = false,
+} = defineProps<{
   handlerHeight?: string | number
+  /**
+   * 自定义模式下不预设默认插槽内容
+   */
+  custom?: boolean
   /**
    * true: 内容反转：flex-direction:column-reverse
    *
@@ -105,7 +113,8 @@ onBeforeUnmount(() => {
     </div>
     <div class="content-main">
       <slot v-if="$slots.contentLeft" name="contentLeft"></slot>
-      <div v-if="chatMode" class="scroll-bar">
+      <slot v-if="custom"></slot>
+      <div v-else-if="chatMode" class="scroll-bar">
         <div ref="scroll" class="scroll-content">
           <div class="w-100% flex-1 flex flex-col-reverse justify-end">
             <slot></slot>

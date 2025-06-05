@@ -12,6 +12,7 @@ export async function execCommand(
 ): Promise<BridgeStatusResponse> {
   try {
     // const res = await execa({ stdout: ["pipe", "inherit"] })`${command}`
+    log.debug(`[exec command] ${command} ${args.join(" ")}`)
     const res = await execa(command, args, {
       stdout: ["pipe", "inherit"],
       preferLocal: false,
