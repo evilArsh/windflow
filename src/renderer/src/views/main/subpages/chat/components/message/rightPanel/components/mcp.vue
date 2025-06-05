@@ -9,8 +9,8 @@ import { cloneDeep } from "lodash-es"
 import { errorToText } from "@shared/error"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
 import { PopoverInstance } from "element-plus"
-import { MCPServerParam } from "@shared/types/mcp"
-import { BridgeStatusResponse, code1xx, code5xx } from "@shared/types/bridge"
+import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
+import { code1xx, code4xx, code5xx } from "@shared/types/bridge"
 import { ElNotification, ElMessageBox } from "element-plus"
 const props = defineProps<{
   topic: ChatTopic
@@ -34,34 +34,6 @@ const popover = reactive({
 })
 
 const formHandler = {
-  onServerToggle: async (data: MCPServerParam): Promise<boolean> => {
-    try {
-      if (data.disabled) {
-        const res = await window.api.mcp.toggleServer(props.topic.id, data.id, {
-          command: "start",
-        })
-        if (code5xx(res.code)) throw new Error(res.msg)
-        if (res.code == 404) {
-          const res = await window.api.mcp.registerServer(props.topic.id, cloneDeep(data))
-          if (code5xx(res.code)) throw new Error(res.msg)
-        }
-      } else {
-        const res = await window.api.mcp.toggleServer(props.topic.id, data.id, {
-          command: "stop",
-        })
-        if (code5xx(res.code)) throw new Error(res.msg)
-      }
-      const count = await chatStore.api.updateChatTopic(cloneDeep(topic.value))
-      if (count == 0) {
-        throw new Error("update failed")
-      }
-      msg({ code: 200, msg: "ok" })
-      return true
-    } catch (error) {
-      msg({ code: 500, msg: errorToText(error) })
-      return false
-    }
-  },
   onServerChange: async (data: MCPServerParam) => {
     try {
       popover.server && Object.assign(popover.server, data)
@@ -92,6 +64,71 @@ const serverHandler = {
       done()
     }
   },
+  showErrorDlg: (data: MCPServerParam, msg: string) => {
+    ElNotification({
+      title: t("notify.title.error"),
+      message: t("mcp.service.disconnected", {
+        service: data.serverName,
+        message: msg,
+      }),
+      duration: 5000,
+      type: "error",
+    })
+  },
+  onServerToggle: async (data: MCPServerParam): Promise<void> => {
+    try {
+      if (!data.disabled) {
+        data.status == MCPClientStatus.Connecting
+        const res = await window.api.mcp.toggleServer(topic.value.id, data.id, {
+          command: "start",
+        })
+        console.log("[toggleServer]", data, res)
+        data.status = res.data
+        if (code5xx(res.code)) {
+          serverHandler.showErrorDlg(data, res.msg)
+          data.disabled = true
+        } else if (code4xx(res.code)) {
+          data.status = MCPClientStatus.Connecting
+          const res = await window.api.mcp.registerServer(topic.value.id, cloneDeep(data))
+          data.status = res.data
+          if (code5xx(res.code)) {
+            serverHandler.showErrorDlg(data, res.msg)
+            data.disabled = true
+          }
+        } else if (code1xx(res.code)) {
+          data.status = MCPClientStatus.Disconnected
+          data.disabled = true
+          ElNotification({
+            title: t("notify.title.info"),
+            message: t("mcp.service.connecting", {
+              service: data.serverName,
+            }),
+            duration: 5000,
+            type: "info",
+          })
+        }
+      } else {
+        const res = await window.api.mcp.toggleServer(topic.value.id, data.id, {
+          command: "stop",
+        })
+        data.status = res.data
+        if (code5xx(res.code)) {
+          serverHandler.showErrorDlg(data, res.msg)
+        }
+      }
+      const count = await chatStore.api.updateChatTopic(cloneDeep(topic.value))
+      if (count == 0) {
+        throw new Error("update failed")
+      }
+    } catch (error) {
+      ElNotification({
+        title: t("notify.title.error"),
+        message: errorToText(error),
+        duration: 5000,
+        type: "error",
+      })
+    }
+  },
   syncServers: async (done: CallBackFn) => {
     try {
       for (const server of servers.value) {
@@ -101,7 +138,6 @@ const serverHandler = {
         }
       }
       await chatStore.api.updateChatTopic(cloneDeep(topic.value))
-      await serverHandler.loadMCP()
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {
@@ -110,51 +146,13 @@ const serverHandler = {
   },
   loadMCP: async () => {
     try {
-      const asyncReq: Array<Promise<{ server: MCPServerParam; data: Awaited<BridgeStatusResponse> }>> = []
-      const requestWithParam = async (server: MCPServerParam, request: () => Promise<BridgeStatusResponse>) => {
-        const req = request()
-        const data = await req
-        return { server, data }
-      }
       for (const server of topic.value.mcpServers) {
-        if (server.disabled) continue
-        asyncReq.push(requestWithParam(server, () => window.api.mcp.registerServer(props.topic.id, cloneDeep(server))))
-      }
-      const res = await Promise.allSettled(asyncReq)
-      for (const item of res) {
-        if (item.status === "rejected") {
-          throw item.reason
-        } else {
-          if (code1xx(item.value.data.code)) {
-            ElNotification({
-              title: t("notify.title.info"),
-              message: t("mcp.service.connecting", {
-                service: item.value.server.serverName,
-              }),
-              duration: 5000,
-              type: "info",
-            })
-          } else if (code5xx(item.value.data.code)) {
-            ElNotification({
-              title: t("notify.title.error"),
-              message: t("mcp.service.disconnected", {
-                service: item.value.server.serverName,
-                message: item.value.data.msg,
-              }),
-              duration: 5000,
-              type: "error",
-            })
-            item.value.server.disabled = true
-          }
+        if (!server.disabled) {
+          serverHandler.onServerToggle(server)
         }
       }
     } catch (error) {
       console.log("[loadMCP]", error)
-      ElNotification({
-        title: t("notify.title.warning"),
-        message: errorToText(error),
-        type: "warning",
-      })
     }
   },
   restart: async (done: CallBackFn, server: MCPServerParam) => {
@@ -171,7 +169,7 @@ const serverHandler = {
           type: "warning",
         })
       }
-      const toggleRes = await window.api.mcp.toggleServer(props.topic.id, server.id, {
+      const toggleRes = await window.api.mcp.toggleServer(topic.value.id, server.id, {
         command: "restart",
       })
       if (code5xx(toggleRes.code)) {
@@ -193,7 +191,7 @@ const serverHandler = {
     const res = topic.value.mcpServers.splice(index, 1)
     if (res.length) {
       // 仅删除引用
-      window.api.mcp.toggleServer(props.topic.id, res[0].id, { command: "delete" })
+      window.api.mcp.toggleServer(topic.value.id, res[0].id, { command: "delete" })
     }
   },
 }
@@ -208,7 +206,10 @@ watch(topic, serverHandler.loadMCP, { immediate: true })
     <div class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
         <div v-for="(server, index) in topic.mcpServers" :key="server.id">
-          <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
+          <ContentBox
+            v-loading="server.status === MCPClientStatus.Connecting"
+            :ref="el => (popover.refs[index] = el as HTMLElement)"
+            background>
             <template #icon>
               <Switch
                 size="small"
@@ -216,7 +217,7 @@ watch(topic, serverHandler.loadMCP, { immediate: true })
                 v-model="server.disabled"
                 :active-value="false"
                 :inactive-value="true"
-                :before-change="() => formHandler.onServerToggle(server)" />
+                @change="_ => serverHandler.onServerToggle(server)" />
             </template>
             <McpName :data="server"></McpName>
             <template #footer>

@@ -1,6 +1,9 @@
 import { AxiosError } from "axios"
 import { serializeError } from "serialize-error"
 export function errorToText(error: unknown): string {
+  if (typeof error === "string" || typeof error === "number") {
+    return String(error)
+  }
   if (error instanceof AxiosError) {
     return JSON.stringify(error.response?.data) ?? error.message
   } else {

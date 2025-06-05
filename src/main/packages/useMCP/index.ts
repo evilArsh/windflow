@@ -16,8 +16,9 @@ import {
   isStdioServerParams,
   isStreamableServerParams,
   isSSEServerParams,
+  MCPClientStatus,
 } from "@shared/types/mcp"
-import { BridgeResponse, BridgeStatusResponse, responseCode, responseData } from "@shared/types/bridge"
+import { BridgeResponse, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
 import { IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
@@ -32,7 +33,6 @@ import {
   requestWithId,
   useMCPContext,
 } from "./utils"
-import { MCPClientStatus } from "./types"
 import { useToolCall, useToolName } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
@@ -48,20 +48,20 @@ export default (): MCPService & ServiceCore => {
   const { context, addContextRefCount, getContext, createContext, removeContext, getTopicReference, removeReference } =
     useMCPContext()
 
-  async function registerServer(topicId: string, params: MCPServerParam): Promise<BridgeStatusResponse> {
+  async function registerServer(topicId: string, params: MCPServerParam): Promise<BridgeResponse<MCPClientStatus>> {
     const { id, serverName } = params
     let ctx = getContext(id)
     if (!ctx) ctx = createContext(params)
     try {
       if (ctx.client) {
         if (ctx.status === MCPClientStatus.Connecting) {
-          return responseCode(102, `connecting`)
+          return responseData(102, `connecting`, MCPClientStatus.Connecting)
         } else if (ctx.status === MCPClientStatus.Connected) {
           const pong = await ctx.client.ping()
           if (pong) {
             log.debug("[MCP registerServer]", `[${serverName}]already created`)
             addContextRefCount(topicId, id)
-            return responseCode(201, `[${serverName}]already created`)
+            return responseData(201, `[${serverName}]already created`, ctx.status)
           } else {
             log.debug("[MCP registerServer]", `[${serverName}]context found but client not connected`)
           }
@@ -69,19 +69,18 @@ export default (): MCPService & ServiceCore => {
           ctx.reference.length = 0
         }
       }
-      const client = createClient(name, version)
+      ctx.client = createClient(name, version)
+      ctx.status = MCPClientStatus.Connecting
       if (isStdioServerParams(ctx.params)) {
-        ctx.status = MCPClientStatus.Connecting
-        ctx.transport = await createStdioTransport(client, env, ctx.params)
+        ctx.transport = await createStdioTransport(ctx.client, env, ctx.params)
         log.debug("[MCP register stdio server]", `[${serverName}]created`)
       } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
-          ctx.status = MCPClientStatus.Connecting
-          ctx.transport = await createStreamableTransport(client, ctx.params)
+          ctx.transport = await createStreamableTransport(ctx.client, ctx.params)
           log.debug("[MCP register streamable server]", `[${serverName}]created`)
         } catch (_e) {
           log.warn("[MCP register streamable server error,attempt sse type]")
-          ctx.transport = await createSseTransport(client, ctx.params)
+          ctx.transport = await createSseTransport(ctx.client, ctx.params)
           log.debug("[MCP register sse server]", `[${serverName}]created`)
         }
       } else {
@@ -93,42 +92,46 @@ export default (): MCPService & ServiceCore => {
       if (!ctx.reference.includes(topicId)) {
         ctx.reference.push(topicId)
       }
-      ctx.client = client
-      return responseCode(200)
+      return responseData(200, "ok", ctx.status)
     } catch (error) {
       await removeContext(id)
       log.debug("[MCP registerServer error]", error)
-      return responseCode(500, errorToText(error))
+      return responseData(500, errorToText(error), MCPClientStatus.Disconnected)
     }
   }
   async function toggleServer(
     topicId: string,
     id: string,
     command: MCPClientHandleCommand
-  ): Promise<BridgeStatusResponse> {
+  ): Promise<BridgeResponse<MCPClientStatus>> {
     try {
       const ctx = getContext(id)
       if (!ctx) {
-        return responseCode(404, `${id} not found`)
+        return responseData(404, `${id} not found`, MCPClientStatus.Disconnected)
       }
       switch (command.command) {
         case "start":
           return registerServer(topicId, ctx.params)
         case "stop": {
-          removeReference(id, topicId)
-          return responseCode(200, "ok")
+          removeReference(topicId, ctx.params.id)
+          const refs = await getReference(ctx.params.id)
+          if (refs.data.length === 0) {
+            return toggleServer(topicId, id, { command: "delete" })
+          }
+          return responseData(200, "ok", MCPClientStatus.Disconnected)
         }
         case "restart":
-          await toggleServer(topicId, id, { command: "delete" })
-          return toggleServer(topicId, id, { command: "start" })
+          await toggleServer(topicId, ctx.params.id, { command: "delete" })
+          return toggleServer(topicId, ctx.params.id, { command: "start" })
         case "delete": {
-          await removeContext(id)
-          return responseCode(200, "ok")
+          await removeContext(ctx.params.id)
+          log.debug("[toggleServer delete]", `[${ctx.params.serverName}] stopped`)
+          return responseData(200, "ok", MCPClientStatus.Disconnected)
         }
       }
     } catch (error) {
       log.error("[MCP toggleServer error]", error)
-      return responseCode(500, errorToText(error))
+      return responseData(500, errorToText(error), MCPClientStatus.Disconnected)
     }
   }
   async function listTools(id?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {

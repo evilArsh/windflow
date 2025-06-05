@@ -1,5 +1,11 @@
 export const NameSeprator = "___"
 export type MCPServerType = "sse" | "streamable" | "stdio"
+export enum MCPClientStatus {
+  Connecting = "connecting",
+  Connected = "connected",
+  Stopping = "stopping",
+  Disconnected = "disconnected",
+}
 export interface MCPRequestParams {
   /**
    * A timeout (in milliseconds) for this request. If exceeded, an McpError with code `RequestTimeout` will be raised from request().
@@ -19,6 +25,7 @@ export interface MCPParamsBase {
   serverName: string
   description: string
   disabled?: boolean
+  status?: MCPClientStatus
 }
 export interface MCPStreamableServerParam extends MCPRequestParams, MCPParamsBase {
   type: "sse" | "streamable"

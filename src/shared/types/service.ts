@@ -1,4 +1,4 @@
-import { BridgeResponse, BridgeStatusResponse } from "./bridge"
+import { BridgeResponse } from "./bridge"
 import { ToolEnvironment, ToolEnvTestResult } from "./env"
 import {
   MCPCallToolResult,
@@ -12,6 +12,7 @@ import {
   MCPToolDetail,
   MCPServerParam,
   MCPRequestParams,
+  MCPClientStatus,
 } from "./mcp"
 
 export const IpcChannel = {
@@ -30,8 +31,12 @@ export const IpcChannel = {
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => void
   getReference: (id: string) => Promise<BridgeResponse<Array<string>>>
-  registerServer: (topicId: string, params: MCPServerParam) => Promise<BridgeStatusResponse>
-  toggleServer: (topicId: string, id: string, command: MCPClientHandleCommand) => Promise<BridgeStatusResponse>
+  registerServer: (topicId: string, params: MCPServerParam) => Promise<BridgeResponse<MCPClientStatus>>
+  toggleServer: (
+    topicId: string,
+    id: string,
+    command: MCPClientHandleCommand
+  ) => Promise<BridgeResponse<MCPClientStatus>>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
   listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (

@@ -2,11 +2,11 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
-import { MCPServerParam, MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
+import { MCPClientStatus, MCPServerParam, MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
 import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
 import { errorToText } from "@shared/error"
-import { MCPClientContext, MCPClientStatus } from "./types"
+import { MCPClientContext } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
 
 export function createClient(name: string, version: string) {
@@ -105,17 +105,17 @@ export function useMCPContext() {
     return ctx
   }
   async function removeContext(contextId: string) {
-    const ctx = context.get(contextId)
+    const ctx = getContext(contextId)
     if (ctx) {
       await ctx.client?.close()
       context.delete(contextId)
     }
   }
   function getTopicReference(contextId: string): Array<string> {
-    return context.get(contextId)?.reference ?? []
+    return getContext(contextId)?.reference ?? []
   }
-  function removeReference(id: string, topicId: string) {
-    const ctx = context.get(id)
+  function removeReference(topicId: string, id: string) {
+    const ctx = getContext(id)
     if (ctx) {
       ctx.reference = ctx.reference.filter(item => item !== topicId)
     }

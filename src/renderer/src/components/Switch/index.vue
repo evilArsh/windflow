@@ -2,6 +2,9 @@
 const props = defineProps<{
   beforeChange?: () => Promise<boolean> | boolean
 }>()
+const emit = defineEmits<{
+  (e: "change", value: boolean | string | number): void
+}>()
 const loading = ref(false)
 const beforeChange = (): boolean | Promise<boolean> => {
   if (props.beforeChange) {
@@ -20,5 +23,5 @@ const beforeChange = (): boolean | Promise<boolean> => {
 }
 </script>
 <template>
-  <el-switch :loading="loading" :before-change="beforeChange" />
+  <el-switch :loading="loading" :before-change="beforeChange" @change="emit('change', $event)" />
 </template>

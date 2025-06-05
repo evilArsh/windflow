@@ -1,12 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js"
-import { MCPServerParam } from "@shared/types/mcp"
+import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 
-export enum MCPClientStatus {
-  Connecting = "connecting",
-  Connected = "connected",
-  Disconnected = "disconnected",
-}
 export interface MCPClientContext {
   params: MCPServerParam
   /**
