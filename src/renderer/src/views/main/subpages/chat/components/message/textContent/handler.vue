@@ -6,6 +6,7 @@ import { CallBackFn } from "@renderer/lib/shared/types"
 const props = defineProps<{
   messageItem: ChatMessageData
   topic: ChatTopic
+  parent?: ChatMessageData
 }>()
 defineEmits<{
   edit: []
@@ -18,11 +19,11 @@ const topic = computed(() => props.topic)
 const messageItem = computed(() => props.messageItem)
 
 function terminate(done: CallBackFn) {
-  chatStore.terminate(topic.value, messageItem.value.id)
+  chatStore.terminate(topic.value, messageItem.value.id, props.parent?.id)
   done()
 }
 function restart() {
-  chatStore.restart(topic.value, messageItem.value.id)
+  chatStore.restart(topic.value, messageItem.value.id, props.parent?.id)
 }
 </script>
 <template>

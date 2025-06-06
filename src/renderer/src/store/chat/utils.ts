@@ -18,29 +18,52 @@ export const useUtils = (
     if (!topic.chatMessageId) return
     return findChatMessage(topic.chatMessageId)
   }
-  const findChatMessageChild = (messageId: string, childMessageId: string): [ChatMessageData | undefined, number] => {
+  /**
+   * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的messageDataId的索引
+   */
+  const findChatMessageChild = (
+    messageId: string,
+    childMessageId: string,
+    parentMessageDataId?: string
+  ): [ChatMessageData | undefined, number] => {
     const m = findChatMessage(messageId)
     if (!m) return [undefined, -1]
     let index = -1
-    const res = m.data.find((item, i) => {
-      if (item.id === childMessageId) {
-        index = i
-        return true
-      }
-      return false
-    })
-    return [res, index]
+    if (parentMessageDataId) {
+      const parent = m.data.find(item => item.id === parentMessageDataId)
+      const child = parent?.children?.find((item, i) => {
+        if (item.id === childMessageId) {
+          index = i
+          return true
+        }
+        return false
+      })
+      return [child, index]
+    } else {
+      const res = m.data.find((item, i) => {
+        if (item.id === childMessageId) {
+          index = i
+          return true
+        }
+        return false
+      })
+      return [res, index]
+    }
   }
+  /**
+   * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的messageDataId的索引
+   */
   const findChatMessageChildByTopic = (
     topic: ChatTopic,
-    messageDataId: string
+    messageDataId: string,
+    parentMessageDataId?: string
   ): [ChatMessageData | undefined, number] => {
     if (!topic.chatMessageId) {
       return [undefined, -1]
     }
     const message = findChatMessage(topic.chatMessageId)
     if (!message) [undefined, -1]
-    return findChatMessageChild(topic.chatMessageId, messageDataId)
+    return findChatMessageChild(topic.chatMessageId, messageDataId, parentMessageDataId)
   }
 
   function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {

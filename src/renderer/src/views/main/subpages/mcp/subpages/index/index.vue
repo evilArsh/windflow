@@ -19,7 +19,7 @@ import Form from "./components/form.vue"
 import List from "./components/list.vue"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { useDebounceFn } from "@vueuse/core"
-import { code2xx } from "@shared/types/bridge"
+import { code1xx, code2xx } from "@shared/types/bridge"
 import Retry from "./retry.vue"
 import Schema from "./schema.vue"
 import Prompt from "./prompt.vue"
@@ -65,11 +65,18 @@ const serverHandler = {
       ).data.resourceTemplates.map(v => {
         return { ...v, name: toolName.split(v.name).name }
       })
+    } else if (code1xx(res.code)) {
+      ElNotification({
+        title: t("notify.title.info"),
+        message: t("mcp.service.connecting"),
+        type: "info",
+        duration: 5000,
+      })
     } else {
       ElNotification({
-        title: t("notify.title.error"),
+        title: t("notify.title.warning"),
         message: res.msg,
-        type: "error",
+        type: "warning",
         duration: 5000,
       })
     }
@@ -78,7 +85,7 @@ const serverHandler = {
     const notify = ElNotification({
       title: t("notify.title.info"),
       message: t("mcp.service.connecting"),
-      type: "error",
+      type: "info",
       showClose: false,
     })
     try {

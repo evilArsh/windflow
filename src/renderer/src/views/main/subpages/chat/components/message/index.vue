@@ -6,7 +6,7 @@ import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
 import useSettingsStore from "@renderer/store/settings"
-import { ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatMessage, ChatTopic, SettingKeys } from "@renderer/types"
 const props = defineProps<{
   topic?: ChatTopic
 }>()
@@ -16,14 +16,24 @@ const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("conten
 const shortcut = useShortcut()
 
 const topic = computed(() => props.topic)
-const message = computed(() => {
-  if (topic.value) {
-    handler.onToBottom()
-    return chatStore.utils.findChatMessageByTopic(topic.value)
-  }
-  return undefined
-})
-
+// const message = computed(() => {
+//   if (topic.value) {
+//     handler.onToBottom()
+//     return chatStore.utils.findChatMessageByTopic(topic.value)
+//   }
+//   return undefined
+// })
+const message = ref<ChatMessage | undefined>()
+watch(
+  topic,
+  (val, old) => {
+    if (val && val.chatMessageId !== old?.chatMessageId) {
+      handler.onToBottom()
+      message.value = chatStore.utils.findChatMessageByTopic(val)
+    }
+  },
+  { immediate: true, deep: true }
+)
 const togglePanel = ref(true) // 右侧面板是否显示
 shortcut.listen("ctrl+shift+b", res => {
   if (res.active) {

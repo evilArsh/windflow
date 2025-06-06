@@ -9,10 +9,12 @@ import Loading from "./loading.vue"
 import MCPCall from "./mcpcall.vue"
 import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
+import { Role } from "@renderer/types"
 
 const props = defineProps<{
   message: ChatMessage
   messageItem: ChatMessageData
+  parent?: ChatMessageData
   topic: ChatTopic
   header?: boolean
 }>()
@@ -38,12 +40,12 @@ const rawTextDlg = reactive({
   }),
   del: markRaw((msg: ChatMessageData) => {
     if (message.value) {
-      chatStore.deleteSubMessage(topic.value, msg.id)
+      chatStore.deleteSubMessage(topic.value, msg.id, props.parent?.id)
       chatStore.api.updateChatMessage(message.value)
     }
   }),
 })
-const isAssistant = computed(() => !!props.messageItem.modelId)
+const isAssistant = computed(() => props.messageItem.content.role === Role.Assistant)
 const isPartial = computed(() => {
   return props.messageItem.status < 200 || props.messageItem.status == 206
 })
@@ -55,6 +57,7 @@ const isPartial = computed(() => {
         <Title :message-item>
           <Handler
             :topic
+            :parent
             :message
             :message-item
             @delete="rawTextDlg.del(messageItem)"

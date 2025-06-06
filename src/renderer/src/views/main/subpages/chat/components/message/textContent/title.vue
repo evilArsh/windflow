@@ -2,16 +2,17 @@
 import { ChatMessageData } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
+import { Role } from "@renderer/types"
 const props = defineProps<{
   messageItem: ChatMessageData
 }>()
 const modelsStore = useModelsStore()
 const providerStore = useProviderStore()
-const isAssistant = computed(() => !!props.messageItem.modelId)
+const isAssistant = computed(() => props.messageItem.content.role === Role.Assistant)
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse: !isAssistant }">
-    <ContentBox class="w3.5rem h3.5rem" background>
+    <ContentBox class="w3.5rem h3.5rem flex-shrink-0" background>
       <Svg
         :src="
           providerStore.getProviderLogo(

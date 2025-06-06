@@ -80,7 +80,6 @@ export default (
         chatMessage.value[message.id] = message
         topic.node.chatMessageId = message.id
       }
-      chatStore.mountContext(topic.node, message)
       currentTopic.value = topic
       currentNodeKey.value = topic.id
       chatStore.refreshChatTopicModelIds(topic.node)

@@ -2,6 +2,7 @@ import { LLMToolCall, LLMResponse, Role, LLMMessage, ModelMeta, LLMRequest, Prov
 import { AxiosInstance } from "axios"
 import { errorToText } from "@shared/error"
 import { HttpStatusCode } from "@shared/code"
+import { mergeWith } from "lodash"
 
 export function usePartialData() {
   let result: LLMResponse = defaultData()
@@ -47,7 +48,11 @@ export function usePartialData() {
     // 分片消息每次返回的消息都是完整的数据结构,只是同一个字段的字符串是分批返回的
     content += data.content ?? ""
     reasoning_content += data.reasoning_content ?? ""
-    Object.assign(result, res)
+    result = mergeWith({}, result, res, (objValue, srcValue, _key) => {
+      if (srcValue === undefined || srcValue === null) {
+        return objValue
+      }
+    })
     if (data.tool_calls) {
       data.tool_calls.forEach(tool => {
         if (isNumber(tool.index)) {

@@ -13,20 +13,16 @@ const id = useId()
 </script>
 <template>
   <MsgBubble :id>
-    <template #header>
-      <el-affix :offset="40" :target="`#${id}`">
-        <!-- <Title :data>
-          <Handler :data @edit="rawTextDlg.edit(data)"></Handler>
-        </Title> -->
-      </el-affix>
-    </template>
+    <template #header> </template>
     <div class="chat-item-content">
       <Single
         v-for="item in messageItem.children"
+        :parent="messageItem"
         :topic
         :message
         :message-item="item"
         :key="item.id"
+        header
         class="flex-1"></Single>
     </div>
   </MsgBubble>

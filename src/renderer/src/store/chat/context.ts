@@ -1,9 +1,12 @@
-import { ChatContext, ChatMessage, ChatMessageData, ChatTopic, LLMMessage, LLMProvider, Role } from "@renderer/types"
+import { ChatContext, ChatMessageData, ChatTopic, LLMMessage, LLMProvider, Role } from "@renderer/types"
 import { cloneDeep } from "lodash"
 
 export const useContext = () => {
   // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key
   const llmChats = reactive<Record<string, ChatContext[]>>({})
+  /**
+   * @description 获取上下文，如果不存在则创建一个，messageDataId可能是子对话id
+   */
   const fetchTopicContext = (
     topicId: string,
     modelId: string,
@@ -106,29 +109,6 @@ export const useContext = () => {
     context.unshift({ role: Role.System, content: JSON.stringify([{ type: "text", content: topic.prompt }]) })
     return context
   }
-  function mountContext(val: ChatTopic, message: ChatMessage) {
-    if (val.chatMessageId !== message.id) {
-      console.warn(`[mountContext] current chatTopic's chatMessageId is not equal to message's id.set it to current`)
-      val.chatMessageId = message.id
-    }
-    if (!llmChats[val.id]) {
-      llmChats[val.id] = message.data.map<ChatContext>(msgData => {
-        return {
-          messageId: message.id,
-          messageDataId: msgData.id,
-          modelId: msgData.modelId,
-          provider: undefined,
-          handler: undefined,
-        } as ChatContext
-      })
-    } else {
-      llmChats[val.id].forEach(ctx => {
-        if (ctx.messageDataId !== message.id) {
-          ctx.messageDataId = message.id
-        }
-      })
-    }
-  }
   function hasTopic(topicId: string) {
     return !!llmChats[topicId]
   }
@@ -151,7 +131,6 @@ export const useContext = () => {
   return {
     fetchTopicContext,
     getMessageContext,
-    mountContext,
     hasTopic,
     findContext,
     findTopicContext,

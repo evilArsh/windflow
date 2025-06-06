@@ -13,7 +13,6 @@ import { ContentType } from "@shared/code"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
 import { mergeRequestConfig, parseResponse, response, usePartialData } from "./utils"
-
 async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {
     const reader = stream.getReader()
