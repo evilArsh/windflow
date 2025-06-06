@@ -2,7 +2,7 @@
 import type { Element } from "hast"
 import { getLang } from "../../worker/utils"
 const props = defineProps<{
-  children?: any
+  children?: string
   node?: Element
 }>()
 const Code = defineAsyncComponent(() => import("./code.vue"))

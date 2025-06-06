@@ -14,6 +14,7 @@
     "mcpList": "配置列表",
     "new": "新增",
     "pin": "置顶",
+    "retry": "重试",
     "save": "保存",
     "send": "发送({shortcut})",
     "sync": "同步"
@@ -34,6 +35,9 @@
     "messageCreateFailed": "消息创建失败",
     "messageRecord": "聊天记录",
     "regenerate": "重新生成",
+    "right": {
+      "prompt": "提示词"
+    },
     "rightPanel": {
       "mcp": "工具",
       "settings": "设置"
@@ -78,16 +82,20 @@
       "market": "发现",
       "servers": "服务列表"
     },
+    "schema": {
+      "noDescription": "没有描述",
+      "params": "参数"
+    },
     "search": "搜索mcp服务",
     "serverName": "名称",
     "service": {
-      "connecting": "工具[{service}]启动中,请稍后重试",
-      "deleteConfirm": "要重启吗?已使用该工具的聊天个数:{count}",
+      "connecting": "工具[{service}]启动中",
+      "deleteConfirm": "要重启吗?已使用该工具的聊天个数 {count}",
       "disabled": "工具已禁用，请先启用",
-      "disconnected": "工具[{service}]启动失败:{message}",
+      "disconnected": "工具[{service}]启动失败 {message}",
       "tabs": {
         "config": "配置",
-        "prompt": "提示",
+        "prompt": "提示词",
         "resource": "资源",
         "resourceTemplates": "资源模板",
         "tool": "工具"

@@ -1,4 +1,8 @@
 export const NameSeprator = "___"
+/**
+ * 配置界面虚拟topicID
+ */
+export const MCPRootTopicId = "RootTopicId"
 export type MCPServerType = "sse" | "streamable" | "stdio"
 export enum MCPClientStatus {
   Connecting = "connecting",

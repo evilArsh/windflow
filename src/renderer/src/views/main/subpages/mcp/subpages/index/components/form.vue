@@ -83,7 +83,7 @@ const handler = {
     emit("close")
   },
 }
-watch(() => props.data, handler.init, { immediate: true })
+watch(() => props.data, handler.init, { immediate: true, deep: true })
 </script>
 <template>
   <DialogPanel>

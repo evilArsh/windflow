@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 import useMcpStore from "@renderer/store/mcp"
 import {
+  MCPClientStatus,
   MCPPromptItem,
   MCPResourceItem,
   MCPResourceTemplatesItem,
+  MCPRootTopicId,
   MCPServerParam,
   MCPToolDetail,
 } from "@shared/types/mcp"
@@ -17,8 +19,15 @@ import Form from "./components/form.vue"
 import List from "./components/list.vue"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { useDebounceFn } from "@vueuse/core"
-// import { useToolName } from "@shared/mcp"
-// const toolName = useToolName()
+import { code2xx } from "@shared/types/bridge"
+import Retry from "./retry.vue"
+import Schema from "./schema.vue"
+import Prompt from "./prompt.vue"
+import Resource from "./resource.vue"
+import ResourceTpl from "./resourceTpl.vue"
+import { ElNotification } from "element-plus"
+import { useToolName } from "@shared/mcp"
+const toolName = useToolName()
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
@@ -35,15 +44,65 @@ const {
 })
 const currentServer = ref<MCPServerParam>()
 const serverHandler = {
+  getMcpTools: async () => {
+    if (!currentServer.value) return
+    currentServer.value.status = MCPClientStatus.Connecting
+    const res = await window.api.mcp.registerServer(MCPRootTopicId, cloneDeep(currentServer.value))
+    currentServer.value.status = res.data
+    if (code2xx(res.code)) {
+      // MCP工具
+      tabs.tools = (await window.api.mcp.listTools(currentServer.value.id)).data.map(v => {
+        return { ...v, name: toolName.split(v.name).name }
+      })
+      tabs.prompts = (await window.api.mcp.listPrompts(currentServer.value.id)).data.prompts.map(v => {
+        return { ...v, name: toolName.split(v.name).name }
+      })
+      tabs.resources = (await window.api.mcp.listResources(currentServer.value.id)).data.resources.map(v => {
+        return { ...v, name: toolName.split(v.name).name }
+      })
+      tabs.resourceTemplates = (
+        await window.api.mcp.listResourceTemplates(currentServer.value.id)
+      ).data.resourceTemplates.map(v => {
+        return { ...v, name: toolName.split(v.name).name }
+      })
+    } else {
+      ElNotification({
+        title: t("notify.title.error"),
+        message: res.msg,
+        type: "error",
+        duration: 5000,
+      })
+    }
+  },
+  restart: async (data: MCPServerParam) => {
+    const notify = ElNotification({
+      title: t("notify.title.info"),
+      message: t("mcp.service.connecting"),
+      type: "error",
+      showClose: false,
+    })
+    try {
+      const res = await window.api.mcp.toggleServer(MCPRootTopicId, data.id, { command: "restart" })
+      if (code2xx(res.code)) {
+        await serverHandler.getMcpTools()
+      } else if (res.code == 404) {
+        serverHandler.getMcpTools()
+      } else {
+        throw new Error(res.msg)
+      }
+    } finally {
+      notify.close()
+    }
+  },
   onCardClick: async (current: MCPServerParam) => {
     try {
       tabs.loading = true
       currentServer.value = current
-      // MCP工具
-      tabs.tools = (await window.api.mcp.listTools(current.id)).data
-      tabs.prompts = (await window.api.mcp.listPrompts(current.id)).data.prompts
-      tabs.resources = (await window.api.mcp.listResources(current.id)).data.resources
-      tabs.resourceTemplates = (await window.api.mcp.listResourceTemplates(current.id)).data.resourceTemplates
+      tabs.tools.length = 0
+      tabs.prompts.length = 0
+      tabs.resources.length = 0
+      tabs.resourceTemplates.length = 0
+      serverHandler.getMcpTools()
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {
@@ -80,10 +139,17 @@ const dlg = {
         const res = cloneDeep(data)
         await mcp.api.add(res)
         servers.value.push(res)
+        currentServer.value = res
+        if (!data.disabled) {
+          await serverHandler.getMcpTools()
+        }
       } else {
+        if (currentServer.value) Object.assign(currentServer.value, data)
         await mcp.api.update(cloneDeep(data))
+        if (!data.disabled) {
+          await serverHandler.restart(data)
+        }
       }
-      if (currentServer.value) Object.assign(currentServer.value, data)
       msg({ code: 200, msg: "ok" })
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
@@ -162,7 +228,7 @@ const search = reactive({
           </div>
         </el-scrollbar>
       </div>
-      <el-tabs v-loading="tabs.loading" class="mcp-config-tabs" v-model="tabs.active">
+      <el-tabs v-if="currentServer" v-loading="tabs.loading" class="mcp-config-tabs" v-model="tabs.active">
         <el-tab-pane :label="t('mcp.service.tabs.config')" name="config">
           <Form
             hide-close-btn
@@ -170,11 +236,56 @@ const search = reactive({
             :form-props="{ labelPosition: 'top' }"
             :data="currentServer"></Form>
         </el-tab-pane>
-        <el-tab-pane :label="t('mcp.service.tabs.tool')" name="tool">User</el-tab-pane>
-        <el-tab-pane :label="t('mcp.service.tabs.prompt')" name="prompt">User</el-tab-pane>
-        <el-tab-pane :label="t('mcp.service.tabs.resource')" name="resource">User</el-tab-pane>
-        <el-tab-pane :label="t('mcp.service.tabs.resourceTemplates')" name="resourceTemplates">User</el-tab-pane>
+        <el-tab-pane :label="t('mcp.service.tabs.tool')" name="tool">
+          <Retry
+            v-if="currentServer.status !== MCPClientStatus.Connected"
+            @retry="serverHandler.getMcpTools"
+            :server="currentServer"></Retry>
+          <el-scrollbar v-else class="flex-1">
+            <el-empty v-if="tabs.tools.length == 0"></el-empty>
+            <div v-else class="flex flex-col gap-0.5rem">
+              <Schema v-for="tool in tabs.tools" :data="tool" :key="tool.name"></Schema>
+            </div>
+          </el-scrollbar>
+        </el-tab-pane>
+        <el-tab-pane :label="t('mcp.service.tabs.prompt')" name="prompt">
+          <Retry
+            v-if="currentServer.status !== MCPClientStatus.Connected"
+            @retry="serverHandler.getMcpTools"
+            :server="currentServer"></Retry>
+          <el-scrollbar v-else class="flex-1">
+            <el-empty v-if="tabs.prompts.length == 0"></el-empty>
+            <div v-else class="flex flex-col gap-0.5rem">
+              <Prompt v-for="tool in tabs.prompts" :data="tool" :key="tool.name"></Prompt>
+            </div>
+          </el-scrollbar>
+        </el-tab-pane>
+        <el-tab-pane :label="t('mcp.service.tabs.resource')" name="resource">
+          <Retry
+            v-if="currentServer.status !== MCPClientStatus.Connected"
+            @retry="serverHandler.getMcpTools"
+            :server="currentServer"></Retry>
+          <el-scrollbar v-else class="flex-1">
+            <el-empty v-if="tabs.resources.length == 0"></el-empty>
+            <div v-else class="flex flex-col gap-0.5rem">
+              <Resource v-for="tool in tabs.resources" :data="tool" :key="tool.name"></Resource>
+            </div>
+          </el-scrollbar>
+        </el-tab-pane>
+        <el-tab-pane :label="t('mcp.service.tabs.resourceTemplates')" name="resourceTemplates">
+          <Retry
+            v-if="currentServer.status !== MCPClientStatus.Connected"
+            @retry="serverHandler.getMcpTools"
+            :server="currentServer"></Retry>
+          <el-scrollbar v-else class="flex-1">
+            <el-empty v-if="tabs.resourceTemplates.length == 0"></el-empty>
+            <div v-else class="flex flex-col gap-0.5rem">
+              <ResourceTpl v-for="tool in tabs.resourceTemplates" :data="tool" :key="tool.name"></ResourceTpl>
+            </div>
+          </el-scrollbar>
+        </el-tab-pane>
       </el-tabs>
+      <el-empty v-else class="mcp-config-tabs"></el-empty>
     </div>
     <el-dialog v-bind="dlgProps" v-on="dlgEvent">
       <Form class="h-70vh" @close="dlg.onFormClose" @change="dlg.onFormChange" :data="currentServer"></Form>

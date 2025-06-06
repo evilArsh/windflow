@@ -5,6 +5,7 @@ import { errorToText } from "@shared/error"
 import { cloneDeep } from "lodash-es"
 import { useThrottleFn } from "@vueuse/core"
 const chatStore = useChatStore()
+const { t } = useI18n()
 
 const props = defineProps<{
   topic: ChatTopic
@@ -24,7 +25,7 @@ const onPromptChange = useThrottleFn(async () => {
       <template #icon>
         <i class="i-fluent-emoji-flat:flashlight"></i>
       </template>
-      <el-text type="info">提示词</el-text>
+      <el-text type="info">{{ t("chat.right.prompt") }}</el-text>
     </ContentBox>
     <el-input
       type="textarea"

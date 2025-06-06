@@ -3,7 +3,9 @@ import useMcp from "./useMCP"
 import { BrowserWindow } from "electron"
 import useEnv from "./useEnv"
 import useFile from "./useFile"
-export function registerService(_mainWindow: BrowserWindow): ServiceCore {
+import usePreset from "./usePreset"
+export function registerService(mainWindow: BrowserWindow): ServiceCore {
+  const preset = usePreset(mainWindow)
   const mcp: ServiceCore = useMcp()
   const env: ServiceCore = useEnv()
   const file: ServiceCore = useFile()
@@ -12,11 +14,13 @@ export function registerService(_mainWindow: BrowserWindow): ServiceCore {
     mcp.dispose()
     env.dispose()
     file.dispose()
+    preset.dispose()
   }
   function registerIpc(): void {
     mcp.registerIpc()
     env.registerIpc()
     file.registerIpc()
+    preset.registerIpc()
   }
   return {
     dispose,

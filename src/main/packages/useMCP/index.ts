@@ -17,6 +17,7 @@ import {
   isStreamableServerParams,
   isSSEServerParams,
   MCPClientStatus,
+  MCPRootTopicId,
 } from "@shared/types/mcp"
 import { BridgeResponse, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
@@ -117,6 +118,12 @@ export default (): MCPService & ServiceCore => {
           const refs = await getReference(ctx.params.id)
           if (refs.data.length === 0) {
             return toggleServer(topicId, id, { command: "delete" })
+          } else if (refs.data.length == 1) {
+            // 如果只剩下配置界面的引用，则删除该mcp服务
+            // 用户再次到配置界面时再启动，节约资源
+            if (refs.data[0] === MCPRootTopicId) {
+              return toggleServer(topicId, id, { command: "delete" })
+            }
           }
           return responseData(200, "ok", MCPClientStatus.Disconnected)
         }
