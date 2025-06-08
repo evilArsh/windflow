@@ -19,7 +19,7 @@ export const useUtils = (
     return findChatMessage(topic.chatMessageId)
   }
   /**
-   * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的messageDataId的索引
+   * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的子聊天messageDataId的索引
    */
   const findChatMessageChild = (
     messageId: string,

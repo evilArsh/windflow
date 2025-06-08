@@ -79,6 +79,9 @@ defineExpose({
   flex-direction: column;
   width: 100%;
   :deep(.el-button) {
+    & + .el-button {
+      margin-left: 0;
+    }
     & > span {
       width: 100%;
     }

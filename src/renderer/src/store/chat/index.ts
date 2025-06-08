@@ -94,9 +94,14 @@ export default defineStore("chat_topic", () => {
       api.updateChatMessage(message)
     })
   }
+  /**
+   * @description `parentMessageDataId`存在时，表示restart子聊天；否则表示restart父聊天或者restart所有子聊天；
+   * 当子聊天存在时，父聊天不存在实际的请求，只是一个壳
+   */
   function restart(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
     if (!topic.chatMessageId) return
     initContext(topic.id)
+    terminate(topic, messageDataId, parentMessageDataId)
     const message = utils.findChatMessage(topic.chatMessageId)
     if (!message) {
       console.warn(`[restart] message not found.${topic.chatMessageId}`)
@@ -107,11 +112,17 @@ export default defineStore("chat_topic", () => {
       console.warn(`[restart] messageItem not found.${messageDataId}`)
       return
     }
-    messageData.content = defaultLLMMessage()
-    messageData.finish = false
-    messageData.status = 100
-    messageData.time = formatSecond(new Date())
-    sendMessage(topic, message, messageData, parentMessageDataId)
+    if (!parentMessageDataId && isArray(messageData.children) && messageData.children.length > 0) {
+      messageData.children.forEach(child => {
+        restart(topic, child.id, messageData.id)
+      })
+    } else {
+      messageData.content = defaultLLMMessage()
+      messageData.finish = false
+      messageData.status = 100
+      messageData.time = formatSecond(new Date())
+      sendMessage(topic, message, messageData, parentMessageDataId)
+    }
   }
   function send(topic: ChatTopic) {
     if (!topic.content.trim()) return
@@ -191,13 +202,11 @@ export default defineStore("chat_topic", () => {
     if (!messageData) return
     const chatContext = findContext(topic.id, messageData.id)
     chatContext?.handler?.terminate()
-    if (messageData.content.role === Role.Assistant) {
-      if (Array.isArray(messageData.children)) {
-        messageData.children.forEach(child => {
-          const chatContext = findContext(topic.id, child.id)
-          chatContext?.handler?.terminate()
-        })
-      }
+    if (isArray(messageData.children)) {
+      messageData.children.forEach(child => {
+        const chatContext = findContext(topic.id, child.id)
+        chatContext?.handler?.terminate()
+      })
     }
   }
   /**
@@ -224,11 +233,13 @@ export default defineStore("chat_topic", () => {
       if (!message) return
       terminate(topic, messageDataId, parentMessageDataId)
       if (parentMessageDataId) {
-        const [messageData, parentIndex] = utils.findChatMessageChild(message.id, parentMessageDataId)
-        const [__, index] = utils.findChatMessageChild(message.id, messageDataId, parentMessageDataId)
-        if (messageData && index > -1 && parentIndex > -1) {
-          messageData?.children?.splice(index, 1)
-          if (messageData?.children?.length === 0) {
+        const [parentMessageData, parentIndex] = utils.findChatMessageChild(message.id, parentMessageDataId)
+        const [messageData, index] = utils.findChatMessageChild(message.id, messageDataId, parentMessageDataId)
+        console.log("[delete sub message]", messageData)
+        if (parentMessageData && index > -1 && parentIndex > -1) {
+          parentMessageData.children?.splice(index, 1)
+          if (parentMessageData.children?.length === 0) {
+            console.log("[delete sub message] sub is empty, delete parent")
             message.data.splice(parentIndex, 1)
           }
         } else {
@@ -238,8 +249,9 @@ export default defineStore("chat_topic", () => {
           )
         }
       } else {
-        const [_, index] = utils.findChatMessageChild(message.id, messageDataId)
+        const [messageData, index] = utils.findChatMessageChild(message.id, messageDataId)
         if (index == -1) return
+        console.log("[delete sub message]", messageData)
         message.data.splice(index, 1)
       }
     } catch (error) {

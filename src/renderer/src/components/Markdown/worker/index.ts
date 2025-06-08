@@ -44,16 +44,20 @@ const parser = (components: Components) => {
     return normalizeFormula(content)
   }
   const parse = async (newContent: string) => {
-    const content = preHandleContent(newContent)
-    file.value = content
-    const hast = processor.runSync(processor.parse(file))
-    html.value = toVueRuntime(hast, {
-      components,
-      ignoreInvalidStyle: true,
-      stylePropertyNameCase: "css",
-      passKeys: true,
-      passNode: true,
-    })
+    try {
+      const content = preHandleContent(newContent)
+      file.value = content
+      const hast = processor.runSync(processor.parse(file))
+      html.value = toVueRuntime(hast, {
+        components,
+        ignoreInvalidStyle: true,
+        stylePropertyNameCase: "css",
+        passKeys: true,
+        passNode: true,
+      })
+    } catch (error) {
+      console.error("[error in Markdown parse]", error)
+    }
   }
   mermaid.init()
   return {

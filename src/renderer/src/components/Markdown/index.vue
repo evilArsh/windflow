@@ -23,7 +23,7 @@ const { html, parse } = useParser({
 function handleContent(content: LLMContent) {
   if (!isString(content)) return
   if (!content) {
-    html.value = ""
+    html.value = h("span", "")
   }
   parse(content)
 }

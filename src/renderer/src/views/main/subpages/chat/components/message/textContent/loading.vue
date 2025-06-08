@@ -10,7 +10,9 @@ const activeNames = ref<string[]>([])
 const regex = /[\r\n ]+/g
 const content = computed<string>(() => props.messageItem.content.content as string)
 const thinking = computed(
-  () => !content.value || (content.value.length < 5 && content.value.replace(regex, "").length == 0)
+  () =>
+    !props.messageItem.finish &&
+    (!content.value || (content.value.length < 5 && content.value.replace(regex, "").length == 0))
 )
 watch(
   thinking,
