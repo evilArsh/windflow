@@ -6,7 +6,7 @@ import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
 import useSettingsStore from "@renderer/store/settings"
-import { ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatMessage, ChatTopic, SettingKeys } from "@renderer/types"
 const props = defineProps<{
   topic?: ChatTopic
 }>()
@@ -16,15 +16,31 @@ const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("conten
 const shortcut = useShortcut()
 
 const topic = computed(() => props.topic)
-const message = computed(() => {
-  if (topic.value) {
-    handler.onToBottom()
-    const m = chatStore.utils.findChatMessageByTopic(topic.value)
-    console.log("[switch message]", m)
-    return m
-  }
-  return undefined
-})
+const message = ref<ChatMessage>()
+// const message = computed(() => {
+//   if (topic.value) {
+//     handler.onToBottom()
+//     const m = chatStore.utils.findChatMessageByTopic(topic.value)
+//     console.log("[switch message]", m)
+//     return m
+//   }
+//   return undefined
+// })
+watch(
+  topic,
+  val => {
+    if (val) {
+      console.log("[topic change]", val)
+      nextTick(() => {
+        handler.onToBottom()
+      })
+      const m = chatStore.utils.findChatMessageByTopic(val)
+      console.log("[switch message]", m)
+      message.value = m
+    }
+  },
+  { immediate: true }
+)
 const togglePanel = ref(true) // 右侧面板是否显示
 shortcut.listen("ctrl+shift+b", res => {
   if (res.active) {
