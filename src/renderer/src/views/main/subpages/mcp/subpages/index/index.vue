@@ -187,7 +187,7 @@ const search = reactive({
       </div>
     </template>
     <div class="flex flex-1 overflow-hidden gap1rem">
-      <div class="flex flex-col overflow-hidden w-30rem">
+      <div class="mcp-config-list">
         <div class="p1rem">
           <el-input v-model="search.keyword" :placeholder="t('mcp.search')" @input="search.query" clearable />
         </div>
@@ -303,6 +303,19 @@ const search = reactive({
   </ContentLayout>
 </template>
 <style lang="scss" scoped>
+html.dark {
+  .mcp-config-list {
+    border-color: #494949;
+  }
+}
+.mcp-config-list {
+  border-right: solid 1px;
+  border-color: #efefef;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 30rem;
+}
 .mcp-config-tabs {
   flex: 1;
   :deep(.el-tabs__content) {
