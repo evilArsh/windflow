@@ -6,38 +6,24 @@ import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
 import useSettingsStore from "@renderer/store/settings"
-import { ChatMessage, ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatMessage, ChatTopicTree, SettingKeys } from "@renderer/types"
 const props = defineProps<{
-  topic?: ChatTopic
+  topic?: ChatTopicTree
 }>()
 const settingsStore = useSettingsStore()
 const chatStore = useChatStore()
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const shortcut = useShortcut()
 
-const topic = computed(() => props.topic)
+const topic = computed(() => props.topic?.node)
 const message = ref<ChatMessage>()
-// const message = computed(() => {
-//   if (topic.value) {
-//     handler.onToBottom()
-//     const m = chatStore.utils.findChatMessageByTopic(topic.value)
-//     console.log("[switch message]", m)
-//     return m
-//   }
-//   return undefined
-// })
 watch(
   topic,
   val => {
-    if (val) {
-      console.log("[topic change]", val)
-      nextTick(() => {
-        handler.onToBottom()
-      })
-      const m = chatStore.utils.findChatMessageByTopic(val)
-      console.log("[switch message]", m)
-      message.value = m
-    }
+    if (!val) return
+    window.setTimeout(handler.onToBottom)
+    const m = chatStore.utils.findChatMessageByTopic(val)
+    message.value = m
   },
   { immediate: true }
 )
@@ -85,9 +71,7 @@ const handler = {
           </div>
         </el-card>
       </template>
-      <div v-if="message" class="flex flex-col-reverse p-1.5rem gap2.5rem">
-        <TextContent v-for="messageItem in message.data" :key="messageItem.id" :topic :message :message-item />
-      </div>
+      <TextContent :topic :message />
       <template v-if="message" #handler>
         <Handler :topic :message @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>

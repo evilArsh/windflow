@@ -1,7 +1,7 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
 import type Node from "element-plus/es/components/tree/src/model/node"
-import { ChatMessage, ChatTopicTree, SettingKeys } from "@renderer/types"
+import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
@@ -64,11 +64,9 @@ export default (
   async function setCurrentTopic(topic: ChatTopicTree) {
     try {
       if (currentTopic.value && topic.id === currentTopic.value.id) return
-      let message: ChatMessage | undefined
       if (topic.node.chatMessageId) {
-        message = chatStore.utils.findChatMessage(topic.node.chatMessageId)
-        if (!message) {
-          message = await chatStore.api.getChatMessage(topic.node.chatMessageId)
+        if (!chatStore.utils.findChatMessage(topic.node.chatMessageId)) {
+          let message = await chatStore.api.getChatMessage(topic.node.chatMessageId)
           if (!message) {
             message = await chatStore.api.createNewMessage()
             topic.node.chatMessageId = message.id
@@ -76,7 +74,7 @@ export default (
           chatMessage.value[message.id] = message
         }
       } else {
-        message = await chatStore.api.createNewMessage()
+        const message = await chatStore.api.createNewMessage()
         chatMessage.value[message.id] = message
         topic.node.chatMessageId = message.id
       }

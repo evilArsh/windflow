@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
       </ScalePanel>
     </template>
     <template #content>
-      <MessagePanel :topic="currentTopic?.node">
+      <MessagePanel :topic="currentTopic">
         <template #leftHandler>
           <teleport to="#toggleMenu" defer :disabled="!toggleMenu">
             <ContentBox @click="toggleMenu = !toggleMenu" background>

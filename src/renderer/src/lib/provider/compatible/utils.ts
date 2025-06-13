@@ -113,7 +113,7 @@ export function usePartialData() {
 
 export function parseResponse(text: string, stream: boolean): LLMResponse {
   try {
-    if (text.includes(":keep-alive")) {
+    if (/:\s*keep-alive/.test(text)) {
       return {
         status: 102,
         data: {

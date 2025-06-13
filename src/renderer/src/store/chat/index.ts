@@ -80,6 +80,7 @@ export default defineStore("chat_topic", () => {
       } else if (status == 200) {
         messageData.finish = true
         topic.requestCount = Math.max(0, topic.requestCount - 1)
+        if (parentMessageDataId) return // 多模型请求时不总结标题
         if (topic.label === window.defaultTopicTitle && chatContext.provider) {
           chatContext.provider.summarize(JSON.stringify(messageData), model, providerMeta).then(res => {
             if (res) topic.label = res
@@ -128,12 +129,12 @@ export default defineStore("chat_topic", () => {
     if (!topic.content.trim()) return
     if (topic.modelIds.length == 0) return
     if (!topic.chatMessageId) {
-      console.warn("[send] topic.chatMessageId is empty")
+      console.error("[send] topic.chatMessageId is empty")
       return
     }
     const message = utils.findChatMessage(topic.chatMessageId)
     if (!message) {
-      console.warn("[send] message not found")
+      console.error("[send] message not found")
       return
     }
     const id = uniqueId()
@@ -153,24 +154,22 @@ export default defineStore("chat_topic", () => {
       time: formatSecond(new Date()),
       children: [],
     })
-    const availiableModels = topic.modelIds.filter(modelId => getMeta(modelId))
-    if (availiableModels.length > 1) {
-      availiableModels.forEach(modelId => {
-        if (!newMessageData.children) newMessageData.children = []
-        newMessageData.children.push(
-          reactive<ChatMessageData>({
-            id: uniqueId(),
-            parentId: newMessageData.id,
-            status: 200,
-            content: defaultLLMMessage(),
-            modelId,
-            time: formatSecond(new Date()),
-          })
-        )
+    const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
+    if (availableModels.length > 1) {
+      availableModels.forEach(modelId => {
+        newMessageData.children!.push({
+          id: uniqueId(),
+          parentId: newMessageData.id,
+          status: 200,
+          content: defaultLLMMessage(),
+          modelId,
+          time: formatSecond(new Date()),
+        })
       })
     } else {
-      newMessageData.modelId = availiableModels[0]
+      newMessageData.modelId = availableModels[0]
     }
+    message.data.unshift(newMessageData)
     if (newMessageData.children && newMessageData.children.length > 0) {
       newMessageData.children.forEach(child => {
         sendMessage(topic, message, child, newMessageData.id)
@@ -178,7 +177,6 @@ export default defineStore("chat_topic", () => {
     } else {
       sendMessage(topic, message, newMessageData)
     }
-    message.data.unshift(newMessageData)
     topic.content = ""
     api.updateChatTopic(topic)
   }

@@ -17,21 +17,23 @@ mermaid.initialize({
   fontFamily: "Maple Mono CN",
   theme: "default",
 })
-const { html, parse } = useParser({
+const { html, parse, destroy, init } = useParser({
   code: CodeBlock,
 })
 function handleContent(content: LLMContent) {
   if (!isString(content)) return
   if (!content) {
     html.value = h("span", "")
+    return
   }
   parse(content)
 }
-watch(
-  () => props.content,
-  val => handleContent(val),
-  { immediate: true }
-)
+watch(() => props.content, handleContent)
+onMounted(() => {
+  init()
+  handleContent(props.content)
+})
+onBeforeUnmount(destroy)
 </script>
 <template>
   <div class="markdown-container">

@@ -17,6 +17,8 @@ function langPatch(lang: string): string {
       return "cpp"
     case "cxx":
       return "cpp"
+    case "unocss":
+      return "css"
     default:
       return lang
   }

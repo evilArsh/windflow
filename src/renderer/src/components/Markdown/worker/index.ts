@@ -12,7 +12,7 @@ import { rehypeHrToBr, rehypeUrlAttributes } from "./rehypeCode"
 import { normalizeFormula } from "./utils"
 import useMermaid from "../usable/useMermaid"
 import { toVueRuntime } from "./toVueRuntime/index"
-import { Components } from "./toVueRuntime/types"
+import { Components, JsxElement } from "./toVueRuntime/types"
 export const createProcessor = () => {
   return (
     unified()
@@ -37,17 +37,21 @@ export const createProcessor = () => {
 }
 const parser = (components: Components) => {
   const mermaid = useMermaid()
-  const html = shallowRef<any>()
+  const html = shallowRef<JsxElement>()
   const processor = markRaw(createProcessor())
   const file = new VFile()
   const preHandleContent = (content: string) => {
     return normalizeFormula(content)
   }
-  const parse = async (newContent: string) => {
+  const parse = (newContent: string) => {
     try {
       const content = preHandleContent(newContent)
       file.value = content
       const hast = processor.runSync(processor.parse(file))
+      if (hast.children.length == 0) {
+        html.value = h("span", "")
+        return
+      }
       html.value = toVueRuntime(hast, {
         components,
         ignoreInvalidStyle: true,
@@ -59,10 +63,17 @@ const parser = (components: Components) => {
       console.error("[error in Markdown parse]", error)
     }
   }
-  mermaid.init()
+  const destroy = () => {
+    html.value = null
+  }
+  const init = () => {
+    mermaid.init()
+  }
   return {
     html,
     parse,
+    init,
+    destroy,
   }
 }
 export default parser

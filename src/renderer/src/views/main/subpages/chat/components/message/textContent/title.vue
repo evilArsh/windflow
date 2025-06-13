@@ -57,6 +57,7 @@ html.dark {
   }
 }
 .chat-item-header {
+  flex-wrap: wrap;
   background-color: #fff;
   border-radius: 0 1rem 1rem 0;
   padding: 0.5rem 1rem;
