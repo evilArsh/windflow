@@ -10,6 +10,7 @@ defineProps<{
 </script>
 <template>
   <div v-if="message" class="flex flex-col-reverse p-1.5rem gap2.5rem">
+    <el-divider style="--el-border-color: transparent" class="my-0.25rem!"></el-divider>
     <div v-for="messageItem in message.data" :key="messageItem.id">
       <Divider v-if="messageItem.contextFlag" :topic :message :message-item></Divider>
       <Multiple

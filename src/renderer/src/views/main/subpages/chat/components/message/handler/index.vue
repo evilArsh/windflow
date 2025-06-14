@@ -61,16 +61,19 @@ const handler = {
   cleanContext: async (res: { active: boolean }) => {
     try {
       if (res.active) {
-        const confirm = await handler.openTip(`${t("tip.emptyConfirm", { message: t("chat.context") })}`)
-        if (confirm && message.value) {
-          message.value.data.unshift({
-            contextFlag: true,
-            id: uniqueId(),
-            modelId: "",
-            time: formatSecond(Date.now()),
-            content: { role: "", content: "" },
-            status: 200,
-          })
+        if (message.value && message.value.data.length > 0) {
+          if (message.value.data[0].contextFlag) {
+            chatStore.deleteSubMessage(topic.value, message.value.data[0].id)
+          } else {
+            message.value.data.unshift({
+              contextFlag: true,
+              id: uniqueId(),
+              modelId: "",
+              time: formatSecond(Date.now()),
+              content: { role: "", content: "" },
+              status: 200,
+            })
+          }
           await chatStore.api.updateChatMessage(message.value)
           emit("contextClean")
         }

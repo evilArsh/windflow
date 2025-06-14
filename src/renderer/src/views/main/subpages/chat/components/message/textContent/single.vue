@@ -53,12 +53,11 @@ const isPartial = computed(() => {
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: !isAssistant }" :reverse="!isAssistant" :id>
     <template v-if="header" #header>
-      <Affix :offset="40" :target="`#${id}`">
+      <Affix :offset="42" :target="`#${id}`">
         <Title :message-item>
           <Handler
             :topic
             :parent
-            :message
             :message-item
             @delete="rawTextDlg.del(messageItem)"
             @edit="rawTextDlg.edit(messageItem)"></Handler>

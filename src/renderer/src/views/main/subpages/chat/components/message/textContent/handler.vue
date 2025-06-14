@@ -44,44 +44,50 @@ function restart() {
 }
 </script>
 <template>
-  <div class="flex gap1rem py1rem">
-    <div class="flex items-center">
-      <el-tooltip v-if="isAssistant" :content="t('chat.terminate')" placement="bottom">
+  <div class="flex items-center flex-wrap">
+    <el-tooltip v-if="isAssistant" :content="t('chat.terminate')" placement="bottom">
+      <ContentBox class="m0!" background>
         <Button
+          text
           @click="done => terminate(done)"
           size="small"
           :disabled="!isProcessing"
           circle
           plain
-          text
           type="primary">
           <i-solar:stop-circle-bold class="text-1.4rem"></i-solar:stop-circle-bold>
         </Button>
-      </el-tooltip>
-      <el-tooltip v-if="isAssistant" :content="t('chat.regenerate')" placement="bottom">
+      </ContentBox>
+    </el-tooltip>
+    <el-tooltip v-if="isAssistant" :content="t('chat.regenerate')" placement="bottom">
+      <ContentBox class="m0!" background>
         <el-button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </el-button>
-      </el-tooltip>
-      <el-tooltip v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">
+      </ContentBox>
+    </el-tooltip>
+    <el-tooltip v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">
+      <ContentBox class="m0!" background>
         <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
         </el-button>
-      </el-tooltip>
-      <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="$emit('delete')">
-        <template #reference>
+      </ContentBox>
+    </el-tooltip>
+    <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="$emit('delete')">
+      <template #reference>
+        <ContentBox class="m0!" background>
           <el-button size="small" :disabled="!isFinish" circle plain text type="danger">
             <i-solar:trash-bin-trash-outline class="text-1.4rem"></i-solar:trash-bin-trash-outline>
           </el-button>
-        </template>
-        <template #actions="{ confirm, cancel }">
-          <div class="flex justify-between">
-            <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
-            <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
-          </div>
-        </template>
-      </el-popconfirm>
-    </div>
+        </ContentBox>
+      </template>
+      <template #actions="{ confirm, cancel }">
+        <div class="flex justify-between">
+          <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
+          <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+        </div>
+      </template>
+    </el-popconfirm>
   </div>
 </template>
 <style lang="scss" scoped></style>
