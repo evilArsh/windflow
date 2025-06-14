@@ -79,10 +79,6 @@ const update = () => {
         if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
           event.affix.needFloat = position === Direction.Top ? nearTop : !nearTop
         }
-      } else {
-        if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
-          event.affix.needFloat = position === Direction.Top ? nearTop : !nearTop
-        }
       }
     } else {
       // 没有参考元素的情况下：【固钉没有相交】或者【相交在指定的阈值内】
@@ -129,7 +125,6 @@ const affixOb = useIntersectionObserver(
     event.affix.height = entry.boundingClientRect.height
     event.affix.isIntersecting = entry.isIntersecting
     getIntersectDirection(entry, event.affix.directions)
-    // console.log(`[${event.affix.directions}]`, entry, entry.target)
     event.affix.intersectionRatio = entry.intersectionRatio
     update()
   },
@@ -144,7 +139,6 @@ const targetOb = useIntersectionObserver(
     event.target.height = entry.boundingClientRect.height
     event.target.isIntersecting = entry.isIntersecting
     getIntersectDirection(entry, event.target.directions)
-    // console.log(`[${event.target.directions}]`, entry, entry.target)
     event.target.intersectionRatio = entry.intersectionRatio
     update()
   },
