@@ -19,6 +19,8 @@ const props = defineProps<{
   header?: boolean
 }>()
 
+const affixRef = useTemplateRef("affix")
+
 const chatStore = useChatStore()
 
 const message = computed(() => props.message)
@@ -49,11 +51,14 @@ const isAssistant = computed(() => props.messageItem.content.role === Role.Assis
 const isPartial = computed(() => {
   return props.messageItem.status < 200 || props.messageItem.status == 206
 })
+defineExpose({
+  update: () => affixRef.value?.update(),
+})
 </script>
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: !isAssistant }" :reverse="!isAssistant" :id>
     <template v-if="header" #header>
-      <Affix :offset="42" :target="`#${id}`">
+      <Affix ref="affix" :offset="42" :target="`#${id}`">
         <Title :message-item>
           <Handler
             :topic

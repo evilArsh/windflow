@@ -10,6 +10,7 @@ import Tab from "~icons/ic/outline-folder-copy"
 import Title from "./title.vue"
 import { CSSProperties } from "@renderer/lib/shared/types"
 import { Primitive } from "type-fest"
+import { useThrottleFn } from "@vueuse/core"
 const props = defineProps<{
   message: ChatMessage
   messageItem: ChatMessageData
@@ -27,6 +28,7 @@ const childItems = computed<ChatMessageData[]>(() => {
   }
 })
 const childLength = computed(() => (Array.isArray(messageItem.value.children) ? messageItem.value.children.length : 0))
+const affixRefs = ref<InstanceType<typeof Single>[]>([])
 const types = {
   Grid: "grid",
   L2R: "l2r",
@@ -69,6 +71,16 @@ const layout = shallowReactive({
     if (!isString(childId)) return
     layout.currentTabId = childId
   },
+  onItemContentScroll: useThrottleFn(
+    () => {
+      if (affixRefs.value.length <= 1) return
+      affixRefs.value.forEach(refs => {
+        refs.update()
+      })
+    },
+    250,
+    true
+  ),
 })
 const containerStyle = computed<CSSProperties>(() => {
   switch (layout.type) {
@@ -129,7 +141,7 @@ onMounted(() => {
         <Handler hide-edit :topic :message-item @delete="del"></Handler>
         <ContentBox background class="m0! flex-shrink-0">
           <el-radio-group v-model="layout.type" size="small" fill="#6cf" @change="layout.onTypeChange">
-            <el-radio-button v-for="item in layout.typeList" :label="item.value" :key="item.value">
+            <el-radio-button v-for="item in layout.typeList" :label="item.value" :value="item.value" :key="item.value">
               <component :is="item.label"></component>
             </el-radio-button>
           </el-radio-group>
@@ -163,9 +175,10 @@ onMounted(() => {
         </div>
       </div>
     </template>
-    <div class="chat-item-content" :style="containerStyle">
+    <div class="chat-item-content" @scroll="layout.onItemContentScroll" :style="containerStyle">
       <Single
-        v-for="item in childItems"
+        v-for="(item, index) in childItems"
+        :ref="ref => (affixRefs[index] = ref as InstanceType<typeof Single>)"
         :style="itemStyle"
         :parent="messageItem"
         :topic

@@ -135,3 +135,5 @@ selenium-debug.log
 .eslintrc-auto-import.json
 auto-imports.d.ts
 components.d.ts
+
+stats.html
