@@ -4,18 +4,13 @@ import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import MessagePanel from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
-import useShortcut from "@renderer/views/main/usable/useShortcut"
 import EditTopic from "./components/editTopic/index.vue"
 import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
-import useMenu from "./index"
+import { useMenu, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import useSettingsStore from "@renderer/store/settings"
 import { errorToText } from "@shared/error"
-// import { ElLoading } from "element-plus"
-const settingsStore = useSettingsStore()
 const { t } = useI18n()
-const shortcut = useShortcut()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
@@ -25,20 +20,10 @@ const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
 const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, setCurrentTopic, currentTopic, createNewTopic } =
   useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
-const toggleMenu = ref(true) // 左侧菜单是否显示
-shortcut.listen("ctrl+b", res => {
-  if (res.active) {
-    toggleMenu.value = !toggleMenu.value
-  }
-})
-settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, toggleMenu, true)
+const msgContext = useMsgContext()
+const { showTreeMenu, toggleTreeMenu } = msgContext
 async function init() {
   await nextTick()
-  // const loading = ElLoading.service({
-  //   lock: true,
-  //   text: "Loading",
-  //   background: "rgba(0, 0, 0, 0.7)",
-  // })
   try {
     if (currentNodeKey.value) {
       const topicTree = treeRef.value?.getCurrentNode()
@@ -48,8 +33,6 @@ async function init() {
     }
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
-  } finally {
-    // loading.close()
   }
 }
 onMounted(() => {
@@ -62,7 +45,7 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!toggleMenu">
+  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!showTreeMenu">
     <template #submenu>
       <div class="flex flex-col gap.5rem overflow-hidden">
         <div class="chat-provider-header">
@@ -132,12 +115,12 @@ onBeforeUnmount(() => {
       </ScalePanel>
     </template>
     <template #content>
-      <MessagePanel :topic="currentTopic">
+      <MessagePanel :topic="currentTopic" :context="msgContext">
         <template #leftHandler>
-          <teleport to="#toggleMenu" defer :disabled="!toggleMenu">
-            <ContentBox @click="toggleMenu = !toggleMenu" background>
+          <teleport to="#toggleMenu" defer :disabled="!showTreeMenu">
+            <ContentBox @click="_ => toggleTreeMenu()" background>
               <i-material-symbols:right-panel-close-outline
-                v-if="!toggleMenu"></i-material-symbols:right-panel-close-outline>
+                v-if="!showTreeMenu"></i-material-symbols:right-panel-close-outline>
               <i-material-symbols:left-panel-close-outline v-else></i-material-symbols:left-panel-close-outline>
             </ContentBox>
           </teleport>

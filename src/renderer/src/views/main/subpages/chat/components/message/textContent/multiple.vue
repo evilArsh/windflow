@@ -11,10 +11,12 @@ import Title from "./title.vue"
 import { CSSProperties } from "@renderer/lib/shared/types"
 import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
+import { useMsgContext } from "../../../index"
 const props = defineProps<{
   message: ChatMessage
   messageItem: ChatMessageData
   topic: ChatTopic
+  context: ReturnType<typeof useMsgContext>
 }>()
 const id = useId()
 const chatStore = useChatStore()
@@ -181,6 +183,7 @@ onMounted(() => {
         :ref="ref => (affixRefs[index] = ref as InstanceType<typeof Single>)"
         :style="itemStyle"
         :parent="messageItem"
+        :context
         :topic
         :message
         :message-item="item"

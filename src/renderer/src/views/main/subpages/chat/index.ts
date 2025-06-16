@@ -1,5 +1,6 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
+import useShortcut from "@renderer/views/main/usable/useShortcut"
 import type Node from "element-plus/es/components/tree/src/model/node"
 import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import { storeToRefs } from "pinia"
@@ -8,9 +9,59 @@ import { ElMessage, type ScrollbarInstance } from "element-plus"
 import type { TreeInstance, TreeNodeData } from "element-plus"
 import useSettingsStore from "@renderer/store/settings"
 import { errorToText } from "@shared/error"
-import { useThrottleFn } from "@vueuse/core"
+import { useEventBus, useThrottleFn } from "@vueuse/core"
+import { CallBackFn } from "@renderer/lib/shared/types"
 
-export default (
+export const useMsgContext = () => {
+  const settingsStore = useSettingsStore()
+  const shortcut = useShortcut()
+  const toggleBus = useEventBus<boolean>("toggle")
+
+  const showTreeMenu = ref(true) // 左侧菜单是否显示
+  const showRightPanel = ref(true) // 右侧菜单是否展示
+
+  function toggleTreeMenu(toggle?: boolean) {
+    showTreeMenu.value = toggle ?? !showTreeMenu.value
+    toggleBus.emit(showTreeMenu.value)
+  }
+  function toggleRightPanel(toggle?: boolean) {
+    showRightPanel.value = toggle ?? !showRightPanel.value
+    toggleBus.emit(showRightPanel.value)
+  }
+
+  function watchToggle(callback: CallBackFn) {
+    toggleBus.on(callback)
+  }
+  function unWatchToggle(callback: CallBackFn) {
+    toggleBus.off(callback)
+  }
+
+  function init() {
+    settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, showTreeMenu, true)
+    settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, true)
+
+    shortcut.listen("ctrl+b", res => {
+      if (res.active) toggleTreeMenu()
+    })
+    shortcut.listen("ctrl+shift+b", res => {
+      if (res.active) toggleRightPanel()
+    })
+  }
+  init()
+  onBeforeUnmount(() => {
+    toggleBus.reset()
+  })
+  return {
+    showTreeMenu,
+    showRightPanel,
+
+    toggleTreeMenu,
+    toggleRightPanel,
+    watchToggle,
+    unWatchToggle,
+  }
+}
+export const useMenu = (
   scaleRef: Readonly<Ref<ScaleInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
   editTopicRef: Readonly<Ref<{ bounding: () => DOMRect | undefined } | null>>,

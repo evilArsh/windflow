@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import Handler from "./handler/index.vue"
-import useShortcut from "@renderer/views/main/usable/useShortcut"
 import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
-import useSettingsStore from "@renderer/store/settings"
-import { ChatMessage, ChatTopicTree, SettingKeys } from "@renderer/types"
+import { ChatMessage, ChatTopicTree } from "@renderer/types"
+import { useMsgContext } from "../../index"
 const props = defineProps<{
   topic?: ChatTopicTree
+  context: ReturnType<typeof useMsgContext>
 }>()
-const settingsStore = useSettingsStore()
 const chatStore = useChatStore()
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
-const shortcut = useShortcut()
+const { showRightPanel, toggleRightPanel } = props.context
 
 const topic = computed(() => props.topic?.node)
 const message = ref<ChatMessage>()
@@ -27,13 +26,7 @@ watch(
   },
   { immediate: true }
 )
-const togglePanel = ref(true) // 右侧面板是否显示
-shortcut.listen("ctrl+shift+b", res => {
-  if (res.active) {
-    togglePanel.value = !togglePanel.value
-  }
-})
-settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, togglePanel, true)
+
 const handler = {
   onToBottom: () => {
     setTimeout(() => {
@@ -62,21 +55,21 @@ const handler = {
               <slot name="leftHandler"></slot>
             </div>
             <div class="flex items-center gap1rem">
-              <ContentBox @click="togglePanel = !togglePanel" background>
+              <ContentBox @click="_ => toggleRightPanel()" background>
                 <i-material-symbols:left-panel-close-outline
-                  v-if="!togglePanel"></i-material-symbols:left-panel-close-outline>
+                  v-if="!showRightPanel"></i-material-symbols:left-panel-close-outline>
                 <i-material-symbols:right-panel-close-outline v-else></i-material-symbols:right-panel-close-outline>
               </ContentBox>
             </div>
           </div>
         </el-card>
       </template>
-      <TextContent :topic :message />
+      <TextContent :topic :message :context />
       <template v-if="message" #handler>
         <Handler :topic :message @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>
     </ContentLayout>
-    <RightPanel v-show="togglePanel" :topic></RightPanel>
+    <RightPanel v-show="showRightPanel" :topic></RightPanel>
   </div>
   <div v-else class="flex flex-1 items-center justify-center">
     <el-empty />

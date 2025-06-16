@@ -10,6 +10,7 @@ import MCPCall from "./mcpcall.vue"
 import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
+import { useMsgContext } from "../../../index"
 
 const props = defineProps<{
   message: ChatMessage
@@ -17,6 +18,7 @@ const props = defineProps<{
   parent?: ChatMessageData
   topic: ChatTopic
   header?: boolean
+  context: ReturnType<typeof useMsgContext>
 }>()
 
 const affixRef = useTemplateRef("affix")
@@ -51,8 +53,17 @@ const isAssistant = computed(() => props.messageItem.content.role === Role.Assis
 const isPartial = computed(() => {
   return props.messageItem.status < 200 || props.messageItem.status == 206
 })
+const updateAffix = () => {
+  nextTick(affixRef.value?.update)
+}
+onMounted(() => {
+  props.context.watchToggle(updateAffix)
+})
+onBeforeUnmount(() => {
+  props.context.unWatchToggle(updateAffix)
+})
 defineExpose({
-  update: () => affixRef.value?.update(),
+  update: updateAffix,
 })
 </script>
 <template>

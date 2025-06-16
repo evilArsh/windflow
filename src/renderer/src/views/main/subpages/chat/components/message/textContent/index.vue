@@ -3,9 +3,11 @@ import { ChatMessage, ChatTopic } from "@renderer/types/chat"
 import Single from "./single.vue"
 import Multiple from "./multiple.vue"
 import Divider from "./divider.vue"
+import { useMsgContext } from "../../../index"
 defineProps<{
   topic: ChatTopic
   message?: ChatMessage
+  context: ReturnType<typeof useMsgContext>
 }>()
 </script>
 <template>
@@ -16,9 +18,10 @@ defineProps<{
       <Multiple
         v-else-if="messageItem.children && messageItem.children.length > 0"
         :topic
+        :context
         :message
         :message-item></Multiple>
-      <Single v-else :topic :message :message-item header></Single>
+      <Single v-else :topic :message :context :message-item header></Single>
     </div>
   </div>
 </template>
