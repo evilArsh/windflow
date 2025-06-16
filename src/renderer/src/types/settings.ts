@@ -1,4 +1,4 @@
-import { Primitive } from "type-fest"
+import type { Primitive } from "type-fest"
 
 export enum SettingKeys {
   ChatSubNav = "chat.subNav", // 聊天子菜单宽度配置

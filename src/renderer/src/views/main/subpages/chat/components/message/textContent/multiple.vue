@@ -9,7 +9,7 @@ import IconGrid from "~icons/ic/baseline-grid-on"
 import Tab from "~icons/ic/outline-folder-copy"
 import Title from "./title.vue"
 import { CSSProperties } from "@renderer/lib/shared/types"
-import { Primitive } from "type-fest"
+import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
 const props = defineProps<{
   message: ChatMessage
