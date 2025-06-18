@@ -47,23 +47,6 @@ const formHandler = {
   },
 }
 const serverHandler = {
-  test: async (done: CallBackFn) => {
-    try {
-      const ids = topic.value.mcpServers.map(v => v.id)
-      const listTools = await window.api.mcp.listTools(ids)
-      const listPrompts = await window.api.mcp.listPrompts(ids)
-      const listResources = await window.api.mcp.listResources(ids)
-      const listResourceTemplates = await window.api.mcp.listResourceTemplates(ids)
-      console.log("[listTools]", listTools)
-      console.log("[listPrompts]", listPrompts)
-      console.log("[listResources]", listResources)
-      console.log("[listResourceTemplates]", listResourceTemplates)
-    } catch (error) {
-      msg({ code: 500, msg: errorToText(error) })
-    } finally {
-      done()
-    }
-  },
   showErrorDlg: (data: MCPServerParam, msg: string) => {
     ElNotification({
       title: t("notify.title.error"),
@@ -199,10 +182,10 @@ watch(topic, serverHandler.loadMCP, { immediate: true })
 </script>
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
-    <div class="flex-shrink-0 flex">
-      <Button size="small" @click="serverHandler.syncServers">{{ t("btn.sync") }}</Button>
-      <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
-    </div>
+    <!-- <div class="flex-shrink-0 flex">
+      <Button size="small" @click="serverHandler.syncServers">{{ t("btn.refresh") }}</Button>
+      <Button size="small" @click="serverHandler.test">测试</Button>
+    </div> -->
     <div class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
         <div v-for="(server, index) in topic.mcpServers" :key="server.id">

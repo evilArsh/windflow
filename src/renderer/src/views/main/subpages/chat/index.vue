@@ -83,9 +83,9 @@ onBeforeUnmount(() => {
                       <Svg class="max-w4rem h2rem" :src="data.node.icon"></Svg>
                     </template>
                     <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
-                      <i-eos-icons:bubble-loading
+                      <i-svg-spinners:8-dots-rotate
                         v-show="data.node.requestCount > 0"
-                        class="flex-shrink-0 text-1.2rem"></i-eos-icons:bubble-loading>
+                        class="flex-shrink-0 text-1.2rem"></i-svg-spinners:8-dots-rotate>
                       <el-text line-clamp="1">{{ data.node.label }}</el-text>
                     </div>
                   </ContentBox>

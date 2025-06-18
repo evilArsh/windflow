@@ -28,8 +28,12 @@ export interface MCPParamsBase {
   id: string
   serverName: string
   description: string
-  disabled?: boolean
+  // disabled?: boolean
   status?: MCPClientStatus
+  tools?: MCPToolDetail[]
+  prompts?: MCPPromptItem[]
+  resources?: MCPResourceItem[]
+  resourceTemplates?: MCPResourceTemplatesItem[]
 }
 export interface MCPStreamableServerParam extends MCPRequestParams, MCPParamsBase {
   type: "sse" | "streamable"

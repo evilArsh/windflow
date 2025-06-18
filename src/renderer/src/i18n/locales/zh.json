@@ -14,6 +14,7 @@
     "mcpList": "配置列表",
     "new": "新增",
     "pin": "置顶",
+    "refresh": "刷新",
     "retry": "重试",
     "save": "保存",
     "send": "发送({shortcut})",
@@ -89,10 +90,10 @@
     "search": "搜索mcp服务",
     "serverName": "名称",
     "service": {
-      "connecting": "工具[{service}]启动中",
+      "connecting": "工具{service}启动中",
       "deleteConfirm": "要重启吗?已使用该工具的聊天个数 {count}",
       "disabled": "工具已禁用，请先启用",
-      "disconnected": "工具[{service}]启动失败 {message}",
+      "disconnected": "工具{service}启动失败 {message}",
       "tabs": {
         "config": "配置",
         "prompt": "提示词",

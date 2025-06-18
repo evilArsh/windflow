@@ -5,8 +5,8 @@ defineProps<{
 }>()
 </script>
 <template>
-  <div class="flex gap.5rem">
-    <el-text line-clamp="1">{{ data.serverName }}</el-text>
+  <div class="flex gap.5rem items-center">
+    <el-text class="break-all">{{ data.serverName }}</el-text>
     <ContentBox v-if="data.type === 'stdio'">
       <i-fluent-emoji-flat:desktop-computer class="text-1.2rem"></i-fluent-emoji-flat:desktop-computer>
     </ContentBox>
