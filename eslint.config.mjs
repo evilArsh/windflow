@@ -1,4 +1,5 @@
-import { fileURLToPath } from "url"
+import { fileURLToPath } from "node:url"
+import fs from "node:fs"
 import path from "node:path"
 import globals from "globals"
 import pluginJs from "@eslint/js"
@@ -7,11 +8,12 @@ import typescriptEslint from "@typescript-eslint/eslint-plugin"
 import parserVue from "vue-eslint-parser"
 import pluginVue from "eslint-plugin-vue"
 import pluginPrettier from "eslint-plugin-prettier"
+import configPrettier from "eslint-config-prettier/flat"
 import pluginPrettierRecommand from "eslint-plugin-prettier/recommended"
 import pluginPromise from "eslint-plugin-promise"
 import pluginImport from "eslint-plugin-import"
-import autoImport from "./.eslintrc-auto-import.json" with { type: "json" }
 import pluginN from "eslint-plugin-n"
+const autoImportConfig = JSON.parse(fs.readFileSync(".eslintrc-auto-import.json", "utf-8"))
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
 const __dirname = path.dirname(__filename) // get the name of the directory
 /**
@@ -63,22 +65,18 @@ export default [
       "uno.config.{ts,mts,js,mjs}",
     ],
   },
-
   {
-    name: "global plugins",
+    name: "global-language-config",
     plugins: {
       prettier: pluginPrettier,
       "@typescript-eslint": typescriptEslint,
       import: pluginImport,
     },
-    languageOptions: autoImport,
-  },
-  {
-    name: "global-language-config",
     languageOptions: {
       globals: {
         ...globals.browser,
         ...globals.es2020,
+        ...autoImportConfig.globals,
       },
       parserOptions: {
         parser: tseslint.parser,
@@ -148,23 +146,7 @@ export default [
   {
     name: "prettier rules",
     rules: {
-      "prettier/prettier": [
-        "error",
-        {
-          printWidth: 120,
-          usePrettierrc: true,
-          useTabs: false,
-          bracketSpacing: true,
-          proseWrap: "never",
-          semi: false,
-          singleQuote: false,
-          bracketSameLine: true,
-          arrowParens: "avoid",
-          endOfLine: "crlf",
-          trailingComma: "es5",
-          htmlWhitespaceSensitivity: "css",
-        },
-      ],
+      "prettier/prettier": "error",
     },
   },
   {
@@ -187,6 +169,7 @@ export default [
       ],
     },
   },
+  configPrettier,
 ]
 // )
 // export default cnf
