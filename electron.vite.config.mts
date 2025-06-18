@@ -65,13 +65,13 @@ export default defineConfig({
           enabled: true,
           filepath: "./.eslintrc-auto-import.json",
         },
-        dirs: ["./src/renderer/src/lib/shared"],
+        dirs: ["./src/renderer/src/lib/shared", "./src/lib/shared"],
         resolvers: [IconsResolver(), ElementPlusResolver()],
       }),
       Components({
         resolvers: [IconsResolver(), ElementPlusResolver()],
         dts: true,
-        globs: ["./src/renderer/src/components/*/index.vue"],
+        globs: ["./src/renderer/src/components/*/index.vue", "./src/components/*/index.vue"],
       }),
       visualizer({
         open: true,
