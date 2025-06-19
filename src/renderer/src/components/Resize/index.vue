@@ -21,6 +21,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "update:modelValue", value: CSSProperties): void
   (e: "afterScale"): void
+  (e: "scaling"): void
 }>()
 
 const scaleConfig = ref<ScaleConfig>({
@@ -85,6 +86,7 @@ on(ScaleEv.SCALING, () => {
     width: getValue("width", scaleConfig.value.containerStyle?.width),
     height: getValue("height", scaleConfig.value.containerStyle?.height),
   })
+  emit("scaling")
 })
 on(ScaleEv.AFTER_SCALE, () => {
   emit("afterScale")

@@ -58,6 +58,9 @@ export const useMsgContext = () => {
     toggleTreeMenu,
     toggleRightPanel,
     watchToggle,
+    emitToggle: (toggle?: boolean) => {
+      toggleBus.emit(toggle)
+    },
     unWatchToggle,
   }
 }

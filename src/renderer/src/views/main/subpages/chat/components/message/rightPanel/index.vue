@@ -4,12 +4,15 @@ import { CSSProperties } from "@renderer/lib/shared/types"
 import MCP from "./components/mcp.vue"
 import Setting from "./components/setting/index.vue"
 import Prompt from "./components/prompt.vue"
+import { useMsgContext } from "../../../index"
 const props = defineProps<{
   topic: ChatTopic
+  context: ReturnType<typeof useMsgContext>
 }>()
 const emit = defineEmits<{
   resizeChange: []
 }>()
+const { emitToggle } = props.context
 const topic = computed<ChatTopic>(() => props.topic)
 const { t } = useI18n()
 const rightNavRef = useTemplateRef("rightNav")
@@ -22,7 +25,13 @@ const tabs = reactive({
 </script>
 <template>
   <div ref="rightNav" :style="resizeStyle" class="right-panel">
-    <Resize v-model="resizeStyle" @after-scale="emit('resizeChange')" size="8px" direction="l" :target="rightNavRef" />
+    <Resize
+      v-model="resizeStyle"
+      @scaling="emitToggle"
+      @after-scale="emit('resizeChange')"
+      size="8px"
+      direction="l"
+      :target="rightNavRef" />
     <div class="flex flex-col flex-1">
       <Prompt :topic></Prompt>
       <el-divider class="my1.5rem!"></el-divider>

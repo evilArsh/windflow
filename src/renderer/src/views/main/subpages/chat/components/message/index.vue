@@ -69,7 +69,7 @@ const handler = {
         <Handler :topic :message @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>
     </ContentLayout>
-    <RightPanel v-show="showRightPanel" :topic></RightPanel>
+    <RightPanel v-show="showRightPanel" :context :topic></RightPanel>
   </div>
   <div v-else class="flex flex-1 items-center justify-center">
     <el-empty />

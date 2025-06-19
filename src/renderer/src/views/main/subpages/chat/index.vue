@@ -21,7 +21,7 @@ const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("ed
 const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, setCurrentTopic, currentTopic, createNewTopic } =
   useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const msgContext = useMsgContext()
-const { showTreeMenu, toggleTreeMenu } = msgContext
+const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext
 async function init() {
   await nextTick()
   try {
@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!showTreeMenu">
+  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!showTreeMenu" @scaling="emitToggle">
     <template #submenu>
       <div class="flex flex-col gap.5rem overflow-hidden">
         <div class="chat-provider-header">

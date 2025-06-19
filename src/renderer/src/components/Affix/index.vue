@@ -68,6 +68,23 @@ const {
   height: affixHeight,
   update: updateAffixBounding,
 } = useElementBounding(affixRef)
+const needRecalc = () => {
+  // 有参考元素
+  if (hasTarget.value) {
+    // 【参考元素可视】并且(【固钉不可视】或者【部分可视】)
+    if (event.target.isIntersecting) {
+      if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
+        return true
+      }
+    }
+  } else {
+    // 没有参考元素的情况下：【固钉不可视】或者【部分可视】
+    if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
+      return true
+    }
+  }
+  return false
+}
 const update = () => {
   updateAffixBounding()
   updateTargetBounding()
@@ -80,23 +97,11 @@ const update = () => {
   ) {
     event.affix.needFloat = false
   } else {
-    const nearTop = affixY.value + affixHeight.value / 2 <= window.innerHeight / 2
-    // 有参考元素
-    if (hasTarget.value) {
-      // 【参考元素可视】并且(【固钉不可视】或者【部分可视】)
-      if (event.target.isIntersecting) {
-        if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
-          event.affix.needFloat = position === Direction.Top ? nearTop : !nearTop
-        }
-      }
-    } else {
-      // 没有参考元素的情况下：【固钉不可视】或者【部分可视】
-      if (!event.affix.isIntersecting || event.affix.intersectionRatio < 0.5) {
-        event.affix.needFloat = position === Direction.Top ? nearTop : !nearTop
-      }
+    if (needRecalc()) {
+      const nearTop = affixY.value + affixHeight.value / 2 <= window.innerHeight / 2
+      event.affix.needFloat = position === Direction.Top ? nearTop : !nearTop
     }
   }
-
   if (event.affix.needFloat) {
     affixStyle.value = {
       zIndex: 100,
@@ -161,7 +166,11 @@ onBeforeUnmount(() => {
   targetOb.stop()
 })
 defineExpose({
-  update,
+  update: () => {
+    if (needRecalc()) {
+      update()
+    }
+  },
 })
 </script>
 <template>

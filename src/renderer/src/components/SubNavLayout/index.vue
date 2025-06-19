@@ -2,6 +2,10 @@
 import { CSSProperties } from "@renderer/lib/shared/types"
 import useSettingsStore from "@renderer/store/settings"
 import { SettingsValue } from "@renderer/types"
+const emit = defineEmits<{
+  (e: "afterScale"): void
+  (e: "scaling"): void
+}>()
 const props = defineProps<{
   id: string
   hideSubmenu?: boolean
@@ -21,7 +25,13 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
       <el-card class="subnav-card" body-class="flex flex-1 flex-col overflow-hidden" shadow="never">
         <slot name="submenu"></slot>
       </el-card>
-      <Resize v-model="handlerStyle" size="8px" direction="r" :target="scaleRef" />
+      <Resize
+        v-model="handlerStyle"
+        size="8px"
+        direction="r"
+        :target="scaleRef"
+        @scaling="emit('scaling')"
+        @after-scale="emit('afterScale')" />
     </div>
     <div class="subnav-content">
       <slot name="content"></slot>
