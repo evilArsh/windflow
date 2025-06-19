@@ -24,13 +24,31 @@ export const IpcChannel = {
   McpListPrompts: "mcp.listPrompts",
   McpListResourceTemplates: "mcp.listResourceTemplates",
   McpUpdateEnv: "mcp.updateEnv",
-  McpGetReference: "mcp.getReference",
+  McpGetReferences: "mcp.getReferences",
+  McpGetTopicServers: "mcp.getTopicServers",
+  McpStopTopicServers: "mcp.stopTopicServers",
+  McpHasReference: "mcp.hasReference",
   EnvTestEnv: "env.testEnv",
   FileChooseFilePath: "file.chooseFilePath",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => void
-  getReference: (id: string) => Promise<BridgeResponse<Array<string>>>
+  /**
+   * @description 获取引用mcp服务的topicId列表
+   */
+  getReferences: (id: string) => Promise<BridgeResponse<Array<string>>>
+  /**
+   * @description 获取topicId引用的mcp服务列表
+   */
+  getTopicServers: (topicId: string) => Promise<BridgeResponse<Array<string>>>
+  /**
+   * @description 停止`topicId`下启动的服务，如果服务在被其他topic使用，则只删除引用
+   */
+  stopTopicServers: (topicId: string) => Promise<BridgeResponse<number>>
+  /**
+   * @description 判断`topicId`是否引用了mcp服务
+   */
+  hasReference: (id: string, topicId: string) => Promise<BridgeResponse<boolean>>
   registerServer: (topicId: string, params: MCPServerParam) => Promise<BridgeResponse<MCPClientStatus>>
   toggleServer: (
     topicId: string,

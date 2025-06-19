@@ -114,6 +114,14 @@ export function useMCPContext() {
   function getTopicReference(contextId: string): Array<string> {
     return getContext(contextId)?.reference ?? []
   }
+  function hasTopicReference(contextId: string, topicId: string): boolean {
+    return getTopicReference(contextId).includes(topicId)
+  }
+  function getServersByTopic(topicId: string): Array<string> {
+    return Array.from(context.values())
+      .filter(ctx => ctx.reference.includes(topicId))
+      .map(ctx => ctx.params.id)
+  }
   function removeReference(topicId: string, id: string) {
     const ctx = getContext(id)
     if (ctx) {
@@ -127,6 +135,8 @@ export function useMCPContext() {
     createContext,
     removeContext,
     getTopicReference,
+    hasTopicReference,
+    getServersByTopic,
     removeReference,
   }
 }

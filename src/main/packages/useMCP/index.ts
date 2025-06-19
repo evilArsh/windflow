@@ -46,8 +46,17 @@ export default (): MCPService & ServiceCore => {
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolName = useToolName()
   const toolCall = useToolCall()
-  const { context, addContextRefCount, getContext, createContext, removeContext, getTopicReference, removeReference } =
-    useMCPContext()
+  const {
+    context,
+    addContextRefCount,
+    getContext,
+    createContext,
+    removeContext,
+    getTopicReference,
+    getServersByTopic,
+    hasTopicReference,
+    removeReference,
+  } = useMCPContext()
 
   async function registerServer(topicId: string, params: MCPServerParam): Promise<BridgeResponse<MCPClientStatus>> {
     const { id, serverName } = params
@@ -115,7 +124,7 @@ export default (): MCPService & ServiceCore => {
           return registerServer(topicId, ctx.params)
         case "stop": {
           removeReference(topicId, ctx.params.id)
-          const refs = await getReference(ctx.params.id)
+          const refs = await getReferences(ctx.params.id)
           if (refs.data.length === 0) {
             return toggleServer(topicId, id, { command: "delete" })
           } else if (refs.data.length == 1) {
@@ -300,8 +309,24 @@ export default (): MCPService & ServiceCore => {
   function updateEnv(newEnv: ToolEnvironment) {
     env = cloneDeep(newEnv)
   }
-  async function getReference(id: string): Promise<BridgeResponse<Array<string>>> {
+  async function getReferences(id: string): Promise<BridgeResponse<Array<string>>> {
     return responseData(200, "ok", getTopicReference(id))
+  }
+  async function getTopicServers(topicId: string): Promise<BridgeResponse<Array<string>>> {
+    return responseData(200, "ok", getServersByTopic(topicId))
+  }
+  async function stopTopicServers(topicId: string): Promise<BridgeResponse<number>> {
+    const servers = await getTopicServers(topicId)
+    const asyncReqs = servers.data.map(serverId =>
+      toggleServer(topicId, serverId, {
+        command: "stop",
+      })
+    )
+    const res = await Promise.allSettled(asyncReqs)
+    return responseData(200, "ok", res.filter(r => r.status === "fulfilled").length)
+  }
+  async function hasReference(id: string, topicId: string): Promise<BridgeResponse<boolean>> {
+    return responseData(200, "ok", hasTopicReference(id, topicId))
   }
   function registerIpc() {
     ipcMain.handle(IpcChannel.McpRegisterServer, async (_, topicId: string, params: MCPStdioServerParam) => {
@@ -322,8 +347,17 @@ export default (): MCPService & ServiceCore => {
     ipcMain.handle(IpcChannel.McpUpdateEnv, async (_, newEnv: ToolEnvironment) => {
       return updateEnv(newEnv)
     })
-    ipcMain.handle(IpcChannel.McpGetReference, async (_, id: string) => {
-      return getReference(id)
+    ipcMain.handle(IpcChannel.McpGetReferences, async (_, id: string) => {
+      return getReferences(id)
+    })
+    ipcMain.handle(IpcChannel.McpGetTopicServers, async (_, topicId: string) => {
+      return getTopicServers(topicId)
+    })
+    ipcMain.handle(IpcChannel.McpStopTopicServers, async (_, topicId: string) => {
+      return stopTopicServers(topicId)
+    })
+    ipcMain.handle(IpcChannel.McpHasReference, async (_, id: string, topicId: string) => {
+      return hasReference(id, topicId)
     })
     ipcMain.handle(
       IpcChannel.McpListPrompts,
@@ -352,7 +386,10 @@ export default (): MCPService & ServiceCore => {
   }
   return {
     updateEnv,
-    getReference,
+    getReferences,
+    getTopicServers,
+    stopTopicServers,
+    hasReference,
     registerServer,
     toggleServer,
     listTools,

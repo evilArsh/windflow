@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import Args from "./args.vue"
 import Env from "./env.vue"
+import useMcpStore from "@renderer/store/mcp"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
 import { CallBackFn } from "@renderer/lib/shared/types"
-import { cloneDeep } from "lodash-es"
 import { FormProps, FormRules } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
+
 const props = defineProps<{
   hideCloseBtn?: boolean
   data?: MCPServerParam
@@ -16,6 +17,7 @@ const emit = defineEmits<{
   change: [MCPServerParam]
 }>()
 const { t } = useI18n()
+const mcp = useMcpStore()
 const formRef = useTemplateRef("form")
 const formRules = ref<FormRules>({
   serverName: {
@@ -66,7 +68,7 @@ const defaultData = (): MCPServerParam => ({
 const clonedData = ref<MCPServerParam>(defaultData())
 const handler = {
   async init() {
-    clonedData.value = props.data ? cloneDeep(props.data) : defaultData()
+    clonedData.value = props.data ? mcp.clonePure(props.data) : defaultData()
   },
   save: async (done: CallBackFn) => {
     try {
@@ -97,9 +99,6 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
           <el-radio-button label="streamable" value="streamable" />
           <el-radio-button label="sse" value="sse" />
         </el-radio-group>
-      </el-form-item>
-      <el-form-item :label="t('mcp.enable')" prop="disabled">
-        <el-switch v-model="clonedData.disabled" :active-value="false" :inactive-value="true" />
       </el-form-item>
       <template v-if="clonedData.type === 'stdio'">
         <el-form-item :label="t('mcp.command')" required prop="params.command">

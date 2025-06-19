@@ -156,9 +156,7 @@ export const useMenu = (
           const nodes = chatStore.utils.getAllNodes(selectedTopic.value)
           for (const item of nodes) {
             if (window.api) {
-              item.mcpServers.forEach(server => {
-                window.api.mcp.toggleServer(item.id, server.id, { command: "stop" })
-              })
+              await window.api.mcp.stopTopicServers(item.id)
             }
             // 删除展开的节点key
             tree.removeDefaultExpandedKeys(item.id)

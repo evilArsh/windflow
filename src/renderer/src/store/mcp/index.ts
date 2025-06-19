@@ -6,12 +6,34 @@ import { code2xx } from "@shared/types/bridge"
 import { useToolName } from "@shared/mcp"
 export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
+  const topicServers = reactive<Record<string, MCPServerParam[]>>({})
   const api = useData(servers)
   const toolName = useToolName()
   const { t } = useI18n()
 
+  function getTopicServers(topicId: string): MCPServerParam[] {
+    if (!topicServers[topicId]) {
+      topicServers[topicId] = []
+    }
+    return topicServers[topicId]
+  }
+
+  /**
+   * 去掉多余mcp tool列表
+   */
+  function clonePure(server: MCPServerParam): MCPServerParam {
+    return cloneDeep({ ...server, tools: [], prompts: [], resources: [], resourceTemplates: [] })
+  }
   function findServer(serverId: string) {
     return servers.find(v => v.id === serverId)
+  }
+  function setStatus(serverId: string, status: MCPClientStatus): boolean {
+    const server = findServer(serverId)
+    if (server) {
+      server.status = status
+      return true
+    }
+    return false
   }
   async function remove(serverId: string, topicId?: string) {
     const resDel = await api.del(serverId)
@@ -31,13 +53,12 @@ export default defineStore("mcp", () => {
     }
   }
   async function fetchTools(serverId: string, topicId?: string) {
-    if (!serverId) return
     const server = findServer(serverId)
     if (!server) return
-    server.status = MCPClientStatus.Connecting
-    const res = await window.api.mcp.registerServer(topicId ?? MCPRootTopicId, cloneDeep(server))
+    setStatus(serverId, MCPClientStatus.Connecting)
+    const res = await window.api.mcp.registerServer(topicId ?? MCPRootTopicId, clonePure(server))
     if (!findServer(serverId)) return
-    server.status = res.data
+    setStatus(serverId, res.data)
     if (code2xx(res.code)) {
       const [tools, prompts, resources, resourceTemplates] = await Promise.allSettled([
         window.api.mcp.listTools(server.id),
@@ -78,5 +99,8 @@ export default defineStore("mcp", () => {
     fetchTools,
     remove,
     restart,
+    clonePure,
+    findServer,
+    getTopicServers,
   }
 })

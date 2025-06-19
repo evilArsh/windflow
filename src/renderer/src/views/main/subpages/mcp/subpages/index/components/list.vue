@@ -4,7 +4,6 @@ import useMcpStore from "@renderer/store/mcp"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
 import { errorToText } from "@shared/error"
 import { storeToRefs } from "pinia"
-import { cloneDeep } from "lodash-es"
 import { MCPServerParam } from "@shared/types/mcp"
 type MCPServersConfig = { mcpServers: Record<string, MCPServerParam["params"]> }
 const emit = defineEmits<{
@@ -51,12 +50,12 @@ const handler = {
         const existed: MCPServerParam | undefined = servers.value.find(v => v.serverName === serverName)
         if (existed) {
           existed.params = value
-          const res = await mcp.api.update(cloneDeep(existed))
+          const res = await mcp.api.update(mcp.clonePure(existed))
           if (res == 0) {
             throw new Error(`update ${serverName} failed`)
           }
         } else {
-          const newValue = cloneDeep<MCPServerParam>({
+          const newValue = mcp.clonePure({
             id: uniqueId(),
             serverName,
             type: Object.hasOwn(value, "url") ? "streamable" : "stdio",

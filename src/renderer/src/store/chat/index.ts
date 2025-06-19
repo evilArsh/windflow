@@ -13,10 +13,12 @@ import useModelsStore from "@renderer/store/model"
 import { useContext } from "./context"
 import { useData } from "./data"
 import { useUtils } from "./utils"
+// import useMcpStore from "@renderer/store/mcp"
 
 export default defineStore("chat_topic", () => {
   const providerStore = useProviderStore()
   const modelsStore = useModelsStore()
+  // const mcpStore = useMcpStore()
   const { providerMetas } = storeToRefs(providerStore)
   const { fetchTopicContext, getMessageContext, findContext, initContext } = useContext()
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
@@ -67,7 +69,7 @@ export default defineStore("chat_topic", () => {
     if (!chatContext.provider) chatContext.provider = provider
     if (chatContext.handler) chatContext.handler.terminate()
 
-    const mcpServersIds = topic.mcpServers.filter(v => !v.disabled).map(v => v.id)
+    const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
     topic.requestCount = Math.max(1, topic.requestCount + 1)
     chatContext.handler = await chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
       const { data, status } = res

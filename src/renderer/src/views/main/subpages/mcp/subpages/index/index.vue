@@ -11,7 +11,6 @@ import { storeToRefs } from "pinia"
 import useDialog from "@renderer/usable/useDialog"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { cloneDeep } from "lodash-es"
 import { errorToText } from "@shared/error"
 import Form from "./components/form.vue"
 import List from "./components/list.vue"
@@ -97,14 +96,14 @@ const dlg = {
     try {
       if (!data.id) {
         data.id = uniqueId()
-        const res = cloneDeep(data)
+        const res = mcp.clonePure(data)
         await mcp.api.add(res)
         servers.value.push(res)
         current.value = res
         await mcp.fetchTools(res.id)
       } else {
         if (current.value) Object.assign(current.value, data)
-        await mcp.api.update(cloneDeep(data))
+        await mcp.api.update(mcp.clonePure(data))
         await serverHandler.restart(data)
       }
       msg({ code: 200, msg: "ok" })
