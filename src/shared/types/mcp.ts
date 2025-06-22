@@ -7,7 +7,6 @@ export type MCPServerType = "sse" | "streamable" | "stdio"
 export enum MCPClientStatus {
   Connecting = "connecting",
   Connected = "connected",
-  Stopping = "stopping",
   Disconnected = "disconnected",
 }
 export interface MCPRequestParams {

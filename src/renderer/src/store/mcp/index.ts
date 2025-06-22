@@ -2,7 +2,7 @@ import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@shared/types/m
 import { defineStore } from "pinia"
 import { useData } from "./data"
 import { cloneDeep } from "lodash-es"
-import { code2xx } from "@shared/types/bridge"
+import { BridgeResponse, code2xx, code4xx, code5xx } from "@shared/types/bridge"
 import { useToolName } from "@shared/mcp"
 export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
@@ -15,9 +15,64 @@ export default defineStore("mcp", () => {
     if (!topicServers[topicId]) {
       topicServers[topicId] = []
     }
+    const refresh = async (topicId: string, currentServers: MCPServerParam[]) => {
+      try {
+        const activeServerIds = (await window.api.mcp.getTopicServers(topicId)).data
+        currentServers.length = 0
+        currentServers.push(
+          ...servers.filter(server => {
+            return (
+              !server.status ||
+              server.status == MCPClientStatus.Disconnected ||
+              ((server.status === MCPClientStatus.Connected || server.status === MCPClientStatus.Connecting) &&
+                activeServerIds.includes(server.id))
+            )
+          })
+        )
+      } catch (error) {
+        console.error("[getTopicServers]", error)
+      }
+    }
+    refresh(topicId, topicServers[topicId])
     return topicServers[topicId]
   }
-
+  async function toggleServer(serverId: string, topicId?: string): Promise<BridgeResponse<MCPClientStatus>> {
+    const server = findServer(serverId)
+    if (!server) return { code: 500, msg: "server not found", data: MCPClientStatus.Disconnected }
+    if (server.status === MCPClientStatus.Connecting) {
+      console.warn("[toggleServer] server is connecting, please wait")
+      return { code: 102, msg: "server is connecting", data: MCPClientStatus.Connecting }
+    }
+    const toggle = async (server: MCPServerParam) => {
+      const oldStatus = server.status
+      try {
+        server.status =
+          !server.status || server.status === MCPClientStatus.Connected
+            ? MCPClientStatus.Connecting
+            : MCPClientStatus.Connected
+        const res = await window.api.mcp.toggleServer(topicId ?? MCPRootTopicId, server.id, {
+          command: server.status === MCPClientStatus.Connected ? "stop" : "start",
+        })
+        server.status = res.data
+        if (code5xx(res.code)) {
+          throw res
+        } else if (code4xx(res.code)) {
+          setStatus(server.id, MCPClientStatus.Connecting)
+          const res = await window.api.mcp.registerServer(topicId ?? MCPRootTopicId, clonePure(server))
+          server.status = res.data
+          if (code5xx(res.code)) {
+            throw res
+          }
+        }
+        return res
+      } catch (error) {
+        server.status = oldStatus
+        console.error("[toggleServer]", error)
+        return error as BridgeResponse<MCPClientStatus>
+      }
+    }
+    return toggle(server)
+  }
   /**
    * 去掉多余mcp tool列表
    */
@@ -102,5 +157,6 @@ export default defineStore("mcp", () => {
     clonePure,
     findServer,
     getTopicServers,
+    toggleServer,
   }
 })

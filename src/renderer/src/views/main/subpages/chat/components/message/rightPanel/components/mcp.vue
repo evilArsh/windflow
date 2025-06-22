@@ -21,7 +21,6 @@ const mcp = useMcpStore()
 const chatStore = useChatStore()
 const { servers } = storeToRefs(mcp)
 const currentServers = ref<MCPServerParam[]>([])
-const activeServers = ref<MCPServerParam[]>([])
 const popover = reactive({
   visible: false,
   ref: undefined as PopoverInstance | undefined,
@@ -60,87 +59,16 @@ const serverHandler = {
       type: "error",
     })
   },
-  onServerToggle: async (data: MCPServerParam): Promise<void> => {
-    try {
-      if (!data.disabled) {
-        data.status == MCPClientStatus.Connecting
-        const res = await window.api.mcp.toggleServer(topic.value.id, data.id, {
-          command: "start",
-        })
-        console.log("[toggleServer]", data, res)
-        data.status = res.data
-        if (code5xx(res.code)) {
-          serverHandler.showErrorDlg(data, res.msg)
-          data.disabled = true
-        } else if (code4xx(res.code)) {
-          data.status = MCPClientStatus.Connecting
-          const res = await window.api.mcp.registerServer(topic.value.id, cloneDeep(data))
-          data.status = res.data
-          if (code5xx(res.code)) {
-            serverHandler.showErrorDlg(data, res.msg)
-            data.disabled = true
-          }
-        } else if (code1xx(res.code)) {
-          data.status = MCPClientStatus.Disconnected
-          data.disabled = true
-          ElNotification({
-            title: t("notify.title.info"),
-            message: t("mcp.service.connecting", {
-              service: data.serverName,
-            }),
-            duration: 5000,
-            type: "info",
-          })
-        }
-      } else {
-        const res = await window.api.mcp.toggleServer(topic.value.id, data.id, {
-          command: "stop",
-        })
-        data.status = res.data
-        if (code5xx(res.code)) {
-          serverHandler.showErrorDlg(data, res.msg)
-        }
+  onServerToggle: async (server: MCPServerParam) => {
+    console.log(server)
+    mcp.toggleServer(server.id, topic.value.id).then(res => {
+      if (code5xx(res.code)) {
+        serverHandler.showErrorDlg(server, res.msg)
       }
-      const count = await chatStore.api.updateChatTopic(cloneDeep(topic.value))
-      if (count == 0) {
-        throw new Error("update failed")
-      }
-    } catch (error) {
-      ElNotification({
-        title: t("notify.title.error"),
-        message: errorToText(error),
-        duration: 5000,
-        type: "error",
-      })
-    }
+    })
   },
-  syncServers: async (done: CallBackFn) => {
-    try {
-      for (const server of servers.value) {
-        if (server.disabled) continue
-        if (topic.value.mcpServers.findIndex(item => item.id === server.id) === -1) {
-          topic.value.mcpServers.push(cloneDeep({ ...server, disabled: true }))
-        }
-      }
-      await chatStore.api.updateChatTopic(cloneDeep(topic.value))
-    } catch (error) {
-      msg({ code: 500, msg: errorToText(error) })
-    } finally {
-      done()
-    }
-  },
-  refreshMcp: async () => {
-    try {
-      const activeServers = (await window.api.mcp.getTopicServers(topic.value.id)).data
-      // currentServers.value = serv
-      for (const server of topic.value.mcpServers) {
-        if (!server.disabled) {
-          serverHandler.onServerToggle(server)
-        }
-      }
-    } catch (error) {
-      console.log("[loadMCP]", error)
-    }
+  refreshMcp: () => {
+    currentServers.value = mcp.getTopicServers(topic.value.id)
   },
   restart: async (done: CallBackFn, server: MCPServerParam) => {
     try {
@@ -187,25 +115,21 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
     <!-- <div class="flex-shrink-0 flex">
-      <Button size="small" @click="serverHandler.syncServers">{{ t("btn.refresh") }}</Button>
       <Button size="small" @click="serverHandler.test">测试</Button>
     </div> -->
     <div class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
         <div v-for="(server, index) in currentServers" :key="server.id">
-          <ContentBox
-            v-loading="server.status === MCPClientStatus.Connecting"
-            :ref="el => (popover.refs[index] = el as HTMLElement)"
-            background>
-            <template #icon>
-              <!-- <Switch
+          <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
+            <!-- <template #icon> -->
+            <!-- <el-switch
                 size="small"
-                style="--el-switch-off-color: #ff4949"
-                v-model="server.disabled"
-                :active-value="false"
-                :inactive-value="true"
-                @change="_ => serverHandler.onServerToggle(server)" /> -->
-            </template>
+                :model-value="server.status"
+                :loading="server.status === MCPClientStatus.Connecting"
+                :inactive-value="MCPClientStatus.Disconnected"
+                :active-value="MCPClientStatus.Connected"
+                @change="serverHandler.onServerToggle(server)" /> -->
+            <!-- </template> -->
             <McpName :data="server"></McpName>
             <template #footer>
               <div class="flex items-center" @click.stop>
@@ -217,6 +141,27 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
                     <i class="i-ep:refresh text-1.4rem"></i>
                   </Button>
                 </ContentBox>
+                <el-segmented
+                  size="small"
+                  style="
+                    --el-segmented-item-selected-color: var(--el-text-color-primary);
+                    --el-segmented-item-selected-bg-color: #ffd100;
+                    --el-border-radius-base: 16px;
+                  "
+                  v-model="server.status"
+                  :options="[
+                    { label: '开启', value: MCPClientStatus.Connected },
+                    { label: '关闭', value: MCPClientStatus.Disconnected },
+                  ]">
+                  <template #default="{ item }">
+                    <div class="flex flex-col items-center gap-2 p-2">
+                      <el-icon size="20">
+                        <component :is="scope.item.icon" />
+                      </el-icon>
+                      <div>{{ scope.item.label }}</div>
+                    </div>
+                  </template>
+                </el-segmented>
                 <!-- <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="serverHandler.del(index)">
                   <template #reference>
                     <ContentBox class="flex-grow-0!" @click.stop>
