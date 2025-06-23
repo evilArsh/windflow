@@ -5,12 +5,11 @@ import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { cloneDeep } from "lodash-es"
 import { errorToText } from "@shared/error"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
 import { PopoverInstance } from "element-plus"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
-import { code1xx, code4xx, code5xx } from "@shared/types/bridge"
+import { code5xx } from "@shared/types/bridge"
 import { ElNotification, ElMessageBox } from "element-plus"
 const props = defineProps<{
   topic: ChatTopic
@@ -20,7 +19,7 @@ const { t } = useI18n()
 const mcp = useMcpStore()
 const chatStore = useChatStore()
 const { servers } = storeToRefs(mcp)
-const currentServers = ref<MCPServerParam[]>([])
+const activeServerIds = ref<string[]>([])
 const popover = reactive({
   visible: false,
   ref: undefined as PopoverInstance | undefined,
@@ -67,15 +66,14 @@ const serverHandler = {
       }
     })
   },
-  refreshMcp: () => {
-    currentServers.value = mcp.getTopicServers(topic.value.id)
+  refreshMcp: async (current: ChatTopic) => {
+    const id = current.id
+    const mcpServersIds = (await window.api.mcp.getTopicServers(id)).data
+    if (topic.value.id !== id) return
+    activeServerIds.value = mcpServersIds
   },
   restart: async (done: CallBackFn, server: MCPServerParam) => {
     try {
-      if (server.disabled) {
-        msg({ code: 500, msg: t("mcp.service.disabled") })
-        return
-      }
       const refs = (await window.api.mcp.getReferences(server.id)).data
       if (refs.length > 0) {
         await ElMessageBox.confirm(t("mcp.service.deleteConfirm", { count: refs.length }), t("notify.title.warning"), {
@@ -119,17 +117,15 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
     </div> -->
     <div class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
-        <div v-for="(server, index) in currentServers" :key="server.id">
+        <div v-for="(server, index) in servers" :key="server.id">
           <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
-            <!-- <template #icon> -->
-            <!-- <el-switch
+            <template #icon>
+              <el-switch
                 size="small"
-                :model-value="server.status"
-                :loading="server.status === MCPClientStatus.Connecting"
-                :inactive-value="MCPClientStatus.Disconnected"
-                :active-value="MCPClientStatus.Connected"
-                @change="serverHandler.onServerToggle(server)" /> -->
-            <!-- </template> -->
+                :model-value="activeServerIds.includes(server.id)"
+                :inactive-value="false"
+                :active-value="true" />
+            </template>
             <McpName :data="server"></McpName>
             <template #footer>
               <div class="flex items-center" @click.stop>
@@ -141,7 +137,7 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
                     <i class="i-ep:refresh text-1.4rem"></i>
                   </Button>
                 </ContentBox>
-                <el-segmented
+                <!-- <el-segmented
                   size="small"
                   style="
                     --el-segmented-item-selected-color: var(--el-text-color-primary);
@@ -154,14 +150,9 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
                     { label: '关闭', value: MCPClientStatus.Disconnected },
                   ]">
                   <template #default="{ item }">
-                    <div class="flex flex-col items-center gap-2 p-2">
-                      <el-icon size="20">
-                        <component :is="scope.item.icon" />
-                      </el-icon>
-                      <div>{{ scope.item.label }}</div>
-                    </div>
+                    <div class="flex flex-col items-center gap-2 p-2"></div>
                   </template>
-                </el-segmented>
+                </el-segmented> -->
                 <!-- <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="serverHandler.del(index)">
                   <template #reference>
                     <ContentBox class="flex-grow-0!" @click.stop>

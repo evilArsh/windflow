@@ -6,36 +6,36 @@ import { BridgeResponse, code2xx, code4xx, code5xx } from "@shared/types/bridge"
 import { useToolName } from "@shared/mcp"
 export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
-  const topicServers = reactive<Record<string, MCPServerParam[]>>({})
+  // const topicServers = reactive<Record<string, MCPServerParam[]>>({})
   const api = useData(servers)
   const toolName = useToolName()
   const { t } = useI18n()
 
-  function getTopicServers(topicId: string): MCPServerParam[] {
-    if (!topicServers[topicId]) {
-      topicServers[topicId] = []
-    }
-    const refresh = async (topicId: string, currentServers: MCPServerParam[]) => {
-      try {
-        const activeServerIds = (await window.api.mcp.getTopicServers(topicId)).data
-        currentServers.length = 0
-        currentServers.push(
-          ...servers.filter(server => {
-            return (
-              !server.status ||
-              server.status == MCPClientStatus.Disconnected ||
-              ((server.status === MCPClientStatus.Connected || server.status === MCPClientStatus.Connecting) &&
-                activeServerIds.includes(server.id))
-            )
-          })
-        )
-      } catch (error) {
-        console.error("[getTopicServers]", error)
-      }
-    }
-    refresh(topicId, topicServers[topicId])
-    return topicServers[topicId]
-  }
+  // function getTopicServers(topicId: string): MCPServerParam[] {
+  //   if (!topicServers[topicId]) {
+  //     topicServers[topicId] = []
+  //   }
+  //   const refresh = async (topicId: string, currentServers: MCPServerParam[]) => {
+  //     try {
+  //       const activeServerIds = (await window.api.mcp.getTopicServers(topicId)).data
+  //       currentServers.length = 0
+  //       currentServers.push(
+  //         ...servers.filter(server => {
+  //           return (
+  //             !server.status ||
+  //             server.status == MCPClientStatus.Disconnected ||
+  //             ((server.status === MCPClientStatus.Connected || server.status === MCPClientStatus.Connecting) &&
+  //               activeServerIds.includes(server.id))
+  //           )
+  //         })
+  //       )
+  //     } catch (error) {
+  //       console.error("[getTopicServers]", error)
+  //     }
+  //   }
+  //   refresh(topicId, topicServers[topicId])
+  //   return topicServers[topicId]
+  // }
   async function toggleServer(serverId: string, topicId?: string): Promise<BridgeResponse<MCPClientStatus>> {
     const server = findServer(serverId)
     if (!server) return { code: 500, msg: "server not found", data: MCPClientStatus.Disconnected }
@@ -156,7 +156,7 @@ export default defineStore("mcp", () => {
     restart,
     clonePure,
     findServer,
-    getTopicServers,
+    // getTopicServers,
     toggleServer,
   }
 })

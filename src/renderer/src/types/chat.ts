@@ -99,6 +99,10 @@ export type ChatTopic = {
    * @description 会话创建时间
    */
   createAt: number
+  // /**
+  //  * @description 使用中的mcp服务器列表
+  //  */
+  // mcpServerIds: Array<string>
 }
 
 export type ChatTopicTree = {
