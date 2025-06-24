@@ -2,16 +2,19 @@
 import { MCPServerParam } from "@shared/types/mcp"
 defineProps<{
   data: MCPServerParam
+  hideFlag?: boolean
 }>()
 </script>
 <template>
   <div class="flex gap.5rem items-center">
     <el-text class="break-all">{{ data.serverName }}</el-text>
-    <ContentBox v-if="data.type === 'stdio'">
-      <i-fluent-emoji-flat:desktop-computer class="text-1.2rem"></i-fluent-emoji-flat:desktop-computer>
-    </ContentBox>
-    <ContentBox v-else>
-      <i-fluent-emoji-flat:globe-showing-americas class="text-1.2rem"></i-fluent-emoji-flat:globe-showing-americas>
+    <ContentBox v-if="!hideFlag">
+      <i-fluent-emoji-flat:desktop-computer
+        v-if="data.type === 'stdio'"
+        class="text-1.2rem"></i-fluent-emoji-flat:desktop-computer>
+      <i-fluent-emoji-flat:globe-showing-americas
+        v-else
+        class="text-1.2rem"></i-fluent-emoji-flat:globe-showing-americas>
     </ContentBox>
   </div>
 </template>

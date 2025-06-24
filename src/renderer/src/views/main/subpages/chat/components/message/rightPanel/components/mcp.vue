@@ -31,6 +31,9 @@ const popover = reactive({
     popover.server = mcp.findServer(server.id)
     popover.visible = true
   }),
+  onHide: markRaw(() => {
+    popover.visible = false
+  }),
 })
 
 const formHandler = {
@@ -120,13 +123,12 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
         <div v-for="(server, index) in servers" :key="server.id">
           <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
             <template #icon>
-              <el-switch
-                size="small"
-                :model-value="activeServerIds.includes(server.id)"
-                :inactive-value="false"
-                :active-value="true" />
+              <i-mdi:circle-medium
+                :class="[
+                  activeServerIds.includes(server.id) ? 'text-[#5FADFF]' : 'text-[#c0c4cc]',
+                ]"></i-mdi:circle-medium>
             </template>
-            <McpName :data="server"></McpName>
+            <McpName :data="server" hide-flag></McpName>
             <template #footer>
               <div class="flex items-center" @click.stop>
                 <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index, server)">
@@ -183,7 +185,8 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
       placement="left"
       :width="800"
       trigger="click"
-      :ref="el => (popover.ref = el as PopoverInstance)">
+      :ref="el => (popover.ref = el as PopoverInstance)"
+      @hide="popover.onHide">
       <template #reference>
         <ContentBox class="flex-grow-0! flex-shrink-0!" @click.stop>
           <i class="i-ep:edit"></i>
