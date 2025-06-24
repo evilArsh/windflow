@@ -109,7 +109,7 @@ const update = () => {
       [position === Direction.Bottom ? "bottom" : "top"]: px(offset),
     }
     affixScale.value = {
-      width: px(width.value),
+      minWidth: px(width.value),
       height: px(height.value),
     }
   } else {
