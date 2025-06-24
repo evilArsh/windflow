@@ -1,5 +1,5 @@
-import { ElectronAPI } from "@electron-toolkit/preload"
-import { EnvService, MCPService, FileService } from "@shared/types/service"
+import type { ElectronAPI } from "@electron-toolkit/preload"
+import type { EnvService, MCPService, FileService, EventBus } from "@shared/types/service"
 declare global {
   interface Window {
     electron: ElectronAPI
@@ -7,6 +7,7 @@ declare global {
       mcp: MCPService
       env: EnvService
       file: FileService
+      bus: EventBus
     }
   }
 }

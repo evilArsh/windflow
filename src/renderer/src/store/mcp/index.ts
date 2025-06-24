@@ -6,7 +6,6 @@ import { BridgeResponse, code2xx, code4xx, code5xx } from "@shared/types/bridge"
 import { useToolName } from "@shared/mcp"
 export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
-  // const topicServers = reactive<Record<string, MCPServerParam[]>>({})
   const api = useData(servers)
   const toolName = useToolName()
   const { t } = useI18n()
@@ -156,7 +155,6 @@ export default defineStore("mcp", () => {
     restart,
     clonePure,
     findServer,
-    // getTopicServers,
     toggleServer,
   }
 })

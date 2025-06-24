@@ -1,5 +1,6 @@
 import { HttpStatusCode } from "@shared/code"
 import { LLMMessage, LLMRequestHandler, LLMProvider } from "."
+// import { MCPServerParam } from "@shared/types/mcp"
 export type ChatMessageData = {
   /**
    * @description 单个消息ID
@@ -100,9 +101,9 @@ export type ChatTopic = {
    */
   createAt: number
   // /**
-  //  * @description 使用中的mcp服务器列表
+  //  * @description mcp服务器列表
   //  */
-  // mcpServerIds: Array<string>
+  // mcpServers: Array<MCPServerParam>
 }
 
 export type ChatTopicTree = {

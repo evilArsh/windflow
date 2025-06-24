@@ -21,7 +21,7 @@ import {
 } from "@shared/types/mcp"
 import { BridgeResponse, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
-import { IpcChannel, MCPService } from "@shared/types/service"
+import { EventBus, IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
@@ -39,9 +39,10 @@ import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
 import { cloneDeep } from "lodash"
+import { EventKey } from "@shared/types/eventbus"
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
-export default (): MCPService & ServiceCore => {
+export default (globalBus: EventBus): MCPService & ServiceCore => {
   let env: ToolEnvironment = defaultEnv()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolName = useToolName()
@@ -102,6 +103,11 @@ export default (): MCPService & ServiceCore => {
       if (!ctx.reference.includes(topicId)) {
         ctx.reference.push(topicId)
       }
+      globalBus.emit(EventKey.MCPStatusUpdate, {
+        id,
+        status: ctx.status,
+        refs: ctx.reference,
+      })
       return responseData(200, "ok", ctx.status)
     } catch (error) {
       await removeContext(id)

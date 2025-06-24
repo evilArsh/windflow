@@ -1,5 +1,6 @@
 import { BridgeResponse } from "./bridge"
 import { ToolEnvironment, ToolEnvTestResult } from "./env"
+import { EventKey, EventMap } from "./eventbus"
 import {
   MCPCallToolResult,
   MCPListPromptsRequestParams,
@@ -80,4 +81,10 @@ export interface EnvService {
 
 export interface FileService {
   chooseFilePath: () => Promise<BridgeResponse<string>>
+}
+
+export interface EventBus {
+  on: <T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) => void
+  off: <T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) => void
+  emit: <T extends EventKey>(event: T, data: EventMap[T]) => void
 }
