@@ -1,4 +1,12 @@
-import { ProviderMeta, ModelMeta, ChatTopic, ChatMessage, Settings, SettingsValue } from "@renderer/types"
+import {
+  ProviderMeta,
+  ModelMeta,
+  ChatTopic,
+  ChatMessage,
+  Settings,
+  SettingsValue,
+  TopicMcpServer,
+} from "@renderer/types"
 import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { type EntityTable } from "dexie"
 
@@ -11,6 +19,7 @@ const db = new Dexie(name) as Dexie & {
   chatMessage: EntityTable<ChatMessage, "id">
   settings: EntityTable<Settings<SettingsValue>, "id">
   mcpServer: EntityTable<MCPServerParam, "id">
+  topicMcpServer: EntityTable<TopicMcpServer, "id">
 }
 
 db.version(1).stores({
@@ -21,5 +30,13 @@ db.version(1).stores({
   settings: "id",
   mcpServer: "id",
 })
-
+db.version(2).stores({
+  providerMeta: "name",
+  model: "id,providerName,type,active",
+  chatTopic: "id,chatMessageId,parentId,createAt",
+  chatMessage: "id",
+  settings: "id",
+  mcpServer: "id",
+  topicMcpServer: "id,topicId",
+})
 export { db }
