@@ -15,7 +15,10 @@ export default (mainWindow: BrowserWindow): ServiceCore & EventBus => {
     bus.off(event, callback)
   }
   function emit<T extends EventKey>(event: T, data: EventMap[T]) {
-    mainWindow.webContents.send(event, data)
+    mainWindow.webContents.send(CoreEventKey, {
+      type: event,
+      data,
+    } as CoreEvent)
   }
 
   function registerIpc() {

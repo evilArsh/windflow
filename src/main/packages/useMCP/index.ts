@@ -31,6 +31,7 @@ import {
   createSseTransport,
   createStdioTransport,
   createStreamableTransport,
+  emitStatus,
   requestWithId,
   useMCPContext,
 } from "./utils"
@@ -39,7 +40,6 @@ import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
 import { cloneDeep } from "lodash"
-import { EventKey } from "@shared/types/eventbus"
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
 export default (globalBus: EventBus): MCPService & ServiceCore => {
@@ -58,21 +58,22 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     hasTopicReference,
     removeReference,
   } = useMCPContext()
-
-  async function registerServer(topicId: string, params: MCPServerParam): Promise<BridgeResponse<MCPClientStatus>> {
+  async function registerServer(topicId: string, params: MCPServerParam): Promise<void> {
     const { id, serverName } = params
     let ctx = getContext(id)
     if (!ctx) ctx = createContext(params)
     try {
       if (ctx.client) {
         if (ctx.status === MCPClientStatus.Connecting) {
-          return responseData(102, `connecting`, MCPClientStatus.Connecting)
+          emitStatus(globalBus, id, ctx.status, ctx.reference, 102, `connecting`)
+          return
         } else if (ctx.status === MCPClientStatus.Connected) {
           const pong = await ctx.client.ping()
           if (pong) {
             log.debug("[MCP registerServer]", `[${serverName}]already created`)
             addContextRefCount(topicId, id)
-            return responseData(201, `[${serverName}]already created`, ctx.status)
+            emitStatus(globalBus, id, ctx.status, ctx.reference, 201, `[${serverName}]already created`)
+            return
           } else {
             log.debug("[MCP registerServer]", `[${serverName}]context found but client not connected`)
           }
@@ -82,6 +83,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       }
       ctx.client = createClient(name, version)
       ctx.status = MCPClientStatus.Connecting
+      emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "connecting")
       if (isStdioServerParams(ctx.params)) {
         ctx.transport = await createStdioTransport(ctx.client, env, ctx.params)
         log.debug("[MCP register stdio server]", `[${serverName}]created`)
@@ -103,57 +105,45 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       if (!ctx.reference.includes(topicId)) {
         ctx.reference.push(topicId)
       }
-      globalBus.emit(EventKey.MCPStatusUpdate, {
-        id,
-        status: ctx.status,
-        refs: ctx.reference,
-      })
-      return responseData(200, "ok", ctx.status)
+      emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "ok")
     } catch (error) {
       await removeContext(id)
       log.debug("[MCP registerServer error]", error)
-      return responseData(500, errorToText(error), MCPClientStatus.Disconnected)
+      emitStatus(globalBus, id, ctx.status, ctx.reference, 500, errorToText(error))
     }
   }
-  async function toggleServer(
-    topicId: string,
-    id: string,
-    command: MCPClientHandleCommand
-  ): Promise<BridgeResponse<MCPClientStatus>> {
+  async function toggleServer(topicId: string, id: string, command: MCPClientHandleCommand): Promise<void> {
     try {
       const ctx = getContext(id)
+      let oldRefs: string[] = []
       if (!ctx) {
-        return responseData(404, `${id} not found`, MCPClientStatus.Disconnected)
+        emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 404, `${id} not found`)
+        return
       }
       switch (command.command) {
-        case "start":
-          return registerServer(topicId, ctx.params)
         case "stop": {
+          oldRefs = (await getReferences(ctx.params.id)).data
           removeReference(topicId, ctx.params.id)
           const refs = await getReferences(ctx.params.id)
-          if (refs.data.length === 0) {
-            return toggleServer(topicId, id, { command: "delete" })
-          } else if (refs.data.length == 1) {
+          let msg = "ok"
+          if (refs.data.length === 0 || (refs.data.length == 1 && refs.data[0] === MCPRootTopicId)) {
             // 如果只剩下配置界面的引用，则删除该mcp服务
             // 用户再次到配置界面时再启动，节约资源
-            if (refs.data[0] === MCPRootTopicId) {
-              return toggleServer(topicId, id, { command: "delete" })
-            }
+            await removeContext(ctx.params.id)
+            msg = `removed`
           }
-          return responseData(200, "ok", MCPClientStatus.Disconnected)
+          emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, oldRefs, 200, msg)
+          return
         }
-        case "restart":
-          await toggleServer(topicId, ctx.params.id, { command: "delete" })
-          return toggleServer(topicId, ctx.params.id, { command: "start" })
-        case "delete": {
+        case "restart": {
+          oldRefs = (await getReferences(ctx.params.id)).data
           await removeContext(ctx.params.id)
-          log.debug("[toggleServer delete]", `[${ctx.params.serverName}] stopped`)
-          return responseData(200, "ok", MCPClientStatus.Disconnected)
+          emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, oldRefs, 200, "removed")
+          return registerServer(topicId, ctx.params)
         }
       }
     } catch (error) {
       log.error("[MCP toggleServer error]", error)
-      return responseData(500, errorToText(error), MCPClientStatus.Disconnected)
     }
   }
   async function listTools(id?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
@@ -312,7 +302,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       return responseData(500, errorText, { content: { type: "text", text: errorText } })
     }
   }
-  function updateEnv(newEnv: ToolEnvironment) {
+  async function updateEnv(newEnv: ToolEnvironment) {
     env = cloneDeep(newEnv)
   }
   async function getReferences(id: string): Promise<BridgeResponse<Array<string>>> {

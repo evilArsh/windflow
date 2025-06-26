@@ -84,7 +84,7 @@ export function isAvailableServerParams(params: MCPServerParam): params is MCPSe
 }
 
 export interface MCPClientHandleCommand {
-  command: "start" | "stop" | "restart" | "delete"
+  command: "stop" | "restart"
 }
 
 // --- mcp call result start ---

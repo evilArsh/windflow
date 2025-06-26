@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron"
 import { EventBus, IpcChannel } from "@shared/types/service"
 import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@shared/types/eventbus"
 import EventEmitter from "node:events"
-// import log from "electron-log"
+import log from "electron-log"
 
 const api: Record<string, unknown> = {}
 function setProperty(obj: Record<string, unknown>, property: string): Record<string, unknown> {
@@ -38,6 +38,7 @@ const useEventBus = (): EventBus => {
   const bus = new EventEmitter()
   // 接收主进程的消息
   ipcRenderer.on(CoreEventKey, (_, data: CoreEvent) => {
+    log.debug("[event from ipcMain]", data)
     bus.emit(data.type, data.data)
   })
   const on = <T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) => {
@@ -47,7 +48,7 @@ const useEventBus = (): EventBus => {
     bus.off(event, callback)
   }
   const emit = <T extends EventKey>(event: T, data: EventMap[T]) => {
-    ipcRenderer.send(event, data)
+    ipcRenderer.send(CoreEventKey, { event, data })
   }
   return {
     on,

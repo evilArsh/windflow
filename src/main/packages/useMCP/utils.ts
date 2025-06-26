@@ -8,6 +8,9 @@ import log from "electron-log"
 import { errorToText } from "@shared/error"
 import { MCPClientContext } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
+import { EventBus } from "@shared/types/service"
+import { EventKey } from "@shared/types/eventbus"
+import { HttpStatusCode } from "@shared/code"
 
 export function createClient(name: string, version: string) {
   return new Client({ name, version })
@@ -81,6 +84,23 @@ export async function requestWithId<T>(serverId: string, request: () => Promise<
     return { id: serverId, data }
   }
   return { id: serverId, data: req }
+}
+
+export const emitStatus = (
+  globalBus: EventBus,
+  serverId: string,
+  status: MCPClientStatus,
+  refs: Array<string>,
+  code?: HttpStatusCode,
+  msg?: string
+) => {
+  globalBus.emit(EventKey.MCPStatusUpdate, {
+    id: serverId,
+    status,
+    refs,
+    code,
+    msg,
+  })
 }
 
 export function useMCPContext() {

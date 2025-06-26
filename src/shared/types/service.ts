@@ -13,7 +13,6 @@ import {
   MCPToolDetail,
   MCPServerParam,
   MCPRequestParams,
-  MCPClientStatus,
 } from "./mcp"
 
 export const IpcChannel = {
@@ -33,7 +32,7 @@ export const IpcChannel = {
   FileChooseFilePath: "file.chooseFilePath",
 }
 export interface MCPService {
-  updateEnv: (env: ToolEnvironment) => void
+  updateEnv: (env: ToolEnvironment) => Promise<void>
   /**
    * @description 获取引用mcp服务的topicId列表
    */
@@ -50,12 +49,8 @@ export interface MCPService {
    * @description 判断`topicId`是否引用了mcp服务
    */
   hasReference: (id: string, topicId: string) => Promise<BridgeResponse<boolean>>
-  registerServer: (topicId: string, params: MCPServerParam) => Promise<BridgeResponse<MCPClientStatus>>
-  toggleServer: (
-    topicId: string,
-    id: string,
-    command: MCPClientHandleCommand
-  ) => Promise<BridgeResponse<MCPClientStatus>>
+  registerServer: (topicId: string, params: MCPServerParam) => Promise<void>
+  toggleServer: (topicId: string, id: string, command: MCPClientHandleCommand) => Promise<void>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
   listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (

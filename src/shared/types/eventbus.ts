@@ -1,3 +1,4 @@
+import { HttpStatusCode } from "@shared/code"
 import { MCPClientStatus } from "./mcp"
 
 export const CoreEventKey = "CoreEventKey"
@@ -9,15 +10,17 @@ export enum EventKey {
   MCPStatusUpdate = "MCPStatusUpdate",
 }
 
-export type MCPStatusUpdateEvent = {
+export type MCPStatusEvent = {
   id: string
   status: MCPClientStatus
   /**
    * 引用该服务的topic列表
    */
   refs: Array<string>
+  msg?: string
+  code?: HttpStatusCode
 }
 
 export interface EventMap {
-  [EventKey.MCPStatusUpdate]: MCPStatusUpdateEvent
+  [EventKey.MCPStatusUpdate]: MCPStatusEvent
 }

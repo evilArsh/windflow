@@ -4,6 +4,7 @@ import { useData } from "./data"
 import { cloneDeep } from "lodash-es"
 import { BridgeResponse, code2xx, code4xx, code5xx } from "@shared/types/bridge"
 import { useToolName } from "@shared/mcp"
+import { EventKey } from "@shared/types/eventbus"
 export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
   const api = useData(servers)
@@ -94,7 +95,7 @@ export default defineStore("mcp", () => {
     if (resDel == 0) {
       throw new Error(t("tip.deleteFailed"))
     }
-    await window.api.mcp.toggleServer(topicId ?? MCPRootTopicId, serverId, { command: "delete" })
+    await window.api.mcp.toggleServer(topicId ?? MCPRootTopicId, serverId, { command: "stop" })
     const index = servers.findIndex(v => v.id === serverId)
     index > -1 && servers.splice(index, 1)
   }
@@ -147,6 +148,10 @@ export default defineStore("mcp", () => {
           : []
     }
   }
+
+  window.api.bus.on(EventKey.MCPStatusUpdate, data => {
+    console.log("[MCPStatusUpdate]", data)
+  })
   return {
     servers,
     api,
