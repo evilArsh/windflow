@@ -1,77 +1,60 @@
 import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@shared/types/mcp"
 import { defineStore } from "pinia"
-import { useData } from "./data"
+import { useData, useTopicMcpServerData } from "./data"
 import { cloneDeep } from "lodash-es"
 import { BridgeResponse, code2xx, code4xx, code5xx } from "@shared/types/bridge"
 import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
+import { TopicMcpServer } from "@renderer/types"
 export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
+  const topicServers = reactive<Record<string, TopicMcpServer[]>>({})
   const api = useData(servers)
+  const apiTopicMcp = useTopicMcpServerData()
   const toolName = useToolName()
   const { t } = useI18n()
 
-  // function getTopicServers(topicId: string): MCPServerParam[] {
-  //   if (!topicServers[topicId]) {
-  //     topicServers[topicId] = []
-  //   }
-  //   const refresh = async (topicId: string, currentServers: MCPServerParam[]) => {
-  //     try {
-  //       const activeServerIds = (await window.api.mcp.getTopicServers(topicId)).data
-  //       currentServers.length = 0
-  //       currentServers.push(
-  //         ...servers.filter(server => {
-  //           return (
-  //             !server.status ||
-  //             server.status == MCPClientStatus.Disconnected ||
-  //             ((server.status === MCPClientStatus.Connected || server.status === MCPClientStatus.Connecting) &&
-  //               activeServerIds.includes(server.id))
-  //           )
-  //         })
-  //       )
-  //     } catch (error) {
-  //       console.error("[getTopicServers]", error)
-  //     }
-  //   }
-  //   refresh(topicId, topicServers[topicId])
-  //   return topicServers[topicId]
-  // }
-  async function toggleServer(serverId: string, topicId?: string): Promise<BridgeResponse<MCPClientStatus>> {
-    const server = findServer(serverId)
-    if (!server) return { code: 500, msg: "server not found", data: MCPClientStatus.Disconnected }
-    if (server.status === MCPClientStatus.Connecting) {
-      console.warn("[toggleServer] server is connecting, please wait")
-      return { code: 102, msg: "server is connecting", data: MCPClientStatus.Connecting }
+  function getTopicServers(topicId: string): TopicMcpServer[] {
+    if (!topicServers[topicId]) {
+      topicServers[topicId] = []
     }
-    const toggle = async (server: MCPServerParam) => {
-      const oldStatus = server.status
+    const transData = (servers: MCPServerParam[]): TopicMcpServer[] => {
+      return servers.map(server => ({
+        id: uniqueId(),
+        topicId,
+        oldMcpServerId: server.id,
+        server: clonePure(server),
+      }))
+    }
+    const refresh = async (topicId: string, currentServers: TopicMcpServer[]) => {
       try {
-        server.status =
-          !server.status || server.status === MCPClientStatus.Connected
-            ? MCPClientStatus.Connecting
-            : MCPClientStatus.Connected
-        const res = await window.api.mcp.toggleServer(topicId ?? MCPRootTopicId, server.id, {
-          command: server.status === MCPClientStatus.Connected ? "stop" : "start",
-        })
-        server.status = res.data
-        if (code5xx(res.code)) {
-          throw res
-        } else if (code4xx(res.code)) {
-          setStatus(server.id, MCPClientStatus.Connecting)
-          const res = await window.api.mcp.registerServer(topicId ?? MCPRootTopicId, clonePure(server))
-          server.status = res.data
-          if (code5xx(res.code)) {
-            throw res
+        let newServers: TopicMcpServer[] = []
+        if (!currentServers.length) {
+          const topicServers = await apiTopicMcp.listByTopicId(topicId)
+          if (!topicServers.length) {
+            newServers = transData(servers)
+            currentServers.push(...newServers)
+          } else {
+            newServers = transData(
+              servers.filter(server => !topicServers.find(item => item.oldMcpServerId === server.id))
+            )
+            currentServers.push(...topicServers, ...newServers)
           }
+        } else {
+          newServers = transData(
+            servers.filter(server => !currentServers.find(item => item.oldMcpServerId === server.id))
+          )
+          currentServers.push(...newServers)
         }
-        return res
+        if (newServers.length) {
+          apiTopicMcp.bulkAdd(cloneDeep(newServers))
+        }
       } catch (error) {
-        server.status = oldStatus
-        console.error("[toggleServer]", error)
-        return error as BridgeResponse<MCPClientStatus>
+        console.error("[refresh topicServers]", error)
       }
     }
-    return toggle(server)
+    refresh(topicId, topicServers[topicId])
+    return topicServers[topicId]
   }
   /**
    * 去掉多余mcp tool列表
@@ -90,6 +73,7 @@ export default defineStore("mcp", () => {
     }
     return false
   }
+  // TODO: 考虑新的topicServers
   async function remove(serverId: string, topicId?: string) {
     const resDel = await api.del(serverId)
     if (resDel == 0) {
@@ -99,13 +83,9 @@ export default defineStore("mcp", () => {
     const index = servers.findIndex(v => v.id === serverId)
     index > -1 && servers.splice(index, 1)
   }
-  async function restart(serverId: string, topicId?: string) {
-    const res = await window.api.mcp.toggleServer(topicId ?? MCPRootTopicId, serverId, { command: "restart" })
-    if (code2xx(res.code) || res.code == 404) {
-      return fetchTools(serverId, topicId)
-    } else {
-      throw new Error(res.msg)
-    }
+  // TODO: 考虑新的topicServers
+  function restart(serverId: string, topicId?: string) {
+    window.api.mcp.toggleServer(topicId ?? MCPRootTopicId, serverId, { command: "restart" })
   }
   async function fetchTools(serverId: string, topicId?: string) {
     const server = findServer(serverId)

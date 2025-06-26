@@ -38,7 +38,7 @@ export const useData = (models: Reactive<ModelMeta[]>) => {
         }
       }
     } catch (error) {
-      console.error(`[fetch models] ${(error as Error).message}`)
+      console.error(`[fetch models]`, error)
     }
   }
   return {

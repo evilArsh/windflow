@@ -2,13 +2,14 @@ import { db } from "@renderer/usable/useDatabase"
 import { MCPServerParam } from "@shared/types/mcp"
 import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default"
+import { TopicMcpServer } from "@renderer/types"
 
 export const useData = (servers: Reactive<MCPServerParam[]>) => {
   async function update(data: MCPServerParam) {
     try {
       return db.mcpServer.update(data.id, data)
     } catch (error) {
-      console.log(`[update mcp server error] ${(error as Error).message}`)
+      console.log(`[update mcp server error]`, error)
       return 0
     }
   }
@@ -16,7 +17,7 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
     try {
       return db.mcpServer.add(data)
     } catch (error) {
-      console.log(`[add mcp server error] ${(error as Error).message}`)
+      console.log(`[add mcp server error]`, error)
       return 0
     }
   }
@@ -24,7 +25,7 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
     try {
       return db.mcpServer.delete(id)
     } catch (error) {
-      console.log(`[del mcp server error] ${(error as Error).message}`)
+      console.log(`[del mcp server error]`, error)
       return 0
     }
   }
@@ -46,7 +47,7 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
         }
       }
     } catch (error) {
-      console.log(`[fetch mcp servers error] ${(error as Error).message}`)
+      console.log(`[fetch mcp servers error]`, error)
     }
   }
   return {
@@ -55,5 +56,50 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
     fetch,
     update,
     getAll,
+  }
+}
+
+export function useTopicMcpServerData() {
+  async function update(data: TopicMcpServer) {
+    try {
+      return db.topicMcpServer.update(data.id, data)
+    } catch (error) {
+      console.log(`[update topic mcp server error]`, error)
+      return 0
+    }
+  }
+  async function add(data: TopicMcpServer) {
+    try {
+      return db.topicMcpServer.add(data)
+    } catch (error) {
+      console.log(`[add topic mcp server error]`, error)
+      return 0
+    }
+  }
+  async function bulkAdd(data: TopicMcpServer[]) {
+    try {
+      return db.topicMcpServer.bulkAdd(data)
+    } catch (error) {
+      console.log(`[add topic mcp server error]`, error)
+      return 0
+    }
+  }
+  async function del(id: string) {
+    try {
+      return db.topicMcpServer.delete(id)
+    } catch (error) {
+      console.log(`[del topic mcp server error]`, error)
+      return 0
+    }
+  }
+  async function listByTopicId(topicId: string) {
+    return db.topicMcpServer.where("topicId").equals(topicId).toArray()
+  }
+  return {
+    update,
+    add,
+    bulkAdd,
+    del,
+    listByTopicId,
   }
 }

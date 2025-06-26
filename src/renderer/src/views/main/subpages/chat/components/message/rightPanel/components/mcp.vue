@@ -63,11 +63,6 @@ const serverHandler = {
   },
   onServerToggle: async (server: MCPServerParam) => {
     console.log(server)
-    mcp.toggleServer(server.id, topic.value.id).then(res => {
-      if (code5xx(res.code)) {
-        serverHandler.showErrorDlg(server, res.msg)
-      }
-    })
   },
   refreshMcp: async (current: ChatTopic) => {
     const id = current.id

@@ -105,7 +105,7 @@ export const emitStatus = (
 
 export function useMCPContext() {
   const context = new Map<string, MCPClientContext>()
-  function addContextRefCount(topicId: string, contextId: string) {
+  function addContextRef(contextId: string, topicId: string) {
     const ctx = context.get(contextId)
     if (!ctx) return
     if (!ctx.reference.includes(topicId)) {
@@ -148,9 +148,15 @@ export function useMCPContext() {
       ctx.reference = ctx.reference.filter(item => item !== topicId)
     }
   }
+  function dispose() {
+    context.forEach(ctx => {
+      ctx.client?.close()
+    })
+    context.clear()
+  }
   return {
     context,
-    addContextRefCount,
+    addContextRef,
     getContext,
     createContext,
     removeContext,
@@ -158,5 +164,6 @@ export function useMCPContext() {
     hasTopicReference,
     getServersByTopic,
     removeReference,
+    dispose,
   }
 }

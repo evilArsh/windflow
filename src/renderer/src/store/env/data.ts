@@ -12,7 +12,7 @@ export const useData = (env: Reactive<ToolEnvironment>) => {
       const res = await settingsStore.api.get(SettingKeys.ToolEnvironment, defaultEnv())
       Object.assign(env, res.value)
     } catch (error) {
-      console.error(`[fetch chat topic] ${(error as Error).message}`)
+      console.error(`[fetch chat topic]`, error)
     }
   }
   settingsStore.api.dataWatcher<ToolEnvironment>(SettingKeys.ToolEnvironment, env, defaultEnv(), data => {

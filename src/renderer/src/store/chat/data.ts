@@ -114,7 +114,7 @@ export const useData = (
         })
       )
     } catch (error) {
-      console.error(`[fetch chat topic] ${(error as Error).message}`)
+      console.error(`[fetch chat topic]`, error)
     }
   }
   settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")

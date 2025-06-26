@@ -104,8 +104,14 @@ export type ChatTopic = {
 }
 
 export type TopicMcpServer = {
+  id: string
   topicId: string
-} & MCPServerParam
+  /**
+   * 该字段与第一次同步的mcpServerId关联
+   */
+  oldMcpServerId: string
+  server: MCPServerParam
+}
 
 export type ChatTopicTree = {
   id: string

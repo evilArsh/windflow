@@ -47,21 +47,12 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolName = useToolName()
   const toolCall = useToolCall()
-  const {
-    context,
-    addContextRefCount,
-    getContext,
-    createContext,
-    removeContext,
-    getTopicReference,
-    getServersByTopic,
-    hasTopicReference,
-    removeReference,
-  } = useMCPContext()
+  const context = useMCPContext()
   async function registerServer(topicId: string, params: MCPServerParam): Promise<void> {
     const { id, serverName } = params
-    let ctx = getContext(id)
-    if (!ctx) ctx = createContext(params)
+    let ctx = context.getContext(id)
+    if (!ctx) ctx = context.createContext(params)
+    context.addContextRef(id, topicId)
     try {
       if (ctx.client) {
         if (ctx.status === MCPClientStatus.Connecting) {
@@ -71,7 +62,6 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           const pong = await ctx.client.ping()
           if (pong) {
             log.debug("[MCP registerServer]", `[${serverName}]already created`)
-            addContextRefCount(topicId, id)
             emitStatus(globalBus, id, ctx.status, ctx.reference, 201, `[${serverName}]already created`)
             return
           } else {
@@ -102,42 +92,37 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
         throw new Error(err)
       }
       ctx.status = MCPClientStatus.Connected
-      if (!ctx.reference.includes(topicId)) {
-        ctx.reference.push(topicId)
-      }
       emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "ok")
     } catch (error) {
-      await removeContext(id)
+      await context.removeContext(id)
       log.debug("[MCP registerServer error]", error)
       emitStatus(globalBus, id, ctx.status, ctx.reference, 500, errorToText(error))
     }
   }
   async function toggleServer(topicId: string, id: string, command: MCPClientHandleCommand): Promise<void> {
     try {
-      const ctx = getContext(id)
-      let oldRefs: string[] = []
+      const ctx = context.getContext(id)
       if (!ctx) {
         emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 404, `${id} not found`)
         return
       }
       switch (command.command) {
         case "stop": {
-          oldRefs = (await getReferences(ctx.params.id)).data
-          removeReference(topicId, ctx.params.id)
+          context.removeReference(topicId, ctx.params.id)
           const refs = await getReferences(ctx.params.id)
-          let msg = "ok"
+          const refTopics = [topicId]
           if (refs.data.length === 0 || (refs.data.length == 1 && refs.data[0] === MCPRootTopicId)) {
             // 如果只剩下配置界面的引用，则删除该mcp服务
             // 用户再次到配置界面时再启动，节约资源
-            await removeContext(ctx.params.id)
-            msg = `removed`
+            refTopics.push(MCPRootTopicId)
+            await context.removeContext(ctx.params.id)
           }
-          emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, oldRefs, 200, msg)
+          emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, refTopics, 200, "ok")
           return
         }
         case "restart": {
-          oldRefs = (await getReferences(ctx.params.id)).data
-          await removeContext(ctx.params.id)
+          const oldRefs = (await getReferences(ctx.params.id)).data
+          await context.removeContext(ctx.params.id)
           emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, oldRefs, 200, "removed")
           return registerServer(topicId, ctx.params)
         }
@@ -149,7 +134,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
   async function listTools(id?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
     const results: MCPToolDetail[][] = []
     try {
-      const clients = availableClients(context, id)
+      const clients = availableClients(context.context, id)
       const filterClient: ReturnType<typeof availableClients> = []
       clients.forEach(client => {
         if (cachedTools[client.id]) {
@@ -189,7 +174,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     const results: MCPListPromptsResponse = { prompts: [] }
     try {
       const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listPrompts"]>> }>> = []
-      const clients = availableClients(context, id)
+      const clients = availableClients(context.context, id)
       for (const client of clients) {
         asyncReqs.push(requestWithId(client.id, () => client.client.listPrompts(params, options)))
       }
@@ -217,7 +202,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     const results: MCPListResourcesResponse = { resources: [] }
     try {
       const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listResources"]>> }>> = []
-      const clients = availableClients(context, id)
+      const clients = availableClients(context.context, id)
       for (const client of clients) {
         asyncReqs.push(requestWithId(client.id, () => client.client.listResources(params, options)))
       }
@@ -245,7 +230,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     const results: MCPListResourceTemplatesResponse = { resourceTemplates: [] }
     try {
       const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listResourceTemplates"]>> }>> = []
-      const clients = availableClients(context, id)
+      const clients = availableClients(context.context, id)
       for (const client of clients) {
         asyncReqs.push(requestWithId(client.id, () => client.client.listResourceTemplates(params, options)))
       }
@@ -274,7 +259,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       const tool = tools.data.find(tool => tool.name === toolname)
       if (tool) {
         const { serverId, name } = toolName.split(tool.name)
-        const ctx = context.get(serverId)
+        const ctx = context.getContext(serverId)
         if (!ctx) {
           const msg = `server [${serverId}] not found`
           return responseData(500, msg, { content: { type: "text", text: msg } })
@@ -306,10 +291,10 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     env = cloneDeep(newEnv)
   }
   async function getReferences(id: string): Promise<BridgeResponse<Array<string>>> {
-    return responseData(200, "ok", getTopicReference(id))
+    return responseData(200, "ok", context.getTopicReference(id))
   }
   async function getTopicServers(topicId: string): Promise<BridgeResponse<Array<string>>> {
-    return responseData(200, "ok", getServersByTopic(topicId))
+    return responseData(200, "ok", context.getServersByTopic(topicId))
   }
   async function stopTopicServers(topicId: string): Promise<BridgeResponse<number>> {
     const servers = await getTopicServers(topicId)
@@ -322,7 +307,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     return responseData(200, "ok", res.filter(r => r.status === "fulfilled").length)
   }
   async function hasReference(id: string, topicId: string): Promise<BridgeResponse<boolean>> {
-    return responseData(200, "ok", hasTopicReference(id, topicId))
+    return responseData(200, "ok", context.hasTopicReference(id, topicId))
   }
   function registerIpc() {
     ipcMain.handle(IpcChannel.McpRegisterServer, async (_, topicId: string, params: MCPStdioServerParam) => {
@@ -375,10 +360,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     )
   }
   function dispose() {
-    context.forEach(ctx => {
-      ctx.client?.close()
-    })
-    context.clear()
+    context.dispose()
   }
   return {
     updateEnv,

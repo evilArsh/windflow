@@ -41,7 +41,7 @@ export const useData = (
         currentProvider.value = metas[defaultData[0].name]
       }
     } catch (error) {
-      console.error(`[fetch providers] ${(error as Error).message}`)
+      console.error(`[fetch providers]`, error)
     }
   }
   const reset = async () => {
