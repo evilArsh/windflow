@@ -54,7 +54,7 @@ const serverHandler = {
     ElNotification({
       title: t("notify.title.error"),
       message: t("mcp.service.disconnected", {
-        service: data.serverName,
+        service: data.name,
         message: msg,
       }),
       duration: 5000,

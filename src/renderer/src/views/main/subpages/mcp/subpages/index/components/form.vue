@@ -60,8 +60,9 @@ const formRules = ref<FormRules>({
 })
 const defaultData = (): MCPServerParam => ({
   id: "",
-  serverName: "",
+  name: "",
   type: "stdio",
+  referTopics: [],
   params: { command: "", args: [], env: {} },
   description: "",
 })
@@ -90,8 +91,8 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
 <template>
   <DialogPanel>
     <el-form ref="form" :rules="formRules" :model="clonedData" label-width="8rem" class="w-full" v-bind="formProps">
-      <el-form-item :label="t('mcp.serverName')" required prop="serverName">
-        <el-input v-model="clonedData.serverName"></el-input>
+      <el-form-item :label="t('mcp.serverName')" required prop="name">
+        <el-input v-model="clonedData.name"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.type')" required prop="type">
         <el-radio-group v-model="clonedData.type">

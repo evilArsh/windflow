@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import useMcpStore from "@renderer/store/mcp"
 import {
+  getPureParam,
   isSSEServerParams,
   isStdioServerParams,
   isStreamableServerParams,
   MCPClientStatus,
+  MCPRootTopicId,
   MCPServerParam,
 } from "@shared/types/mcp"
 import { storeToRefs } from "pinia"
@@ -16,7 +18,7 @@ import Form from "./components/form.vue"
 import List from "./components/list.vue"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { useThrottleFn } from "@vueuse/core"
-import Retry from "./retry.vue"
+import Loading from "./loading.vue"
 import Schema from "./schema.vue"
 import Prompt from "./prompt.vue"
 import Resource from "./resource.vue"
@@ -41,7 +43,7 @@ const search = shallowReactive({
   query: useThrottleFn(() => {}),
   filterKeyword: markRaw((value: MCPServerParam, keyword: string) => {
     return (
-      value.serverName.includes(keyword) ||
+      value.name.includes(keyword) ||
       (isStdioServerParams(value) && value.params.command.includes(keyword)) ||
       (isSSEServerParams(value) && value.params.url.includes(keyword)) ||
       (isStreamableServerParams(value) && value.params.url.includes(keyword))
@@ -57,23 +59,18 @@ const filterServers = computed(() => {
 })
 const serverHandler = {
   restart: async (param: MCPServerParam) => {
-    try {
-      await mcp.restart(param.id)
-    } catch (error) {
-      msg({ code: 500, msg: errorToText(error) })
-    }
+    mcp.restart(MCPRootTopicId, param.id, getPureParam(param))
   },
   onCardClick: async (param: MCPServerParam) => {
-    try {
-      current.value = param
-      await mcp.fetchTools(current.value.id)
-    } catch (error) {
-      msg({ code: 500, msg: errorToText(error) })
+    if (param.status === MCPClientStatus.Connected) {
+      mcp.fetchTools(param.id)
+    } else {
+      mcp.start(MCPRootTopicId, param)
     }
   },
   onCardDelete: async (done: CallBackFn, param: MCPServerParam) => {
     try {
-      await mcp.remove(param.id)
+      await mcp.remove(MCPRootTopicId, param.id)
       if (current.value?.id === param.id) {
         current.value = undefined
       }
@@ -100,7 +97,7 @@ const dlg = {
         await mcp.api.add(res)
         servers.value.push(res)
         current.value = res
-        await mcp.fetchTools(res.id)
+        mcp.start(MCPRootTopicId, res)
       } else {
         if (current.value) Object.assign(current.value, data)
         await mcp.api.update(mcp.clonePure(data))
@@ -177,10 +174,7 @@ const dlg = {
           <Form hide-close-btn @change="dlg.onFormChange" :form-props="{ labelPosition: 'top' }" :data="current"></Form>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.tool')" name="tool">
-          <Retry
-            v-if="current.status !== MCPClientStatus.Connected"
-            @retry="mcp.fetchTools(current.id)"
-            :server="current"></Retry>
+          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.tools || current.tools.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">
@@ -189,10 +183,7 @@ const dlg = {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.prompt')" name="prompt">
-          <Retry
-            v-if="current.status !== MCPClientStatus.Connected"
-            @retry="mcp.fetchTools(current.id)"
-            :server="current"></Retry>
+          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.prompts || current.prompts.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">
@@ -201,10 +192,7 @@ const dlg = {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.resource')" name="resource">
-          <Retry
-            v-if="current.status !== MCPClientStatus.Connected"
-            @retry="mcp.fetchTools(current.id)"
-            :server="current"></Retry>
+          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.resources || current.resources.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">
@@ -213,10 +201,7 @@ const dlg = {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.resourceTemplates')" name="resourceTemplates">
-          <Retry
-            v-if="current.status !== MCPClientStatus.Connected"
-            @retry="mcp.fetchTools(current.id)"
-            :server="current"></Retry>
+          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.resourceTemplates || current.resourceTemplates.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">

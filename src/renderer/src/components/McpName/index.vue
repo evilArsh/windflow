@@ -7,7 +7,7 @@ defineProps<{
 </script>
 <template>
   <div class="flex gap.5rem items-center">
-    <el-text class="break-all">{{ data.serverName }}</el-text>
+    <el-text class="break-all">{{ data.name }}</el-text>
     <ContentBox v-if="!hideFlag">
       <i-fluent-emoji-flat:desktop-computer
         v-if="data.type === 'stdio'"

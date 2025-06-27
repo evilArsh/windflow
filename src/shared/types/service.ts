@@ -9,15 +9,17 @@ import {
   MCPListResourcesResponse,
   MCPListResourceTemplatesParams,
   MCPListResourceTemplatesResponse,
-  MCPClientHandleCommand,
   MCPToolDetail,
   MCPServerParam,
   MCPRequestParams,
+  MCPStdioServerParamCore,
+  MCPStreamableServerParamCore,
 } from "./mcp"
 
 export const IpcChannel = {
-  McpRegisterServer: "mcp.registerServer",
-  McpToggleServer: "mcp.toggleServer",
+  McpStartServer: "mcp.startServer",
+  McpStopServer: "mcp.stopServer",
+  McpRestartServer: "mcp.restartServer",
   McpListTools: "mcp.listTools",
   McpCallTool: "mcp.callTool",
   McpListResources: "mcp.listResources",
@@ -49,8 +51,13 @@ export interface MCPService {
    * @description 判断`topicId`是否引用了mcp服务
    */
   hasReference: (id: string, topicId: string) => Promise<BridgeResponse<boolean>>
-  registerServer: (topicId: string, params: MCPServerParam) => Promise<void>
-  toggleServer: (topicId: string, id: string, command: MCPClientHandleCommand) => Promise<void>
+  startServer: (topicId: string, params: MCPServerParam) => Promise<void>
+  stopServer: (topicId: string, id: string) => Promise<void>
+  restartServer: (
+    topicId: string,
+    id: string,
+    params?: MCPStreamableServerParamCore | MCPStdioServerParamCore
+  ) => Promise<void>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
   listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (

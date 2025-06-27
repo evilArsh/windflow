@@ -2,7 +2,6 @@ import { db } from "@renderer/usable/useDatabase"
 import { MCPServerParam } from "@shared/types/mcp"
 import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default"
-import { TopicMcpServer } from "@renderer/types"
 
 export const useData = (servers: Reactive<MCPServerParam[]>) => {
   async function update(data: MCPServerParam) {
@@ -56,50 +55,5 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
     fetch,
     update,
     getAll,
-  }
-}
-
-export function useTopicMcpServerData() {
-  async function update(data: TopicMcpServer) {
-    try {
-      return db.topicMcpServer.update(data.id, data)
-    } catch (error) {
-      console.log(`[update topic mcp server error]`, error)
-      return 0
-    }
-  }
-  async function add(data: TopicMcpServer) {
-    try {
-      return db.topicMcpServer.add(data)
-    } catch (error) {
-      console.log(`[add topic mcp server error]`, error)
-      return 0
-    }
-  }
-  async function bulkAdd(data: TopicMcpServer[]) {
-    try {
-      return db.topicMcpServer.bulkAdd(data)
-    } catch (error) {
-      console.log(`[add topic mcp server error]`, error)
-      return 0
-    }
-  }
-  async function del(id: string) {
-    try {
-      return db.topicMcpServer.delete(id)
-    } catch (error) {
-      console.log(`[del topic mcp server error]`, error)
-      return 0
-    }
-  }
-  async function listByTopicId(topicId: string) {
-    return db.topicMcpServer.where("topicId").equals(topicId).toArray()
-  }
-  return {
-    update,
-    add,
-    bulkAdd,
-    del,
-    listByTopicId,
   }
 }

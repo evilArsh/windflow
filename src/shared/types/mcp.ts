@@ -25,22 +25,29 @@ export interface MCPRequestParams {
 }
 export interface MCPParamsBase {
   id: string
-  serverName: string
+  name: string
   description: string
-  // disabled?: boolean
+  /**
+   * 使用该服务的topic
+   */
+  referTopics?: string[]
+  /**
+   * 当前服务为指定mcp id的副本
+   */
+  referId?: string
   status?: MCPClientStatus
   tools?: MCPToolDetail[]
   prompts?: MCPPromptItem[]
   resources?: MCPResourceItem[]
   resourceTemplates?: MCPResourceTemplatesItem[]
 }
-export interface MCPStreamableServerParam extends MCPRequestParams, MCPParamsBase {
+export interface MCPStreamableServerParamCore extends MCPRequestParams {
   type: "sse" | "streamable"
   params: {
     url: string
   }
 }
-export interface MCPStdioServerParam extends MCPRequestParams, MCPParamsBase {
+export interface MCPStdioServerParamCore extends MCPRequestParams {
   type: "stdio"
   params: {
     /**
@@ -65,6 +72,8 @@ export interface MCPStdioServerParam extends MCPRequestParams, MCPParamsBase {
     cwd?: string
   }
 }
+export type MCPStdioServerParam = MCPStdioServerParamCore & MCPParamsBase
+export type MCPStreamableServerParam = MCPStreamableServerParamCore & MCPParamsBase
 export type MCPServerParam = MCPStdioServerParam | MCPStreamableServerParam
 
 export function isStdioServerParams(params: MCPServerParam): params is MCPStdioServerParam {
@@ -83,8 +92,11 @@ export function isAvailableServerParams(params: MCPServerParam): params is MCPSe
   return isSSEServerParams(params) || isStreamableServerParams(params) || isStdioServerParams(params)
 }
 
-export interface MCPClientHandleCommand {
-  command: "stop" | "restart"
+export function getPureParam(params: MCPServerParam): MCPStreamableServerParamCore | MCPStdioServerParamCore {
+  return {
+    type: params.type,
+    params: params.params,
+  } as MCPStreamableServerParamCore | MCPStdioServerParamCore
 }
 
 // --- mcp call result start ---

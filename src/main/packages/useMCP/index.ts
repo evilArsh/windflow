@@ -11,13 +11,14 @@ import {
   MCPListPromptsResponse,
   MCPListResourceTemplatesParams,
   MCPListResourceTemplatesResponse,
-  MCPClientHandleCommand,
   MCPServerParam,
   isStdioServerParams,
   isStreamableServerParams,
   isSSEServerParams,
   MCPClientStatus,
   MCPRootTopicId,
+  MCPStdioServerParamCore,
+  MCPStreamableServerParamCore,
 } from "@shared/types/mcp"
 import { BridgeResponse, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
@@ -48,8 +49,8 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
   const toolName = useToolName()
   const toolCall = useToolCall()
   const context = useMCPContext()
-  async function registerServer(topicId: string, params: MCPServerParam): Promise<void> {
-    const { id, serverName } = params
+  async function startServer(topicId: string, params: MCPServerParam): Promise<void> {
+    const { id, name } = params
     let ctx = context.getContext(id)
     if (!ctx) ctx = context.createContext(params)
     context.addContextRef(id, topicId)
@@ -61,11 +62,11 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
         } else if (ctx.status === MCPClientStatus.Connected) {
           const pong = await ctx.client.ping()
           if (pong) {
-            log.debug("[MCP registerServer]", `[${serverName}]already created`)
-            emitStatus(globalBus, id, ctx.status, ctx.reference, 201, `[${serverName}]already created`)
+            log.debug("[MCP startServer]", `[${name}]already created`)
+            emitStatus(globalBus, id, ctx.status, ctx.reference, 201, `[${name}]already created`)
             return
           } else {
-            log.debug("[MCP registerServer]", `[${serverName}]context found but client not connected`)
+            log.debug("[MCP startServer]", `[${name}]context found but client not connected`)
           }
         } else {
           ctx.reference.length = 0
@@ -76,61 +77,79 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "connecting")
       if (isStdioServerParams(ctx.params)) {
         ctx.transport = await createStdioTransport(ctx.client, env, ctx.params)
-        log.debug("[MCP register stdio server]", `[${serverName}]created`)
+        log.debug("[MCP register stdio server]", `[${name}]created`)
       } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
           ctx.transport = await createStreamableTransport(ctx.client, ctx.params)
-          log.debug("[MCP register streamable server]", `[${serverName}]created`)
+          log.debug("[MCP register streamable server]", `[${name}]created`)
         } catch (_e) {
           log.warn("[MCP register streamable server error,attempt sse type]")
           ctx.transport = await createSseTransport(ctx.client, ctx.params)
-          log.debug("[MCP register sse server]", `[${serverName}]created`)
+          log.debug("[MCP register sse server]", `[${name}]created`)
         }
       } else {
-        const err = `unknown server type:${params.type} in server ${serverName}`
-        log.error("[MCP registerServer]", err, params)
+        const err = `unknown server type:${params.type} in server ${name}`
+        log.error("[MCP startServer]", err, params)
         throw new Error(err)
       }
       ctx.status = MCPClientStatus.Connected
       emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "ok")
     } catch (error) {
       await context.removeContext(id)
-      log.debug("[MCP registerServer error]", error)
+      log.debug("[MCP startServer error]", error)
       emitStatus(globalBus, id, ctx.status, ctx.reference, 500, errorToText(error))
     }
   }
-  async function toggleServer(topicId: string, id: string, command: MCPClientHandleCommand): Promise<void> {
+  async function stopServer(topicId: string, id: string): Promise<void> {
     try {
       const ctx = context.getContext(id)
       if (!ctx) {
         emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 404, `${id} not found`)
         return
       }
-      switch (command.command) {
-        case "stop": {
-          context.removeReference(topicId, ctx.params.id)
-          const refs = await getReferences(ctx.params.id)
-          const refTopics = [topicId]
-          if (refs.data.length === 0 || (refs.data.length == 1 && refs.data[0] === MCPRootTopicId)) {
-            // 如果只剩下配置界面的引用，则删除该mcp服务
-            // 用户再次到配置界面时再启动，节约资源
-            refTopics.push(MCPRootTopicId)
-            await context.removeContext(ctx.params.id)
-          }
-          emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, refTopics, 200, "ok")
-          return
-        }
-        case "restart": {
-          const oldRefs = (await getReferences(ctx.params.id)).data
-          await context.removeContext(ctx.params.id)
-          emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, oldRefs, 200, "removed")
-          return registerServer(topicId, ctx.params)
-        }
+      if (topicId === MCPRootTopicId) {
+        await context.removeContext(id)
+        emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, [], 200, "ok")
+        return
+      }
+      context.removeReference(topicId, ctx.params.id)
+      const refs = await getReferences(ctx.params.id)
+      if (refs.data.length === 0 || (refs.data.length == 1 && refs.data[0] === MCPRootTopicId)) {
+        // 如果只剩下配置界面的引用，则删除该mcp服务
+        // 用户再次到配置界面时再启动，节约资源
+        await context.removeContext(ctx.params.id)
+        emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, [], 200, "ok")
+      } else {
+        // 更新引用的refs
+        emitStatus(globalBus, ctx.params.id, MCPClientStatus.Connected, refs.data, 200, "ok")
       }
     } catch (error) {
-      log.error("[MCP toggleServer error]", error)
+      log.error("[MCP stopServer error]", error)
     }
   }
+  async function restartServer(
+    topicId: string,
+    id: string,
+    params?: MCPStreamableServerParamCore | MCPStdioServerParamCore
+  ): Promise<void> {
+    try {
+      const ctx = context.getContext(id)
+      if (!ctx) {
+        emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 404, `${id} not found`)
+        return
+      }
+      await context.removeContext(ctx.params.id)
+      emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, [], 200, "removed")
+      return startServer(topicId, {
+        ...ctx.params,
+        ...params,
+        id,
+      })
+    } catch (error) {
+      log.error("[MCP restartServer error]", error)
+    }
+  }
+
   async function listTools(id?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
     const results: MCPToolDetail[][] = []
     try {
@@ -298,11 +317,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
   }
   async function stopTopicServers(topicId: string): Promise<BridgeResponse<number>> {
     const servers = await getTopicServers(topicId)
-    const asyncReqs = servers.data.map(serverId =>
-      toggleServer(topicId, serverId, {
-        command: "stop",
-      })
-    )
+    const asyncReqs = servers.data.map(serverId => stopServer(topicId, serverId))
     const res = await Promise.allSettled(asyncReqs)
     return responseData(200, "ok", res.filter(r => r.status === "fulfilled").length)
   }
@@ -310,13 +325,16 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     return responseData(200, "ok", context.hasTopicReference(id, topicId))
   }
   function registerIpc() {
-    ipcMain.handle(IpcChannel.McpRegisterServer, async (_, topicId: string, params: MCPStdioServerParam) => {
-      return registerServer(topicId, params)
+    ipcMain.handle(IpcChannel.McpStartServer, async (_, topicId: string, params: MCPStdioServerParam) => {
+      return startServer(topicId, params)
+    })
+    ipcMain.handle(IpcChannel.McpStopServer, async (_, topicId: string, id: string) => {
+      return stopServer(topicId, id)
     })
     ipcMain.handle(
-      IpcChannel.McpToggleServer,
-      async (_, topicId: string, id: string, command: MCPClientHandleCommand) => {
-        return toggleServer(topicId, id, command)
+      IpcChannel.McpRestartServer,
+      async (_, topicId: string, id: string, params?: MCPStreamableServerParamCore | MCPStdioServerParamCore) => {
+        return restartServer(topicId, id, params)
       }
     )
     ipcMain.handle(IpcChannel.McpListTools, async (_, id?: string | Array<string>) => {
@@ -368,8 +386,9 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     getTopicServers,
     stopTopicServers,
     hasReference,
-    registerServer,
-    toggleServer,
+    startServer,
+    stopServer,
+    restartServer,
     listTools,
     callTool,
     listPrompts,

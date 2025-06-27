@@ -24,7 +24,7 @@ const callsData = ref<Record<string, CallStatus>>({})
 const calls = computed(() => Object.values(callsData.value))
 const toolName = useToolName()
 const { t } = useI18n()
-const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.serverName ?? "")
+const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.name ?? "")
 watch(
   () => props.messageItem.content.tool_calls,
   v => {

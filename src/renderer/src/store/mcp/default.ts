@@ -5,7 +5,7 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
     {
       type: "stdio",
       id: "server-everything",
-      serverName: "server-everything",
+      name: "server-everything",
       description: "",
       params: {
         command: "npx",
@@ -16,7 +16,7 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
     {
       type: "stdio",
       id: "server-filesystem",
-      serverName: "server-filesystem",
+      name: "server-filesystem",
       description: "",
       params: {
         command: "npx",
