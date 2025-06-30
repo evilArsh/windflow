@@ -40,8 +40,16 @@
       "prompt": "提示词"
     },
     "rightPanel": {
-      "mcp": "工具",
-      "settings": "设置"
+      "mcp": {
+        "addFailed": "新增失败",
+        "clone": "克隆",
+        "delFailed": "删除失败",
+        "label": "工具",
+        "restart": "重启"
+      },
+      "settings": {
+        "label": "设置"
+      }
     },
     "search": "搜索",
     "terminate": "终止",
@@ -83,12 +91,12 @@
       "market": "发现",
       "servers": "服务列表"
     },
+    "name": "名称",
     "schema": {
       "noDescription": "没有描述",
       "params": "参数"
     },
     "search": "搜索mcp服务",
-    "serverName": "名称",
     "service": {
       "connecting": "工具{service}启动中",
       "deleteConfirm": "要重启吗?已使用该工具的聊天个数 {count}",

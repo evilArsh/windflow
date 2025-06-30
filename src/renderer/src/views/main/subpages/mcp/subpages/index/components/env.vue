@@ -49,7 +49,7 @@ function onChange() {
                     autosize
                     :maxlength="500"
                     @change="onChange"
-                    v-model="dataset[index].key"></el-input>
+                    v-model.trim="dataset[index].key"></el-input>
                 </el-col>
                 <el-col :span="12">
                   <el-input

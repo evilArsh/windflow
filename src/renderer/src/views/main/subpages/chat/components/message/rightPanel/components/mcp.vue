@@ -1,25 +1,27 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
 import useMcpStore from "@renderer/store/mcp"
-import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { errorToText } from "@shared/error"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
-import { PopoverInstance } from "element-plus"
+import { ElMessageBox, PopoverInstance } from "element-plus"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
-import { code5xx } from "@shared/types/bridge"
-import { ElNotification, ElMessageBox } from "element-plus"
 const props = defineProps<{
   topic: ChatTopic
 }>()
 const topic = computed<ChatTopic>(() => props.topic)
 const { t } = useI18n()
 const mcp = useMcpStore()
-const chatStore = useChatStore()
 const { servers } = storeToRefs(mcp)
-const activeServerIds = ref<string[]>([])
+const isCurrentActive = computed(() => {
+  return (server: MCPServerParam) =>
+    server.status == MCPClientStatus.Connected && server.referTopics?.includes(topic.value.id)
+})
+const filterServers = computed(() => {
+  return servers.value.filter(v => !v.modifyTopic || v.modifyTopic === topic.value.id)
+})
 const popover = reactive({
   visible: false,
   ref: undefined as PopoverInstance | undefined,
@@ -28,7 +30,7 @@ const popover = reactive({
   triggerRef: undefined as HTMLElement | undefined,
   onClick: markRaw((index: number, server: MCPServerParam) => {
     popover.triggerRef = popover.refs[index]
-    popover.server = mcp.findServer(server.id)
+    popover.server = mcp.clonePure(server)
     popover.visible = true
   }),
   onHide: markRaw(() => {
@@ -39,8 +41,19 @@ const popover = reactive({
 const formHandler = {
   onServerChange: async (data: MCPServerParam) => {
     try {
-      // popover.server && Object.assign(popover.server, data)
-      // await chatStore.api.updateChatTopic(cloneDeep(topic.value))
+      const newCopy = mcp.clonePure(data)
+      newCopy.status = MCPClientStatus.Disconnected
+      newCopy.id = uniqueId()
+      newCopy.modifyTopic = topic.value.id
+      newCopy.referId = data.referId
+      newCopy.name = `${newCopy.name}_copy`
+      const res = await mcp.api.add(newCopy)
+      if (res === 0) {
+        throw new Error(t("chat.rightPanel.mcp.addFailed"))
+      }
+      const index = servers.value.findIndex(v => v.id === popover.server?.id)
+      servers.value.splice(index + 1, 0, newCopy)
+      mcp.start(topic.value.id, newCopy)
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }
@@ -50,121 +63,105 @@ const formHandler = {
   },
 }
 const serverHandler = {
-  showErrorDlg: (data: MCPServerParam, msg: string) => {
-    ElNotification({
-      title: t("notify.title.error"),
-      message: t("mcp.service.disconnected", {
-        service: data.name,
-        message: msg,
-      }),
-      duration: 5000,
-      type: "error",
-    })
-  },
-  onServerToggle: async (server: MCPServerParam) => {
-    console.log(server)
-  },
-  refreshMcp: async (current: ChatTopic) => {
-    const id = current.id
-    const mcpServersIds = (await window.api.mcp.getTopicServers(id)).data
-    if (topic.value.id !== id) return
-    activeServerIds.value = mcpServersIds
+  onServerToggle: async (server: MCPServerParam): Promise<void> => {
+    try {
+      if (server.status == MCPClientStatus.Connected && server.referTopics?.includes(topic.value.id)) {
+        mcp.stop(topic.value.id, server.id)
+      } else {
+        mcp.start(topic.value.id, server)
+      }
+    } catch (error) {
+      console.log(error)
+    }
   },
   restart: async (done: CallBackFn, server: MCPServerParam) => {
     try {
       const refs = (await window.api.mcp.getReferences(server.id)).data
-      if (refs.length > 0) {
+      if (refs.length > 1) {
         await ElMessageBox.confirm(t("mcp.service.deleteConfirm", { count: refs.length }), t("notify.title.warning"), {
           confirmButtonText: t("btn.confirm"),
           cancelButtonText: t("btn.cancel"),
           type: "warning",
         })
       }
-      const toggleRes = await window.api.mcp.toggleServer(topic.value.id, server.id, {
-        command: "restart",
-      })
-      if (code5xx(toggleRes.code)) {
-        ElNotification({
-          title: t("notify.title.error"),
-          message: toggleRes.msg,
-          type: "error",
-        })
-        return
-      }
-      msg({ code: 200, msg: "ok" })
+      await window.api.mcp.restartServer(topic.value.id, server.id)
+      done()
     } catch (error) {
-      console.log("[restart]", error)
-    } finally {
+      done()
+      console.log(error)
+    }
+  },
+  del: async (done: CallBackFn, server: MCPServerParam) => {
+    try {
+      mcp.stop(topic.value.id, server.id)
+      const res = await mcp.api.del(server.id)
+      if (res === 0) {
+        throw new Error(t("chat.rightPanel.mcp.delFailed"))
+      }
+      const index = servers.value.findIndex(v => v.id === server.id)
+      servers.value.splice(index, 1)
+      done()
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+      console.log(error)
       done()
     }
   },
-  // del: (index: number) => {
-  //   const res = topic.value.mcpServers.splice(index, 1)
-  //   if (res.length) {
-  //     // 仅删除引用
-  //     window.api.mcp.toggleServer(topic.value.id, res[0].id, { command: "delete" })
-  //   }
-  // },
 }
-watch(topic, serverHandler.refreshMcp, { immediate: true })
 </script>
 <template>
   <div class="flex flex-col gap1rem flex-1 overflow-hidden">
-    <!-- <div class="flex-shrink-0 flex">
-      <Button size="small" @click="serverHandler.test">测试</Button>
-    </div> -->
+    <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     <div class="flex flex-1 overflow-hidden flex-col">
       <el-scrollbar>
-        <div v-for="(server, index) in servers" :key="server.id">
+        <div v-for="(server, index) in filterServers" :key="server.id">
           <ContentBox :ref="el => (popover.refs[index] = el as HTMLElement)" background>
             <template #icon>
-              <i-mdi:circle-medium
-                :class="[
-                  activeServerIds.includes(server.id) ? 'text-[#5FADFF]' : 'text-[#c0c4cc]',
-                ]"></i-mdi:circle-medium>
+              <el-switch
+                size="small"
+                :model-value="isCurrentActive(server)"
+                :loading="server.status === MCPClientStatus.Connecting"
+                :active-value="true"
+                :inactive-value="false"
+                @click="serverHandler.onServerToggle(server)" />
             </template>
             <McpName :data="server" hide-flag></McpName>
             <template #footer>
-              <div class="flex items-center" @click.stop>
-                <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index, server)">
-                  <i class="i-ep:edit"></i>
-                </ContentBox>
-                <ContentBox class="flex-grow-0!" @click.stop>
-                  <Button text link type="warning" @click="done => serverHandler.restart(done, server)">
-                    <i class="i-ep:refresh text-1.4rem"></i>
-                  </Button>
-                </ContentBox>
-                <!-- <el-segmented
-                  size="small"
-                  style="
-                    --el-segmented-item-selected-color: var(--el-text-color-primary);
-                    --el-segmented-item-selected-bg-color: #ffd100;
-                    --el-border-radius-base: 16px;
-                  "
-                  v-model="server.status"
-                  :options="[
-                    { label: '开启', value: MCPClientStatus.Connected },
-                    { label: '关闭', value: MCPClientStatus.Disconnected },
-                  ]">
-                  <template #default="{ item }">
-                    <div class="flex flex-col items-center gap-2 p-2"></div>
-                  </template>
-                </el-segmented> -->
-                <!-- <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="serverHandler.del(index)">
+              <div class="flex items-center">
+                <el-tooltip :show-after="2000" placement="bottom" :content="t('chat.rightPanel.mcp.clone')">
+                  <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index, server)">
+                    <i class="i-ep:copy-document c-#888"></i>
+                  </ContentBox>
+                </el-tooltip>
+                <el-tooltip :show-after="2000" placement="bottom" :content="t('chat.rightPanel.mcp.restart')">
+                  <ContentBox class="flex-grow-0!">
+                    <Button
+                      :disabled="!isCurrentActive(server)"
+                      text
+                      link
+                      type="warning"
+                      @click="done => serverHandler.restart(done, server)">
+                      <i class="i-ep:refresh text-1.4rem"></i>
+                    </Button>
+                  </ContentBox>
+                </el-tooltip>
+                <el-popconfirm v-if="server.modifyTopic == topic.id" :title="t('tip.deleteConfirm')">
                   <template #reference>
-                    <ContentBox class="flex-grow-0!" @click.stop>
+                    <ContentBox class="flex-grow-0!">
                       <el-button text link type="danger">
                         <i class="i-ep:delete text-1.4rem"></i>
                       </el-button>
                     </ContentBox>
                   </template>
-                  <template #actions="{ confirm, cancel }">
+                  <template #actions="{ cancel }">
                     <div class="flex justify-between">
-                      <el-button type="danger" size="small" @click="confirm">{{ t("tip.yes") }}</el-button>
+                      <Button type="danger" size="small" @click="done => serverHandler.del(done, server)">
+                        {{ t("tip.yes") }}
+                      </Button>
                       <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
                     </div>
                   </template>
-                </el-popconfirm> -->
+                </el-popconfirm>
               </div>
             </template>
           </ContentBox>
@@ -183,7 +180,7 @@ watch(topic, serverHandler.refreshMcp, { immediate: true })
       :ref="el => (popover.ref = el as PopoverInstance)"
       @hide="popover.onHide">
       <template #reference>
-        <ContentBox class="flex-grow-0! flex-shrink-0!" @click.stop>
+        <ContentBox class="flex-grow-0! flex-shrink-0!">
           <i class="i-ep:edit"></i>
         </ContentBox>
       </template>

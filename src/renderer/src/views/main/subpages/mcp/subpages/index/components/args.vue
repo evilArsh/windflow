@@ -21,7 +21,7 @@ function onDel(index: number) {
           </el-button>
           <div v-else class="flex flex-col gap-.5rem">
             <ContentBox v-for="(_, index) in data" :key="index">
-              <el-input type="textarea" autosize :maxlength="500" v-model="data[index]"></el-input>
+              <el-input type="textarea" autosize :maxlength="500" v-model.trim="data[index]"></el-input>
               <template #end>
                 <div class="flex gap-.25rem">
                   <el-button size="small" type="primary" @click="onAdd(index)">

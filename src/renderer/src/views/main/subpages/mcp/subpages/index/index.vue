@@ -17,7 +17,6 @@ import { errorToText } from "@shared/error"
 import Form from "./components/form.vue"
 import List from "./components/list.vue"
 import { CallBackFn } from "@renderer/lib/shared/types"
-import { useThrottleFn } from "@vueuse/core"
 import Loading from "./loading.vue"
 import Schema from "./schema.vue"
 import Prompt from "./prompt.vue"
@@ -28,6 +27,9 @@ const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
 const { dlgProps, dlgEvent, close, open } = useDialog({
   width: "70vw",
+})
+const tabs = shallowReactive({
+  active: "config",
 })
 const {
   dlgProps: listDlgProps,
@@ -40,28 +42,23 @@ const {
 const current = ref<MCPServerParam>()
 const search = shallowReactive({
   keyword: "",
-  query: useThrottleFn(() => {}),
-  filterKeyword: markRaw((value: MCPServerParam, keyword: string) => {
-    return (
-      value.name.includes(keyword) ||
-      (isStdioServerParams(value) && value.params.command.includes(keyword)) ||
-      (isSSEServerParams(value) && value.params.url.includes(keyword)) ||
-      (isStreamableServerParams(value) && value.params.url.includes(keyword))
-    )
-  }),
 })
-const tabs = shallowReactive({
-  active: "config",
-})
-
-const filterServers = computed(() => {
-  return servers.value.filter(v => search.filterKeyword(v, search.keyword))
-})
+const filterServers = computed(() =>
+  servers.value.filter(
+    v =>
+      (v.name.includes(search.keyword) ||
+        (isStdioServerParams(v) && v.params.command.includes(search.keyword)) ||
+        (isSSEServerParams(v) && v.params.url.includes(search.keyword)) ||
+        (isStreamableServerParams(v) && v.params.url.includes(search.keyword))) &&
+      !v.modifyTopic
+  )
+)
 const serverHandler = {
   restart: async (param: MCPServerParam) => {
     mcp.restart(MCPRootTopicId, param.id, getPureParam(param))
   },
   onCardClick: async (param: MCPServerParam) => {
+    current.value = param
     if (param.status === MCPClientStatus.Connected) {
       mcp.fetchTools(param.id)
     } else {
@@ -123,7 +120,7 @@ const dlg = {
     <div class="flex flex-1 overflow-hidden gap1rem">
       <div class="mcp-config-list">
         <div class="p1rem">
-          <el-input v-model="search.keyword" :placeholder="t('mcp.search')" @input="search.query" clearable />
+          <el-input v-model="search.keyword" :placeholder="t('mcp.search')" clearable />
         </div>
         <el-scrollbar>
           <div class="flex flex-col gap-1rem p1rem">
@@ -174,7 +171,7 @@ const dlg = {
           <Form hide-close-btn @change="dlg.onFormChange" :form-props="{ labelPosition: 'top' }" :data="current"></Form>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.tool')" name="tool">
-          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
+          <Loading v-if="current.status === MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.tools || current.tools.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">
@@ -183,7 +180,7 @@ const dlg = {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.prompt')" name="prompt">
-          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
+          <Loading v-if="current.status === MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.prompts || current.prompts.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">
@@ -192,7 +189,7 @@ const dlg = {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.resource')" name="resource">
-          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
+          <Loading v-if="current.status === MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.resources || current.resources.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">
@@ -201,7 +198,7 @@ const dlg = {
           </el-scrollbar>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.resourceTemplates')" name="resourceTemplates">
-          <Loading v-if="current.status !== MCPClientStatus.Connecting" :server="current"></Loading>
+          <Loading v-if="current.status === MCPClientStatus.Connecting" :server="current"></Loading>
           <el-scrollbar v-else class="flex-1">
             <el-empty v-if="!current.resourceTemplates || current.resourceTemplates.length == 0"></el-empty>
             <div v-else class="flex flex-col gap-0.5rem">

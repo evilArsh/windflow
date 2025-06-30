@@ -32,9 +32,13 @@ export interface MCPParamsBase {
    */
   referTopics?: string[]
   /**
-   * 当前服务为指定mcp id的副本
+   * 当前服务为指定mcp服务的副本
    */
   referId?: string
+  /**
+   * 当前服务为指定topic修改后的副本
+   */
+  modifyTopic?: string
   status?: MCPClientStatus
   tools?: MCPToolDetail[]
   prompts?: MCPPromptItem[]

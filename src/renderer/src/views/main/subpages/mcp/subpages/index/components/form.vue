@@ -20,7 +20,7 @@ const { t } = useI18n()
 const mcp = useMcpStore()
 const formRef = useTemplateRef("form")
 const formRules = ref<FormRules>({
-  serverName: {
+  name: {
     required: true,
     message: "",
     trigger: "blur",
@@ -91,8 +91,8 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
 <template>
   <DialogPanel>
     <el-form ref="form" :rules="formRules" :model="clonedData" label-width="8rem" class="w-full" v-bind="formProps">
-      <el-form-item :label="t('mcp.serverName')" required prop="name">
-        <el-input v-model="clonedData.name"></el-input>
+      <el-form-item :label="t('mcp.name')" required prop="name">
+        <el-input v-model.trim="clonedData.name"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.type')" required prop="type">
         <el-radio-group v-model="clonedData.type">
@@ -103,7 +103,11 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
       </el-form-item>
       <template v-if="clonedData.type === 'stdio'">
         <el-form-item :label="t('mcp.command')" required prop="params.command">
-          <el-input v-model="clonedData.params.command"></el-input>
+          <el-select v-model="clonedData.params.command">
+            <el-option label="npx" value="npx"></el-option>
+            <el-option label="uv(x)" value="uv"></el-option>
+          </el-select>
+          <!-- <el-input v-model="clonedData.params.command"></el-input> -->
         </el-form-item>
         <el-form-item :label="t('mcp.args')" required prop="params.args">
           <Args :model-value="clonedData.params.args"></Args>

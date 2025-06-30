@@ -26,8 +26,8 @@ const handler = {
     try {
       const res = await mcp.api.getAll()
       data.mcpServers = res.reduce<MCPServersConfig["mcpServers"]>((pre, cur) => {
-        const serverName = cur.serverName
-        pre[serverName] = cur.params
+        const name = cur.name
+        pre[name] = cur.params
         return pre
       }, {})
       value.value = JSON.stringify(toRaw(data), null, 2)
@@ -38,7 +38,7 @@ const handler = {
   save: async (done: CallBackFn) => {
     try {
       const changedData: MCPServersConfig = JSON.parse(value.value)
-      for (const [serverName, value] of Object.entries(changedData.mcpServers)) {
+      for (const [name, value] of Object.entries(changedData.mcpServers)) {
         // @ts-expect-error known property
         if (!isObject(value.env)) value.env = {}
         // @ts-expect-error known property
@@ -47,24 +47,24 @@ const handler = {
         if (!isValidUrl(value.url)) {
           delete value["url"]
         }
-        const existed: MCPServerParam | undefined = servers.value.find(v => v.serverName === serverName)
+        const existed: MCPServerParam | undefined = servers.value.find(v => v.name === name)
         if (existed) {
           existed.params = value
           const res = await mcp.api.update(mcp.clonePure(existed))
           if (res == 0) {
-            throw new Error(`update ${serverName} failed`)
+            throw new Error(`update ${name} failed`)
           }
         } else {
           const newValue = mcp.clonePure({
             id: uniqueId(),
-            serverName,
+            name,
             type: Object.hasOwn(value, "url") ? "streamable" : "stdio",
             params: value as any,
             description: "",
           })
           const res = await mcp.api.add(newValue)
           if (res == 0) {
-            throw new Error(`add ${serverName} failed`)
+            throw new Error(`add ${name} failed`)
           }
           servers.value.push(newValue)
         }

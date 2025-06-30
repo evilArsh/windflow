@@ -2,6 +2,7 @@
 import { CSSProperties } from "@renderer/lib/shared/types"
 const {
   normal = false,
+  normalIcon = false,
   wrapStyle = {},
   mainStyle = {},
   defaultLock = false,
@@ -13,6 +14,10 @@ const {
   wrapStyle?: CSSProperties
   mainStyle?: CSSProperties
   normal?: boolean
+  /**
+   * 图标是否有hover效果
+   */
+  normalIcon?: boolean
   /**
    * 默认保持按下状态
    */
@@ -74,7 +79,9 @@ watch(
       <slot name="header"></slot>
     </div>
     <div class="box-main" :style="mainStyle">
-      <div v-if="$slots.icon" @click="handle.iconClick" class="box-icon"><slot name="icon"></slot></div>
+      <div v-if="$slots.icon" @click="handle.iconClick" :class="{ 'normal-icon': normalIcon }" class="box-icon">
+        <slot name="icon"></slot>
+      </div>
       <div class="box-text"><slot> </slot></div>
       <div v-if="$slots.end" class="box-end"><slot name="end"></slot></div>
     </div>
@@ -167,6 +174,10 @@ html.dark {
     align-items: center;
     justify-content: center;
     color: var(--box-icon-color);
+    &.normal-icon {
+      --box-icon-hover-color: transparent;
+      --box-icon-active-color: transparent;
+    }
     &:hover {
       background-color: var(--box-icon-hover-color);
     }

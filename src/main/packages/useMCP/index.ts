@@ -68,8 +68,6 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           } else {
             log.debug("[MCP startServer]", `[${name}]context found but client not connected`)
           }
-        } else {
-          ctx.reference.length = 0
         }
       }
       ctx.client = createClient(name, version)

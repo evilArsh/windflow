@@ -4,7 +4,10 @@ import { useData } from "./data"
 import { cloneDeep } from "lodash-es"
 import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
+import PQueue from "p-queue"
+
 export default defineStore("mcp", () => {
+  const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
   const api = useData(servers)
   const toolName = useToolName()
@@ -18,14 +21,6 @@ export default defineStore("mcp", () => {
   function findServer(serverId: string): MCPServerParam | undefined {
     return servers.find(v => v.id === serverId)
   }
-  // function setStatus(serverId: string, status: MCPClientStatus): boolean {
-  //   const server = findServer(serverId)
-  //   if (server) {
-  //     server.status = status
-  //     return true
-  //   }
-  //   return false
-  // }
   async function remove(topicId: string, serverId: string) {
     const res = await api.del(serverId)
     if (res == 0) {
@@ -36,20 +31,31 @@ export default defineStore("mcp", () => {
     window.api.mcp.stopServer(topicId, serverId)
   }
   function restart(topicId: string, serverId: string, params?: MCPStreamableServerParamCore | MCPStdioServerParamCore) {
-    window.api.mcp.restartServer(topicId, serverId, params)
+    window.api.mcp.restartServer(topicId, serverId, params ? cloneDeep(params) : undefined)
   }
   function start(topicId: string, server: MCPServerParam) {
-    window.api.mcp.startServer(topicId, server)
+    window.api.mcp.startServer(topicId, clonePure(server))
+  }
+  function stop(topicId: string, serverId: string) {
+    window.api.mcp.stopServer(topicId, serverId)
   }
   async function fetchTools(serverId: string) {
+    const server = findServer(serverId)
+    if (!server) return
+    if (
+      server.tools?.length ||
+      server.prompts?.length ||
+      server.resources?.length ||
+      server.resourceTemplates?.length
+    ) {
+      return
+    }
     const [tools, prompts, resources, resourceTemplates] = await Promise.allSettled([
       window.api.mcp.listTools(serverId),
       window.api.mcp.listPrompts(serverId),
       window.api.mcp.listResources(serverId),
       window.api.mcp.listResourceTemplates(serverId),
     ])
-    const server = findServer(serverId)
-    if (!server) return
     if (tools.status == "fulfilled") {
       server.tools = tools.value.data.map(v => {
         return { ...v, name: toolName.split(v.name).name }
@@ -72,8 +78,15 @@ export default defineStore("mcp", () => {
     }
   }
 
-  window.api.bus.on(EventKey.MCPStatusUpdate, data => {
-    console.log("[MCPStatusUpdate]", data)
+  window.api.bus.on(EventKey.MCPStatusUpdate, async data => {
+    // console.log("[MCPStatusUpdate]", data)
+    const server = findServer(data.id)
+    if (!server) return
+    const status = data.status
+    server.status = status
+    server.referTopics = data.refs
+    queue.add(() => api.update(clonePure(server)))
+    fetchTools(server.id)
   })
   return {
     servers,
@@ -82,6 +95,7 @@ export default defineStore("mcp", () => {
     remove,
     restart,
     start,
+    stop,
     clonePure,
     findServer,
   }
