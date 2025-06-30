@@ -128,12 +128,12 @@ const serverHandler = {
             <McpName :data="server" hide-flag></McpName>
             <template #footer>
               <div class="flex items-center">
-                <el-tooltip :show-after="2000" placement="bottom" :content="t('chat.rightPanel.mcp.clone')">
+                <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.rightPanel.mcp.clone')">
                   <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(index, server)">
                     <i class="i-ep:copy-document c-#888"></i>
                   </ContentBox>
                 </el-tooltip>
-                <el-tooltip :show-after="2000" placement="bottom" :content="t('chat.rightPanel.mcp.restart')">
+                <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.rightPanel.mcp.restart')">
                   <ContentBox class="flex-grow-0!">
                     <Button
                       :disabled="!isCurrentActive(server)"

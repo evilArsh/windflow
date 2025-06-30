@@ -45,7 +45,7 @@ function restart() {
 </script>
 <template>
   <div class="flex items-center flex-wrap">
-    <el-tooltip v-if="isAssistant" :content="t('chat.terminate')" placement="bottom">
+    <el-tooltip :show-after="1000" v-if="isAssistant" :content="t('chat.terminate')" placement="bottom">
       <ContentBox class="m0!" background>
         <Button
           text
@@ -59,14 +59,14 @@ function restart() {
         </Button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip v-if="isAssistant" :content="t('chat.regenerate')" placement="bottom">
+    <el-tooltip :show-after="1000" v-if="isAssistant" :content="t('chat.regenerate')" placement="bottom">
       <ContentBox class="m0!" background>
         <el-button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </el-button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">
+    <el-tooltip :show-after="1000" v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">
       <ContentBox class="m0!" background>
         <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
