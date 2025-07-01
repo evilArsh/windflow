@@ -23,37 +23,16 @@ export interface MCPRequestParams {
    */
   maxTotalTimeout?: number
 }
-export interface MCPParamsBase {
+export interface MCPServerParamCore extends MCPRequestParams {
   id: string
   name: string
   description: string
-  /**
-   * 使用该服务的topic
-   */
-  referTopics?: string[]
-  /**
-   * 当前服务为指定mcp服务的副本
-   */
-  referId?: string
-  /**
-   * 当前服务为指定topic修改后的副本
-   */
-  modifyTopic?: string
-  status?: MCPClientStatus
-  tools?: MCPToolDetail[]
-  prompts?: MCPPromptItem[]
-  resources?: MCPResourceItem[]
-  resourceTemplates?: MCPResourceTemplatesItem[]
-}
-export interface MCPStreamableServerParamCore extends MCPRequestParams {
-  type: "sse" | "streamable"
+  type: "sse" | "streamable" | "stdio"
   params: {
+    /**
+     * "sse" | "streamable
+     */
     url: string
-  }
-}
-export interface MCPStdioServerParamCore extends MCPRequestParams {
-  type: "stdio"
-  params: {
     /**
      * The executable to run to start the server.
      */
@@ -76,31 +55,47 @@ export interface MCPStdioServerParamCore extends MCPRequestParams {
     cwd?: string
   }
 }
-export type MCPStdioServerParam = MCPStdioServerParamCore & MCPParamsBase
-export type MCPStreamableServerParam = MCPStreamableServerParamCore & MCPParamsBase
-export type MCPServerParam = MCPStdioServerParam | MCPStreamableServerParam
 
-export function isStdioServerParams(params: MCPServerParam): params is MCPStdioServerParam {
+export interface MCPServerParam extends MCPServerParamCore {
+  /**
+   * 使用该服务的topic
+   */
+  referTopics?: string[]
+  /**
+   * 当前服务为指定mcp服务的副本
+   */
+  referId?: string
+  /**
+   * 当前服务为指定topic修改后的副本
+   */
+  modifyTopic?: string
+  status?: MCPClientStatus
+  tools?: MCPToolDetail[]
+  prompts?: MCPPromptItem[]
+  resources?: MCPResourceItem[]
+  resourceTemplates?: MCPResourceTemplatesItem[]
+}
+
+export function isStdioServerParams(params: MCPServerParam): boolean {
   return params.type === "stdio"
 }
 
-export function isSSEServerParams(params: MCPServerParam): params is MCPStreamableServerParam {
+export function isSSEServerParams(params: MCPServerParam): boolean {
   return params.type === "sse"
 }
 
-export function isStreamableServerParams(params: MCPServerParam): params is MCPStreamableServerParam {
+export function isStreamableServerParams(params: MCPServerParam): boolean {
   return params.type === "streamable"
 }
 
-export function isAvailableServerParams(params: MCPServerParam): params is MCPServerParam {
-  return isSSEServerParams(params) || isStreamableServerParams(params) || isStdioServerParams(params)
-}
-
-export function getPureParam(params: MCPServerParam): MCPStreamableServerParamCore | MCPStdioServerParamCore {
+export function getPureParam(params: MCPServerParam): MCPServerParamCore {
   return {
+    id: params.id,
+    name: params.name,
+    description: params.description,
     type: params.type,
     params: params.params,
-  } as MCPStreamableServerParamCore | MCPStdioServerParamCore
+  } as MCPServerParamCore
 }
 
 // --- mcp call result start ---

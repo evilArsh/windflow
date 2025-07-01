@@ -2,7 +2,7 @@
 import { ChatMessage, ChatMessageData, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
-import RawTextEdit from "../rawTextEdit/index.vue"
+import RawTextEdit from "./rawTextEdit.vue"
 import Handler from "./handler.vue"
 import Title from "./title.vue"
 import Loading from "./loading.vue"

@@ -12,8 +12,7 @@ import {
   MCPToolDetail,
   MCPServerParam,
   MCPRequestParams,
-  MCPStdioServerParamCore,
-  MCPStreamableServerParamCore,
+  MCPServerParamCore,
 } from "./mcp"
 
 export const IpcChannel = {
@@ -53,11 +52,7 @@ export interface MCPService {
   hasReference: (id: string, topicId: string) => Promise<BridgeResponse<boolean>>
   startServer: (topicId: string, params: MCPServerParam) => Promise<void>
   stopServer: (topicId: string, id: string) => Promise<void>
-  restartServer: (
-    topicId: string,
-    id: string,
-    params?: MCPStreamableServerParamCore | MCPStdioServerParamCore
-  ) => Promise<void>
+  restartServer: (topicId: string, id: string, params?: MCPServerParamCore) => Promise<void>
   callTool: (toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
   listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
   listResources: (

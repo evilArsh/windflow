@@ -123,7 +123,7 @@ const serverHandler = {
                 :loading="server.status === MCPClientStatus.Connecting"
                 :active-value="true"
                 :inactive-value="false"
-                @click="serverHandler.onServerToggle(server)" />
+                @click.stop="serverHandler.onServerToggle(server)" />
             </template>
             <McpName :data="server" hide-flag></McpName>
             <template #footer>

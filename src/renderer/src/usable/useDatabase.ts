@@ -21,4 +21,23 @@ db.version(1).stores({
   settings: "id",
   mcpServer: "id",
 })
+db.version(2)
+  .stores({
+    providerMeta: "name",
+    model: "id,providerName,type,active",
+    chatTopic: "id,chatMessageId,parentId,createAt",
+    chatMessage: "id",
+    settings: "id",
+    mcpServer: "id",
+  })
+  .upgrade(tx => {
+    tx.table("mcpServer")
+      .toCollection()
+      .modify(server => {
+        if (isString(server.serverName)) {
+          server.name = server.serverName
+          delete server.serverName
+        }
+      })
+  })
 export { db }

@@ -1,4 +1,4 @@
-import { MCPServerParam, MCPStdioServerParamCore, MCPStreamableServerParamCore } from "@shared/types/mcp"
+import { MCPServerParam, MCPServerParamCore } from "@shared/types/mcp"
 import { defineStore } from "pinia"
 import { useData } from "./data"
 import { cloneDeep } from "lodash-es"
@@ -30,8 +30,8 @@ export default defineStore("mcp", () => {
     index >= 0 && servers.splice(index, 1)
     window.api.mcp.stopServer(topicId, serverId)
   }
-  function restart(topicId: string, serverId: string, params?: MCPStreamableServerParamCore | MCPStdioServerParamCore) {
-    window.api.mcp.restartServer(topicId, serverId, params ? cloneDeep(params) : undefined)
+  function restart(topicId: string, serverId: string, params?: MCPServerParamCore) {
+    window.api.mcp.restartServer(topicId, serverId, params ? params : undefined)
   }
   function start(topicId: string, server: MCPServerParam) {
     window.api.mcp.startServer(topicId, clonePure(server))

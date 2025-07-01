@@ -63,7 +63,7 @@ const defaultData = (): MCPServerParam => ({
   name: "",
   type: "stdio",
   referTopics: [],
-  params: { command: "", args: [], env: {} },
+  params: { url: "", command: "", args: [], env: {} },
   description: "",
 })
 const clonedData = ref<MCPServerParam>(defaultData())

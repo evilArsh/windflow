@@ -1,14 +1,6 @@
 <script lang="ts" setup>
 import useMcpStore from "@renderer/store/mcp"
-import {
-  getPureParam,
-  isSSEServerParams,
-  isStdioServerParams,
-  isStreamableServerParams,
-  MCPClientStatus,
-  MCPRootTopicId,
-  MCPServerParam,
-} from "@shared/types/mcp"
+import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@shared/types/mcp"
 import { storeToRefs } from "pinia"
 import useDialog from "@renderer/usable/useDialog"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
@@ -47,15 +39,14 @@ const filterServers = computed(() =>
   servers.value.filter(
     v =>
       (v.name.includes(search.keyword) ||
-        (isStdioServerParams(v) && v.params.command.includes(search.keyword)) ||
-        (isSSEServerParams(v) && v.params.url.includes(search.keyword)) ||
-        (isStreamableServerParams(v) && v.params.url.includes(search.keyword))) &&
+        v.params.command.includes(search.keyword) ||
+        v.params.url.includes(search.keyword)) &&
       !v.modifyTopic
   )
 )
 const serverHandler = {
   restart: async (param: MCPServerParam) => {
-    mcp.restart(MCPRootTopicId, param.id, getPureParam(param))
+    mcp.restart(MCPRootTopicId, param.id, param)
   },
   onCardClick: async (param: MCPServerParam) => {
     current.value = param

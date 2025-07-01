@@ -2,7 +2,6 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 
 import { serializeError } from "serialize-error"
 import {
-  MCPStdioServerParam,
   MCPToolDetail,
   MCPCallToolResult,
   MCPListResourcesRequestParams,
@@ -17,8 +16,8 @@ import {
   isSSEServerParams,
   MCPClientStatus,
   MCPRootTopicId,
-  MCPStdioServerParamCore,
-  MCPStreamableServerParamCore,
+  getPureParam,
+  MCPServerParamCore,
 } from "@shared/types/mcp"
 import { BridgeResponse, responseData } from "@shared/types/bridge"
 import { errorToText } from "@shared/error"
@@ -52,7 +51,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
   async function startServer(topicId: string, params: MCPServerParam): Promise<void> {
     const { id, name } = params
     let ctx = context.getContext(id)
-    if (!ctx) ctx = context.createContext(params)
+    if (!ctx) ctx = context.createContext(getPureParam(params))
     context.addContextRef(id, topicId)
     try {
       if (ctx.client) {
@@ -125,11 +124,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       log.error("[MCP stopServer error]", error)
     }
   }
-  async function restartServer(
-    topicId: string,
-    id: string,
-    params?: MCPStreamableServerParamCore | MCPStdioServerParamCore
-  ): Promise<void> {
+  async function restartServer(topicId: string, id: string, params?: MCPServerParamCore): Promise<void> {
     try {
       const ctx = context.getContext(id)
       if (!ctx) {
@@ -323,18 +318,15 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     return responseData(200, "ok", context.hasTopicReference(id, topicId))
   }
   function registerIpc() {
-    ipcMain.handle(IpcChannel.McpStartServer, async (_, topicId: string, params: MCPStdioServerParam) => {
+    ipcMain.handle(IpcChannel.McpStartServer, async (_, topicId: string, params: MCPServerParam) => {
       return startServer(topicId, params)
     })
     ipcMain.handle(IpcChannel.McpStopServer, async (_, topicId: string, id: string) => {
       return stopServer(topicId, id)
     })
-    ipcMain.handle(
-      IpcChannel.McpRestartServer,
-      async (_, topicId: string, id: string, params?: MCPStreamableServerParamCore | MCPStdioServerParamCore) => {
-        return restartServer(topicId, id, params)
-      }
-    )
+    ipcMain.handle(IpcChannel.McpRestartServer, async (_, topicId: string, id: string, params?: MCPServerParamCore) => {
+      return restartServer(topicId, id, params)
+    })
     ipcMain.handle(IpcChannel.McpListTools, async (_, id?: string | Array<string>) => {
       return listTools(id)
     })

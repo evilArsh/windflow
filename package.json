@@ -12,7 +12,7 @@
     "prepare": "husky",
     "commitlint": "commitlint -e -V",
     "lint-staged": "lint-staged",
-    "lint": "eslint --cache ./src/renderer/src",
+    "lint": "eslint ./src/renderer/src",
     "lint-fix": "eslint --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",

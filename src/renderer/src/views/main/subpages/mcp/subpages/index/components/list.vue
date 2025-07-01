@@ -39,13 +39,10 @@ const handler = {
     try {
       const changedData: MCPServersConfig = JSON.parse(value.value)
       for (const [name, value] of Object.entries(changedData.mcpServers)) {
-        // @ts-expect-error known property
         if (!isObject(value.env)) value.env = {}
-        // @ts-expect-error known property
         if (!isArray(value.args)) value.args = []
-        // @ts-expect-error known property
         if (!isValidUrl(value.url)) {
-          delete value["url"]
+          value.url = ""
         }
         const existed: MCPServerParam | undefined = servers.value.find(v => v.name === name)
         if (existed) {
@@ -58,7 +55,7 @@ const handler = {
           const newValue = mcp.clonePure({
             id: uniqueId(),
             name,
-            type: Object.hasOwn(value, "url") ? "streamable" : "stdio",
+            type: value.url ? "streamable" : "stdio",
             params: value as any,
             description: "",
           })

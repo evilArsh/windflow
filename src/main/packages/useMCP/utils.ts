@@ -2,7 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
-import { MCPClientStatus, MCPServerParam, MCPStdioServerParam, MCPStreamableServerParam } from "@shared/types/mcp"
+import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
 import { errorToText } from "@shared/error"
@@ -15,7 +15,7 @@ import { HttpStatusCode } from "@shared/code"
 export function createClient(name: string, version: string) {
   return new Client({ name, version })
 }
-export async function createStdioTransport(client: Client, env: ToolEnvironment, params: MCPStdioServerParam) {
+export async function createStdioTransport(client: Client, env: ToolEnvironment, params: MCPServerParam) {
   try {
     const patchedParams = modifyPlatformCMD(env, params)
     // log.debug("[MCP createStdioTransport]", patchedParams)
@@ -30,7 +30,7 @@ export async function createStdioTransport(client: Client, env: ToolEnvironment,
     throw error
   }
 }
-export async function createStreamableTransport(client: Client, params: MCPStreamableServerParam) {
+export async function createStreamableTransport(client: Client, params: MCPServerParam) {
   try {
     const transport = new StreamableHTTPClientTransport(new URL(params.params.url))
     transport.onerror = error => {
@@ -43,7 +43,7 @@ export async function createStreamableTransport(client: Client, params: MCPStrea
     throw error
   }
 }
-export async function createSseTransport(client: Client, params: MCPStreamableServerParam) {
+export async function createSseTransport(client: Client, params: MCPServerParam) {
   try {
     const transport = new SSEClientTransport(new URL(params.params.url))
     transport.onerror = error => {
