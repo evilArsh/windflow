@@ -1,7 +1,7 @@
 import { LLMToolCall, LLMResponse, Role, LLMMessage, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
 import { AxiosInstance } from "axios"
 import { errorToText } from "@shared/error"
-import { cloneDeep, mergeWith } from "lodash"
+import { mergeWith } from "lodash"
 import { join } from "lodash-es"
 
 export function usePartialData() {
@@ -12,7 +12,6 @@ export function usePartialData() {
   }
   function add(res: LLMResponse) {
     // 分片消息每次返回的消息都是完整的数据结构,只是同一个字段的字符串是分批返回的
-    console.log(cloneDeep(result), cloneDeep(res))
     mergeWith(result, res, (objValue, srcValue, key) => {
       if (key === "content" || key === "reasoning_content" || key === "arguments") {
         if (!objValue) {
