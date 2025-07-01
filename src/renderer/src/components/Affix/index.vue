@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { CSSProperties } from "@renderer/lib/shared/types"
-import { useElementBounding, useIntersectionObserver } from "@vueuse/core"
+import { useElementBounding, useIntersectionObserver, useThrottleFn } from "@vueuse/core"
 
 const {
   position = "top",
@@ -158,10 +158,13 @@ function init() {
   updateAffixBounding()
   updateTargetBounding()
 }
+const throttledUpdate = useThrottleFn(update, 250, true)
 onMounted(() => {
   init()
+  window.addEventListener("resize", throttledUpdate)
 })
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", throttledUpdate)
   affixOb.stop()
   targetOb.stop()
 })
