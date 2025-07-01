@@ -12,7 +12,7 @@ import { errorToText } from "@shared/error"
 import { ContentType } from "@shared/code"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
-import { mergeRequestConfig, parseResponse, response, usePartialData } from "./utils"
+import { mergeRequestConfig, parseResponse, usePartialData } from "./utils"
 async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {
     const reader = stream.getReader()
@@ -96,7 +96,7 @@ export async function makeRequest(
   const partial = usePartialData()
   const requestData = mergeRequestConfig(context, modelMeta, requestBody)
   try {
-    callback(response(100, { content: "", stream: requestData.stream, role: Role.Assistant }))
+    callback({ status: 100, data: { content: "", stream: requestData.stream, role: Role.Assistant } })
     // 获取MCP工具列表
     const toolList = await loadMCPTools(mcpServersIds)
     console.log("[load local MCP tools]", toolList)
@@ -106,7 +106,7 @@ export async function makeRequest(
     let neededCallTools: LLMToolCall[] = []
     while (true) {
       if (toolList.length > 0) {
-        if (neededCallTools.length == 0) {
+        if (!neededCallTools.length) {
           // 携带tools信息请求
           const req = { ...requestData, tools: toolList, tool_calls: toolList }
           for await (const content of requestHandler.chat(req, providerMeta)) {
@@ -115,7 +115,7 @@ export async function makeRequest(
           }
           neededCallTools = partial.getTools()
           // 没有触发MCP工具调用
-          if (neededCallTools.length == 0) {
+          if (!neededCallTools.length) {
             partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
             callback(partial.getResponse())
             return
@@ -125,7 +125,7 @@ export async function makeRequest(
         // 调用MCP工具并返回调用结果
         reqToolsData = await callTools(neededCallTools)
         console.log("[call local tools]", reqToolsData)
-        if (reqToolsData.length == 0) {
+        if (!reqToolsData.length) {
           partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
           callback(partial.getResponse())
           return
@@ -150,12 +150,8 @@ export async function makeRequest(
         partial.add(content)
         callback(partial.getResponse())
       }
-      const tools = partial.getTools()
-      if (tools.length > 0) {
-        neededCallTools = tools
-      } else {
-        break
-      }
+      neededCallTools = partial.getTools()
+      if (!neededCallTools.length) break
     }
   } catch (error) {
     if (error instanceof AbortError) {

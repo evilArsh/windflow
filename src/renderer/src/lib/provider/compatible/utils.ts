@@ -1,103 +1,63 @@
 import { LLMToolCall, LLMResponse, Role, LLMMessage, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
 import { AxiosInstance } from "axios"
 import { errorToText } from "@shared/error"
-import { HttpStatusCode } from "@shared/code"
-import { mergeWith } from "lodash"
+import { cloneDeep, mergeWith } from "lodash"
+import { join } from "lodash-es"
 
 export function usePartialData() {
   let result: LLMResponse = defaultData()
   const toolsHistory: LLMToolCall[][] = []
-  let tools: Record<string, LLMToolCall> = {}
-  let content = ""
-  let reasoning_content = ""
-  const tool_calls_chain: LLMMessage[] = []
-  const usage = {
-    completion_tokens: 0,
-    prompt_tokens: 0,
-    total_tokens: 0,
-  }
-
   function defaultData(): LLMResponse {
     return { status: 100, data: { role: Role.Assistant, content: "" } }
   }
-  function assembleData(result: LLMResponse): LLMResponse {
-    result.data.content = content
-    result.data.reasoning_content = reasoning_content
-    const tool = getArchiveTools().concat(getTools())
-    result.data.tool_calls = tool.length > 0 ? tool : undefined
-    result.data.usage = usage
-    result.data.tool_calls_chain = tool_calls_chain
-    return result
-  }
-  function calcTokens(data: LLMMessage) {
-    if (data.finish_reason) {
-      usage.completion_tokens += toNumber(data.usage?.completion_tokens)
-      usage.prompt_tokens += toNumber(data.usage?.prompt_tokens)
-      usage.total_tokens += toNumber(data.usage?.total_tokens)
-    }
-    // else {
-    //   if (data.usage) {
-    //     usage.completion_tokens = data.usage.completion_tokens
-    //     usage.prompt_tokens = data.usage.prompt_tokens
-    //     usage.total_tokens = data.usage.total_tokens
-    //   }
-    // }
-  }
   function add(res: LLMResponse) {
-    const { data } = res
     // 分片消息每次返回的消息都是完整的数据结构,只是同一个字段的字符串是分批返回的
-    content += data.content ?? ""
-    reasoning_content += data.reasoning_content ?? ""
-    result = mergeWith({}, result, res, (objValue, srcValue, _key) => {
+    console.log(cloneDeep(result), cloneDeep(res))
+    mergeWith(result, res, (objValue, srcValue, key) => {
+      if (key === "content" || key === "reasoning_content" || key === "arguments") {
+        if (!objValue) {
+          return srcValue ?? ""
+        } else if (!srcValue) {
+          return objValue
+        } else {
+          return join([objValue, srcValue], "")
+        }
+      }
       if (srcValue === undefined || srcValue === null) {
         return objValue
       }
     })
-    if (data.tool_calls) {
-      data.tool_calls.forEach(tool => {
-        if (isNumber(tool.index)) {
-          const mapTool = tools[tool.index]
-          if (mapTool) {
-            mapTool.function.arguments += tool.function.arguments
-            // mapTool.function.name
-          } else {
-            tools[tool.index] = tool
-          }
-        }
-      })
-    }
-    calcTokens(data)
   }
   /**
    * @description 归档当前tools,开启下一轮的tool_calls
    */
   function archiveTools() {
-    const val = Object.values(tools)
-    if (val.length > 0) {
-      toolsHistory.push(Object.values(tools))
+    if (result.data.tool_calls?.length) {
+      toolsHistory.push(Array.from(result.data.tool_calls))
     }
-    tools = {}
+    result.data.tool_calls = []
   }
   function addLocalMCPCallResults(data: LLMMessage) {
-    tool_calls_chain.push(data)
+    if (!result.data.tool_calls_chain) result.data.tool_calls_chain = []
+    result.data.tool_calls_chain.push(data)
   }
   function getTools(): LLMToolCall[] {
-    return Object.values(tools)
+    return Array.from(result.data.tool_calls ?? [])
   }
   function getArchiveTools(): LLMToolCall[] {
     return toolsHistory.flat()
   }
   function getResponse(): LLMResponse {
-    return assembleData(result)
+    return {
+      ...result,
+      data: {
+        ...result.data,
+        tool_calls: getArchiveTools().concat(result.data.tool_calls ?? []),
+        tool_calls_chain: result.data.tool_calls_chain ?? [],
+      },
+    }
   }
   function clear() {
-    tools = {}
-    content = ""
-    reasoning_content = ""
-    usage.completion_tokens = 0
-    usage.prompt_tokens = 0
-    usage.total_tokens = 0
-    tool_calls_chain.length = 0
     result = defaultData()
   }
   return {
@@ -217,12 +177,4 @@ within 15 characters without any punctuation and cut the crap,based on the follo
 export function patchAxios(provider: ProviderMeta, instance: AxiosInstance) {
   instance.defaults.baseURL = provider.api.url
   instance.defaults.headers.common["Authorization"] = `Bearer ${provider.api.key}`
-}
-
-export function response(status: HttpStatusCode, data: LLMMessage, msg?: string): LLMResponse {
-  return {
-    status,
-    data,
-    msg,
-  }
 }
