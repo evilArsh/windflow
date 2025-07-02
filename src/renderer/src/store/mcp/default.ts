@@ -8,6 +8,7 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
       name: "server-everything",
       description: "",
       params: {
+        url: "",
         command: "npx",
         args: ["-y", "@modelcontextprotocol/server-everything"],
         env: {},
@@ -19,6 +20,7 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
       name: "server-filesystem",
       description: "",
       params: {
+        url: "",
         command: "npx",
         args: ["-y", "@modelcontextprotocol/server-filesystem", "D:\\"],
         env: {},

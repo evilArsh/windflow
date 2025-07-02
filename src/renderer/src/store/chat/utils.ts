@@ -78,7 +78,6 @@ export const useUtils = (
       chatMessageId: "",
       createAt: Date.now(),
       requestCount: 0,
-      mcpServers: [],
     }
   }
   function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
