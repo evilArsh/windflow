@@ -36,13 +36,10 @@ const tabs = reactive({
       <Prompt :topic></Prompt>
       <el-divider class="my1.5rem!"></el-divider>
       <el-tabs class="flex-1 overflow-hidden" type="border-card" v-model="tabs.active">
-        <el-tab-pane class="max-h-100% overflow-hidden flex" name="mcp" :label="t('chat.rightPanel.mcp.label')">
+        <el-tab-pane class="max-h-100% overflow-hidden flex" name="mcp" :label="t('chat.mcp.label')">
           <MCP :topic></MCP>
         </el-tab-pane>
-        <el-tab-pane
-          class="max-h-100% overflow-hidden flex"
-          name="settings"
-          :label="t('chat.rightPanel.settings.label')">
+        <el-tab-pane class="max-h-100% overflow-hidden flex" name="settings" :label="t('chat.settings.label')">
           <Setting :topic></Setting>
         </el-tab-pane>
       </el-tabs>

@@ -26,7 +26,7 @@
     "thinkingComplete": "thinking finish",
     "tti": {
       "guidanceScaleExp": "This value is used to control the degree of match between the generated image and the given prompt. The higher the value, the more the generated image will tend to strictly match the text prompt. The lower the value, the more creative and diverse the generated image will be, potentially containing more unexpected elements.",
-      "handlerTitle": "image generate config",
+      "label": "image generate config",
       "seed": "seed"
     }
   },

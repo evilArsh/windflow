@@ -8,6 +8,7 @@ import { FormProps, FormRules } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
 
 const props = defineProps<{
+  size?: "" | "default" | "small" | "large"
   hideCloseBtn?: boolean
   data?: MCPServerParam
   formProps?: Partial<FormProps>
@@ -90,7 +91,14 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
 </script>
 <template>
   <DialogPanel>
-    <el-form ref="form" :rules="formRules" :model="clonedData" label-width="8rem" class="w-full" v-bind="formProps">
+    <el-form
+      ref="form"
+      :size
+      :rules="formRules"
+      :model="clonedData"
+      label-width="8rem"
+      class="w-full"
+      v-bind="formProps">
       <el-form-item :label="t('mcp.name')" required prop="name">
         <el-input v-model.trim="clonedData.name"></el-input>
       </el-form-item>
@@ -130,8 +138,8 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
     </el-form>
     <template #footer>
       <div class="flex justify-end">
-        <Button type="primary" @click="handler.save">{{ t("btn.save") }}</Button>
-        <el-button v-if="!hideCloseBtn" @click="handler.close">{{ t("btn.close") }}</el-button>
+        <Button :size type="primary" @click="handler.save">{{ t("btn.save") }}</Button>
+        <el-button v-if="!hideCloseBtn" :size @click="handler.close">{{ t("btn.close") }}</el-button>
       </div>
     </template>
   </DialogPanel>

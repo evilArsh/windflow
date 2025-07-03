@@ -39,26 +39,24 @@
     "right": {
       "prompt": "提示词"
     },
-    "rightPanel": {
-      "mcp": {
-        "addFailed": "新增失败",
-        "clone": "克隆",
-        "delFailed": "删除失败",
-        "label": "工具",
-        "restart": "重启"
-      },
-      "settings": {
-        "label": "设置"
-      }
-    },
     "search": "搜索",
     "terminate": "终止",
     "thinking": "深度思考中",
     "thinkingComplete": "思考完成",
+    "mcp": {
+      "addFailed": "新增失败",
+      "clone": "克隆",
+      "delFailed": "删除失败",
+      "label": "工具",
+      "restart": "重启"
+    },
+    "settings": {
+      "label": "设置"
+    },
     "tti": {
       "guidanceScale": "引导权重",
       "guidanceScaleExp": "这个值用于控制生成图像与给定提示词匹配的程度。值越高，生成的图像越倾向于严格匹配文本提示。值越低，生成的图像越具有创造性且更加多样化，可能包含更多的意想不到的元素。",
-      "handlerTitle": "图片生成配置",
+      "label": "图片生成配置",
       "imageSize": "图片大小",
       "inferenceSteps": "推理步数",
       "inferenceStepsExp": "推理步数越多,耗时越长",

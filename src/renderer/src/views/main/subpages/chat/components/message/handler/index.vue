@@ -2,6 +2,8 @@
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import ModelSelect from "../../modelSelect/index.vue"
 import TextToImage from "./textToImage.vue"
+import Mcp from "./mcp.vue"
+import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
@@ -55,9 +57,11 @@ watchEffect(() => {
 <template>
   <div class="chat-input-container">
     <div class="chat-input-header">
-      <div class="flex items-center gap-1.5rem">
-        <ModelSelect :topic @change="handler.onTopicUpdate" />
+      <div class="flex items-center gap-1rem">
+        <ModelSelect class="mr-1rem" :topic @change="handler.onTopicUpdate" />
         <TextToImage></TextToImage>
+        <Mcp :topic></Mcp>
+        <Settings :topic></Settings>
       </div>
       <Clear :message="message" :topic="topic" @context-clean="emit('contextClean')"></Clear>
     </div>
