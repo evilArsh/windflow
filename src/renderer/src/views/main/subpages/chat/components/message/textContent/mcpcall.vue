@@ -28,7 +28,7 @@ const serverName = computed(() => (serverId: string) => servers.value.find(v => 
 watch(
   () => props.messageItem.content.tool_calls,
   v => {
-    if (!isArray(v)) {
+    if (!isArray(v) || !v.length) {
       callsData.value = {}
       return
     }

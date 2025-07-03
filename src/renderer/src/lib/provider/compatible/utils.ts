@@ -1,69 +1,66 @@
 import { LLMToolCall, LLMResponse, Role, LLMMessage, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
 import { AxiosInstance } from "axios"
 import { errorToText } from "@shared/error"
-import { mergeWith } from "lodash"
-import { join } from "lodash-es"
+import { merge } from "lodash-es"
 
 export function usePartialData() {
   let result: LLMResponse = defaultData()
+  let tools: Record<string, LLMToolCall> = {}
   const toolsHistory: LLMToolCall[][] = []
+  const tool_calls_chain: LLMMessage[] = []
+  const content: string[] = []
+  const reasoning_content: string[] = []
+
   function defaultData(): LLMResponse {
     return { status: 100, data: { role: Role.Assistant, content: "" } }
   }
   function add(res: LLMResponse) {
-    // 分片消息每次返回的消息都是完整的数据结构,只是同一个字段的字符串是分批返回的
-    mergeWith(result, res, (objValue, srcValue, key) => {
-      if (key === "content" || key === "reasoning_content" || key === "arguments") {
-        if (!objValue) {
-          return srcValue ?? ""
-        } else if (!srcValue) {
-          return objValue
+    result = merge({}, result, res)
+    content.push((res.data.content as string) ?? "")
+    reasoning_content.push((res.data.reasoning_content as string) ?? "")
+    res.data.tool_calls?.forEach(tool => {
+      if (isNumber(tool.index)) {
+        const mapTool = tools[tool.index]
+        if (mapTool) {
+          mapTool.function.arguments += tool.function.arguments
         } else {
-          return join([objValue, srcValue], "")
+          tools[tool.index] = tool
         }
       }
-      if (srcValue === undefined || srcValue === null) {
-        return objValue
-      }
     })
+  }
+  function getTools(): LLMToolCall[] {
+    return Object.values(tools)
   }
   /**
    * @description 归档当前tools,开启下一轮的tool_calls
    */
   function archiveTools() {
-    if (result.data.tool_calls?.length) {
-      toolsHistory.push(Array.from(result.data.tool_calls))
-    }
-    result.data.tool_calls = []
+    toolsHistory.push(getTools())
+    tools = {}
   }
   function addLocalMCPCallResults(data: LLMMessage) {
-    if (!result.data.tool_calls_chain) result.data.tool_calls_chain = []
-    result.data.tool_calls_chain.push(data)
-  }
-  function getTools(): LLMToolCall[] {
-    return Array.from(result.data.tool_calls ?? [])
-  }
-  function getArchiveTools(): LLMToolCall[] {
-    return toolsHistory.flat()
+    tool_calls_chain.push(data)
   }
   function getResponse(): LLMResponse {
-    return {
-      ...result,
-      data: {
-        ...result.data,
-        tool_calls: getArchiveTools().concat(result.data.tool_calls ?? []),
-        tool_calls_chain: result.data.tool_calls_chain ?? [],
-      },
-    }
+    result.data.content = content.filter(s => !!s).join("")
+    result.data.reasoning_content = reasoning_content.filter(s => !!s).join("")
+    result.data.tool_calls = toolsHistory.flat().concat(getTools())
+    result.data.tool_calls_chain = tool_calls_chain
+    return result
   }
-  function clear() {
+  function reset() {
+    tools = {}
+    content.length = 0
+    reasoning_content.length = 0
+    tool_calls_chain.length = 0
+    toolsHistory.length = 0
     result = defaultData()
   }
   return {
-    clear,
+    reset,
     add,
     archiveTools,
-    getArchiveTools,
     addLocalMCPCallResults,
     getTools,
     getResponse,
@@ -143,7 +140,7 @@ export function parseResponse(text: string, stream: boolean): LLMResponse {
   } catch (error) {
     console.log("[parseResponse error]", error, text)
     return {
-      status: 206,
+      status: 200,
       msg: "",
       data: {
         content: errorToText(error),

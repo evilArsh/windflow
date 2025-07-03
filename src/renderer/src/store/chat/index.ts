@@ -13,12 +13,10 @@ import useModelsStore from "@renderer/store/model"
 import { useContext } from "./context"
 import { useData } from "./data"
 import { useUtils } from "./utils"
-// import useMcpStore from "@renderer/store/mcp"
 
 export default defineStore("chat_topic", () => {
   const providerStore = useProviderStore()
   const modelsStore = useModelsStore()
-  // const mcpStore = useMcpStore()
   const { providerMetas } = storeToRefs(providerStore)
   const { fetchTopicContext, getMessageContext, findContext, initContext } = useContext()
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表

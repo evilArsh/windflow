@@ -80,7 +80,7 @@ const dlg = {
   onFormChange: async (data: MCPServerParam) => {
     try {
       if (!data.id) {
-        data.id = uniqueId()
+        data.id = mcp.createNewId()
         const res = mcp.clonePure(data)
         await mcp.api.add(res)
         servers.value.push(res)

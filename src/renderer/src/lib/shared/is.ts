@@ -1,5 +1,3 @@
-import { ulid } from "ulid"
-
 /**
  * from @vue/core packages/shared/src/index.ts
  */
@@ -21,13 +19,9 @@ export const isPromise = <T = any>(val: unknown): val is Promise<T> => {
 }
 export const isUndefined = (val: unknown): val is undefined => typeof val === "undefined"
 export const isBoolean = (val: unknown): val is boolean => typeof val === "boolean"
-export const uniqueId = (seed?: number): string => {
-  return ulid(seed)
-}
 export const isIndexOutOfRange = (index: number, length: number): boolean => {
   return index < 0 || index >= length
 }
-
 export const isValidUrl = (url: string): boolean => {
   try {
     const u = new URL(url)

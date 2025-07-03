@@ -53,7 +53,7 @@ const handler = {
           }
         } else {
           const newValue = mcp.clonePure({
-            id: uniqueId(),
+            id: mcp.createNewId(),
             name,
             type: value.url ? "streamable" : "stdio",
             params: value as any,

@@ -43,7 +43,7 @@ const formHandler = {
     try {
       const newCopy = mcp.clonePure(data)
       newCopy.status = MCPClientStatus.Disconnected
-      newCopy.id = uniqueId()
+      newCopy.id = mcp.createNewId()
       newCopy.modifyTopic = topic.value.id
       newCopy.referId = data.referId
       newCopy.name = `${newCopy.name}_copy`

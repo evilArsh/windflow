@@ -5,7 +5,7 @@ import { cloneDeep } from "lodash-es"
 import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
-
+const nanoIdAlphabet = "-123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
@@ -17,6 +17,9 @@ export default defineStore("mcp", () => {
    */
   function clonePure(server: MCPServerParam): MCPServerParam {
     return cloneDeep({ ...server, tools: [], prompts: [], resources: [], resourceTemplates: [] })
+  }
+  function createNewId(): string {
+    return uniqueNanoId(nanoIdAlphabet, 12)
   }
   function findServer(serverId: string): MCPServerParam | undefined {
     return servers.find(v => v.id === serverId)
@@ -97,6 +100,7 @@ export default defineStore("mcp", () => {
     start,
     stop,
     clonePure,
+    createNewId,
     findServer,
   }
 })

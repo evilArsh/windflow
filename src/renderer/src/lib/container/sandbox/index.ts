@@ -1,4 +1,3 @@
-import { ulid } from "ulid"
 import type { CSSProperties } from "@renderer/lib/shared/types"
 import {
   type SandboxInstance,
@@ -30,7 +29,7 @@ export class SandBox implements SandboxInstance {
   private uPatch: ReturnType<typeof usePatch> | undefined
 
   constructor() {
-    this.id = ulid()
+    this.id = uniqueId()
     this.mounted = false
     this.scriptStack = []
   }
