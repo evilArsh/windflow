@@ -18,7 +18,7 @@ import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { DragOffset, ScaleConfig } from "../../types"
 import useHandle, { Status } from "../../useHandle"
 import useScale from "../../useScale"
-import { MoveType } from "@renderer/lib/drag"
+import { MoveType } from "../../drag"
 const props = defineProps<{
   config: ScaleConfig
   scale?: ReturnType<typeof useScale>

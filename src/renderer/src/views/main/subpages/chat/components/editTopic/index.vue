@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
-import ModelSelect from "../modelSelect/index.vue"
+import ModelSelect from "../message/handler/modelSelect.vue"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
 import { errorToText } from "@shared/error"
 import useChatStore from "@renderer/store/chat"

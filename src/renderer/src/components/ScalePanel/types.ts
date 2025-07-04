@@ -1,4 +1,4 @@
-import { MoveParams, MoveType, type MoveOptions } from "@renderer/lib/drag/types"
+import { MoveParams, MoveType, type MoveOptions } from "./drag/types"
 import type { CSSProperties, FixedArray } from "@renderer/lib/shared/types"
 import type { VNode, Component, MaybeRef, ShallowRef } from "vue"
 import useScale from "./useScale"

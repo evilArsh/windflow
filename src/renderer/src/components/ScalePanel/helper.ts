@@ -1,7 +1,7 @@
 import { getValue } from "@renderer/lib/shared/styles"
 import type { CSSProperties } from "@renderer/lib/shared/types"
 import { DragOffset, ScaleConfig, ScaleStyleProps } from "./types"
-import { MoveType } from "@renderer/lib/drag/types"
+import { MoveType } from "./drag/types"
 import { ShallowRef } from "vue"
 import { z } from "@renderer/lib/shared/zindex"
 import { merge } from "lodash-es"
@@ -163,11 +163,14 @@ export function useStatusListener(
     () => config.value.normal,
     v => onNormalChange(v)
   )
-  watchEffect(() => {
-    if (config.value.moveConfig) {
-      move.value?.updateOption(config.value.moveConfig)
-    }
-  })
+  watch(
+    () => config.value.moveConfig,
+    cnf => {
+      if (!cnf) return
+      move.value?.updateOption(cnf)
+    },
+    { immediate: true, deep: true }
+  )
   return {
     setTarget,
     onMovableChange,

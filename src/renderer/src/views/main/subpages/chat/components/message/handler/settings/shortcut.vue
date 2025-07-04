@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@renderer/types"
+import { ChatTopic, SettingKeys } from "@renderer/types"
+defineProps<{
+  topic: ChatTopic
+}>()
 const sendShortcut = ref("")
 const settingsStore = useSettingsStore()
 settingsStore.api.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")

@@ -103,7 +103,6 @@ const hooks = {
   onBeforeMove: (pos: MoveEvent) => {
     emit("beforeMove", pos)
   },
-
   onBaseMounted: async (data: BaseMountedParams): Promise<void> => {
     const { setScale } = useDragOffset(data.dragOffset)
     handle.value = useHandle({

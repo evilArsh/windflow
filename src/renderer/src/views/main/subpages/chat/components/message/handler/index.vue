@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import useShortcut from "@renderer/views/main/usable/useShortcut"
-import ModelSelect from "../../modelSelect/index.vue"
+import ModelSelect from "./modelSelect.vue"
 import TextToImage from "./textToImage.vue"
 import Mcp from "./mcp.vue"
 import Settings from "./settings/index.vue"

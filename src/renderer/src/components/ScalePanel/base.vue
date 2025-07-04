@@ -25,7 +25,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { type MoveType, useMove } from "@renderer/lib/drag"
+import { type MoveType, useMove } from "./drag"
 import type { CSSProperties } from "@renderer/lib/shared/types"
 import { type ScaleConfig, ScalePropsBase, BaseMountedParams, MoveEvent, DragOffset } from "./types"
 import { getValue, px, toNumber } from "@renderer/lib/shared/styles"
