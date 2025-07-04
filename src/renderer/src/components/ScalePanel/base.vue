@@ -2,20 +2,12 @@
   <div
     ref="drag"
     class="dragContainer"
-    :id="props.modelValue.containerId ?? undefined"
-    :style="[useContainerStyle, useContainerTranslate]"
-    :aria-label="config.name">
-    <div v-if="withDefaultHeader" class="dragHeader" :style="useHeaderStyle">
-      <div ref="headerLeftOuter" class="left">
-        <div ref="headerLeft" class="leftInner">
-          <p>{{ config.name }}</p>
-        </div>
-      </div>
-      <div ref="headerRight" class="right">
-        <slot v-if="withDefaultToolbar" name="toolbar" :config :scale :move :drag-offset></slot>
-      </div>
+    :id="modelValue.containerId ?? undefined"
+    :style="[useContainerStyle, useContainerTranslate]">
+    <div v-if="withHeader" ref="header" class="dragHeader" :style="useHeaderStyle">
+      <slot name="header"></slot>
     </div>
-    <slot v-if="config.scalable" name="resize" :config :scale :move></slot>
+    <Resize v-if="config.scalable" :config :scale :move></Resize>
     <div ref="scales" class="scaleContent" :style="useContentStyle">
       <slot></slot>
     </div>
@@ -26,36 +18,38 @@
 </template>
 <script lang="ts" setup>
 import { type MoveType, useMove } from "./drag"
+import Resize from "./resize.vue"
 import type { CSSProperties } from "@renderer/lib/shared/types"
-import { type ScaleConfig, ScalePropsBase, BaseMountedParams, MoveEvent, DragOffset } from "./types"
+import useHandle, { Status } from "./useHandle"
+import { ScaleConfig, ScaleProps, MoveEvent, DragOffset } from "./types"
 import { getValue, px, toNumber } from "@renderer/lib/shared/styles"
 import useScale, { ScaleEv } from "./useScale"
 import { useComputedStyle, useDragOffset, useStatusListener, useStyleHandler, values } from "./helper"
 import { type Ref } from "vue"
 const emit = defineEmits<{
-  moving: [pos: MoveEvent]
   beforeMove: [pos: MoveEvent]
+  moving: [pos: MoveEvent]
   afterMove: [pos: MoveEvent]
-  afterScale: [scaleEl: HTMLElement]
   scaling: [scaleEl: HTMLElement]
-  mounted: [data: BaseMountedParams]
+  afterScale: [scaleEl: HTMLElement]
   maskClick: []
   "update:modelValue": [data: ScaleConfig]
 }>()
-const props = defineProps<ScalePropsBase>()
+const { modelValue, target } = defineProps<ScaleProps>()
+const handle: Ref<ReturnType<typeof useHandle> | undefined> = ref()
 const config: Ref<ScaleConfig> = computed({
-  get: () => props.modelValue,
+  get: () => modelValue,
   set: val => emit("update:modelValue", val),
 })
-const headerLeftOuterRef = useTemplateRef("headerLeftOuter")
+const headerRef = useTemplateRef("header")
 const scaleRef = useTemplateRef("scales")
 const dragRef = useTemplateRef("drag")
-const move = ref<MoveType>()
+const move = shallowRef<MoveType>()
 const containerStyle = toRef(config.value, "containerStyle")
 const contentStyle = toRef(config.value, "contentStyle")
 const headerStyle = toRef(config.value, "headerStyle")
 const { get: getContainer } = useStyleHandler(containerStyle)
-const dragOffset = ref<DragOffset>({
+const dragOffset = reactive<DragOffset>({
   prevClientX: 0,
   prevClientY: 0,
   prevTranslateX: 0,
@@ -70,9 +64,8 @@ const scale = useScale({
   config,
   targetEle: dragRef,
 })
-const withDefaultHeader = computed(() => !config.value.normal && config.value.defaultHeader)
-const withDefaultToolbar = computed(() => config.value.defaultToolbar)
-
+const targetRef = computed(() => unref(target))
+const withHeader = computed(() => !!config.value.header)
 const useContentStyle = computed<CSSProperties>(() => values(contentStyle.value))
 const useHeaderStyle = computed<CSSProperties>(() => values(headerStyle.value))
 const useContainerStyle = computed<CSSProperties>(() => values(containerStyle.value))
@@ -95,8 +88,8 @@ const { setTarget, onMovableChange, onNormalChange } = useStatusListener(
   move,
   dragOffset,
   containerStyle,
-  toRef(() => unref(props.target)),
-  headerLeftOuterRef
+  targetRef,
+  headerRef
 )
 function initMove() {
   move.value = useMove()
@@ -124,22 +117,20 @@ function initScale() {
     if (scaleRef.value) emit("scaling", scaleRef.value)
   })
 }
+function initHandle() {
+  handle.value = useHandle({
+    config,
+    targetEle: dragRef,
+    dragOffset,
+  })
+}
 async function init() {
-  await nextTick()
   initScale()
   initMove()
+  initHandle()
   setTarget()
   onMovableChange(config.value.movable)
   onNormalChange(config.value.normal)
-  emit("mounted", {
-    config,
-    drag: dragRef,
-    content: scaleRef,
-    dragOffset,
-    move,
-    scale,
-    handle: undefined,
-  } as BaseMountedParams)
 }
 onMounted(init)
 onBeforeUnmount(() => {
@@ -154,24 +145,12 @@ onBeforeUnmount(() => {
   & > .dragHeader {
     flex-shrink: 0;
     display: flex;
-    .left {
-      cursor: move;
-      display: flex;
-      align-items: center;
-      flex: 1;
-      height: 100%;
-      .leftInner {
-        padding: 0 5px;
-      }
-    }
-    .right {
-      display: flex;
-      align-items: center;
-    }
   }
   & > .scaleContent {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
+    position: relative;
+    display: flex;
   }
 }
 .dragMask {

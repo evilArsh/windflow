@@ -9,21 +9,6 @@
     @after-move="hooks.onAfterMove"
     @after-scale="hooks.onAfterScale"
     @scaling="hooks.onScaling">
-    <template #toolbar="toolbar">
-      <div class="toolbar">
-        <ToolBar
-          :config="config"
-          :handle="handle"
-          :scale="toolbar.scale"
-          :move="toolbar.move"
-          :drag-offset="toolbar.dragOffset">
-          <slot name="toolbar"></slot>
-        </ToolBar>
-      </div>
-    </template>
-    <template #resize="resize">
-      <Resize :config="config" :handle="handle" :scale="resize.scale" :move="resize.move"></Resize>
-    </template>
     <template #default>
       <slot
         :config="config"
@@ -36,19 +21,9 @@
 </template>
 <script lang="ts" setup>
 import Base from "./base.vue"
-import {
-  type ScaleProps,
-  type ScaleConfig,
-  type ScaleInstance,
-  type AnimateDir,
-  type BaseMountedParams,
-  type MoveHook,
-  type MoveEvent,
-} from "./types"
+import { ScaleProps, ScaleConfig, ScaleInstance, AnimateDir, MoveHook, MoveEvent } from "./types"
 import useHandle, { Status } from "./useHandle"
 import { useDebounceFn } from "@vueuse/core"
-import ToolBar from "./plugins/toolbar/index.vue"
-import Resize from "./plugins/resize/index.vue"
 import { useDragOffset } from "./helper"
 import { type Ref } from "vue"
 const emit = defineEmits<{

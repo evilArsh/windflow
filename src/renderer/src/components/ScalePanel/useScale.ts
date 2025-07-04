@@ -21,17 +21,6 @@ export default (data: { config: Ref<ScaleConfig>; targetEle: Readonly<Ref<HTMLEl
 
   const ev = useEvent()
   const pointer = ["t", "r", "b", "l", "lt", "rt", "lb", "rb"]
-  // const cursor: Record<string, string> = {
-  //   "": "",
-  //   t: "ns-resize",
-  //   r: "ew-resize",
-  //   b: "ns-resize",
-  //   l: "ew-resize",
-  //   lt: "nwse-resize",
-  //   rt: "nesw-resize",
-  //   lb: "nesw-resize",
-  //   rb: "nwse-resize",
-  // }
   let dir = ""
   const { x: tx, y: ty, width: tWidth, height: tHeight, update: tUpdate } = useElementBounding(data.targetEle)
   const moveMap: Record<string, (e: MouseEvent, pos: ScalePos) => any> = {

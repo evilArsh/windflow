@@ -1,9 +1,7 @@
-import { MoveParams, MoveType, type MoveOptions } from "./drag/types"
+import { MoveParams, type MoveOptions } from "./drag/types"
 import type { CSSProperties, FixedArray } from "@renderer/lib/shared/types"
-import type { VNode, Component, MaybeRef, ShallowRef } from "vue"
-import useScale from "./useScale"
-import useHandle, { Status } from "./useHandle"
-import { type Ref } from "vue"
+import type { VNode, Component, MaybeRef } from "vue"
+import { Status } from "./useHandle"
 export interface ScaleConfig {
   /**
    * 组件ID
@@ -14,10 +12,6 @@ export interface ScaleConfig {
    */
   containerId?: string
   /**
-   * 拖拽组件名字
-   */
-  name?: string
-  /**
    * 组件可改变尺寸
    */
   scalable?: boolean
@@ -25,18 +19,6 @@ export interface ScaleConfig {
    * 组件可移动
    */
   movable?: boolean
-  /**
-   * 组件可最小化
-   */
-  minimized?: boolean
-  /**
-   * 组件可最大化
-   */
-  maximized?: boolean
-  /**
-   * 组件可关闭
-   */
-  closable?: boolean
   /**
    * 变成正常元素
    */
@@ -58,13 +40,9 @@ export interface ScaleConfig {
    */
   maxFirst?: boolean
   /**
-   * 是否拥有默认头部
+   * 是否拥有头部
    */
-  defaultHeader?: boolean
-  /**
-   * 是否拥有默认的工具栏
-   */
-  defaultToolbar?: boolean
+  header?: boolean
   /**
    * 当组件`position`不为`fixed`时
    * 是否相对于window定位,否则相对于父元素定位
@@ -104,35 +82,6 @@ export interface ScaleProps {
    */
   target?: MaybeRef<HTMLElement | null | undefined>
 }
-export interface ScalePropsBase {
-  modelValue: ScaleConfig
-  /**
-   * 按下目标元素并拖动组件，默认按下头部拖动。
-   */
-  target?: MaybeRef<HTMLElement | null | undefined>
-}
-export interface BaseMountedParams {
-  /**
-   * 组件配置数据
-   */
-  config: Ref<Required<ScaleConfig>>
-  /**
-   * 当前组件
-   */
-  drag: ShallowRef<HTMLElement | null>
-  /**
-   * 当前组件内容部分
-   */
-  content: ShallowRef<HTMLElement | null>
-  dragOffset: Ref<DragOffset>
-  scale?: ReturnType<typeof useScale>
-  /**
-   * index.vue组件提供
-   */
-  handle?: ReturnType<typeof useHandle>
-  move?: Ref<MoveType | undefined>
-}
-
 export interface ScaleExtraConfNode {
   label: string
   node: VNode | Component | string

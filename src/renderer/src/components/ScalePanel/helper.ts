@@ -5,7 +5,7 @@ import { MoveType } from "./drag/types"
 import { ShallowRef } from "vue"
 import { z } from "@renderer/lib/shared/zindex"
 import { merge } from "lodash-es"
-import type { Ref, MaybeRef } from "vue"
+import type { Ref, MaybeRef, Reactive } from "vue"
 export const values = (style?: CSSProperties): Record<string, string | number | undefined> => {
   if (!style) return {}
   const res: Record<string, any> = {}
@@ -18,63 +18,63 @@ export const values = (style?: CSSProperties): Record<string, string | number | 
 /**
  * DragOffset 操作函数
  */
-export function useDragOffset(data: Ref<DragOffset>) {
+export function useDragOffset(data: Reactive<DragOffset>) {
   function getScale() {
     return {
-      scaleX: data.value.scale[0],
-      scaleY: data.value.scale[1],
+      scaleX: data.scale[0],
+      scaleY: data.scale[1],
     }
   }
   function getTranslate() {
     return {
-      translateX: data.value.translateX,
-      translateY: data.value.translateY,
+      translateX: data.translateX,
+      translateY: data.translateY,
     }
   }
   function setTranslate(x: number, y: number, append?: boolean) {
-    data.value.translateX = append ? data.value.translateX + x : x
-    data.value.translateY = append ? data.value.translateY + y : y
+    data.translateX = append ? data.translateX + x : x
+    data.translateY = append ? data.translateY + y : y
   }
   /**
    * 元素移动之前pointer的clientX/Y
    */
   function setPrevClientPos(clientX: number, clientY: number) {
-    data.value.prevClientX = clientX
-    data.value.prevClientY = clientY
+    data.prevClientX = clientX
+    data.prevClientY = clientY
   }
   /**
    * 元素移动后的translateX和translateY
    */
   function setPrevTranslate(translateX: number, translateY: number) {
-    data.value.prevTranslateX = translateX
-    data.value.prevTranslateY = translateY
+    data.prevTranslateX = translateX
+    data.prevTranslateY = translateY
   }
   function getPrevClientPos() {
     return {
-      clientX: data.value.prevClientX,
-      clientY: data.value.prevClientY,
+      clientX: data.prevClientX,
+      clientY: data.prevClientY,
     }
   }
   function getPrevTranslate() {
     return {
-      translateX: data.value.prevTranslateX,
-      translateY: data.value.prevTranslateY,
+      translateX: data.prevTranslateX,
+      translateY: data.prevTranslateY,
     }
   }
   function setScale(scaleX: number, scaleY: number) {
-    data.value.scale = [scaleX, scaleY]
+    data.scale = [scaleX, scaleY]
   }
   function setNormal() {
-    data.value.scale = [1, 1]
-    data.value.prevClientX = 0
-    data.value.prevTranslateX = 0
-    data.value.prevClientY = 0
-    data.value.prevTranslateY = 0
-    data.value.translateX = 0
-    data.value.translateY = 0
+    data.scale = [1, 1]
+    data.prevClientX = 0
+    data.prevTranslateX = 0
+    data.prevClientY = 0
+    data.prevTranslateY = 0
+    data.translateX = 0
+    data.translateY = 0
   }
   function setData(newData: DragOffset) {
-    data.value = newData
+    Object.assign(data, newData)
   }
 
   return {
@@ -119,7 +119,7 @@ export function useStyleHandler(style: Ref<ScaleStyleProps | undefined>) {
 export function useStatusListener(
   config: Ref<ScaleConfig>,
   move: Ref<MoveType | undefined>,
-  dragOffset: Ref<DragOffset>,
+  dragOffset: Reactive<DragOffset>,
   containerStyle: Ref<ScaleStyleProps | undefined>,
   target: Ref<HTMLElement | null | undefined>,
   defaultTarget: ShallowRef<HTMLDivElement | null>
@@ -146,8 +146,8 @@ export function useStatusListener(
       position.value = getContainer("position")
       config.value.movable = false
       config.value.scalable = false
-      config.value.minimized = false
-      config.value.closable = false
+      // config.value.minimized = false
+      // config.value.closable = false
       setNormal()
       setContainer("position", "static")
     } else {
@@ -196,20 +196,15 @@ export function useComputedStyle<T extends keyof CSSProperties>(
 export function defaultProps(mergeProps?: ScaleConfig): Required<ScaleConfig> {
   const dst: Required<ScaleConfig> = {
     id: uniqueId(),
-    name: "ScalePanel",
     containerId: uniqueId(),
     scalable: true,
     movable: true,
-    minimized: true,
-    maximized: true,
-    defaultHeader: true,
-    defaultToolbar: true,
+    header: true,
     autoStick: false,
     hideFirst: false,
     minFirst: false,
     maxFirst: false,
     normal: false,
-    closable: false,
     attachWindow: false,
     moveConfig: {
       direction: "any",

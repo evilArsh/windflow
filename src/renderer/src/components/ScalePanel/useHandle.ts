@@ -1,7 +1,7 @@
 import type { AnimateDir, DragOffset, MoveHook, ScaleConfig } from "./types"
 import { px, toNumber } from "@renderer/lib/shared/styles"
 import useFlip, { type FlipParam } from "@renderer/usable/useFlip"
-import { ShallowRef } from "vue"
+import { Reactive, ShallowRef } from "vue"
 import { AsyncCallBackFn, CallBackFn, FixedArray } from "@renderer/lib/shared/types"
 import { useElementBounding } from "@vueuse/core"
 import useEvent from "@renderer/usable/useEvent"
@@ -29,7 +29,7 @@ export enum HandleEv {
 export default (data: {
   config: Ref<ScaleConfig>
   targetEle: Readonly<ShallowRef<HTMLElement | null>>
-  dragOffset: Ref<DragOffset>
+  dragOffset: Reactive<DragOffset>
   parent?: HTMLElement
 }) => {
   const containerStyle = toRef(data.config.value, "containerStyle")

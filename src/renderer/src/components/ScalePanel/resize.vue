@@ -10,10 +10,10 @@
 </template>
 <script lang="ts" setup>
 import { getValue, toNumber } from "@renderer/lib/shared/styles"
-import { ScaleConfig } from "../../types"
-import useHandle from "../../useHandle"
-import useScale from "../../useScale"
-import { MoveType } from "../../drag"
+import { ScaleConfig } from "./types"
+import useHandle from "./useHandle"
+import useScale from "./useScale"
+import { MoveType } from "./drag"
 const props = defineProps<{
   config: ScaleConfig
   scale?: ReturnType<typeof useScale>
