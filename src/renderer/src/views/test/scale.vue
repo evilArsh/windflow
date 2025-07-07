@@ -109,8 +109,6 @@ const conf = ref<ScaleConfig>({
   visible: false,
   movable: true,
   scalable: true,
-  header: true,
-  autoStick: true,
   containerStyle: {
     position: "absolute",
     backgroundColor: "rgb(227,227,227)",

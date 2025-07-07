@@ -9,7 +9,6 @@
   </template>
 </template>
 <script lang="ts" setup>
-import { getValue, toNumber } from "@renderer/lib/shared/styles"
 import { ScaleConfig } from "./types"
 import useHandle from "./useHandle"
 import useScale from "./useScale"
@@ -21,7 +20,7 @@ const props = defineProps<{
   move?: MoveType
 }>()
 const zIndex = computed(() => {
-  return props.config.normal ? undefined : getValue("zIndex", toNumber(props.config.containerStyle?.zIndex))
+  return props.config.normal ? undefined : z.ABSOLUTE
 })
 </script>
 
