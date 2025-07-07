@@ -79,7 +79,6 @@ export const useMenu = (
   const currentTopic = ref<ChatTopicTree>()
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({
-    hideFirst: true,
     containerStyle: {
       zIndex: z.FIXED,
       position: "fixed",

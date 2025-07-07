@@ -7,11 +7,9 @@ import { useElementBounding } from "@vueuse/core"
 import useEvent from "@renderer/usable/useEvent"
 import { isNumber } from "@renderer/lib/shared/is"
 import { merge } from "lodash-es"
-import { useDragOffset, useStyleHandler } from "./helper"
+import { useDragOffset } from "./helper"
 import { type Ref } from "vue"
 export enum Status {
-  MIN = "MIN",
-  MAX = "MAX",
   NORMAL = "NORMAL",
   HIDDEN = "HIDDEN",
 }
@@ -19,12 +17,6 @@ export enum HandleEv {
   AFTER_SHOW = "after_show",
   AFTER_HIDE = "after_hide",
   AFTER_STICK = "after_stick",
-  // AFTER_MIN = "after_min",
-  // AFTER_MAX = "after_max",
-  // AFTER_UNSTICK = "after_unstick",
-  // AFTER_MOVE = "after_move",
-  // AFTER_RESIZE = "after_resize",
-  // AFTER_RESIZE_END = "after_resize_end",
 }
 export default (data: {
   config: Ref<ScaleConfig>
@@ -32,8 +24,8 @@ export default (data: {
   dragOffset: Reactive<DragOffset>
   parent?: HTMLElement
 }) => {
-  const containerStyle = toRef(data.config.value, "containerStyle")
-  const { get: getContainer, sets: setContainers } = useStyleHandler(containerStyle)
+  // const containerStyle = toRef(data.config.value, "containerStyle")
+  // const { get: getContainer, sets: setContainers } = useStyleHandler(containerStyle)
   const { getTranslate, setTranslate, setScale, setPrevTranslate, getScale } = useDragOffset(data.dragOffset)
   let parent: HTMLElement | undefined | null = data.parent
   const flip = useFlip()
@@ -50,8 +42,6 @@ export default (data: {
     maxToNormal: () => {},
   }
   const asyncBeforeHide: AsyncCallBackFn[] = []
-  const asyncBeforeMin: AsyncCallBackFn[] = []
-  const asyncBeforeMax: AsyncCallBackFn[] = []
   const asyncBeforeStick: AsyncCallBackFn[] = []
   function refreshTmp() {
     const { translateX, translateY } = getTranslate()
@@ -60,7 +50,7 @@ export default (data: {
     tmp.transY.old = translateY
     tmp.transY.final = translateY
   }
-  const { x: tarX, y: tarY, width, left, top } = useElementBounding(data.targetEle)
+  const { x: tarX, y: tarY, width, left } = useElementBounding(data.targetEle)
   function parentRect(targetStyle: CSSStyleDeclaration, attachWindow?: boolean) {
     const windowRect = {
       width: window.innerWidth,
@@ -195,109 +185,6 @@ export default (data: {
       )
     })
   }
-  async function max(animation: boolean): Promise<void> {
-    if (status.value !== Status.NORMAL) return
-    if (!data.targetEle.value) return
-    for await (const hook of asyncBeforeMax) {
-      await hook()
-    }
-    refreshTmp()
-    const reset = () => {
-      const contentWidth = getContainer("width")
-      const contentHeight = getContainer("height")
-      const transX = tmp.transX.old
-      const transY = tmp.transY.old
-      const position = getContainer("position")
-      const left = getContainer("left")
-      const top = getContainer("top")
-      const right = getContainer("right")
-      const bottom = getContainer("bottom")
-      setTranslate(0, 0)
-      setPrevTranslate(0, 0)
-      setContainers({
-        position: "fixed",
-        left: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
-        width: "100%",
-        height: "100%",
-      })
-      tmp.maxToNormal = () => {
-        setPrevTranslate(transX, transY)
-        setTranslate(transX, transY)
-        setContainers({
-          position: position,
-          left: left,
-          top: top,
-          right: right,
-          bottom: bottom,
-          width: contentWidth,
-          height: contentHeight,
-        })
-      }
-    }
-    reset()
-    animation
-    // if (!animation) {
-    //   reset()
-    //   return
-    // }
-    // await doAnimate(data.targetEle.value, animation, reset, [
-    //   { scale: [1, 1], translate: [px(tmp.transX.old), px(tmp.transY.old)] },
-    //   { scale: [0, 1], translate: [px(tmp.transX.final), px(tmp.transY.final)] },
-    //   { scale: [0, 0], translate: [px(tmp.transX.final), px(tmp.transY.final)] },
-    // ])
-    status.value = Status.MAX
-  }
-  async function maxToNormal(animation: boolean): Promise<void> {
-    if (status.value !== Status.MAX) return
-    if (!data.targetEle.value) return
-    tmp.maxToNormal()
-    animation
-    status.value = Status.NORMAL
-  }
-  async function min(animation: boolean): Promise<void> {
-    if (status.value !== Status.NORMAL) return
-    if (!data.targetEle.value) return
-    for await (const hook of asyncBeforeMin) {
-      await hook()
-    }
-    refreshTmp()
-    tmp.transY.final = -toNumber(top.value) + tmp.transY.old + window.innerHeight
-    await doAnimate(
-      data.targetEle.value,
-      animation,
-      () => {
-        setScale(0, 0)
-        setTranslate(parseFloat(px(tmp.transX.final)), parseFloat(px(tmp.transY.final)))
-      },
-      [
-        { scale: [1, 1], translate: [px(tmp.transX.old), px(tmp.transY.old)] },
-        { scale: [0, 1], translate: [px(tmp.transX.final), px(tmp.transY.final)] },
-        { scale: [0, 0], translate: [px(tmp.transX.final), px(tmp.transY.final)] },
-      ]
-    )
-    status.value = Status.MIN
-  }
-  /**
-   * 取消最小化
-   */
-  async function minReverse(animation: boolean): Promise<void> {
-    if (status.value !== Status.MIN) return
-    if (!data.targetEle.value) return
-    const reset = () => {
-      setScale(1, 1)
-      setTranslate(tmp.transX.old, tmp.transY.old)
-    }
-    await doAnimate(data.targetEle.value, animation, reset, [
-      { scale: [0, 0], translate: [px(tmp.transX.final), px(tmp.transY.final)] },
-      { scale: [0, 1], translate: [px(tmp.transX.final), px(tmp.transY.final)] },
-      { scale: [1, 1], translate: [px(tmp.transX.old), px(tmp.transY.old)] },
-    ])
-    status.value = Status.NORMAL
-  }
-
   function autoDirection(): AnimateDir {
     const center = toNumber(left.value) + toNumber(width.value) / 2
     if (center >= window.innerWidth / 2) {
@@ -436,26 +323,14 @@ export default (data: {
   function getTarget(): HTMLElement | null {
     return data.targetEle.value
   }
-  function onBeforeUnmount() {
-    ev.removeAllListeners()
-    asyncBeforeHide.length = 0
-    asyncBeforeMin.length = 0
-    asyncBeforeStick.length = 0
-  }
   function on(e: HandleEv, cb: CallBackFn) {
     ev.on(e, cb)
   }
   function registerBeforeHideHook(hook: AsyncCallBackFn) {
     asyncBeforeHide.push(hook)
   }
-  function registerBeforeMinHook(hook: AsyncCallBackFn) {
-    asyncBeforeMin.push(hook)
-  }
   function registerBeforeStickHook(hook: AsyncCallBackFn) {
     asyncBeforeStick.push(hook)
-  }
-  function registerBeforeMaxHook(hook: AsyncCallBackFn) {
-    asyncBeforeMax.push(hook)
   }
   /**
    * 手动设置drag元素的父元素
@@ -472,25 +347,24 @@ export default (data: {
   function getTargetParent() {
     return parent ?? data.targetEle.value?.parentElement ?? document.body
   }
+  function dispose() {
+    ev.removeAllListeners()
+    asyncBeforeHide.length = 0
+    asyncBeforeStick.length = 0
+  }
   return {
     getTarget,
     setStatus,
     getStatus,
     show,
     autoHide,
-    stickTo,
     autoStick,
+    stickTo,
     hideTo,
     moveTo,
-    min,
-    max,
-    maxToNormal,
-    minReverse,
-    onBeforeUnmount,
+    dispose,
     registerBeforeHideHook,
-    registerBeforeMinHook,
     registerBeforeStickHook,
-    registerBeforeMaxHook,
     on,
     setTargetParent,
     getTargetParent,

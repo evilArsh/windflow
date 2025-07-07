@@ -1,95 +1,75 @@
 import { initDragAttr, initRect } from "./types"
-import type { DragAttr, Pos, Rect, Target } from "./types"
+import type { DragAttr, Rect, Target } from "./types"
 import useEvent from "@renderer/usable/useEvent"
 
-// const isFinalEqual = (node?: HTMLElement | null, dst?: HTMLElement): boolean => {
-//   if (!(node && dst) || node === document.body) {
-//     return false
-//   }
-//   if (node === dst) {
-//     return true
-//   }
-//   return isFinalEqual(node.parentElement, dst)
-// }
-
-export default <T extends HTMLElement>(): Target<T> => {
-  let ele: T | undefined | null
+export default (): Target => {
+  let ele: HTMLElement | undefined | null
   let rect: Rect = initRect()
   let attr: DragAttr = initDragAttr()
   let disabled = false
-  // 指针偏移量计算
-  const _offset = { x: 0, y: 0 }
-  const _movePos = { left: 0, top: 0 }
-  const ev = useEvent()
   let isEleDown = false
-  // --- event start
-  function _setTargetAttr(e: PointerEvent, pos?: Pos) {
-    updateRect()
-    setAttr({
-      x: rect.x,
-      y: rect.y,
-      clientX: e.clientX,
-      clientY: e.clientY,
-      offsetLeft: pos?.left ?? ele?.offsetLeft ?? 0,
-      offsetTop: pos?.top ?? ele?.offsetTop ?? 0,
-      width: rect.width,
-      height: rect.height,
-    })
-  }
-  function _onSelectStart(e: Event) {
-    if (isEleDown) {
-      e.preventDefault()
-      return false
-    }
-    return true
-  }
-  function _onDocPointerUp(_e: PointerEvent) {
-    if (disabled) return
-    if (!ele) {
+  const ev = useEvent()
+  const inner = {
+    emit: (type: string, ...args: any[]) => {
+      if (disabled) return
+      ev.emit(type, ...args)
+    },
+    setTargetAttr: (e: PointerEvent): void => {
+      updateRect()
+      setAttr({
+        x: rect.x,
+        y: rect.y,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        width: rect.width,
+        height: rect.height,
+      })
+    },
+    onSelectStart: (e: Event): boolean => {
+      if (isEleDown) {
+        e.preventDefault()
+        return false
+      }
+      return true
+    },
+    onDomPointerUp: (_e: PointerEvent): void => {
+      if (disabled) return
+      if (!ele) {
+        isEleDown = false
+        return
+      }
+      if (isEleDown) {
+        inner.emit("aftermove", { ...attr })
+      }
       isEleDown = false
-      return
-    }
-    if (isEleDown) {
-      _emit("aftermove", { ...attr })
-    }
-    // if (!isFinalEqual(e.target as HTMLElement, ele)) {
-    //   return
-    // }
-    // document.removeEventListener("selectstart", _onSelectStart)
-    isEleDown = false
+    },
+    onDomPointerMove: (e: PointerEvent): void => {
+      if (disabled) return
+      if (!isEleDown) return
+      inner.setTargetAttr(e)
+      inner.emit("moving", { ...attr })
+    },
+    onElePointerDown: (e: PointerEvent): void => {
+      if (disabled) return
+      isEleDown = true
+      inner.setTargetAttr(e)
+      inner.emit("beforemove", { ...attr })
+    },
+    clearEvent: (): void => {
+      document.removeEventListener("selectstart", inner.onSelectStart)
+      ele?.removeEventListener("pointerdown", inner.onElePointerDown)
+      document.removeEventListener("pointerup", inner.onDomPointerUp)
+      document.removeEventListener("pointermove", inner.onDomPointerMove)
+    },
+    listenEvent: (): void => {
+      if (ele) {
+        document.addEventListener("selectstart", inner.onSelectStart)
+        ele.addEventListener("pointerdown", inner.onElePointerDown)
+        document.addEventListener("pointerup", inner.onDomPointerUp)
+        document.addEventListener("pointermove", inner.onDomPointerMove)
+      }
+    },
   }
-  function _onDocPointerMove(e: PointerEvent) {
-    if (disabled) return
-    if (!isEleDown) return
-    _movePos.left = e.clientX - _offset.x
-    _movePos.top = e.clientY - _offset.y
-    _setTargetAttr(e, _movePos)
-    _emit("moving", { ...attr })
-  }
-  function _onElePointerDown(e: PointerEvent) {
-    if (disabled) return
-    isEleDown = true
-    // document.addEventListener("selectstart", _onSelectStart)
-    _setTargetAttr(e)
-    _offset.x = e.clientX - attr.offsetLeft
-    _offset.y = e.clientY - attr.offsetTop
-    _emit("beforemove", { ...attr })
-  }
-  function _clearEvent() {
-    document.removeEventListener("selectstart", _onSelectStart)
-    ele?.removeEventListener("pointerdown", _onElePointerDown)
-    document.removeEventListener("pointerup", _onDocPointerUp)
-    document.removeEventListener("pointermove", _onDocPointerMove)
-  }
-  function _listenEvent() {
-    if (ele) {
-      document.addEventListener("selectstart", _onSelectStart)
-      ele.addEventListener("pointerdown", _onElePointerDown)
-      document.addEventListener("pointerup", _onDocPointerUp)
-      document.addEventListener("pointermove", _onDocPointerMove)
-    }
-  }
-  // --- event end
   function updateRect() {
     rect = ele?.getBoundingClientRect() ?? initRect()
   }
@@ -99,21 +79,16 @@ export default <T extends HTMLElement>(): Target<T> => {
   /**
    * 设置新元素，并重置所有状态，包括事件监听
    */
-  function setTarget(tar?: T | null) {
-    _clearEvent()
+  function setTarget(tar?: HTMLElement | null) {
+    inner.clearEvent()
     ele = tar
     ev.removeAllListeners()
     setAttr(initDragAttr())
     updateRect()
-    _listenEvent()
+    inner.listenEvent()
   }
-
   function on(event: string, cb: (attr: DragAttr) => void) {
     ev.on(event, cb)
-  }
-  function _emit(type: string, ...args: any[]) {
-    if (disabled) return
-    ev.emit(type, ...args)
   }
   function disable() {
     disabled = true

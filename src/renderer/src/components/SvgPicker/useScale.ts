@@ -2,7 +2,6 @@ import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel
 export default (scaleRef: Readonly<Ref<ScaleInstance | null>>, target: Readonly<Ref<HTMLElement | null>>) => {
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({
-    hideFirst: true,
     containerStyle: {
       zIndex: z.FIXED_MAX,
       position: "fixed",

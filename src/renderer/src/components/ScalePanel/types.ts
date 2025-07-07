@@ -1,16 +1,8 @@
-import { MoveParams, type MoveOptions } from "./drag/types"
 import type { CSSProperties, FixedArray } from "@renderer/lib/shared/types"
 import type { VNode, Component, MaybeRef } from "vue"
 import { Status } from "./useHandle"
+import { DragAttr, MoveOptions } from "./drag"
 export interface ScaleConfig {
-  /**
-   * 组件ID
-   */
-  id?: string
-  /**
-   * 手动设置容器ID
-   */
-  containerId?: string
   /**
    * 组件可改变尺寸
    */
@@ -28,17 +20,17 @@ export interface ScaleConfig {
    */
   autoStick?: boolean | AnimateDir
   /**
-   * 元素渲染后先隐藏，优先级高于最小化
+   * 是否显示
    */
-  hideFirst?: boolean | AnimateDir
+  visible?: boolean
   /**
-   * 元素渲染后先最小化
+   * 初始移动位置 `translateX`
    */
-  minFirst?: boolean
+  x?: number
   /**
-   * 元素渲染后先最大化
+   * 初始移动位置 `translateY`
    */
-  maxFirst?: boolean
+  y?: number
   /**
    * 是否拥有头部
    */
@@ -57,15 +49,15 @@ export interface ScaleConfig {
   /**
    * 外壳样式
    */
-  containerStyle?: ScaleStyleProps
+  containerStyle?: CSSProperties
   /**
    * 内容样式，初始宽高应该在这里设置
    */
-  contentStyle?: ScaleStyleProps
+  contentStyle?: CSSProperties
   /**
    * 头部样式
    */
-  headerStyle?: ScaleStyleProps
+  headerStyle?: CSSProperties
   /**
    * 是否显示遮罩层
    */
@@ -73,7 +65,7 @@ export interface ScaleConfig {
   /**
    * 遮罩层样式
    */
-  maskStyle?: ScaleStyleProps
+  maskStyle?: CSSProperties
 }
 export interface ScaleProps {
   modelValue: ScaleConfig
@@ -123,22 +115,6 @@ export interface ScaleInstance {
    */
   show: (animate: boolean, dir?: AnimateDir) => Promise<void>
   /**
-   * 最小化组件
-   */
-  min: (animate: boolean) => Promise<void>
-  /**
-   * 最大化组件
-   */
-  max: (animate: boolean) => Promise<void>
-  /**
-   * 组件从最小化恢复正常
-   */
-  minReverse: (animate: boolean) => Promise<void>
-  /**
-   * 组件从最大化恢复正常
-   */
-  maxReverse: (animate: boolean) => Promise<void>
-  /**
    * 当组件`position:fixed`或者`attachWindow:true`时坐标相对于屏幕左上角;否则相对于父元素
    */
   moveTo: (animate: boolean, dir: AnimateDir, hooks?: MoveHook) => Promise<void>
@@ -147,8 +123,6 @@ export interface ScaleInstance {
    */
   getStatus: () => Status | undefined
 }
-export type ScaleStyleProps = CSSProperties
-
 /**
  * 拖拽时transform计算的坐标
  */
@@ -179,7 +153,7 @@ export interface DragOffset {
   translateY: number
   scale: FixedArray<number, 2>
 }
-export type MoveEvent = MoveParams & {
+export type MoveParams = DragAttr & {
   translateX: number
   translateY: number
 }

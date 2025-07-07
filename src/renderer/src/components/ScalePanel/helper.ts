@@ -1,11 +1,11 @@
 import { getValue } from "@renderer/lib/shared/styles"
 import type { CSSProperties } from "@renderer/lib/shared/types"
-import { DragOffset, ScaleConfig, ScaleStyleProps } from "./types"
-import { MoveType } from "./drag/types"
+import { DragOffset, ScaleConfig } from "./types"
+import { MoveOptions, MoveType } from "./drag/types"
 import { ShallowRef } from "vue"
-import { z } from "@renderer/lib/shared/zindex"
-import { merge } from "lodash-es"
 import type { Ref, MaybeRef, Reactive } from "vue"
+import useHandle, { Status } from "./useHandle"
+import { useDebounceFn } from "@vueuse/core"
 export const values = (style?: CSSProperties): Record<string, string | number | undefined> => {
   if (!style) return {}
   const res: Record<string, any> = {}
@@ -92,9 +92,9 @@ export function useDragOffset(data: Reactive<DragOffset>) {
 }
 
 /**
- * ScaleStyleProps 操作函数
+ * CSSProperties 操作函数
  */
-export function useStyleHandler(style: Ref<ScaleStyleProps | undefined>) {
+export function useStyleHandler(style: Ref<CSSProperties | undefined>) {
   function set<T extends keyof CSSProperties>(key: T, value: CSSProperties[T]) {
     if (!style.value) return
     style.value[key] = value
@@ -119,17 +119,55 @@ export function useStyleHandler(style: Ref<ScaleStyleProps | undefined>) {
 export function useStatusListener(
   config: Ref<ScaleConfig>,
   move: Ref<MoveType | undefined>,
+  handle: Ref<ReturnType<typeof useHandle> | undefined>,
   dragOffset: Reactive<DragOffset>,
-  containerStyle: Ref<ScaleStyleProps | undefined>,
+  containerStyle: Ref<CSSProperties | undefined>,
   target: Ref<HTMLElement | null | undefined>,
   defaultTarget: ShallowRef<HTMLDivElement | null>
 ) {
-  const { setNormal } = useDragOffset(dragOffset)
+  const { setNormal, setTranslate, setPrevTranslate } = useDragOffset(dragOffset)
   const { get: getContainer, set: setContainer } = useStyleHandler(containerStyle)
   const position = ref<CSSProperties["position"] | undefined>(toValue(getContainer("position")))
-  function setTarget() {
+  const autoStick = useDebounceFn(
+    async () => {
+      if (config.value.autoStick) {
+        if (typeof config.value.autoStick === "boolean") {
+          await handle.value?.autoStick(true)
+        } else {
+          await handle.value?.stickTo(config.value.autoStick, true)
+        }
+      }
+    },
+    200,
+    { maxWait: 1000 }
+  )
+  function updateTarget() {
     if (move.value) {
       move.value.setTarget(unref(target) ?? defaultTarget.value ?? null)
+    }
+  }
+  /**
+   * 组件渲染后的初始化动作
+   */
+  function onInit() {
+    handle.value?.setStatus(Status.NORMAL)
+    onMovableChange(config.value.movable)
+    onMoveConfChange(config.value.moveConfig)
+    onPositionChange(config.value.x, config.value.y)
+    onNormalChange(config.value.normal)
+    if (isBoolean(config.value.visible)) {
+      onVisibleChange(config.value.visible, false)
+    } else {
+      handle.value?.hideTo("self", false)
+    }
+  }
+  function onVisibleChange(visible?: boolean, animation?: boolean) {
+    if (!isBoolean(visible)) return
+    const withOffset = isNumber(config.value.x) || isNumber(config.value.y)
+    if (visible) {
+      handle.value?.show(animation, withOffset ? { x: config.value.x, y: config.value.y } : "self")
+    } else {
+      handle.value?.hideTo(withOffset ? { x: config.value.x, y: config.value.y } : "self", animation)
     }
   }
   function onMovableChange(movable?: boolean) {
@@ -139,40 +177,48 @@ export function useStatusListener(
       move.value?.disable()
     }
   }
-
   function onNormalChange(normal?: boolean) {
     if (normal) {
       move.value?.setTarget()
       position.value = getContainer("position")
       config.value.movable = false
       config.value.scalable = false
-      // config.value.minimized = false
-      // config.value.closable = false
       setNormal()
       setContainer("position", "static")
     } else {
-      setTarget()
+      updateTarget()
       setContainer("position", position.value)
     }
   }
+  function onMoveConfChange(conf?: MoveOptions | undefined) {
+    if (!conf) return
+    move.value?.updateOption(conf)
+  }
+  function onPositionChange(x?: number, y?: number) {
+    if (move.value?.isMoving()) return
+    if (isNumber(config.value.x) || isNumber(config.value.y)) {
+      const transX = toNumber(x)
+      const transY = toNumber(y)
+      setTranslate(transX, transY)
+      setPrevTranslate(transX, transY)
+    }
+  }
+  watch(() => config.value.movable, onMovableChange)
+  watch(() => config.value.normal, onNormalChange)
+  watch(() => config.value.moveConfig, onMoveConfChange, { deep: true })
   watch(
-    () => config.value.movable,
-    v => onMovableChange(v)
+    () => config.value.visible,
+    v => onVisibleChange(v, true)
   )
-  watch(
-    () => config.value.normal,
-    v => onNormalChange(v)
-  )
-  watch(
-    () => config.value.moveConfig,
-    cnf => {
-      if (!cnf) return
-      move.value?.updateOption(cnf)
-    },
-    { immediate: true, deep: true }
-  )
+  watch([() => config.value.x, () => config.value.y], ([x, y]) => onPositionChange(x, y))
+  watch(target, () => {
+    if (!config.value.normal) {
+      updateTarget()
+    }
+  })
   return {
-    setTarget,
+    autoStick,
+    onInit,
     onMovableChange,
     onNormalChange,
   }
@@ -188,52 +234,4 @@ export function useComputedStyle<T extends keyof CSSProperties>(
     return res.getPropertyValue(key as unknown as string) as CSSProperties[T]
   }
   return getValue(key, undefined)
-}
-
-/**
- * 生成默认配置
- */
-export function defaultProps(mergeProps?: ScaleConfig): Required<ScaleConfig> {
-  const dst: Required<ScaleConfig> = {
-    id: uniqueId(),
-    containerId: uniqueId(),
-    scalable: true,
-    movable: true,
-    header: true,
-    autoStick: false,
-    hideFirst: false,
-    minFirst: false,
-    maxFirst: false,
-    normal: false,
-    attachWindow: false,
-    moveConfig: {
-      direction: "any",
-    },
-    headerStyle: {
-      fontSize: "14px",
-      display: "flex",
-      alignItems: "center",
-      position: "relative",
-      width: "100%",
-      color: "#333333",
-      userSelect: "none",
-      fontWeight: "bold",
-      backgroundColor: "#c0c0c0",
-    },
-    contentStyle: {
-      position: "relative",
-    },
-    containerStyle: {
-      border: "1px solid #0000001a",
-      left: 0,
-      top: 0,
-      zIndex: z.FIXED,
-      position: "fixed",
-    },
-    mask: false,
-    maskStyle: {
-      backgroundColor: "rgba(0, 0, 0, 0.05)",
-    },
-  }
-  return mergeProps ? merge(dst, mergeProps) : dst
 }
