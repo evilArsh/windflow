@@ -16,6 +16,7 @@ defineProps<{
         v-else
         class="text-1.2rem"></i-fluent-emoji-flat:globe-showing-americas>
     </ContentBox>
+    <slot></slot>
   </div>
 </template>
 <style lang="scss" scoped></style>

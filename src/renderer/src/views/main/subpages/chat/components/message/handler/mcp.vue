@@ -6,7 +6,6 @@ import { CallBackFn } from "@renderer/lib/shared/types"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { errorToText } from "@shared/error"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
-import { ElMessageBox } from "element-plus"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 const props = defineProps<{
   topic: ChatTopic
@@ -72,14 +71,6 @@ const serverHandler = {
   },
   restart: async (done: CallBackFn, server: MCPServerParam) => {
     try {
-      const refs = (await window.api.mcp.getReferences(server.id)).data
-      if (refs.length > 1) {
-        await ElMessageBox.confirm(t("mcp.service.deleteConfirm", { count: refs.length }), t("notify.title.warning"), {
-          confirmButtonText: t("btn.confirm"),
-          cancelButtonText: t("btn.cancel"),
-          type: "warning",
-        })
-      }
       await window.api.mcp.restartServer(topic.value.id, server.id)
       done()
     } catch (error) {
@@ -109,7 +100,7 @@ const serverHandler = {
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
-        <i-twemoji:hammer-and-wrench class="text-1.4rem" />
+        <i-twemoji:hammer-and-wrench class="text-1.6rem" />
       </ContentBox>
     </template>
     <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
@@ -117,7 +108,7 @@ const serverHandler = {
       <template #header>
         <el-text>{{ t("chat.mcp.label") }}</el-text>
       </template>
-      <div class="w-full h-30rem flex">
+      <div class="w-full h-40rem flex">
         <el-scrollbar v-if="!popover.visible" class="w-full">
           <div>
             <div v-for="server in filterServers" :key="server.id">
@@ -139,19 +130,30 @@ const serverHandler = {
                         <i class="i-ep:copy-document c-#888"></i>
                       </ContentBox>
                     </el-tooltip>
-                    <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.mcp.restart')">
-                      <ContentBox class="flex-grow-0!">
-                        <Button
-                          :disabled="!isCurrentActive(server)"
-                          text
-                          link
-                          type="warning"
-                          @click="done => serverHandler.restart(done, server)">
-                          <i class="i-ep:refresh text-1.4rem"></i>
-                        </Button>
-                      </ContentBox>
-                    </el-tooltip>
-                    <el-popconfirm v-if="server.modifyTopic == topic.id" :title="t('tip.deleteConfirm')">
+                    <el-popconfirm
+                      v-if="isCurrentActive(server)"
+                      :title="t('mcp.service.deleteConfirm')"
+                      :teleported="false">
+                      <template #reference>
+                        <ContentBox class="flex-grow-0!">
+                          <el-button text link type="warning">
+                            <i class="i-ep:refresh text-1.4rem"></i>
+                          </el-button>
+                        </ContentBox>
+                      </template>
+                      <template #actions="{ cancel }">
+                        <div class="flex justify-between">
+                          <Button type="danger" size="small" @click="done => serverHandler.restart(done, server)">
+                            {{ t("tip.yes") }}
+                          </Button>
+                          <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+                        </div>
+                      </template>
+                    </el-popconfirm>
+                    <el-popconfirm
+                      v-if="server.modifyTopic == topic.id"
+                      :title="t('tip.deleteConfirm')"
+                      :teleported="false">
                       <template #reference>
                         <ContentBox class="flex-grow-0!">
                           <el-button text link type="danger">
@@ -177,6 +179,7 @@ const serverHandler = {
         </el-scrollbar>
         <MCPForm
           v-else
+          shadow="always"
           @change="formHandler.onServerChange"
           :form-props="{ labelPosition: 'top' }"
           @close="formHandler.onClose"

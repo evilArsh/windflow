@@ -23,8 +23,8 @@ const svgSrc = computed(() =>
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse: !isAssistant }">
-    <ContentBox v-if="!hideLogo" class="flex-shrink-0" background>
-      <Svg :src="svgSrc" class="flex-1 text-1.8rem"></Svg>
+    <ContentBox v-if="!hideLogo" class="m0! flex-shrink-0" background>
+      <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
     </ContentBox>
     <div class="chat-item-title" :class="{ reverse: !isAssistant }">
       <div v-if="isAssistant" class="flex items-center gap-0.5rem flex-wrap">

@@ -12,13 +12,11 @@ settingsStore.api.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut
   <ContentBox>
     <el-text>聊天快捷键</el-text>
     <template #footer>
-      <div class="flex gap1rem">
-        <el-select v-model="sendShortcut" size="small">
-          <el-option v-for="item in ['enter', 'ctrl+enter', 'shift+enter']" :key="item" :value="item">
-            {{ item }}
-          </el-option>
-        </el-select>
-      </div>
+      <el-select v-model="sendShortcut" size="small" :teleported="false">
+        <el-option v-for="item in ['enter', 'ctrl+enter', 'shift+enter']" :key="item" :value="item">
+          {{ item }}
+        </el-option>
+      </el-select>
     </template>
   </ContentBox>
 </template>

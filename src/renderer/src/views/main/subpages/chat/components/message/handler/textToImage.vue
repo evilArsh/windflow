@@ -6,9 +6,6 @@ const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const chance = markRaw(new Chance())
 const sizeOptions = ref([
-  // {
-  //   label: "siliconflow",
-  //   options: [
   {
     value: "1024x1024",
     label: "1:1 (1024×1024)",
@@ -41,8 +38,6 @@ const sizeOptions = ref([
     value: "1024x1365",
     label: "3:4 (1024×1365)",
   },
-  //   ],
-  // },
 ])
 const defaultConfig = () => ({
   size: "",
@@ -74,97 +69,77 @@ settingsStore.api.dataWatcher<ReturnType<typeof defaultConfig>>(
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
-        <i-fluent-emoji-flat:framed-picture class="text-1.4rem"></i-fluent-emoji-flat:framed-picture>
+        <i-fluent-emoji-flat:framed-picture class="text-1.6rem"></i-fluent-emoji-flat:framed-picture>
       </ContentBox>
     </template>
     <DialogPanel>
       <template #header>
         <el-text>{{ t("chat.tti.label") }}</el-text>
       </template>
-      <div class="tti-wrap h-30rem w-full">
-        <el-form label-position="top">
-          <el-form-item>
-            <template #label>
-              <ContentBox>
-                <el-text>{{ t("chat.tti.imageSize") }}</el-text>
-              </ContentBox>
-            </template>
-            <el-radio-group v-model="config.size" size="small" @change="onChange" class="gap0.5rem">
-              <el-radio
-                border
-                class="mr-0!"
-                v-for="item in sizeOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value" />
-            </el-radio-group>
-            <!-- <el-select v-model="config.size" @change="onChange">
-                <el-option-group v-for="group in sizeOptions" :key="group.label" :label="group.label">
-                  <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value" />
-                </el-option-group>
-              </el-select> -->
-          </el-form-item>
-          <el-form-item>
-            <template #label>
-              <ContentBox>
-                <el-text>{{ t("chat.tti.n") }}</el-text>
-              </ContentBox>
-            </template>
+      <div class="tti-wrap h-40rem w-full flex flex-col">
+        <ContentBox>
+          <el-text>{{ t("chat.tti.imageSize") }}</el-text>
+          <template #footer>
+            <el-select v-model="config.size" @change="onChange" :teleported="false" append-to=".size-anchor">
+              <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </template>
+        </ContentBox>
+        <el-divider class="my-.25rem!"></el-divider>
+        <ContentBox>
+          <el-text>{{ t("chat.tti.n") }}</el-text>
+          <template #footer>
             <div class="px-1.5rem w-full flex">
               <el-slider @change="onChange" v-model="config.n" :min="1" :max="4"></el-slider>
             </div>
-          </el-form-item>
-          <el-form-item>
-            <template #label>
-              <ContentBox>
-                <el-text>{{ t("chat.tti.seed") }}</el-text>
-              </ContentBox>
-            </template>
+          </template>
+        </ContentBox>
+        <el-divider class="my-.25rem!"></el-divider>
+        <ContentBox>
+          <el-text>{{ t("chat.tti.seed") }}</el-text>
+          <template #footer>
             <el-input readonly v-model="config.seed">
               <template #append>
                 <i-ep:refresh @click="onRandSeed" class="text-1.2rem"></i-ep:refresh>
               </template>
             </el-input>
-          </el-form-item>
-          <el-form-item>
-            <template #label>
-              <ContentBox>
-                <el-text>{{ t("chat.tti.inferenceSteps") }}</el-text>
-                <template #end>
-                  <el-tooltip :content="t('chat.tti.inferenceStepsExp')" placement="top">
-                    <i-material-symbols:help-outline></i-material-symbols:help-outline>
-                  </el-tooltip>
-                </template>
-              </ContentBox>
-            </template>
+          </template>
+        </ContentBox>
+        <el-divider class="my-.25rem!"></el-divider>
+        <ContentBox>
+          <el-text>{{ t("chat.tti.inferenceSteps") }}</el-text>
+          <template #end>
+            <el-tooltip :content="t('chat.tti.inferenceStepsExp')" placement="top">
+              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+            </el-tooltip>
+          </template>
+          <template #footer>
             <div class="px-1.5rem w-full flex">
               <el-slider v-model="config.num_inference_steps" :min="1" :max="100"></el-slider>
             </div>
-          </el-form-item>
-          <el-form-item>
-            <template #label>
-              <ContentBox>
-                <el-text>{{ t("chat.tti.guidanceScale") }}</el-text>
-                <template #end>
-                  <el-tooltip :content="t('chat.tti.guidanceScaleExp')" placement="top">
-                    <i-material-symbols:help-outline></i-material-symbols:help-outline>
-                  </el-tooltip>
-                </template>
-              </ContentBox>
-            </template>
+          </template>
+        </ContentBox>
+        <el-divider class="my-.25rem!"></el-divider>
+        <ContentBox>
+          <el-text>{{ t("chat.tti.guidanceScale") }}</el-text>
+          <template #end>
+            <el-tooltip :content="t('chat.tti.guidanceScaleExp')" placement="top">
+              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+            </el-tooltip>
+          </template>
+          <template #footer>
             <div class="px-1.5rem w-full flex">
               <el-slider v-model="config.guidance_scale" :min="0" :max="20"></el-slider>
             </div>
-          </el-form-item>
-          <el-form-item>
-            <template #label>
-              <ContentBox>
-                <el-text>{{ t("chat.tti.negativePrompt") }}</el-text>
-              </ContentBox>
-            </template>
+          </template>
+        </ContentBox>
+        <el-divider class="my-.25rem!"></el-divider>
+        <ContentBox>
+          <el-text>{{ t("chat.tti.negativePrompt") }}</el-text>
+          <template #footer>
             <el-input type="textarea" v-model="config.negative_prompt" autosize></el-input>
-          </el-form-item>
-        </el-form>
+          </template>
+        </ContentBox>
       </div>
     </DialogPanel>
   </el-popover>

@@ -58,7 +58,7 @@ watchEffect(() => {
   <div class="chat-input-container">
     <div class="chat-input-header">
       <div class="flex items-center gap-1rem">
-        <ModelSelect class="mr-1rem" :topic @change="handler.onTopicUpdate" />
+        <ModelSelect :topic @change="handler.onTopicUpdate" />
         <TextToImage></TextToImage>
         <Mcp :topic></Mcp>
         <Settings :topic></Settings>

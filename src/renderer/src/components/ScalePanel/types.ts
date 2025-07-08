@@ -72,7 +72,7 @@ export interface ScaleProps {
   /**
    * 按下目标元素并拖动组件，默认按下头部拖动。
    */
-  target?: MaybeRef<HTMLElement | null | undefined>
+  dragTarget?: MaybeRef<HTMLElement | null | undefined>
 }
 export interface ScaleExtraConfNode {
   label: string

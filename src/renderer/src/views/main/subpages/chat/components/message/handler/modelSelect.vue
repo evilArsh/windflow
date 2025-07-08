@@ -15,12 +15,6 @@ const providerStore = useProviderStore()
 const modelStore = useModelStore()
 const { models } = storeToRefs(modelStore)
 
-const pop = reactive({
-  show: false,
-  toggle: markRaw(() => {
-    pop.show = !pop.show
-  }),
-})
 const activeModels = ref<Record<string, ModelMeta[]>>({})
 watchEffect(() => {
   activeModels.value = models.value
@@ -36,49 +30,45 @@ watchEffect(() => {
 })
 </script>
 <template>
-  <div>
-    <el-popover placement="top" :width="450" trigger="click" v-model:visible="pop.show">
-      <template #reference>
-        <el-badge :value="data.modelIds.length" type="primary">
-          <el-button size="small">
-            <template #icon>
-              <i-mdi:gift-open v-if="pop.show"></i-mdi:gift-open>
-              <i-mdi:gift v-else></i-mdi:gift>
-            </template>
-            <el-text>{{ t("provider.model.name") }}</el-text>
-          </el-button>
-        </el-badge>
+  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
+    <template #reference>
+      <el-badge :value="data.modelIds.length" type="primary">
+        <ContentBox background>
+          <i-fluent-emoji-flat:wrapped-gift class="text-1.6rem"></i-fluent-emoji-flat:wrapped-gift>
+        </ContentBox>
+      </el-badge>
+    </template>
+    <DialogPanel>
+      <template #header>
+        <el-text>{{ t("chat.model.label") }}</el-text>
       </template>
-      <template #default>
-        <el-scrollbar max-height="500px">
-          <el-checkbox-group
-            v-model="data.modelIds"
-            @change="emit('change', data)"
-            class="line-height-unset! text-inherit">
-            <div class="select-wrap">
-              <div v-for="(item, provider) in activeModels" :key="provider">
-                <el-card shadow="never" style="--el-card-padding: 1rem">
-                  <template #header>
-                    <ContentBox>
-                      <template #icon>
-                        <Svg :src="providerStore.getProviderLogo(provider)"></Svg>
-                      </template>
-                      <el-text>{{ provider }}</el-text>
-                    </ContentBox>
-                  </template>
-                  <div class="flex flex-col gap5px">
-                    <el-checkbox v-for="model in item" :key="model.id" :value="model.id" :label="model.modelName">
+      <div class="h-40rem w-full flex">
+        <el-checkbox-group
+          v-model="data.modelIds"
+          @change="emit('change', data)"
+          class="line-height-unset! w-full text-inherit">
+          <div class="select-wrap">
+            <ContentBox v-for="(item, provider) in activeModels" :key="provider">
+              <template #icon>
+                <Svg class="text-2.5rem" :src="providerStore.getProviderLogo(provider)"></Svg>
+              </template>
+              <el-text type="primary">{{ provider }}</el-text>
+              <template #footer>
+                <div class="flex flex-col gap5px">
+                  <div v-for="model in item" :key="model.id">
+                    <el-checkbox :value="model.id" :label="model.modelName">
                       <ModelName :data="model"></ModelName>
                     </el-checkbox>
+                    <el-divider class="my-.25rem!"></el-divider>
                   </div>
-                </el-card>
-              </div>
-            </div>
-          </el-checkbox-group>
-        </el-scrollbar>
-      </template>
-    </el-popover>
-  </div>
+                </div>
+              </template>
+            </ContentBox>
+          </div>
+        </el-checkbox-group>
+      </div>
+    </DialogPanel>
+  </el-popover>
 </template>
 <style lang="scss" scoped>
 .select-wrap {

@@ -30,7 +30,7 @@
         <el-input-number v-model="conf.y"></el-input-number>
       </div>
     </div>
-    <ScalePanel ref="scaleRef" v-model="conf" :target="outerRef">
+    <ScalePanel ref="scaleRef" v-model="conf" :drag-target="outerRef">
       <!-- <ScalePanel :model-value="confInner">
         <el-card>
           <template #header>

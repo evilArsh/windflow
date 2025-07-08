@@ -29,20 +29,6 @@
     "contextDivider": "上下文已清空",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
-    "mcpCall": {
-      "arguments": "请求参数",
-      "content": "请求结果"
-    },
-    "messageCreateFailed": "消息创建失败",
-    "messageRecord": "聊天记录",
-    "regenerate": "重新生成",
-    "right": {
-      "prompt": "提示词"
-    },
-    "search": "搜索",
-    "terminate": "终止",
-    "thinking": "深度思考中",
-    "thinkingComplete": "思考完成",
     "mcp": {
       "addFailed": "新增失败",
       "clone": "克隆",
@@ -50,16 +36,33 @@
       "label": "工具",
       "restart": "重启"
     },
+    "mcpCall": {
+      "arguments": "请求参数",
+      "content": "请求结果"
+    },
+    "messageCreateFailed": "消息创建失败",
+    "messageRecord": "聊天记录",
+    "model": {
+      "label": "模型选择"
+    },
+    "regenerate": "重新生成",
+    "right": {
+      "prompt": "提示词"
+    },
+    "search": "搜索",
     "settings": {
       "label": "设置"
     },
+    "terminate": "终止",
+    "thinking": "深度思考中",
+    "thinkingComplete": "思考完成",
     "tti": {
       "guidanceScale": "引导权重",
       "guidanceScaleExp": "这个值用于控制生成图像与给定提示词匹配的程度。值越高，生成的图像越倾向于严格匹配文本提示。值越低，生成的图像越具有创造性且更加多样化，可能包含更多的意想不到的元素。",
-      "label": "图片生成配置",
       "imageSize": "图片大小",
       "inferenceSteps": "推理步数",
       "inferenceStepsExp": "推理步数越多,耗时越长",
+      "label": "图片生成配置",
       "n": "生成数量",
       "negativePrompt": "反向提示词",
       "seed": "随机种子"
@@ -97,7 +100,7 @@
     "search": "搜索mcp服务",
     "service": {
       "connecting": "工具{service}启动中",
-      "deleteConfirm": "要重启吗?已使用该工具的聊天个数 {count}",
+      "deleteConfirm": "要重启吗?",
       "disabled": "工具已禁用，请先启用",
       "disconnected": "工具{service}启动失败 {message}",
       "tabs": {

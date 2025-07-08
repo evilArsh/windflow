@@ -5,7 +5,7 @@ import { cloneDeep } from "lodash-es"
 import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
-const nanoIdAlphabet = "-123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
