@@ -101,7 +101,7 @@ export default (data: { config: Ref<ScaleConfig>; targetEle: Readonly<Ref<HTMLEl
     target.clientX = e.clientX
     target.clientY = e.clientY
     target.left = toNumber(data.config.value.containerStyle?.left)
-    target.top = toNumber(data.config.value.containerStyle?.top)
+    target.top = toNumber(data.config.value.containerStyle?.top) || toNumber(data.targetEle.value?.offsetTop)
     target.width = tWidth.value
     target.height = tHeight.value
     document.addEventListener("mousemove", onGlobalMove)
