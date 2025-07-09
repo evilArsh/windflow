@@ -6,6 +6,15 @@ import PQueue from "p-queue"
 
 export const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
+  const updateValue = (id: string, val: Settings<SettingsValue>) => {
+    const data = settings[id]
+    if (data) {
+      data.value = val.value
+    } else {
+      settings[id] = val
+    }
+  }
+
   /**
    * Get a setting value
    * @param id - The name of the setting
@@ -29,18 +38,9 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
       }
     }
   }
-
   const update = useThrottleFn(async (data: Settings<SettingsValue>) =>
     queue.add(() => db.settings.update(data.id, toRaw(data)))
   )
-  const updateValue = (id: string, val: Settings<SettingsValue>) => {
-    const data = settings[id]
-    if (data) {
-      data.value = val.value
-    } else {
-      settings[id] = val
-    }
-  }
   /**
    * 配置数据监听，实时更新到数据库
    */

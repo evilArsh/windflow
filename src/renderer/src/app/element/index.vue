@@ -10,24 +10,34 @@ import { errorToText } from "@shared/error"
 const ready = ref(false)
 const { t } = useI18n()
 async function init() {
-  const res = await Promise.allSettled([
-    useProviderStore().api.fetch(),
-    useModelsStore().api.fetch(),
-    useChatTopicStore().api.fetch(),
-    useMCPStore().api.fetch(),
-    useEnvStore().api.fetch(),
-  ])
-  res.forEach(r => {
-    if (r.status === "rejected") {
-      ElNotification({
-        title: "init error",
-        message: errorToText(r.reason),
-        duration: 5000,
-        type: "error",
-      })
-    }
-  })
-  ready.value = true
+  try {
+    const res = await Promise.allSettled([
+      useProviderStore().api.fetch(),
+      useModelsStore().api.fetch(),
+      useChatTopicStore().api.fetch(),
+      useMCPStore().api.fetch(),
+      useEnvStore().api.fetch(),
+    ])
+    res.forEach(r => {
+      if (r.status === "rejected") {
+        ElNotification({
+          title: t("tip.initError"),
+          message: errorToText(r.reason),
+          duration: 5000,
+          type: "error",
+        })
+      }
+    })
+  } catch (error) {
+    ElNotification({
+      title: t("tip.initError"),
+      message: errorToText(error),
+      duration: 5000,
+      type: "error",
+    })
+  } finally {
+    ready.value = true
+  }
 }
 init()
 </script>
@@ -35,7 +45,7 @@ init()
   <el-config-provider :locale="zhCn">
     <router-view v-if="ready"></router-view>
     <div v-else class="flex justify-center items-center h-100vh w-100vw">
-      <el-empty :description="t('btn.loading')"></el-empty>
+      <el-empty :description="t('tip.loading')"></el-empty>
     </div>
   </el-config-provider>
 </template>

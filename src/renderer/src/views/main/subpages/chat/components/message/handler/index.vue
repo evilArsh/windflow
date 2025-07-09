@@ -2,6 +2,7 @@
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import ModelSelect from "./modelSelect.vue"
 import TextToImage from "./textToImage.vue"
+import LLMRequest from "./llmRequest.vue"
 import Mcp from "./mcp.vue"
 import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
@@ -60,6 +61,7 @@ watchEffect(() => {
       <div class="flex items-center gap-1rem">
         <ModelSelect :topic @change="handler.onTopicUpdate" />
         <TextToImage></TextToImage>
+        <LLMRequest :topic></LLMRequest>
         <Mcp :topic></Mcp>
         <Settings :topic></Settings>
       </div>

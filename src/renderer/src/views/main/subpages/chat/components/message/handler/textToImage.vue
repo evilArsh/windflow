@@ -6,38 +6,14 @@ const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const chance = markRaw(new Chance())
 const sizeOptions = ref([
-  {
-    value: "1024x1024",
-    label: "1:1 (1024×1024)",
-  },
-  {
-    value: "1024x2048",
-    label: "1:2 (1024×2048)",
-  },
-  {
-    value: "1536x1024",
-    label: "3:2 (1536×1024)",
-  },
-  {
-    value: "768x1024",
-    label: "3:4 (768×1024)",
-  },
-  {
-    value: "1820x1024",
-    label: "16:9 (1820×1024)",
-  },
-  {
-    value: "1024x1820",
-    label: "9:16 (1024×1820)",
-  },
-  {
-    value: "1365x1024",
-    label: "4:3 (1365×1024)",
-  },
-  {
-    value: "1024x1365",
-    label: "3:4 (1024×1365)",
-  },
+  { value: "1024x1024", label: "1:1 (1024×1024)" },
+  { value: "1024x2048", label: "1:2 (1024×2048)" },
+  { value: "1536x1024", label: "3:2 (1536×1024)" },
+  { value: "768x1024", label: "3:4 (768×1024)" },
+  { value: "1820x1024", label: "16:9 (1820×1024)" },
+  { value: "1024x1820", label: "9:16 (1024×1820)" },
+  { value: "1365x1024", label: "4:3 (1365×1024)" },
+  { value: "1024x1365", label: "3:4 (1024×1365)" },
 ])
 const defaultConfig = () => ({
   size: "",
