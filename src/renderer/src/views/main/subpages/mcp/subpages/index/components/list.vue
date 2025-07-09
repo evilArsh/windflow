@@ -59,10 +59,7 @@ const handler = {
             params: value as any,
             description: "",
           })
-          const res = await mcp.api.add(newValue)
-          if (res == 0) {
-            throw new Error(`add ${name} failed`)
-          }
+          await mcp.api.add(newValue)
           servers.value.push(newValue)
         }
       }

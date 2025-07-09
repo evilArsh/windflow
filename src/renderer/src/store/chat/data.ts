@@ -34,10 +34,6 @@ export const useData = (
     })
     return res
   }
-  /**
-   * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
-   */
-  const updateChatTopic = async (data: ChatTopic) => queue.add(() => db.chatTopic.update(data.id, toRaw(data)))
 
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(toRaw(data))
@@ -50,6 +46,10 @@ export const useData = (
     await addChatMessage(msg)
     return msg
   }
+  /**
+   * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
+   */
+  const updateChatTopic = async (data: ChatTopic) => queue.add(() => db.chatTopic.update(data.id, toRaw(data)))
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
@@ -74,48 +74,36 @@ export const useData = (
    * @description 删除对应的聊天组和聊天消息
    */
   async function delChatTopic(data: ChatTopic[]) {
-    return db
-      .transaction("rw", db.chatMessage, db.chatTopic, async trans => {
-        for (const item of data) {
-          trans.chatTopic.delete(item.id)
-          if (item.chatMessageId) {
-            trans.chatMessage.delete(item.chatMessageId)
-          }
+    return db.transaction("rw", db.chatMessage, db.chatTopic, async trans => {
+      for (const item of data) {
+        await trans.chatTopic.delete(item.id)
+        if (item.chatMessageId) {
+          await trans.chatMessage.delete(item.chatMessageId)
         }
-      })
-      .then(() => {
-        return true
-      })
-      .catch(error => {
-        console.log(`[dbDelChatTopic]`, error)
-        return false
-      })
+      }
+    })
   }
   const fetch = async () => {
-    try {
-      topicList.length = 0
-      for (const key in chatMessage) {
-        delete chatMessage[key]
-      }
-      const data = await db.chatTopic.orderBy("createAt").toArray()
-      const defaultData = chatTopicDefault()
-      for (const item of defaultData) {
-        if (!data.find(v => v.id === item.id)) {
-          data.push(item)
-          await db.chatTopic.add(item)
-        }
-      }
-      // --- 恢复状态
-      const nodeKeyData = (await db.settings.get(SettingKeys.ChatCurrentNodeKey)) as Settings<string> | undefined
-      currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
-      topicList.push(
-        ...assembleTopicTree(data, async item => {
-          item.node.requestCount = 0
-        })
-      )
-    } catch (error) {
-      console.error(`[fetch chat topic]`, error)
+    topicList.length = 0
+    for (const key in chatMessage) {
+      delete chatMessage[key]
     }
+    const data = await db.chatTopic.orderBy("createAt").toArray()
+    const defaultData = chatTopicDefault()
+    for (const item of defaultData) {
+      if (!data.find(v => v.id === item.id)) {
+        data.push(item)
+        await db.chatTopic.add(item)
+      }
+    }
+    // --- 恢复状态
+    const nodeKeyData = (await db.settings.get(SettingKeys.ChatCurrentNodeKey)) as Settings<string> | undefined
+    currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
+    topicList.push(
+      ...assembleTopicTree(data, async item => {
+        item.node.requestCount = 0
+      })
+    )
   }
   settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
   return {

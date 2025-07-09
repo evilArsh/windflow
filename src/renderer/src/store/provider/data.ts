@@ -19,29 +19,25 @@ export const useData = (
   const add = async (data: ProviderMeta) => await db.providerMeta.add(toRaw(data))
 
   const fetch = async () => {
-    try {
-      for (const key in metas) {
-        delete metas[key]
-      }
-      const defaultData = providerDefault(providerSvgIcon as IconifyJSON)
-      const data = await db.providerMeta.toArray()
-      data.forEach(item => {
+    for (const key in metas) {
+      delete metas[key]
+    }
+    const defaultData = providerDefault(providerSvgIcon as IconifyJSON)
+    const data = await db.providerMeta.toArray()
+    data.forEach(item => {
+      metas[item.name] = item
+    })
+    for (const item of defaultData) {
+      if (!metas[item.name]) {
         metas[item.name] = item
-      })
-      for (const item of defaultData) {
-        if (!metas[item.name]) {
-          metas[item.name] = item
-          await add(item)
-        }
+        await add(item)
       }
-      const current = (await db.settings.get(SettingKeys.ProviderCurrentSettingActive)) as Settings<string> | undefined
-      if (current) {
-        currentProvider.value = metas[current.value]
-      } else if (defaultData.length > 0) {
-        currentProvider.value = metas[defaultData[0].name]
-      }
-    } catch (error) {
-      console.error(`[fetch providers]`, error)
+    }
+    const current = (await db.settings.get(SettingKeys.ProviderCurrentSettingActive)) as Settings<string> | undefined
+    if (current) {
+      currentProvider.value = metas[current.value]
+    } else if (defaultData.length > 0) {
+      currentProvider.value = metas[defaultData[0].name]
     }
   }
   const reset = async () => {

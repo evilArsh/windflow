@@ -11,7 +11,6 @@ export default defineStore("mcp", () => {
   const servers = reactive<MCPServerParam[]>([])
   const api = useData(servers)
   const toolName = useToolName()
-  const { t } = useI18n()
   /**
    * 去掉多余mcp tool列表
    */
@@ -25,10 +24,7 @@ export default defineStore("mcp", () => {
     return servers.find(v => v.id === serverId)
   }
   async function remove(topicId: string, serverId: string) {
-    const res = await api.del(serverId)
-    if (res == 0) {
-      throw new Error(t("tip.deleteFailed"))
-    }
+    await api.del(serverId)
     const index = servers.findIndex(v => v.id === serverId)
     index >= 0 && servers.splice(index, 1)
     window.api.mcp.stopServer(topicId, serverId)

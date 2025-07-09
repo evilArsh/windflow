@@ -167,10 +167,7 @@ export const useMenu = (
             }
           }
           treeRef.value?.remove(selectedTopic.value)
-          const res = await chatStore.api.delChatTopic(nodes)
-          if (!res) {
-            throw new Error(t("chat.deleteFailed"))
-          }
+          await chatStore.api.delChatTopic(nodes)
           if (selectedTopic.value === currentTopic.value) {
             currentTopic.value = undefined
           }

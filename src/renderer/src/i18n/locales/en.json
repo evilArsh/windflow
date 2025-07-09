@@ -6,6 +6,7 @@
     "add": "add",
     "delete": "delete",
     "edit": "edit",
+    "loading": "Loading...",
     "pin": "pin",
     "send": "send"
   },

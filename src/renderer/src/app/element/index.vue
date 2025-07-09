@@ -8,26 +8,26 @@ import useEnvStore from "@renderer/store/env"
 import { ElNotification } from "element-plus"
 import { errorToText } from "@shared/error"
 const ready = ref(false)
+const { t } = useI18n()
 async function init() {
-  try {
-    await Promise.all([
-      useProviderStore().api.fetch(),
-      useModelsStore().api.fetch(),
-      useChatTopicStore().api.fetch(),
-      useMCPStore().api.fetch(),
-      useEnvStore().api.fetch(),
-    ])
-  } catch (error) {
-    console.error(`[init error]`, error)
-    ElNotification({
-      title: "init error",
-      message: errorToText(error),
-      duration: 5000,
-      type: "error",
-    })
-  } finally {
-    ready.value = true
-  }
+  const res = await Promise.allSettled([
+    useProviderStore().api.fetch(),
+    useModelsStore().api.fetch(),
+    useChatTopicStore().api.fetch(),
+    useMCPStore().api.fetch(),
+    useEnvStore().api.fetch(),
+  ])
+  res.forEach(r => {
+    if (r.status === "rejected") {
+      ElNotification({
+        title: "init error",
+        message: errorToText(r.reason),
+        duration: 5000,
+        type: "error",
+      })
+    }
+  })
+  ready.value = true
 }
 init()
 </script>
@@ -35,7 +35,7 @@ init()
   <el-config-provider :locale="zhCn">
     <router-view v-if="ready"></router-view>
     <div v-else class="flex justify-center items-center h-100vh w-100vw">
-      <el-empty description="加载中..."></el-empty>
+      <el-empty :description="t('btn.loading')"></el-empty>
     </div>
   </el-config-provider>
 </template>

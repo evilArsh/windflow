@@ -21,24 +21,20 @@ export const useData = (models: Reactive<ModelMeta[]>) => {
   }
 
   const fetch = async () => {
-    try {
-      models.length = 0
-      const defaultData = modelsDefault(providerSvgIcon as IconifyJSON)
-      const data = await db.model.toArray()
-      data.forEach(v => {
-        if (!v.icon) {
-          v.icon = providerStore.getProviderLogo(v.subProviderName)
-        }
-        models.push(v)
-      })
-      for (const v of defaultData) {
-        if (!models.find(model => model.id === v.id)) {
-          models.push(v)
-          await db.model.add(v)
-        }
+    models.length = 0
+    const defaultData = modelsDefault(providerSvgIcon as IconifyJSON)
+    const data = await db.model.toArray()
+    data.forEach(v => {
+      if (!v.icon) {
+        v.icon = providerStore.getProviderLogo(v.subProviderName)
       }
-    } catch (error) {
-      console.error(`[fetch models]`, error)
+      models.push(v)
+    })
+    for (const v of defaultData) {
+      if (!models.find(model => model.id === v.id)) {
+        models.push(v)
+        await db.model.add(v)
+      }
     }
   }
   return {

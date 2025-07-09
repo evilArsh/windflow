@@ -137,9 +137,8 @@ export default defineStore("chat_topic", () => {
       console.error("[send] message not found")
       return
     }
-    const id = uniqueId()
     message.data.unshift({
-      id,
+      id: uniqueId(),
       status: 200,
       time: formatSecond(new Date()),
       finish: true,

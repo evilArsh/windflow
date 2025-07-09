@@ -42,10 +42,7 @@ const formHandler = {
       newCopy.modifyTopic = topic.value.id
       newCopy.referId = data.referId
       newCopy.name = `${newCopy.name}_copy`
-      const res = await mcp.api.add(newCopy)
-      if (res === 0) {
-        throw new Error(t("chat.mcp.addFailed"))
-      }
+      await mcp.api.add(newCopy)
       const index = servers.value.findIndex(v => v.id === popover.server?.id)
       servers.value.splice(index + 1, 0, newCopy)
       mcp.start(topic.value.id, newCopy)
@@ -81,10 +78,7 @@ const serverHandler = {
   del: async (done: CallBackFn, server: MCPServerParam) => {
     try {
       mcp.stop(topic.value.id, server.id)
-      const res = await mcp.api.del(server.id)
-      if (res === 0) {
-        throw new Error(t("chat.mcp.delFailed"))
-      }
+      await mcp.api.del(server.id)
       const index = servers.value.findIndex(v => v.id === server.id)
       servers.value.splice(index, 1)
       done()
