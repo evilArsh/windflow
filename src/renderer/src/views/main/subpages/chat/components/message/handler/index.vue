@@ -67,7 +67,7 @@ watchEffect(() => {
     </div>
     <TextInput :message="message" :topic="topic" />
     <div class="chat-input-actions">
-      <Button size="small" type="default" plain @click="done => triggerSend(done)">
+      <Button link size="small" type="default" plain @click="done => triggerSend(done)">
         {{ t("btn.send", { shortcut: sendShortcut }) }}
       </Button>
     </div>

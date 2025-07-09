@@ -103,7 +103,7 @@ export const useMenu = (
         const rect = target.value?.bounding()
         let fy = y + toNumber(rect?.height) > window.innerHeight ? window.innerHeight - toNumber(rect?.height) : y
         fy = fy < 0 ? 0 : fy
-        scaleRef.value?.moveTo(false, { x, y: fy })
+        scaleRef.value?.moveTo(true, { x, y: fy })
       }
     ),
     // 点击菜单遮罩层

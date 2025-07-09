@@ -48,7 +48,7 @@ watchEffect(() => {
           @change="emit('change', data)"
           class="line-height-unset! w-full text-inherit">
           <div class="select-wrap">
-            <ContentBox v-for="(item, provider) in activeModels" :key="provider">
+            <ContentBox v-for="(item, provider) in activeModels" normal :key="provider">
               <template #icon>
                 <Svg class="text-2.5rem" :src="providerStore.getProviderLogo(provider)"></Svg>
               </template>
@@ -56,9 +56,11 @@ watchEffect(() => {
               <template #footer>
                 <div class="flex flex-col gap5px">
                   <div v-for="model in item" :key="model.id">
-                    <el-checkbox :value="model.id" :label="model.modelName">
-                      <ModelName :data="model"></ModelName>
-                    </el-checkbox>
+                    <ContentBox background class="m0!">
+                      <el-checkbox :value="model.id" :label="model.modelName">
+                        <ModelName :data="model"></ModelName>
+                      </el-checkbox>
+                    </ContentBox>
                     <el-divider class="my-.25rem!"></el-divider>
                   </div>
                 </div>
