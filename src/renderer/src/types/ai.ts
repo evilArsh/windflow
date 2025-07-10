@@ -11,13 +11,7 @@ export enum Role {
 
 // --- llm
 export interface LLMRequest {
-  messages: LLMMessage[]
-  model: string
-  stream: boolean
-  // temperature?: number
-  // top_p?: number
-  // presence_penalty?: number
-  // frequency_penalty?: number
+  stream?: boolean
   [x: string]: unknown
 }
 export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>

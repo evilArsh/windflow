@@ -131,9 +131,9 @@ const dlg = {
                     <i-twemoji:hammer-and-wrench class="text-1.4rem" />
                   </template>
                   <McpName :data="server"></McpName>
-                  <i-svg-spinners:8-dots-rotate
-                    v-show="server.status === MCPClientStatus.Connecting"
-                    class="c-[var(--el-color-primary)] flex-shrink-0 text-1.2rem"></i-svg-spinners:8-dots-rotate>
+                  <Spinner
+                    :model-value="server.status === MCPClientStatus.Connecting"
+                    class="flex-shrink-0 text-1.2rem"></Spinner>
                 </ContentBox>
               </template>
               <div class="flex">

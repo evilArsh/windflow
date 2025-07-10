@@ -1,59 +1,66 @@
-import { ChatMessage, ChatTopic, ChatTopicTree, SettingKeys, Settings } from "@renderer/types"
+import {
+  ChatLLMConfig,
+  ChatMessage,
+  ChatTopic,
+  ChatTopicTree,
+  ChatTTIConfig,
+  SettingKeys,
+  Settings,
+} from "@renderer/types"
 import { db } from "@renderer/usable/useDatabase"
 import PQueue from "p-queue"
 import { Reactive } from "vue"
 import { chatMessageDefault, chatTopicDefault } from "./default"
 import useSettingsStore from "@renderer/store/settings"
+import { cloneDeep } from "lodash-es"
 
-export const useData = (
-  topicList: Reactive<Array<ChatTopicTree>>,
-  chatMessage: Reactive<Record<string, ChatMessage>>,
-  currentNodeKey: Ref<string>
-) => {
+export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKey: Ref<string>) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const mqueue = markRaw(new PQueue({ concurrency: 1 }))
+  const cnfQueue = markRaw(new PQueue({ concurrency: 1 }))
   const settingsStore = useSettingsStore()
-  const topicToTree = (topic: ChatTopic): ChatTopicTree => {
-    return { id: topic.id, node: topic, children: [] }
-  }
-  const assembleTopicTree = (data: ChatTopic[], cb: (item: ChatTopicTree) => void): ChatTopicTree[] => {
-    const res: ChatTopicTree[] = []
-    const maps: Record<string, ChatTopicTree> = {}
-    data.forEach(item => {
-      maps[item.id] = topicToTree(item)
-      cb(maps[item.id])
-    })
-    data.forEach(item => {
-      if (!item.parentId) {
-        res.push(maps[item.id])
-      } else {
-        if (maps[item.parentId]) {
-          maps[item.parentId].children.push(maps[item.id])
-        }
-      }
-    })
-    return res
-  }
 
-  async function addChatTopic(data: ChatTopic) {
-    return db.chatTopic.add(toRaw(data))
-  }
-  async function addChatMessage(data: ChatMessage) {
-    return db.chatMessage.add(toRaw(data))
-  }
   async function createNewMessage() {
     const msg = chatMessageDefault()
     await addChatMessage(msg)
     return msg
   }
+  async function addChatTopic(data: ChatTopic) {
+    return db.chatTopic.add(cloneDeep(data))
+  }
+  async function addChatMessage(data: ChatMessage) {
+    return db.chatMessage.add(cloneDeep(data))
+  }
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatTopic = async (data: ChatTopic) => queue.add(() => db.chatTopic.update(data.id, toRaw(data)))
+  const addChatLLMConfig = async (data: ChatLLMConfig) =>
+    cnfQueue.add(async () => db.chatLLMConfig.add(cloneDeep(data)))
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatMessage = async (data: ChatMessage) => mqueue.add(() => db.chatMessage.update(data.id, toRaw(data)))
+  const addChatTTIConfig = async (data: ChatTTIConfig) =>
+    cnfQueue.add(async () => db.chatTTIConfig.add(cloneDeep(data)))
+  /**
+   * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
+   */
+  const updateChatTopic = async (data: ChatTopic) => queue.add(async () => db.chatTopic.put(cloneDeep(data)))
+  /**
+   * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
+   */
+  const updateChatMessage = async (data: ChatMessage) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
+  async function updateChatLLMConfig(data: ChatLLMConfig) {
+    return db.chatLLMConfig.put(cloneDeep(data))
+  }
+  async function updateChatTTIConfig(data: ChatTTIConfig) {
+    return db.chatTTIConfig.put(cloneDeep(data))
+  }
+  async function getChatTTIConfig(topicId: string) {
+    return db.chatTTIConfig.where("topicId").equals(topicId).first()
+  }
+  async function getChatLLMConfig(topicId: string) {
+    return db.chatLLMConfig.where("topicId").equals(topicId).first()
+  }
   /**
    * @description 查找对应的聊天消息
    */
@@ -74,19 +81,36 @@ export const useData = (
    * @description 删除对应的聊天组和聊天消息
    */
   async function delChatTopic(data: ChatTopic[]) {
-    return db.transaction("rw", db.chatMessage, db.chatTopic, async trans => {
+    return db.transaction("rw", db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig, async trans => {
       for (const item of data) {
         await trans.chatTopic.delete(item.id)
         if (item.chatMessageId) {
           await trans.chatMessage.delete(item.chatMessageId)
         }
+        await trans.chatLLMConfig.where("topicId").equals(item.id).delete()
+        await trans.chatTTIConfig.where("topicId").equals(item.id).delete()
       }
     })
   }
   const fetch = async () => {
     topicList.length = 0
-    for (const key in chatMessage) {
-      delete chatMessage[key]
+    const assembleTopicTree = (data: ChatTopic[], cb: (item: ChatTopicTree) => void): ChatTopicTree[] => {
+      const res: ChatTopicTree[] = []
+      const maps: Record<string, ChatTopicTree> = {}
+      data.forEach(item => {
+        maps[item.id] = { id: item.id, node: item, children: [] }
+        cb(maps[item.id])
+      })
+      data.forEach(item => {
+        if (!item.parentId) {
+          res.push(maps[item.id])
+        } else {
+          if (maps[item.parentId]) {
+            maps[item.parentId].children.push(maps[item.id])
+          }
+        }
+      })
+      return res
     }
     const data = await db.chatTopic.orderBy("createAt").toArray()
     const defaultData = chatTopicDefault()
@@ -108,13 +132,19 @@ export const useData = (
   settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
   return {
     fetch,
-    updateChatTopic,
-    addChatTopic,
-    getTopic,
-    addChatMessage,
-    updateChatMessage,
-    getChatMessage,
-    delChatTopic,
     createNewMessage,
+    addChatTopic,
+    addChatMessage,
+    addChatLLMConfig,
+    addChatTTIConfig,
+    updateChatTopic,
+    updateChatMessage,
+    updateChatLLMConfig,
+    updateChatTTIConfig,
+    getTopic,
+    getChatMessage,
+    getChatTTIConfig,
+    getChatLLMConfig,
+    delChatTopic,
   }
 }

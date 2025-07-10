@@ -2,7 +2,6 @@
 import { ChatTopic } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
 import { errorToText } from "@shared/error"
-import { cloneDeep } from "lodash-es"
 import { useThrottleFn } from "@vueuse/core"
 const chatStore = useChatStore()
 const { t } = useI18n()
@@ -13,7 +12,7 @@ const props = defineProps<{
 const topic = computed<ChatTopic>(() => props.topic)
 const onPromptChange = useThrottleFn(async () => {
   try {
-    await chatStore.api.updateChatTopic(cloneDeep(topic.value))
+    await chatStore.api.updateChatTopic(topic.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

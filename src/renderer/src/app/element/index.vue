@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import zhCn from "element-plus/es/locale/lang/zh-cn"
+import enUs from "element-plus/es/locale/lang/en"
 import useProviderStore from "@renderer/store/provider"
 import useModelsStore from "@renderer/store/model"
 import useChatTopicStore from "@renderer/store/chat"
@@ -8,7 +9,8 @@ import useEnvStore from "@renderer/store/env"
 import { ElNotification } from "element-plus"
 import { errorToText } from "@shared/error"
 const ready = ref(false)
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const epLocale = computed(() => (locale.value === "zh" ? zhCn : enUs))
 async function init() {
   try {
     const res = await Promise.allSettled([
@@ -42,7 +44,7 @@ async function init() {
 init()
 </script>
 <template>
-  <el-config-provider :locale="zhCn">
+  <el-config-provider :locale="epLocale">
     <router-view v-if="ready"></router-view>
     <div v-else class="flex justify-center items-center h-100vh w-100vw">
       <el-empty :description="t('tip.loading')"></el-empty>

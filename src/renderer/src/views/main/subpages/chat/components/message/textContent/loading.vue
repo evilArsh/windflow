@@ -32,7 +32,7 @@ watch(
       <el-collapse-item name="1">
         <template #title>
           <div class="flex items-center gap-0.5rem">
-            <i-svg-spinners:8-dots-rotate v-if="thinking" class="text-1.4rem"></i-svg-spinners:8-dots-rotate>
+            <Spinner v-if="thinking" :model-value="true" class="text-1.4rem font-bold"></Spinner>
             <i-fluent-emoji-flat:glowing-star v-else class="text-1.4rem"></i-fluent-emoji-flat:glowing-star>
             <el-text type="primary" loading>
               {{ thinking ? t("chat.thinking") : t("chat.thinkingComplete") }}

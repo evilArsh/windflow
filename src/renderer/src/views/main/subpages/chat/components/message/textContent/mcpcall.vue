@@ -74,9 +74,10 @@ watch(
       <el-collapse-item v-for="call in calls" :key="call.id" :name="call.id">
         <template #title>
           <div class="flex items-center gap-0.5rem">
-            <i-svg-spinners:8-dots-rotate
-              v-show="call.status === Status.InProgress"
-              class="flex-shrink-0 text-1.2rem" />
+            <Spinner
+              destroy-icon
+              :model-value="call.status === Status.InProgress"
+              class="flex-shrink-0 text-1.2rem font-bold"></Spinner>
             <i-twemoji:hammer-and-wrench class="text-1.2rem" />
             <el-text size="small" type="primary">{{ serverName(call.serverId) }}</el-text>
             <el-text size="small" type="danger">|</el-text>

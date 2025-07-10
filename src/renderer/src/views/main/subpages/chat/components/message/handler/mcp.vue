@@ -109,6 +109,7 @@ const serverHandler = {
               <ContentBox background>
                 <template #icon>
                   <el-switch
+                    class="mcp-status-switch"
                     size="small"
                     :model-value="isCurrentActive(server)"
                     :loading="server.status === MCPClientStatus.Connecting"
@@ -183,4 +184,12 @@ const serverHandler = {
     </el-card>
   </el-popover>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss">
+.mcp-status-switch {
+  .el-switch__action {
+    .el-icon.is-loading {
+      color: var(--el-color-danger);
+    }
+  }
+}
+</style>

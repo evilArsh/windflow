@@ -13,7 +13,6 @@ import { ChatMessage, ChatTopic, SettingKeys } from "@renderer/types"
 import Clear from "./clear.vue"
 import { errorToText } from "@shared/error"
 import { useThrottleFn } from "@vueuse/core"
-import { cloneDeep } from "lodash-es"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []
@@ -42,7 +41,7 @@ const handler = {
   },
   onTopicUpdate: useThrottleFn(async () => {
     try {
-      await chatStore.api.updateChatTopic(cloneDeep(topic.value))
+      await chatStore.api.updateChatTopic(topic.value)
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }
@@ -60,7 +59,7 @@ watchEffect(() => {
     <div class="chat-input-header">
       <div class="flex items-center gap-1rem">
         <ModelSelect :topic @change="handler.onTopicUpdate" />
-        <TextToImage></TextToImage>
+        <TextToImage :topic></TextToImage>
         <LLMRequest :topic></LLMRequest>
         <Mcp :topic></Mcp>
         <Settings :topic></Settings>

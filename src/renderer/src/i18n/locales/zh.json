@@ -37,6 +37,8 @@
       "max_tokens": "最大输出token",
       "presencePenaltyExp": "正值（如 1.0）：鼓励模型提及新内容，避免停留在已讨论的话题上，适合开放式对话或探索性文本。 负值（如 -1.0）：允许模型聚焦当前话题，减少跳跃性，适合深度讨论或连贯叙述。",
       "presence_penalty": "话题新鲜度",
+      "stream": "流式输出",
+      "streamExp": "模型是否流式输出",
       "temperature": "模型温度",
       "temperatureExp": "值越高输出越随机，越丰富，值越低输出越稳定。建议仅调整模型温度或模型精准度，避免同时修改两者影响效果。",
       "topP": "模型精准度",
@@ -69,6 +71,7 @@
     "terminate": "终止",
     "thinking": "深度思考中",
     "thinkingComplete": "思考完成",
+    "topicSwitching": "节点切换中",
     "tti": {
       "guidanceScale": "引导权重",
       "guidanceScaleExp": "这个值用于控制生成图像与给定提示词匹配的程度。值越高，生成的图像越倾向于严格匹配文本提示。值越低，生成的图像越具有创造性且更加多样化，可能包含更多的意想不到的元素。",

@@ -97,7 +97,6 @@ export const useUtils = (
       children: [],
     }
   }
-
   function getAllNodes(current: ChatTopicTree): ChatTopic[] {
     const res: ChatTopic[] = []
     res.push(current.node)
@@ -107,6 +106,7 @@ export const useUtils = (
     })
     return res
   }
+
   return {
     findChatMessage,
     findChatMessageChild,

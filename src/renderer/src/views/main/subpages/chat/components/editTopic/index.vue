@@ -5,7 +5,6 @@ import SvgPicker from "@renderer/components/SvgPicker/index.vue"
 import { errorToText } from "@shared/error"
 import useChatStore from "@renderer/store/chat"
 import { useThrottleFn } from "@vueuse/core"
-import { cloneDeep } from "lodash-es"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -15,7 +14,7 @@ const cardRef = useTemplateRef<HTMLElement>("card")
 const chatStore = useChatStore()
 const onTopicUpdate = useThrottleFn(async () => {
   try {
-    await chatStore.api.updateChatTopic(cloneDeep(form.value))
+    await chatStore.api.updateChatTopic(form.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

@@ -10,6 +10,7 @@ import MenuHandle from "./components/menuHandle/index.vue"
 import { useMenu, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { errorToText } from "@shared/error"
+import { CallBackFn } from "@renderer/lib/shared/types"
 const { t } = useI18n()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
@@ -23,7 +24,6 @@ const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, setCurrentT
 const msgContext = useMsgContext()
 const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext
 async function init() {
-  await nextTick()
   try {
     if (currentNodeKey.value) {
       const topicTree = treeRef.value?.getCurrentNode()
@@ -34,6 +34,10 @@ async function init() {
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }
+}
+async function onCreateNewTopic(done: CallBackFn) {
+  await createNewTopic()
+  done()
 }
 onMounted(() => {
   window.defaultTopicTitle = t("chat.addChat")
@@ -53,7 +57,7 @@ onBeforeUnmount(() => {
             <el-input v-model="tree.searchKeyword" :placeholder="t('chat.search')" clearable />
             <div id="toggleMenu"></div>
           </div>
-          <Button @click="done => createNewTopic(done)">
+          <Button @click="onCreateNewTopic">
             <i class="text-1.4rem i-ep:plus"></i>
             <el-text>{{ t("chat.addChat") }}</el-text>
           </Button>
@@ -83,9 +87,10 @@ onBeforeUnmount(() => {
                       <Svg class="max-w4rem h2rem" :src="data.node.icon"></Svg>
                     </template>
                     <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
-                      <i-svg-spinners:8-dots-rotate
-                        v-show="data.node.requestCount > 0"
-                        class="flex-shrink-0 text-1.2rem"></i-svg-spinners:8-dots-rotate>
+                      <Spinner
+                        destroy-icon
+                        :model-value="data.node.requestCount > 0"
+                        class="flex-shrink-0 text-1.2rem font-bold"></Spinner>
                       <el-text line-clamp="1">{{ data.node.label }}</el-text>
                     </div>
                   </ContentBox>

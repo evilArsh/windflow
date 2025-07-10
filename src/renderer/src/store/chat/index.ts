@@ -1,9 +1,11 @@
 import { defineStore, storeToRefs } from "pinia"
 import {
+  ChatLLMConfig,
   ChatMessage,
   ChatMessageData,
   ChatTopic,
   ChatTopicTree,
+  ChatTTIConfig,
   defaultLLMMessage,
   ProviderMeta,
   Role,
@@ -13,6 +15,7 @@ import useModelsStore from "@renderer/store/model"
 import { useContext } from "./context"
 import { useData } from "./data"
 import { useUtils } from "./utils"
+import { defaultTTIConfig, defaultLLMConfig } from "./default"
 
 export default defineStore("chat_topic", () => {
   const providerStore = useProviderStore()
@@ -21,8 +24,10 @@ export default defineStore("chat_topic", () => {
   const { fetchTopicContext, getMessageContext, findContext, initContext } = useContext()
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
   const chatMessage = reactive<Record<string, ChatMessage>>({}) // 聊天信息缓存,messageId作为key
+  const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
+  const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
-  const api = useData(topicList, chatMessage, currentNodeKey)
+  const api = useData(topicList, currentNodeKey)
   const utils = useUtils(topicList, chatMessage, currentNodeKey)
 
   const getMeta = (modelId: string) => {
@@ -231,8 +236,8 @@ export default defineStore("chat_topic", () => {
       terminate(topic, messageDataId, parentMessageDataId)
       if (parentMessageDataId) {
         const [parentMessageData, parentIndex] = utils.findChatMessageChild(message.id, parentMessageDataId)
-        const [messageData, index] = utils.findChatMessageChild(message.id, messageDataId, parentMessageDataId)
-        console.log("[delete sub message]", messageData)
+        const [_, index] = utils.findChatMessageChild(message.id, messageDataId, parentMessageDataId)
+        // console.log("[delete sub message]", messageData)
         if (parentMessageData && index > -1 && parentIndex > -1) {
           parentMessageData.children?.splice(index, 1)
           if (parentMessageData.children?.length === 0) {
@@ -246,25 +251,63 @@ export default defineStore("chat_topic", () => {
           )
         }
       } else {
-        const [messageData, index] = utils.findChatMessageChild(message.id, messageDataId)
+        const [_, index] = utils.findChatMessageChild(message.id, messageDataId)
         if (index == -1) return
-        console.log("[delete sub message]", messageData)
+        // console.log("[delete sub message]", messageData)
         message.data.splice(index, 1)
       }
     } catch (error) {
       console.log("[deleteSubMessage error]", error)
     }
   }
+  /**
+   * @description 加载topic的chatMessage,chatLLMConfig,chatTTIConfig数据
+   */
+  async function loadChatTopicData(topic: ChatTopic) {
+    if (topic.chatMessageId) {
+      if (!utils.findChatMessage(topic.chatMessageId)) {
+        let message = await api.getChatMessage(topic.chatMessageId)
+        if (!message) {
+          message = await api.createNewMessage()
+          topic.chatMessageId = message.id
+        }
+        chatMessage[message.id] = message
+      }
+    } else {
+      const message = await api.createNewMessage()
+      chatMessage[message.id] = message
+      topic.chatMessageId = message.id
+    }
+    if (!chatTTIConfig[topic.id]) {
+      let cnf = await api.getChatTTIConfig(topic.id)
+      if (!cnf) {
+        cnf = Object.assign(defaultTTIConfig(), { id: uniqueId(), topicId: topic.id })
+        await api.addChatTTIConfig(cnf)
+      }
+      chatTTIConfig[topic.id] = cnf
+    }
+    if (!chatLLMConfig[topic.id]) {
+      let cnf = await api.getChatLLMConfig(topic.id)
+      if (!cnf) {
+        cnf = Object.assign(defaultLLMConfig(), { id: uniqueId(), topicId: topic.id })
+        await api.addChatLLMConfig(cnf)
+      }
+      chatLLMConfig[topic.id] = cnf
+    }
+  }
   return {
     topicList,
     chatMessage,
     currentNodeKey,
+    chatTTIConfig,
+    chatLLMConfig,
     terminate,
     deleteSubMessage,
     restart,
     send,
     refreshChatTopicModelIds,
     terminateAll,
+    loadChatTopicData,
     api,
     utils,
   }

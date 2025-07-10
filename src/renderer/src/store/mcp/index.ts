@@ -84,7 +84,7 @@ export default defineStore("mcp", () => {
     const status = data.status
     server.status = status
     server.referTopics = data.refs
-    queue.add(() => api.update(clonePure(server)))
+    queue.add(async () => api.update(clonePure(server)))
     fetchTools(server.id)
   })
   return {

@@ -1,6 +1,27 @@
-import { ChatTopic, ChatMessage } from "@renderer/types"
+import { ChatTopic, ChatMessage, ChatLLMConfig, ChatTTIConfig } from "@renderer/types"
+import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []
 export const chatMessageDefault = (): ChatMessage => ({
   id: uniqueId(),
   data: [],
 })
+export function defaultTTIConfig(): Omit<ChatTTIConfig, "id" | "topicId"> {
+  return {
+    n: 1,
+    size: "",
+    seed: new Chance().integer({ min: 0, max: 99999999 }),
+    num_inference_steps: 20,
+    guidance_scale: 7.5,
+    negative_prompt: "",
+  }
+}
+export function defaultLLMConfig(): Omit<ChatLLMConfig, "id" | "topicId"> {
+  return {
+    temperature: 1,
+    top_p: 1,
+    stream: true,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    max_tokens: 4096,
+  }
+}
