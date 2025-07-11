@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
-import ShortCut from "./shortcut.vue"
+import Global from "./global.vue"
+import Message from "./message.vue"
 defineProps<{
   topic: ChatTopic
 }>()
@@ -17,8 +18,25 @@ const { t } = useI18n()
       <template #header>
         <el-text>{{ t("chat.settings.label") }}</el-text>
       </template>
-      <div class="w-full h-40rem flex flex-col">
-        <ShortCut :topic></ShortCut>
+      <div class="w-full h-40rem flex flex-col gap-1rem">
+        <ContentBox
+          background
+          default-lock
+          style="--box-active-shadow-color: transparent; --box-active-bg-color: #f5f5f5">
+          <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
+          <template #footer>
+            <Message :topic></Message>
+          </template>
+        </ContentBox>
+        <ContentBox
+          background
+          default-lock
+          style="--box-active-shadow-color: transparent; --box-active-bg-color: #f5f5f5">
+          <el-text type="primary">{{ t("chat.settings.inputLabel") }}</el-text>
+          <template #footer>
+            <Global :topic></Global>
+          </template>
+        </ContentBox>
       </div>
     </DialogPanel>
   </el-popover>

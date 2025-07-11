@@ -1,11 +1,13 @@
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
-import { ChatMessage, ChatMessageData, ChatTopic, ChatTopicTree } from "@renderer/types"
+import { ChatLLMConfig, ChatMessage, ChatMessageData, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
 import { cloneDeep } from "lodash-es"
 import { Reactive } from "vue"
 
 export const useUtils = (
   _topicList: Reactive<Array<ChatTopicTree>>,
   chatMessage: Reactive<Record<string, ChatMessage>>,
+  chatLLMConfig: Reactive<Record<string, ChatLLMConfig>>,
+  chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>,
   _currentNodeKey: Ref<string>
 ) => {
   /**
@@ -13,6 +15,18 @@ export const useUtils = (
    */
   const findChatMessage = (messageId: string): ChatMessage | undefined => {
     return chatMessage[messageId]
+  }
+  /**
+   * @description 根据话题id查找缓存的llm配置数据
+   */
+  const findChatLLMConfig = (topicId: string): ChatLLMConfig | undefined => {
+    return chatLLMConfig[topicId]
+  }
+  /**
+   * @description 根据话题id查找缓存tti配置数据
+   */
+  const findChatTTIConfig = (topicId: string): ChatTTIConfig | undefined => {
+    return chatTTIConfig[topicId]
   }
   const findChatMessageByTopic = (topic: ChatTopic): ChatMessage | undefined => {
     if (!topic.chatMessageId) return
@@ -78,6 +92,7 @@ export const useUtils = (
       chatMessageId: "",
       createAt: Date.now(),
       requestCount: 0,
+      maxContextLength: 7,
     }
   }
   function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
@@ -88,6 +103,7 @@ export const useUtils = (
       parentId,
       chatMessageId: "",
       requestCount: 0,
+      maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
     })
   }
   function topicToTree(topic: ChatTopic): ChatTopicTree {
@@ -108,6 +124,8 @@ export const useUtils = (
   }
 
   return {
+    findChatLLMConfig,
+    findChatTTIConfig,
     findChatMessage,
     findChatMessageChild,
     findChatMessageChildByTopic,

@@ -1,19 +1,60 @@
 <script lang="ts" setup>
-import { ChatLLMConfig, ChatTopic } from "@renderer/types"
+import { ChatLLMConfig, ChatTopic, SettingKeys } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
+import useSettings from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
+import { defaultLLMConfig } from "@renderer/store/chat/default"
+import { errorToText } from "@shared/error"
 const props = defineProps<{
   topic: ChatTopic
 }>()
 const { t } = useI18n()
 const chatStore = useChatStore()
+const settingsStore = useSettings()
 const { chatLLMConfig } = storeToRefs(chatStore)
 const config = computed<ChatLLMConfig | undefined>(() => chatLLMConfig.value[props.topic.id])
+const event = shallowReactive({
+  loading: false,
+  dropList: [
+    { label: "chat.llm.btnReset", value: "reset" },
+    { label: "chat.llm.btnRestoreGlobal", value: "restoreGlobal" },
+    { label: "chat.llm.btnCoverGlobal", value: "coverGlobal" },
+  ],
+  async onCommand(cmd: string) {
+    try {
+      event.loading = true
+      if (cmd === "reset") {
+        if (!config.value) return
+        Object.assign(config.value, defaultLLMConfig())
+        update()
+      } else if (cmd === "restoreGlobal") {
+        if (!config.value) return
+        const globalVal = (await settingsStore.api.get(SettingKeys.ChatLLMConfig, defaultLLMConfig())).value
+        Object.assign(config.value, globalVal)
+        update()
+      } else if (cmd === "coverGlobal") {
+        if (!config.value) return
+        const globalVal = await settingsStore.api.get(SettingKeys.ChatLLMConfig, defaultLLMConfig())
+        Object.assign(globalVal.value, config.value)
+        delete globalVal.value["id"]
+        delete globalVal.value["topicId"]
+        await settingsStore.api.update(globalVal)
+      }
+      msg({ code: 200, msg: "ok" })
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+    } finally {
+      event.loading = false
+    }
+  },
+})
 const update = useThrottleFn(
   async () => {
     if (!config.value) return
+    event.loading = true
     await chatStore.api.updateChatLLMConfig(config.value)
+    event.loading = false
   },
   250,
   true
@@ -28,12 +69,31 @@ const update = useThrottleFn(
     </template>
     <DialogPanel>
       <template #header>
-        <el-text>{{ t("chat.llm.label") }}</el-text>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-.5rem">
+            <el-text>{{ t("chat.llm.label") }}</el-text>
+            <Spinner class="text-1.2rem" v-model="event.loading"></Spinner>
+          </div>
+          <el-dropdown :teleported="false" @command="event.onCommand">
+            <el-button plain text size="small" type="info">
+              {{ t("chat.llm.btnMore") }}
+              <i-ep:arrow-down class="ml-.5rem text-1.2rem"></i-ep:arrow-down>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="item in event.dropList" :key="item.value" :command="item.value">
+                  {{ t(item.label) }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
       </template>
       <div v-if="!config" class="h-40rem w-full">
         <el-empty></el-empty>
       </div>
       <div v-else class="h-40rem w-full flex flex-col">
+        <el-divider class="my-.25rem!"></el-divider>
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.stream") }}</el-text>
@@ -50,7 +110,7 @@ const update = useThrottleFn(
           </template>
           <template #footer>
             <div class="px-1rem w-full flex">
-              <el-switch @change="update" v-model="config.stream"></el-switch>
+              <el-switch size="small" @change="update" v-model="config.stream"></el-switch>
             </div>
           </template>
         </ContentBox>
@@ -72,6 +132,7 @@ const update = useThrottleFn(
           <template #footer>
             <div class="px-1rem w-full flex">
               <el-slider
+                size="small"
                 @change="update"
                 show-input
                 v-model="config.max_tokens"
@@ -99,6 +160,7 @@ const update = useThrottleFn(
           <template #footer>
             <div class="px-1rem w-full flex">
               <el-slider
+                size="small"
                 @change="update"
                 show-input
                 v-model="config.temperature"
@@ -121,7 +183,7 @@ const update = useThrottleFn(
           </template>
           <template #footer>
             <div class="px-1rem w-full flex">
-              <el-slider show-input v-model="config.top_p" :min="0" :max="1" :step="0.1"></el-slider>
+              <el-slider size="small" show-input v-model="config.top_p" :min="0" :max="1" :step="0.1"></el-slider>
             </div>
           </template>
         </ContentBox>
@@ -143,6 +205,7 @@ const update = useThrottleFn(
           <template #footer>
             <div class="px-1rem w-full flex">
               <el-slider
+                size="small"
                 @change="update"
                 show-input
                 v-model="config.frequency_penalty"
@@ -170,6 +233,7 @@ const update = useThrottleFn(
           <template #footer>
             <div class="px-1rem w-full flex">
               <el-slider
+                size="small"
                 @change="update"
                 show-input
                 v-model="config.presence_penalty"

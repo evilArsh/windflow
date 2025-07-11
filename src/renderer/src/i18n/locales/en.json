@@ -1,106 +1,250 @@
 {
   "app": {
-    "name": "AI chat"
+    "name": "AI Assistant"
   },
   "btn": {
-    "add": "add",
-    "delete": "delete",
-    "edit": "edit",
-    "pin": "pin",
-    "send": "send"
+    "add": "Add",
+    "cancel": "Cancel",
+    "chooseFile": "Choose File",
+    "clear": "Clear",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "mcpList": "Configuration List",
+    "new": "New",
+    "pin": "Pin",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "save": "Save",
+    "send": "Send({shortcut})",
+    "sync": "Sync"
   },
   "chat": {
     "addChat": "New Chat",
-    "addFailed": "add failed",
-    "deleteFailed": "delete failed",
-    "editChat": "edit",
+    "addFailed": "Add failed",
+    "cleanContext": "Clear Context({shortcut})",
+    "cleanMessage": "Clear Chat({shortcut})",
+    "context": "Chat Context",
+    "contextDivider": "Context Cleared",
+    "deleteFailed": "Delete failed",
+    "editChat": "Edit",
     "llm": {
-      "frequencyPenalty": "frequency_penalty",
-      "frequencyPenaltyExp": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.",
-      "max_tokens": "max_tokens",
-      "presencePenaltyExp": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.",
-      "presence_penalty": "presence_penalty",
-      "temperature": "temperature",
-      "temperatureExp": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.",
-      "topP": "top_p",
-      "topPExp": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.  We generally recommend altering this or temperature but not both."
+      "btnCoverGlobal": "Override Global Config",
+      "btnMore": "More Actions",
+      "btnReset": "Reset",
+      "btnRestoreGlobal": "Use Global Config",
+      "frequencyPenalty": "Content Richness",
+      "frequencyPenaltyExp": "Positive values (e.g. 1.0): Suppress repetition of high-frequency words to make output more diverse and avoid mechanical repetition. Negative values (e.g. -1.0): Allow more repetition, suitable for texts requiring emphasis or fixed expressions.",
+      "label": "Model Configuration",
+      "maxTokensExp": "Maximum output tokens, different models may support different amounts",
+      "max_tokens": "Max Output Tokens",
+      "presencePenaltyExp": "Positive values (e.g. 1.0): Encourage the model to mention new content, avoid staying on discussed topics, suitable for open-ended conversations or exploratory texts. Negative values (e.g. -1.0): Allow the model to focus on current topics, reduce jumping, suitable for in-depth discussions or coherent narratives.",
+      "presence_penalty": "Topic Freshness",
+      "stream": "Stream Output",
+      "streamExp": "Whether the model outputs in stream",
+      "temperature": "Model Temperature",
+      "temperatureExp": "Higher values make output more random and diverse, lower values make output more stable. It's recommended to adjust either temperature or top_p, not both simultaneously.",
+      "topP": "Model Precision",
+      "topPExp": "Higher values allow more possibilities; lower values keep only highest probability candidates. Not recommended to modify together with temperature."
     },
-    "messageCreateFailed": "create message failed",
-    "regenerate": "re-generate",
-    "rightPanel": {
-      "mcp": "mcp",
-      "settings": "settings"
+    "mcp": {
+      "addFailed": "Add failed",
+      "clone": "Clone",
+      "delFailed": "Delete failed",
+      "label": "Tool",
+      "restart": "Restart"
     },
-    "search": "search",
-    "terminate": "terminate",
-    "thinking": "deep thinking",
-    "thinkingComplete": "thinking finish",
+    "mcpCall": {
+      "arguments": "Request Parameters",
+      "content": "Request Result"
+    },
+    "messageCreateFailed": "Create message failed",
+    "messageRecord": "Chat History",
+    "model": {
+      "label": "Model Selection"
+    },
+    "regenerate": "Regenerate",
+    "right": {
+      "prompt": "Prompt"
+    },
+    "search": "Search",
+    "settings": {
+      "inputLabel": "Input Settings",
+      "label": "Settings",
+      "messageLabel": "Message Settings",
+      "shortcut": "Shortcut"
+    },
+    "terminate": "Terminate",
+    "thinking": "Deep Thinking",
+    "thinkingComplete": "Thinking Complete",
+    "topicSwitching": "Node Switching",
     "tti": {
+      "guidanceScale": "Guidance Scale",
       "guidanceScaleExp": "This value is used to control the degree of match between the generated image and the given prompt. The higher the value, the more the generated image will tend to strictly match the text prompt. The lower the value, the more creative and diverse the generated image will be, potentially containing more unexpected elements.",
-      "label": "image generate config",
-      "seed": "seed"
+      "imageSize": "Image Size",
+      "inferenceSteps": "Inference Steps",
+      "inferenceStepsExp": "More steps take longer time",
+      "label": "Image Generation Config",
+      "n": "Generation Count",
+      "negativePrompt": "Negative Prompt",
+      "seed": "Random Seed"
     }
+  },
+  "form": {
+    "emptyValue": "Cannot have empty value",
+    "invalidUrl": "Not a valid URL address",
+    "requiredValue": "This value is required"
   },
   "lang": {
     "en": "English",
     "zh": "简体中文"
   },
   "mcp": {
+    "add": "Add",
+    "args": "Parameters",
+    "command": "Command",
+    "cwd": "Working Directory",
+    "desc": "Description",
+    "disable": "Disable",
+    "edit": "Edit",
+    "enable": "Enable",
+    "env": "Environment Variables",
+    "menu": {
+      "env": "Environment Config",
+      "market": "Discover",
+      "servers": "Service List"
+    },
+    "name": "Name",
+    "schema": {
+      "noDescription": "No description",
+      "params": "Parameters"
+    },
+    "search": "Search MCP Service",
+    "service": {
+      "connecting": "Tool {service} starting",
+      "deleteConfirm": "Restart?",
+      "disabled": "Tool disabled, please enable first",
+      "disconnected": "Tool {service} failed to start {message}",
+      "tabs": {
+        "config": "Config",
+        "prompt": "Prompt",
+        "resource": "Resource",
+        "resourceTemplates": "Resource Templates",
+        "tool": "Tool"
+      }
+    },
     "settings": {
-    }
+      "js": {
+        "bun": {
+          "desc": "bun command is used to download and execute libraries from npm repository, as an alternative to npx command",
+          "lack": "Missing bun runtime environment on this machine, please download",
+          "lackTitle": "bun missing",
+          "title": "bun command config",
+          "version": "Current bun version available on this machine"
+        },
+        "npmMirror": {
+          "desc": "Select appropriate npm mirror address to accelerate npx command execution",
+          "title": "npm Mirror"
+        },
+        "test": "Test Command",
+        "title": "Js Environment"
+      },
+      "python": {
+        "mirror": {
+          "desc": "Select appropriate python mirror source to accelerate uv command execution",
+          "title": "python Mirror Source"
+        },
+        "title": "Python Environment",
+        "uv": {
+          "desc": "Used to execute python packages",
+          "lack": "Missing uv runtime environment on this machine, please download",
+          "lackTitle": "uv missing",
+          "manualChoose": "Manual Select",
+          "onlineDownload": "Official Download",
+          "test": "Test Command",
+          "title": "uv command config",
+          "version": "Current uv version available on this machine"
+        }
+      }
+    },
+    "status": "Status",
+    "subTitle": "MCP Service Config",
+    "title": "MCP",
+    "type": "Type",
+    "url": "url"
+  },
+  "model": {
+    "subTitle": "Model and Provider Settings",
+    "title": "Model"
   },
   "modelType": {
     "Chat": "Chat",
     "ChatReasoner": "Chat-Reasoner",
     "Embedding": "Embedding",
     "ImageToImage": "ImageToImage",
+    "ImageToText": "ImageToText",
     "Reranker": "Reranker",
     "SpeechToText": "SpeechToText",
     "TextToImage": "TextToImage",
+    "TextToSpeech": "TextToSpeech",
     "TextToVideo": "TextToVideo"
   },
   "nav": {
-    "chat": "chat",
+    "chat": "Chat",
     "mcp": "MCP",
-    "modelSetting": "model"
+    "modelSetting": "Model"
+  },
+  "notify": {
+    "title": {
+      "error": "Error",
+      "info": "Info",
+      "warning": "Warning"
+    }
   },
   "provider": {
-    "apiKey": "API KEY",
+    "apiKey": "API Key",
     "apiUrl": "API URL",
     "model": {
-      "active": "active",
-      "activeStatus": "active status",
-      "activeStatusActive": "active",
-      "activeStatusAll": "all",
-      "activeStatusInactive": "inactive",
-      "icon": "icon",
-      "name": "models",
-      "subProvider": "sub provider",
-      "type": "type"
+      "active": "Active",
+      "activeStatus": "Active Status",
+      "activeStatusActive": "Active",
+      "activeStatusAll": "All",
+      "activeStatusInactive": "Inactive",
+      "icon": "Icon",
+      "name": "Model",
+      "subProvider": "Model Identifier",
+      "type": "Type"
     },
-    "providerName": "privoder name"
+    "providerName": "Provider"
   },
   "request": {
-    "failed": "request failed",
-    "status401": "identity verify failed,please check the config "
+    "failed": "Request failed",
+    "status401": "Authentication failed, please check configuration"
   },
   "tip": {
-    "cancel": "cancel",
-    "confirm": "confirm",
-    "deleteConfirm": "you sure delete?",
+    "deleteConfirm": "Delete {message}?",
+    "deleteFailed": "Delete {message} failed",
+    "emptyConfirm": "Clear {message}?",
     "initError": "Init Error",
-    "inputPlaceholder": "say something and enter",
+    "inputPlaceholder": "Enter your question",
     "loading": "Loading...",
-    "reset": "reset",
-    "selectAll": "select all",
-    "selectModel": "select model first",
-    "tip": "warning",
-    "yes": "yes"
+    "reset": "Reset?",
+    "saveSuccess": "Save successful",
+    "selectAll": "Select All",
+    "selectModel": "Please select model",
+    "tip": "Tip",
+    "yes": "Yes"
   },
   "topic": {
-    "icon": "icon",
-    "model": "model",
-    "prompt": "prompt",
-    "title": "title"
+    "icon": "Icon",
+    "model": "Model",
+    "prompt": "Prompt",
+    "title": "Title"
+  },
+  "window": {
+    "api": {
+      "notFound": "This feature is only supported in desktop version"
+    }
   }
 }

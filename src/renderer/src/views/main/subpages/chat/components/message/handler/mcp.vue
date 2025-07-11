@@ -21,6 +21,7 @@ const isCurrentActive = computed(() => {
 const filterServers = computed(() => {
   return servers.value.filter(v => !v.modifyTopic || v.modifyTopic === topic.value.id)
 })
+const currentLength = computed(() => filterServers.value.filter(s => isCurrentActive.value(s)).length)
 const popover = shallowReactive({
   visible: false,
   server: undefined as MCPServerParam | undefined,
@@ -77,10 +78,10 @@ const serverHandler = {
   },
   del: async (done: CallBackFn, server: MCPServerParam) => {
     try {
-      mcp.stop(topic.value.id, server.id)
       await mcp.api.del(server.id)
       const index = servers.value.findIndex(v => v.id === server.id)
       servers.value.splice(index, 1)
+      mcp.stop(topic.value.id, server.id)
       done()
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
@@ -93,9 +94,11 @@ const serverHandler = {
 <template>
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
-      <ContentBox background>
-        <i-twemoji:hammer-and-wrench class="text-1.6rem" />
-      </ContentBox>
+      <el-badge :value="currentLength" type="primary" :show-zero="false">
+        <ContentBox background>
+          <i-twemoji:hammer-and-wrench class="text-1.6rem" />
+        </ContentBox>
+      </el-badge>
     </template>
     <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     <el-card style="--el-card-padding: 1rem">

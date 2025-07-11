@@ -6,11 +6,12 @@ import { useThrottleFn } from "@vueuse/core"
 import { Reactive } from "vue"
 import { modelsDefault } from "./default"
 import useProviderStore from "@renderer/store/provider"
+import { cloneDeep } from "lodash-es"
 
 export const useData = (models: Reactive<ModelMeta[]>) => {
   const providerSvgIcon = inject(providerSvgIconKey)
   const providerStore = useProviderStore()
-  const update = useThrottleFn(async (data: ModelMeta) => db.model.update(data.id, toRaw(data)), 300, true)
+  const update = useThrottleFn(async (data: ModelMeta) => db.model.put(cloneDeep(data)), 300, true)
   async function refresh(newModels: ModelMeta[]) {
     await db.model.bulkPut(newModels)
     await fetch()

@@ -13,6 +13,9 @@
   </el-popover>
 </template>
 <script lang="ts" setup>
+import useSettingsStore from "@renderer/store/settings"
+import { SettingKeys } from "@renderer/types/settings"
+const settingsStore = useSettingsStore()
 const i18n = useI18n()
 const toggle = ref(false)
 const switchLang = (lang: string) => {
@@ -21,4 +24,5 @@ const switchLang = (lang: string) => {
   toggle.value = false
 }
 window.defaultLanguage = i18n.t(`lang.${i18n.locale.value}`)
+settingsStore.api.dataWatcher<string>(SettingKeys.Language, i18n.locale, i18n.locale.value, switchLang)
 </script>

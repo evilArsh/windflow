@@ -1,6 +1,7 @@
 import type { Primitive } from "type-fest"
 
 export enum SettingKeys {
+  Language = "settings.language", // 全局语言
   ChatSubNav = "chat.subNav", // 聊天子菜单宽度配置
   ChatToggleMenu = "chat.toggleMenu", // 聊天列表显隐
   ChatTogglePanel = "chat.togglePanel", // 聊天右侧显隐

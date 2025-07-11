@@ -30,6 +30,10 @@
     "deleteFailed": "删除失败",
     "editChat": "编辑",
     "llm": {
+      "btnCoverGlobal": "覆盖全局配置",
+      "btnMore": "更多操作",
+      "btnReset": "重置",
+      "btnRestoreGlobal": "使用全局配置",
       "frequencyPenalty": "内容丰富度",
       "frequencyPenaltyExp": "正值（如 1.0）：抑制高频词重复，让输出更丰富多样，避免机械复读。 负值（如 -1.0）：允许更多重复，适合需要强调或固定表达的文本。",
       "label": "模型配置",
@@ -66,7 +70,12 @@
     },
     "search": "搜索",
     "settings": {
-      "label": "设置"
+      "inputLabel": "输入设置",
+      "label": "设置",
+      "maxContextLength": "最大消息上下文个数",
+      "maxContextLengthExp": "请求时携带的消息上下文最大个数；-1表示不限制",
+      "messageLabel": "消息设置",
+      "shortcut": "聊天快捷键"
     },
     "terminate": "终止",
     "thinking": "深度思考中",

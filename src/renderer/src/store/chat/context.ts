@@ -49,7 +49,7 @@ export const useContext = () => {
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
   const getMessageContext = (topic: ChatTopic, message: ChatMessageData[]) => {
-    const context: LLMMessage[] = []
+    let context: LLMMessage[] = []
     let userTurn = true
     const extractData = (data: LLMMessage): LLMMessage => {
       return {
@@ -60,11 +60,23 @@ export const useContext = () => {
     const arrayAndNotEmpty = (data: unknown): data is Array<unknown> => {
       return Array.isArray(data) && data.length > 0
     }
+    const maxContextLength = isNumber(topic.maxContextLength)
+      ? topic.maxContextLength >= 0
+        ? Math.max(1, topic.maxContextLength)
+        : topic.maxContextLength
+      : 7
+    let data: ChatMessageData | undefined
+    let item: ChatMessageData
     while (true) {
-      const data = message.shift()
-      if (!data) break
-      if (data.contextFlag) break
-      const item = cloneDeep(data)
+      data = message.shift()
+      if (!data || data.contextFlag) {
+        if (userTurn) {
+          // user-assistant消息pair中，无user消息，此时删除assistant消息
+          if (context.length > 0 && context[0].role === Role.Assistant) context.shift()
+        }
+        break
+      }
+      item = cloneDeep(data)
       item.content.reasoning_content = undefined // deepseek patch
       if (userTurn) {
         if (item.content.role === Role.User) {
@@ -100,11 +112,9 @@ export const useContext = () => {
         }
       }
     }
-    if (userTurn) {
-      // user-assistant消息pair中，无user消息，此时删除assistant消息
-      if (context.length > 0 && context[0].role === Role.Assistant) {
-        context.shift()
-      }
+    if (maxContextLength > -1 && context.length > maxContextLength) {
+      context = context.slice(context.length - maxContextLength)
+      if (context.length > 0 && context[0].role === Role.Assistant) context.shift()
     }
     context.unshift({ role: Role.System, content: JSON.stringify([{ type: "text", content: topic.prompt }]) })
     return context

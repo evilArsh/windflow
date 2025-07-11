@@ -47,10 +47,7 @@ const handler = {
         const existed: MCPServerParam | undefined = servers.value.find(v => v.name === name)
         if (existed) {
           existed.params = value
-          const res = await mcp.api.update(mcp.clonePure(existed))
-          if (res == 0) {
-            throw new Error(`update ${name} failed`)
-          }
+          await mcp.api.update(mcp.clonePure(existed))
         } else {
           const newValue = mcp.clonePure({
             id: mcp.createNewId(),

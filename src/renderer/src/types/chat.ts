@@ -92,6 +92,10 @@ export type ChatTopic = {
    */
   requestCount: number
   /**
+   * @description 最大上下文聊天个数
+   */
+  maxContextLength?: number
+  /**
    * @description 会话聊天记录
    */
   chatMessageId?: string

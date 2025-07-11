@@ -40,7 +40,7 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
     }
   }
   const update = useThrottleFn(async (data: Settings<SettingsValue>) =>
-    queue.add(async () => db.settings.update(data.id, cloneDeep(data)))
+    queue.add(async () => db.settings.put(cloneDeep(data)))
   )
   /**
    * 配置数据监听，实时更新到数据库

@@ -1,17 +1,56 @@
 <script lang="ts" setup>
-import { ChatTTIConfig, ChatTopic } from "@renderer/types"
+import { ChatTTIConfig, ChatTopic, SettingKeys } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
+import useSettings from "@renderer/store/settings"
 import Chance from "chance"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
+import { defaultTTIConfig } from "@renderer/store/chat/default"
+import { errorToText } from "@shared/error"
 const props = defineProps<{
   topic: ChatTopic
 }>()
 const chatStore = useChatStore()
+const settingsStore = useSettings()
 const { chatTTIConfig } = storeToRefs(chatStore)
 const { t } = useI18n()
 const chance = markRaw(new Chance())
 const config = computed<ChatTTIConfig | undefined>(() => chatTTIConfig.value[props.topic.id])
+const event = shallowReactive({
+  loading: false,
+  dropList: [
+    { label: "chat.llm.btnReset", value: "reset" },
+    { label: "chat.llm.btnRestoreGlobal", value: "restoreGlobal" },
+    { label: "chat.llm.btnCoverGlobal", value: "coverGlobal" },
+  ],
+  async onCommand(cmd: string) {
+    try {
+      event.loading = true
+      if (cmd === "reset") {
+        if (!config.value) return
+        Object.assign(config.value, defaultTTIConfig())
+        update()
+      } else if (cmd === "restoreGlobal") {
+        if (!config.value) return
+        const globalVal = (await settingsStore.api.get(SettingKeys.ChatTextToImageConfig, defaultTTIConfig())).value
+        Object.assign(config.value, globalVal)
+        update()
+      } else if (cmd === "coverGlobal") {
+        if (!config.value) return
+        const globalVal = await settingsStore.api.get(SettingKeys.ChatTextToImageConfig, defaultTTIConfig())
+        Object.assign(globalVal.value, config.value)
+        delete globalVal.value["id"]
+        delete globalVal.value["topicId"]
+        await settingsStore.api.update(globalVal)
+      }
+      msg({ code: 200, msg: "ok" })
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+    } finally {
+      event.loading = false
+    }
+  },
+})
 const update = useThrottleFn(
   async () => {
     if (!config.value) return
@@ -45,16 +84,35 @@ function onRandSeed() {
     </template>
     <DialogPanel>
       <template #header>
-        <el-text>{{ t("chat.tti.label") }}</el-text>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-.5rem">
+            <el-text>{{ t("chat.tti.label") }}</el-text>
+            <Spinner class="text-1.2rem" v-model="event.loading"></Spinner>
+          </div>
+          <el-dropdown :teleported="false" @command="event.onCommand">
+            <el-button plain text size="small" type="info">
+              {{ t("chat.llm.btnMore") }}
+              <i-ep:arrow-down class="ml-.5rem text-1.2rem"></i-ep:arrow-down>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="item in event.dropList" :key="item.value" :command="item.value">
+                  {{ t(item.label) }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
       </template>
       <div v-if="!config" class="h-40rem w-full">
         <el-empty></el-empty>
       </div>
       <div v-else class="tti-wrap h-40rem w-full flex flex-col">
+        <el-divider class="my-.25rem!"></el-divider>
         <ContentBox>
           <el-text>{{ t("chat.tti.imageSize") }}</el-text>
           <template #footer>
-            <el-select v-model="config.size" @change="update" :teleported="false" append-to=".size-anchor">
+            <el-select size="small" v-model="config.size" @change="update" :teleported="false" append-to=".size-anchor">
               <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </template>
@@ -63,7 +121,7 @@ function onRandSeed() {
         <ContentBox>
           <el-text>{{ t("chat.tti.seed") }}</el-text>
           <template #footer>
-            <el-input readonly v-model="config.seed">
+            <el-input size="small" readonly v-model="config.seed">
               <template #append>
                 <i-ep:refresh @click="onRandSeed" class="text-1.2rem"></i-ep:refresh>
               </template>
@@ -75,7 +133,7 @@ function onRandSeed() {
           <el-text>{{ t("chat.tti.n") }}</el-text>
           <template #footer>
             <div class="px-1.5rem w-full flex">
-              <el-slider show-input @change="update" v-model="config.n" :min="1" :max="4"></el-slider>
+              <el-slider size="small" show-input @change="update" v-model="config.n" :min="1" :max="4"></el-slider>
             </div>
           </template>
         </ContentBox>
@@ -94,6 +152,7 @@ function onRandSeed() {
           <template #footer>
             <div class="px-1.5rem w-full flex">
               <el-slider
+                size="small"
                 @change="update"
                 show-input
                 v-model="config.num_inference_steps"
@@ -116,7 +175,13 @@ function onRandSeed() {
           </template>
           <template #footer>
             <div class="px-1.5rem w-full flex">
-              <el-slider @change="update" show-input v-model="config.guidance_scale" :min="0" :max="20"></el-slider>
+              <el-slider
+                size="small"
+                @change="update"
+                show-input
+                v-model="config.guidance_scale"
+                :min="0"
+                :max="20"></el-slider>
             </div>
           </template>
         </ContentBox>
@@ -124,7 +189,12 @@ function onRandSeed() {
         <ContentBox>
           <el-text>{{ t("chat.tti.negativePrompt") }}</el-text>
           <template #footer>
-            <el-input @change="update" type="textarea" v-model="config.negative_prompt" autosize></el-input>
+            <el-input
+              size="small"
+              @change="update"
+              type="textarea"
+              v-model="config.negative_prompt"
+              autosize></el-input>
           </template>
         </ContentBox>
       </div>

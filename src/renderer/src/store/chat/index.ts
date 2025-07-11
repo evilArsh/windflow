@@ -28,7 +28,7 @@ export default defineStore("chat_topic", () => {
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
   const api = useData(topicList, currentNodeKey)
-  const utils = useUtils(topicList, chatMessage, currentNodeKey)
+  const utils = useUtils(topicList, chatMessage, chatLLMConfig, chatTTIConfig, currentNodeKey)
 
   const getMeta = (modelId: string) => {
     if (!modelId) {
@@ -74,31 +74,38 @@ export default defineStore("chat_topic", () => {
 
     const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
     topic.requestCount = Math.max(1, topic.requestCount + 1)
-    chatContext.handler = await chatContext.provider.chat(messageContext, model, providerMeta, mcpServersIds, res => {
-      const { data, status } = res
-      messageData.completionTokens = toNumber(data.usage?.completion_tokens)
-      messageData.promptTokens = toNumber(data.usage?.prompt_tokens)
-      messageData.status = status
-      messageData.content = data
-      if (status == 206) {
-        messageData.finish = false
-      } else if (status == 200) {
-        messageData.finish = true
-        topic.requestCount = Math.max(0, topic.requestCount - 1)
-        if (parentMessageDataId) return // 多模型请求时不总结标题
-        if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-          chatContext.provider.summarize(JSON.stringify(messageData), model, providerMeta).then(res => {
-            if (res) topic.label = res
-          })
+    chatContext.handler = await chatContext.provider.chat(
+      messageContext,
+      model,
+      providerMeta,
+      mcpServersIds,
+      res => {
+        const { data, status } = res
+        messageData.completionTokens = toNumber(data.usage?.completion_tokens)
+        messageData.promptTokens = toNumber(data.usage?.prompt_tokens)
+        messageData.status = status
+        messageData.content = data
+        if (status == 206) {
+          messageData.finish = false
+        } else if (status == 200) {
+          messageData.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          if (parentMessageDataId) return // 多模型请求时不总结标题
+          if (topic.label === window.defaultTopicTitle && chatContext.provider) {
+            chatContext.provider.summarize(JSON.stringify(messageData), model, providerMeta).then(res => {
+              if (res) topic.label = res
+            })
+          }
+        } else if (status == 100) {
+          messageData.finish = false
+        } else {
+          messageData.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
-      } else if (status == 100) {
-        messageData.finish = false
-      } else {
-        messageData.finish = true
-        topic.requestCount = Math.max(0, topic.requestCount - 1)
-      }
-      api.updateChatMessage(message)
-    })
+        api.updateChatMessage(message)
+      },
+      utils.findChatLLMConfig(topic.id)
+    )
   }
   /**
    * @description `parentMessageDataId`存在时，表示restart子聊天；否则表示restart父聊天或者restart所有子聊天；
@@ -278,7 +285,7 @@ export default defineStore("chat_topic", () => {
       chatMessage[message.id] = message
       topic.chatMessageId = message.id
     }
-    if (!chatTTIConfig[topic.id]) {
+    if (!utils.findChatTTIConfig(topic.id)) {
       let cnf = await api.getChatTTIConfig(topic.id)
       if (!cnf) {
         cnf = Object.assign(defaultTTIConfig(), { id: uniqueId(), topicId: topic.id })
@@ -286,7 +293,7 @@ export default defineStore("chat_topic", () => {
       }
       chatTTIConfig[topic.id] = cnf
     }
-    if (!chatLLMConfig[topic.id]) {
+    if (!utils.findChatLLMConfig(topic.id)) {
       let cnf = await api.getChatLLMConfig(topic.id)
       if (!cnf) {
         cnf = Object.assign(defaultLLMConfig(), { id: uniqueId(), topicId: topic.id })
