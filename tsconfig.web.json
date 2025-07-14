@@ -25,7 +25,7 @@
     "esModuleInterop": true,
     "jsxImportSource": "vue",
     // "suppressImplicitAnyIndexErrors":true,
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "module": "ESNext",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,

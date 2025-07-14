@@ -1,6 +1,5 @@
 {
   "include": [
-    "electron.vite.config.*",
     "src/main/**/*",
     "src/preload/**/*",
     "src/shared/**/*.ts",
@@ -14,7 +13,7 @@
     "sourceMap": false,
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,

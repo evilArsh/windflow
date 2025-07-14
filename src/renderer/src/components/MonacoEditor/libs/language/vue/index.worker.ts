@@ -2,12 +2,7 @@ import * as worker from "monaco-editor/esm/vs/editor/editor.worker"
 import type * as monaco from "monaco-editor"
 import { type LanguageServiceEnvironment, createTypeScriptWorkerLanguageService } from "@volar/monaco/worker"
 import { createNpmFileSystem } from "@volar/jsdelivr"
-import {
-  type VueCompilerOptions,
-  getFullLanguageServicePlugins,
-  createVueLanguagePlugin,
-  getDefaultCompilerOptions,
-} from "@vue/language-service"
+import { type VueCompilerOptions, createVueLanguagePlugin, getDefaultCompilerOptions } from "@vue/language-core"
 import type { WorkerHost, WorkerMessage } from "./env"
 import { URI } from "vscode-uri"
 
@@ -67,8 +62,8 @@ self.onmessage = async (msg: MessageEvent<WorkerMessage>) => {
         asUri,
       },
       languagePlugins: [createVueLanguagePlugin(ts, compilerOptions, vueCompilerOptions, asFileName)],
-      //@ts-expect-error cannot fix it
-      languageServicePlugins: getFullLanguageServicePlugins(ts),
+      // languageServicePlugins: getFullLanguageServicePlugins(ts),
+      languageServicePlugins: [],
       setup({ project }: any) {
         project.vue = { compilerOptions: vueCompilerOptions }
       },
