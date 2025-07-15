@@ -63,6 +63,7 @@ export default [
       "yarn.lock",
       "package-lock.json",
       "uno.config.{ts,mts,js,mjs}",
+      "electron.vite.config.{ts,mts,js,mjs}"
     ],
   },
   {
