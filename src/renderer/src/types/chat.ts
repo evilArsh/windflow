@@ -1,6 +1,6 @@
 import { HttpStatusCode } from "@shared/code"
 import { LLMMessage, LLMRequestHandler, LLMProvider } from "."
-export type ChatMessageData = {
+export type ChatMessage2 = {
   /**
    * @description 单个消息ID
    */
@@ -10,17 +10,25 @@ export type ChatMessageData = {
    */
   modelId: string
   /**
-   * @description 当前消息为上下文分界点
+   * @description 消息序号
    */
-  contextFlag?: boolean
+  index: number
+  /**
+   * @description 消息所属的会话id
+   */
+  topicId: string
   /**
    * @description 消息时间
    */
-  time: string
+  createAt: number
   /**
    * @description 消息内容,包含用户消息和模型返回的消息
    */
   content: LLMMessage
+  /**
+   * @description 当前消息为上下文分界点
+   */
+  contextFlag?: boolean
   /**
    * @description 请求是否完成，不管是否成功
    */
@@ -36,7 +44,10 @@ export type ChatMessageData = {
   /**
    * @description 多个模型同时请求
    */
-  children?: Array<ChatMessageData>
+  children?: Array<ChatMessage2>
+  /**
+   * @description 多模型同时请求时，标识父ChatMessageData的ID
+   */
   parentId?: string
   /**
    * @description 本次请求中模型产生的token数
@@ -47,13 +58,13 @@ export type ChatMessageData = {
    */
   promptTokens?: number
 }
-export type ChatMessage = {
-  /**
-   * @description 消息ID
-   */
-  id: string
-  data: Array<ChatMessageData>
-}
+// export type ChatMessage = {
+//   /**
+//    * @description 消息ID
+//    */
+//   id: string
+//   data: Array<ChatMessage2>
+// }
 export type ChatTopic = {
   /**
    * @description 会话ID
@@ -95,10 +106,6 @@ export type ChatTopic = {
    * @description 最大上下文聊天个数
    */
   maxContextLength?: number
-  /**
-   * @description 会话聊天记录
-   */
-  chatMessageId?: string
   /**
    * @description 会话创建时间
    */

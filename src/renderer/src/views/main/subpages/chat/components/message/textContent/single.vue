@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage, ChatMessageData, ChatTopic } from "@renderer/types/chat"
+import { ChatMessage, ChatMessage2, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
 import RawTextEdit from "./rawTextEdit.vue"
@@ -14,8 +14,8 @@ import { useMsgContext } from "../../../index"
 
 const props = defineProps<{
   message: ChatMessage
-  messageItem: ChatMessageData
-  parent?: ChatMessageData
+  messageItem: ChatMessage2
+  parent?: ChatMessage2
   topic: ChatTopic
   header?: boolean
   context: ReturnType<typeof useMsgContext>
@@ -31,18 +31,18 @@ const topic = computed(() => props.topic)
 const id = useId()
 const rawDlg = useTemplateRef("rawDlg")
 const rawTextDlg = reactive({
-  data: undefined as ChatMessageData | undefined,
+  data: undefined as ChatMessage2 | undefined,
   onChange: markRaw((value: string) => {
     if (rawTextDlg.data) {
       rawTextDlg.data.content.content = value
       chatStore.api.updateChatMessage(message.value)
     }
   }),
-  edit: markRaw((msg: ChatMessageData) => {
+  edit: markRaw((msg: ChatMessage2) => {
     rawTextDlg.data = msg
     rawDlg.value?.open()
   }),
-  del: markRaw((msg: ChatMessageData) => {
+  del: markRaw((msg: ChatMessage2) => {
     if (message.value) {
       chatStore.deleteSubMessage(topic.value, msg.id, props.parent?.id)
       chatStore.api.updateChatMessage(message.value)

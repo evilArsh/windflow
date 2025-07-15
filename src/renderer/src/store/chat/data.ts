@@ -1,6 +1,6 @@
 import {
   ChatLLMConfig,
-  ChatMessage,
+  ChatMessage2,
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
@@ -28,7 +28,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(cloneDeep(data))
   }
-  async function addChatMessage(data: ChatMessage) {
+  async function addChatMessage(data: ChatMessage2) {
     return db.chatMessage.add(cloneDeep(data))
   }
   /**
@@ -48,7 +48,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatMessage = async (data: ChatMessage) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
+  const updateChatMessage = async (data: ChatMessage2) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
   async function updateChatLLMConfig(data: ChatLLMConfig) {
     return db.chatLLMConfig.put(cloneDeep(data))
   }
@@ -64,10 +64,10 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   /**
    * @description 查找对应的聊天消息
    */
-  async function getChatMessage(messageId: string) {
-    const res = await db.chatMessage.get(messageId)
+  async function getChatMessage(topicId: string) {
+    const res = await db.chatMessage.where("topicId").equals(topicId).sortBy("index")
     if (res) {
-      res.data.forEach(item => {
+      res.forEach(item => {
         item.finish = true
         item.status = 200
       })
@@ -84,9 +84,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
     return db.transaction("rw", db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig, async trans => {
       for (const item of data) {
         await trans.chatTopic.delete(item.id)
-        if (item.chatMessageId) {
-          await trans.chatMessage.delete(item.chatMessageId)
-        }
+        await trans.chatMessage.where("topicId").equals(item.id).delete()
         await trans.chatLLMConfig.where("topicId").equals(item.id).delete()
         await trans.chatTTIConfig.where("topicId").equals(item.id).delete()
       }

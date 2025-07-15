@@ -1,11 +1,11 @@
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
-import { ChatLLMConfig, ChatMessage, ChatMessageData, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
-import { cloneDeep } from "lodash-es"
+import { ChatLLMConfig, ChatMessage2, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
+import { cloneDeep, merge } from "lodash-es"
 import { Reactive } from "vue"
 
 export const useUtils = (
   _topicList: Reactive<Array<ChatTopicTree>>,
-  chatMessage: Reactive<Record<string, ChatMessage>>,
+  chatMessage: Reactive<Record<string, ChatMessage2[]>>,
   chatLLMConfig: Reactive<Record<string, ChatLLMConfig>>,
   chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>,
   _currentNodeKey: Ref<string>
@@ -13,8 +13,8 @@ export const useUtils = (
   /**
    * @description 根据消息id查找缓存的聊天数据
    */
-  const findChatMessage = (messageId: string): ChatMessage | undefined => {
-    return chatMessage[messageId]
+  const findChatMessage = (topicId: string): ChatMessage2[] | undefined => {
+    return chatMessage[topicId]
   }
   /**
    * @description 根据话题id查找缓存的llm配置数据
@@ -28,10 +28,6 @@ export const useUtils = (
   const findChatTTIConfig = (topicId: string): ChatTTIConfig | undefined => {
     return chatTTIConfig[topicId]
   }
-  const findChatMessageByTopic = (topic: ChatTopic): ChatMessage | undefined => {
-    if (!topic.chatMessageId) return
-    return findChatMessage(topic.chatMessageId)
-  }
   /**
    * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的子聊天messageDataId的索引
    */
@@ -39,7 +35,7 @@ export const useUtils = (
     messageId: string,
     childMessageId: string,
     parentMessageDataId?: string
-  ): [ChatMessageData | undefined, number] => {
+  ): [ChatMessage2 | undefined, number] => {
     const m = findChatMessage(messageId)
     if (!m) return [undefined, -1]
     let index = -1
@@ -71,7 +67,7 @@ export const useUtils = (
     topic: ChatTopic,
     messageDataId: string,
     parentMessageDataId?: string
-  ): [ChatMessageData | undefined, number] => {
+  ): [ChatMessage2 | undefined, number] => {
     if (!topic.chatMessageId) {
       return [undefined, -1]
     }
@@ -89,11 +85,26 @@ export const useUtils = (
       content: "",
       modelIds: cloneDeep(modelIds),
       prompt: "you are a helpful assistant",
-      chatMessageId: "",
       createAt: Date.now(),
       requestCount: 0,
       maxContextLength: 7,
     }
+  }
+  function newChatMessageData(initial?: Partial<ChatMessage2>): ChatMessage2 {
+    return merge(
+      {
+        id: uniqueId(),
+        status: 200,
+        createAt: Date.now(),
+        finish: true,
+        content: "",
+        index: 0,
+        topicId: "",
+        modelId: "",
+        parentId: "",
+      },
+      initial
+    )
   }
   function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
     return cloneDeep({
@@ -129,8 +140,9 @@ export const useUtils = (
     findChatMessage,
     findChatMessageChild,
     findChatMessageChildByTopic,
-    findChatMessageByTopic,
+    // findChatMessageByTopic,
     newTopic,
+    newChatMessageData,
     cloneTopic,
     topicToTree,
     getAllNodes,

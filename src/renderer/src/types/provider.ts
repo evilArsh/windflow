@@ -61,8 +61,9 @@ export type ModelMeta = {
  * 服务提供商
  */
 export type ProviderMeta = {
+  id: string
   /**
-   * @description 提供商名称,unique
+   * @description 提供商名称
    */
   name: string
   logo: string

@@ -1,4 +1,4 @@
-import { ChatTopic, ChatMessage, ChatLLMConfig, ChatTTIConfig } from "@renderer/types"
+import { ChatTopic, ChatMessage, ChatLLMConfig, ChatTTIConfig, LLMMessage, Role } from "@renderer/types"
 import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []
 export const chatMessageDefault = (): ChatMessage => ({
@@ -23,5 +23,22 @@ export function defaultLLMConfig(): Omit<ChatLLMConfig, "id" | "topicId"> {
     frequency_penalty: 0,
     presence_penalty: 0,
     max_tokens: 4096,
+  }
+}
+
+export function defaultLLMMessage(): LLMMessage {
+  return {
+    role: Role.Assistant,
+    content: "",
+    reasoning_content: "",
+    tool_call_id: "",
+    tool_calls: undefined,
+    tool_calls_chain: undefined,
+    finish_reason: "",
+    usage: {
+      completion_tokens: 0,
+      prompt_tokens: 0,
+      total_tokens: 0,
+    },
   }
 }

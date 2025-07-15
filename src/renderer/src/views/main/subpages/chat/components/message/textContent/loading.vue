@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ChatMessageData } from "@renderer/types/chat"
+import { ChatMessage2 } from "@renderer/types/chat"
 import Markdown from "@renderer/components/Markdown/index.vue"
 
 const props = defineProps<{
-  messageItem: ChatMessageData
+  messageItem: ChatMessage2
 }>()
 const { t } = useI18n()
 const activeNames = ref<string[]>([])

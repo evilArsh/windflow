@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { LLMToolCall } from "@renderer/types"
-import { ChatMessageData } from "@renderer/types/chat"
+import { ChatMessage2 } from "@renderer/types/chat"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
 import { useToolName } from "@shared/mcp"
 import { cloneDeep } from "lodash"
 
 const props = defineProps<{
-  messageItem: ChatMessageData
+  messageItem: ChatMessage2
 }>()
 type CallStatus = LLMToolCall & {
   status: Status

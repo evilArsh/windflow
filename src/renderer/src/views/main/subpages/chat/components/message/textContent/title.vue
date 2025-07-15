@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ChatMessageData } from "@renderer/types/chat"
+import { ChatMessage2 } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { Role } from "@renderer/types"
 const props = defineProps<{
-  messageItem: ChatMessageData
+  messageItem: ChatMessage2
   hideToken?: boolean
   hideLogo?: boolean
   hideTime?: boolean
@@ -33,7 +33,7 @@ const svgSrc = computed(() =>
         </el-text>
         <el-text v-if="!hideModel" type="primary">{{ modelsStore.find(messageItem.modelId)?.modelName }}</el-text>
       </div>
-      <el-text v-if="!hideTime" size="small" class="time">{{ messageItem.time }}</el-text>
+      <el-text v-if="!hideTime" size="small" class="time">{{ formatSecond(messageItem.createAt) }}</el-text>
     </div>
     <slot></slot>
     <div v-if="isAssistant && !hideToken" class="flex items-center flex-wrap">

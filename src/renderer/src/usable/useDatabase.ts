@@ -2,7 +2,7 @@ import {
   ProviderMeta,
   ModelMeta,
   ChatTopic,
-  ChatMessage,
+  ChatMessage2,
   Settings,
   SettingsValue,
   ChatLLMConfig,
@@ -14,10 +14,10 @@ import Dexie, { type EntityTable } from "dexie"
 export const name = "db-ai-chat"
 
 const db = new Dexie(name) as Dexie & {
-  providerMeta: EntityTable<ProviderMeta, "name">
+  providerMeta: EntityTable<ProviderMeta, "id">
   model: EntityTable<ModelMeta, "id">
   chatTopic: EntityTable<ChatTopic, "id">
-  chatMessage: EntityTable<ChatMessage, "id">
+  chatMessage: EntityTable<ChatMessage2, "id">
   chatLLMConfig: EntityTable<ChatLLMConfig, "id">
   chatTTIConfig: EntityTable<ChatTTIConfig, "id">
   settings: EntityTable<Settings<SettingsValue>, "id">
@@ -25,40 +25,14 @@ const db = new Dexie(name) as Dexie & {
 }
 
 db.version(1).stores({
-  providerMeta: "name",
-  model: "id,providerName,type,active",
-  chatTopic: "id,chatMessageId,parentId,createAt",
-  chatMessage: "id",
-  settings: "id",
-  mcpServer: "id",
-})
-db.version(2)
-  .stores({
-    providerMeta: "name",
-    model: "id,providerName,type,active",
-    chatTopic: "id,chatMessageId,parentId,createAt",
-    chatMessage: "id",
-    settings: "id",
-    mcpServer: "id",
-  })
-  .upgrade(tx => {
-    tx.table("mcpServer")
-      .toCollection()
-      .modify(server => {
-        if (isString(server.serverName)) {
-          server.name = server.serverName
-          delete server.serverName
-        }
-      })
-  })
-db.version(3).stores({
-  providerMeta: "name",
-  model: "id,providerName,type,active",
-  chatTopic: "id,chatMessageId,parentId,createAt",
-  chatMessage: "id",
+  providerMeta: "id,name",
+  model: "id",
+  chatTopic: "id",
+  chatMessage: "id,topicId",
   chatLLMConfig: "id,topicId",
   chatTTIConfig: "id,topicId",
   settings: "id",
   mcpServer: "id",
 })
+
 export { db }

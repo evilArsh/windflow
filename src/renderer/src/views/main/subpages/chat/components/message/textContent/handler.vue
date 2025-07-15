@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ChatMessageData, ChatTopic } from "@renderer/types/chat"
+import { ChatMessage2, ChatTopic } from "@renderer/types/chat"
 import useChatStore from "@renderer/store/chat"
 
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { Role } from "@renderer/types"
 import { code1xx } from "@shared/types/bridge"
 const props = defineProps<{
-  messageItem: ChatMessageData
+  messageItem: ChatMessage2
   topic: ChatTopic
-  parent?: ChatMessageData
+  parent?: ChatMessage2
   hideEdit?: boolean
 }>()
 defineEmits<{

@@ -1,12 +1,10 @@
 import { defineStore, storeToRefs } from "pinia"
 import {
   ChatLLMConfig,
-  ChatMessage,
-  ChatMessageData,
+  ChatMessage2,
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
-  defaultLLMMessage,
   ProviderMeta,
   Role,
 } from "@renderer/types"
@@ -15,7 +13,7 @@ import useModelsStore from "@renderer/store/model"
 import { useContext } from "./context"
 import { useData } from "./data"
 import { useUtils } from "./utils"
-import { defaultTTIConfig, defaultLLMConfig } from "./default"
+import { defaultTTIConfig, defaultLLMConfig, defaultLLMMessage } from "./default"
 
 export default defineStore("chat_topic", () => {
   const providerStore = useProviderStore()
@@ -23,7 +21,7 @@ export default defineStore("chat_topic", () => {
   const { providerMetas } = storeToRefs(providerStore)
   const { fetchTopicContext, getMessageContext, findContext, initContext } = useContext()
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
-  const chatMessage = reactive<Record<string, ChatMessage>>({}) // 聊天信息缓存,messageId作为key
+  const chatMessage = reactive<Record<string, ChatMessage2[]>>({}) // 聊天信息缓存,topicId作为key
   const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
@@ -54,7 +52,7 @@ export default defineStore("chat_topic", () => {
   const sendMessage = async (
     topic: ChatTopic,
     message: ChatMessage,
-    messageData: ChatMessageData,
+    messageData: ChatMessage2,
     parentMessageDataId?: string
   ) => {
     api.updateChatMessage(message)
@@ -133,49 +131,31 @@ export default defineStore("chat_topic", () => {
       messageData.content = defaultLLMMessage()
       messageData.finish = false
       messageData.status = 100
-      messageData.time = formatSecond(new Date())
+      messageData.createAt = Date.now()
       sendMessage(topic, message, messageData, parentMessageDataId)
     }
   }
   function send(topic: ChatTopic) {
     if (!topic.content.trim()) return
     if (topic.modelIds.length == 0) return
-    if (!topic.chatMessageId) {
-      console.error("[send] topic.chatMessageId is empty")
-      return
-    }
     const message = utils.findChatMessage(topic.chatMessageId)
     if (!message) {
       console.error("[send] message not found")
       return
     }
-    message.data.unshift({
-      id: uniqueId(),
-      status: 200,
-      time: formatSecond(new Date()),
-      finish: true,
-      content: { role: Role.User, content: topic.content },
-      modelId: "",
-    })
-    const newMessageData = reactive<ChatMessageData>({
-      id: uniqueId(),
-      status: 200,
-      content: defaultLLMMessage(),
-      modelId: "",
-      time: formatSecond(new Date()),
-      children: [],
-    })
+    message.data.unshift(utils.newChatMessageData({ content: { role: Role.User, content: topic.content } }))
+    const newMessageData = reactive<ChatMessage2>(utils.newChatMessageData({ content: defaultLLMMessage() }))
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
     if (availableModels.length > 1) {
       availableModels.forEach(modelId => {
-        newMessageData.children!.push({
-          id: uniqueId(),
-          parentId: newMessageData.id,
-          status: 200,
-          content: defaultLLMMessage(),
-          modelId,
-          time: formatSecond(new Date()),
-        })
+        if (!newMessageData.children) newMessageData.children = []
+        newMessageData.children.push(
+          utils.newChatMessageData({
+            parentId: newMessageData.id,
+            content: defaultLLMMessage(),
+            modelId,
+          })
+        )
       })
     } else {
       newMessageData.modelId = availableModels[0]
@@ -234,10 +214,6 @@ export default defineStore("chat_topic", () => {
    */
   async function deleteSubMessage(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
     try {
-      if (!topic.chatMessageId) {
-        console.warn(`[deleteSubMessage] topic.chatMessageId is empty.`)
-        return
-      }
       const message = utils.findChatMessage(topic.chatMessageId)
       if (!message) return
       terminate(topic, messageDataId, parentMessageDataId)
@@ -273,7 +249,8 @@ export default defineStore("chat_topic", () => {
   async function loadChatTopicData(topic: ChatTopic) {
     if (topic.chatMessageId) {
       if (!utils.findChatMessage(topic.chatMessageId)) {
-        let message = await api.getChatMessage(topic.chatMessageId)
+        // FIXME: api已修改
+        let message = await api.getChatMessage(topic.id)
         if (!message) {
           message = await api.createNewMessage()
           topic.chatMessageId = message.id
