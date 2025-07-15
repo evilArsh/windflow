@@ -9,7 +9,7 @@ import TextInput from "./textInput.vue"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings"
-import { ChatMessage, ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatTopic, SettingKeys } from "@renderer/types"
 import Clear from "./clear.vue"
 import { errorToText } from "@shared/error"
 import { useThrottleFn } from "@vueuse/core"
@@ -18,10 +18,8 @@ const emit = defineEmits<{
   contextClean: []
 }>()
 const props = defineProps<{
-  message: ChatMessage
   topic: ChatTopic
 }>()
-const message = computed(() => props.message)
 const topic = computed(() => props.topic)
 
 const settingsStore = useSettingsStore()
@@ -32,11 +30,15 @@ const chatStore = useChatStore()
 
 const handler = {
   send: async (res: { active: boolean }, done?: unknown) => {
-    if (res.active) {
-      chatStore.send(topic.value)
-      await nextTick()
-      emit("messageSend")
-      if (isFunction(done)) done()
+    try {
+      if (res.active) {
+        await chatStore.send(topic.value)
+        await nextTick()
+        emit("messageSend")
+        if (isFunction(done)) done()
+      }
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
     }
   },
   onTopicUpdate: useThrottleFn(async () => {
@@ -64,9 +66,9 @@ watchEffect(() => {
         <Mcp :topic></Mcp>
         <Settings :topic></Settings>
       </div>
-      <Clear :message="message" :topic="topic" @context-clean="emit('contextClean')"></Clear>
+      <Clear :topic="topic" @context-clean="emit('contextClean')"></Clear>
     </div>
-    <TextInput :message="message" :topic="topic" />
+    <TextInput :topic="topic" />
     <div class="chat-input-actions">
       <Button link size="small" type="default" plain @click="done => triggerSend(done)">
         {{ t("btn.send", { shortcut: sendShortcut }) }}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage, ChatMessage2, ChatTopic } from "@renderer/types/chat"
+import { ChatMessage2, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"
 import Handler from "./handler.vue"
@@ -12,24 +12,23 @@ import { CSSProperties } from "@renderer/lib/shared/types"
 import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
 import { useMsgContext } from "../../../index"
+import { errorToText } from "@shared/error"
 const props = defineProps<{
-  message: ChatMessage
-  messageItem: ChatMessage2
+  message: ChatMessage2
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
 const id = useId()
 const chatStore = useChatStore()
 const message = computed(() => props.message)
-const messageItem = computed(() => props.messageItem)
-const childItems = computed<ChatMessage2[]>(() => {
+const messageChildren = computed<ChatMessage2[]>(() => {
   if (layout.type === types.Tab) {
-    return messageItem.value?.children?.filter(item => item.id === layout.currentTabId) ?? []
+    return message.value?.children?.filter(item => item.id === layout.currentTabId) ?? []
   } else {
-    return messageItem.value.children ?? []
+    return message.value.children ?? []
   }
 })
-const childLength = computed(() => (Array.isArray(messageItem.value.children) ? messageItem.value.children.length : 0))
+const childLength = computed(() => (Array.isArray(message.value.children) ? message.value.children.length : 0))
 const affixRefs = ref<InstanceType<typeof Single>[]>([])
 const types = {
   Grid: "grid",
@@ -63,8 +62,8 @@ const layout = shallowReactive({
       layout.sliderMax = 100
     } else if (type === types.Tab) {
       if (!layout.currentTabId) {
-        if (messageItem.value.children && messageItem.value.children.length > 0) {
-          layout.currentTabId = messageItem.value.children[0].id
+        if (message.value.children && message.value.children.length > 0) {
+          layout.currentTabId = message.value.children[0].id
         }
       }
     }
@@ -124,13 +123,15 @@ const itemStyle = computed<CSSProperties>(() => {
   return {}
 })
 async function del() {
-  if (!childLength.value) return
-  messageItem.value
-    .children!.map(item => item.id)
-    .forEach(childId => {
-      chatStore.deleteSubMessage(props.topic, childId, messageItem.value.id)
-    })
-  chatStore.api.updateChatMessage(props.message)
+  try {
+    if (!childLength.value) return
+    const ids = Array.from(message.value.children?.map(item => item.id) ?? [])
+    for await (const id of ids) {
+      await chatStore.deleteMessage(props.topic, id, message.value.id)
+    }
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+  }
 }
 onMounted(() => {
   layout.onTypeChange(layout.type)
@@ -140,7 +141,7 @@ onMounted(() => {
   <MsgBubble :id>
     <template #header>
       <div class="flex-1 flex items-center px-1rem py-.5rem flex-wrap overflow-hidden">
-        <Handler hide-edit :topic :message-item @delete="del"></Handler>
+        <Handler hide-edit :topic :message @delete="del"></Handler>
         <ContentBox background class="m0! flex-shrink-0">
           <el-radio-group v-model="layout.type" size="small" fill="#6cf" @change="layout.onTypeChange">
             <el-radio-button v-for="item in layout.typeList" :label="item.value" :value="item.value" :key="item.value">
@@ -154,15 +155,10 @@ onMounted(() => {
           class="w100%"
           @tab-change="layout.onTabChange"
           style="--el-tabs-header-height: auto; --el-border-color-light: transparent">
-          <el-tab-pane v-for="item in messageItem.children" :key="item.id" :name="item.id">
+          <el-tab-pane v-for="item in message.children" :key="item.id" :name="item.id">
             <template #label>
               <div class="flex-shrink-0">
-                <Title
-                  style="--title-bg-color: transparent"
-                  :message-item="item"
-                  hide-time
-                  hide-provider
-                  hide-token></Title>
+                <Title style="--title-bg-color: transparent" :message="item" hide-time hide-provider hide-token></Title>
               </div>
             </template>
           </el-tab-pane>
@@ -179,14 +175,13 @@ onMounted(() => {
     </template>
     <div class="chat-item-content" @scroll="layout.onItemContentScroll" :style="containerStyle">
       <Single
-        v-for="(item, index) in childItems"
+        v-for="(item, index) in messageChildren"
         :ref="ref => (affixRefs[index] = ref as InstanceType<typeof Single>)"
         :style="itemStyle"
-        :parent="messageItem"
+        :parent="message"
         :context
         :topic
-        :message
-        :message-item="item"
+        :message="item"
         :key="item.id"
         header></Single>
     </div>

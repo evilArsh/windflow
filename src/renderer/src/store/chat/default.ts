@@ -1,10 +1,6 @@
-import { ChatTopic, ChatMessage, ChatLLMConfig, ChatTTIConfig, LLMMessage, Role } from "@renderer/types"
+import { ChatTopic, ChatLLMConfig, ChatTTIConfig, LLMMessage, Role } from "@renderer/types"
 import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []
-export const chatMessageDefault = (): ChatMessage => ({
-  id: uniqueId(),
-  data: [],
-})
 export function defaultTTIConfig(): Omit<ChatTTIConfig, "id" | "topicId"> {
   return {
     n: 1,

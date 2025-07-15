@@ -26,7 +26,7 @@ export default defineStore("chat_topic", () => {
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
   const api = useData(topicList, currentNodeKey)
-  const utils = useUtils(topicList, chatMessage, chatLLMConfig, chatTTIConfig, currentNodeKey)
+  const utils = useUtils(chatMessage, chatLLMConfig, chatTTIConfig)
 
   const getMeta = (modelId: string) => {
     if (!modelId) {
@@ -49,24 +49,18 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 发送消息，当`parentMessageDataId`存在时，`messageData`为其子消息
    */
-  const sendMessage = async (
-    topic: ChatTopic,
-    message: ChatMessage,
-    messageData: ChatMessage2,
-    parentMessageDataId?: string
-  ) => {
-    api.updateChatMessage(message)
-    const meta = getMeta(messageData.modelId)
+  const sendMessage = async (topic: ChatTopic, message: ChatMessage2, parentMessageId?: string) => {
+    const meta = getMeta(message.modelId)
     if (!meta) return
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) return
     const { model, providerMeta, provider } = meta
-    let chatContext = findContext(topic.id, messageData.id)
-    const messageContextIndex = message.data.findIndex(
-      item => item.id === (parentMessageDataId ? parentMessageDataId : messageData.id)
-    )
+    let chatContext = findContext(topic.id, message.id)
+    const messageContextIndex = messages.findIndex(item => item.id === (parentMessageId ? parentMessageId : message.id))
     // 消息上下文
-    const messageContext = getMessageContext(topic, message.data.slice(messageContextIndex + 1))
+    const messageContext = getMessageContext(topic, messages.slice(messageContextIndex + 1))
     // 获取聊天框上下文
-    chatContext = chatContext ?? fetchTopicContext(topic.id, messageData.modelId, messageData.id, message.id, provider)
+    chatContext = chatContext ?? fetchTopicContext(topic.id, message.modelId, message.id, provider)
     if (!chatContext.provider) chatContext.provider = provider
     if (chatContext.handler) chatContext.handler.terminate()
 
@@ -79,25 +73,25 @@ export default defineStore("chat_topic", () => {
       mcpServersIds,
       res => {
         const { data, status } = res
-        messageData.completionTokens = toNumber(data.usage?.completion_tokens)
-        messageData.promptTokens = toNumber(data.usage?.prompt_tokens)
-        messageData.status = status
-        messageData.content = data
+        message.completionTokens = toNumber(data.usage?.completion_tokens)
+        message.promptTokens = toNumber(data.usage?.prompt_tokens)
+        message.status = status
+        message.content = data
         if (status == 206) {
-          messageData.finish = false
+          message.finish = false
         } else if (status == 200) {
-          messageData.finish = true
+          message.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
-          if (parentMessageDataId) return // 多模型请求时不总结标题
+          if (parentMessageId) return // 多模型请求时不总结标题
           if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-            chatContext.provider.summarize(JSON.stringify(messageData), model, providerMeta).then(res => {
+            chatContext.provider.summarize(JSON.stringify(message), model, providerMeta).then(res => {
               if (res) topic.label = res
             })
           }
         } else if (status == 100) {
-          messageData.finish = false
+          message.finish = false
         } else {
-          messageData.finish = true
+          message.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
         api.updateChatMessage(message)
@@ -109,67 +103,74 @@ export default defineStore("chat_topic", () => {
    * @description `parentMessageDataId`存在时，表示restart子聊天；否则表示restart父聊天或者restart所有子聊天；
    * 当子聊天存在时，父聊天不存在实际的请求，只是一个壳
    */
-  function restart(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
-    if (!topic.chatMessageId) return
+  function restart(topic: ChatTopic, messageId: string, parentMessageId?: string) {
     initContext(topic.id)
-    terminate(topic, messageDataId, parentMessageDataId)
-    const message = utils.findChatMessage(topic.chatMessageId)
+    terminate(topic, messageId, parentMessageId)
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) {
+      console.warn(`[restart] message not found.topic id:${topic.id}`)
+      return
+    }
+    const [message, _] = utils.findChatMessageChild(topic.id, messageId, parentMessageId)
     if (!message) {
-      console.warn(`[restart] message not found.${topic.chatMessageId}`)
+      console.warn(`[restart] message not found.${messageId}`)
       return
     }
-    const [messageData, _] = utils.findChatMessageChild(message.id, messageDataId, parentMessageDataId)
-    if (!messageData) {
-      console.warn(`[restart] messageItem not found.${messageDataId}`)
-      return
-    }
-    if (!parentMessageDataId && isArray(messageData.children) && messageData.children.length > 0) {
-      messageData.children.forEach(child => {
-        restart(topic, child.id, messageData.id)
+    if (!parentMessageId && message.children && message.children.length) {
+      message.children.forEach(child => {
+        restart(topic, child.id, message.id)
       })
     } else {
-      messageData.content = defaultLLMMessage()
-      messageData.finish = false
-      messageData.status = 100
-      messageData.createAt = Date.now()
-      sendMessage(topic, message, messageData, parentMessageDataId)
+      message.content = defaultLLMMessage()
+      message.finish = false
+      message.status = 100
+      message.createAt = Date.now()
+      sendMessage(topic, message, parentMessageId)
     }
   }
-  function send(topic: ChatTopic) {
+  async function send(topic: ChatTopic) {
     if (!topic.content.trim()) return
     if (topic.modelIds.length == 0) return
-    const message = utils.findChatMessage(topic.chatMessageId)
-    if (!message) {
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) {
       console.error("[send] message not found")
       return
     }
-    message.data.unshift(utils.newChatMessageData({ content: { role: Role.User, content: topic.content } }))
-    const newMessageData = reactive<ChatMessage2>(utils.newChatMessageData({ content: defaultLLMMessage() }))
+    const newUserMessage = utils.newChatMessage(topic.id, messages.length, {
+      content: { role: Role.User, content: topic.content },
+    })
+    await api.addChatMessage(newUserMessage)
+    messages.unshift(newUserMessage)
+
+    const newMessage = utils.newChatMessage(topic.id, messages.length, {
+      content: defaultLLMMessage(),
+    })
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
     if (availableModels.length > 1) {
       availableModels.forEach(modelId => {
-        if (!newMessageData.children) newMessageData.children = []
-        newMessageData.children.push(
-          utils.newChatMessageData({
-            parentId: newMessageData.id,
+        if (!newMessage.children) newMessage.children = []
+        newMessage.children.push(
+          utils.newChatMessage(topic.id, newMessage.children.length, {
+            parentId: newMessage.id,
             content: defaultLLMMessage(),
             modelId,
           })
         )
       })
     } else {
-      newMessageData.modelId = availableModels[0]
+      newMessage.modelId = availableModels[0]
     }
-    message.data.unshift(newMessageData)
-    if (newMessageData.children && newMessageData.children.length > 0) {
-      newMessageData.children.forEach(child => {
-        sendMessage(topic, message, child, newMessageData.id)
+    await api.addChatMessage(newMessage)
+    messages.unshift(newMessage)
+    if (newMessage.children && newMessage.children.length) {
+      newMessage.children.forEach(child => {
+        sendMessage(topic, child, newMessage.id)
       })
     } else {
-      sendMessage(topic, message, newMessageData)
+      sendMessage(topic, newMessage)
     }
     topic.content = ""
-    api.updateChatTopic(topic)
+    await api.updateChatTopic(topic)
   }
   /**
    * @description 刷新topic的可用models
@@ -187,12 +188,12 @@ export default defineStore("chat_topic", () => {
   }
 
   function terminate(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
-    const [messageData, _] = utils.findChatMessageChildByTopic(topic, messageDataId, parentMessageDataId)
-    if (!messageData) return
-    const chatContext = findContext(topic.id, messageData.id)
+    const [message, _] = utils.findChatMessageChild(topic.id, messageDataId, parentMessageDataId)
+    if (!message) return
+    const chatContext = findContext(topic.id, message.id)
     chatContext?.handler?.terminate()
-    if (isArray(messageData.children)) {
-      messageData.children.forEach(child => {
+    if (isArray(message.children)) {
+      message.children.forEach(child => {
         const chatContext = findContext(topic.id, child.id)
         chatContext?.handler?.terminate()
       })
@@ -202,65 +203,51 @@ export default defineStore("chat_topic", () => {
    * @description 终止当前topic中所有聊天块的请求
    */
   function terminateAll(topic: ChatTopic) {
-    if (!topic.chatMessageId) return
-    const message = utils.findChatMessage(topic.chatMessageId)
+    const message = utils.findChatMessage(topic.id)
     if (!message) return
-    message.data.forEach(messageItem => {
+    message.forEach(messageItem => {
       terminate(topic, messageItem.id)
     })
   }
   /**
    * @description 删除一条消息列表的消息
    */
-  async function deleteSubMessage(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
-    try {
-      const message = utils.findChatMessage(topic.chatMessageId)
-      if (!message) return
-      terminate(topic, messageDataId, parentMessageDataId)
-      if (parentMessageDataId) {
-        const [parentMessageData, parentIndex] = utils.findChatMessageChild(message.id, parentMessageDataId)
-        const [_, index] = utils.findChatMessageChild(message.id, messageDataId, parentMessageDataId)
-        // console.log("[delete sub message]", messageData)
-        if (parentMessageData && index > -1 && parentIndex > -1) {
-          parentMessageData.children?.splice(index, 1)
-          if (parentMessageData.children?.length === 0) {
-            console.log("[delete sub message] sub is empty, delete parent")
-            message.data.splice(parentIndex, 1)
+  async function deleteMessage(topic: ChatTopic, messageId: string, parentMessageId?: string) {
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) return
+    terminate(topic, messageId, parentMessageId)
+    const [message, index] = utils.findChatMessageChild(topic.id, messageId, parentMessageId)
+    if (message && index > -1) {
+      if (parentMessageId) {
+        message.children?.splice(index, 1)
+        if (!message.children?.length) {
+          const [_, index] = utils.findChatMessageChild(topic.id, messageId)
+          if (index >= 0) {
+            messages.splice(index, 1)
+            await api.deleteChatMessage(messageId)
           }
         } else {
-          console.warn(
-            "[deleteSubMessage]",
-            `cannot find child messageDataId: ${messageDataId} in parent messageDataId: ${parentMessageDataId}`
-          )
+          await api.updateChatMessage(message)
         }
       } else {
-        const [_, index] = utils.findChatMessageChild(message.id, messageDataId)
-        if (index == -1) return
-        // console.log("[delete sub message]", messageData)
-        message.data.splice(index, 1)
+        messages.splice(index, 1)
+        await api.deleteChatMessage(messageId)
       }
-    } catch (error) {
-      console.log("[deleteSubMessage error]", error)
+    } else {
+      console.warn(
+        "[deleteMessage]",
+        `cannot find child messageDataId: ${messageId} in parent messageDataId: ${parentMessageId}`
+      )
     }
   }
   /**
    * @description 加载topic的chatMessage,chatLLMConfig,chatTTIConfig数据
    */
   async function loadChatTopicData(topic: ChatTopic) {
-    if (topic.chatMessageId) {
-      if (!utils.findChatMessage(topic.chatMessageId)) {
-        // FIXME: api已修改
-        let message = await api.getChatMessage(topic.id)
-        if (!message) {
-          message = await api.createNewMessage()
-          topic.chatMessageId = message.id
-        }
-        chatMessage[message.id] = message
-      }
-    } else {
-      const message = await api.createNewMessage()
-      chatMessage[message.id] = message
-      topic.chatMessageId = message.id
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) {
+      const messagesData = await api.getChatMessage(topic.id)
+      chatMessage[topic.id] = messagesData
     }
     if (!utils.findChatTTIConfig(topic.id)) {
       let cnf = await api.getChatTTIConfig(topic.id)
@@ -286,7 +273,7 @@ export default defineStore("chat_topic", () => {
     chatTTIConfig,
     chatLLMConfig,
     terminate,
-    deleteSubMessage,
+    deleteMessage,
     restart,
     send,
     refreshChatTopicModelIds,

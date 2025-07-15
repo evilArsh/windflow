@@ -1,20 +1,22 @@
 <script lang="ts" setup>
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatMessage2, ChatTopic } from "@renderer/types"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import { errorToText } from "@shared/error"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
+import { storeToRefs } from "pinia"
 const props = defineProps<{
-  message: ChatMessage
   topic: ChatTopic
 }>()
 const emit = defineEmits<{
   contextClean: []
 }>()
-const message = computed(() => props.message)
-const topic = computed(() => props.topic)
-const shortcut = useShortcut()
 const chatStore = useChatStore()
+const { chatMessage } = storeToRefs(chatStore)
+const topic = computed(() => props.topic)
+const messages = computed<ChatMessage2[] | undefined>(() => chatMessage.value[props.topic.id])
+
+const shortcut = useShortcut()
 const { t } = useI18n()
 const handler = {
   openTip: async (msg: string) => {
@@ -34,12 +36,10 @@ const handler = {
     try {
       if (res.active) {
         const confirm = await handler.openTip(`${t("tip.deleteConfirm", { message: t("chat.messageRecord") })}`)
-        if (confirm && message.value) {
-          for (const messageItem of message.value.data) {
-            chatStore.deleteSubMessage(topic.value, messageItem.id)
+        if (confirm && messages.value) {
+          for await (const messageId of messages.value.map(v => v.id)) {
+            await chatStore.deleteMessage(topic.value, messageId)
           }
-          message.value.data = []
-          await chatStore.api.updateChatMessage(message.value)
         }
       }
     } catch (error) {
@@ -49,20 +49,17 @@ const handler = {
   cleanContext: async (res: { active: boolean }) => {
     try {
       if (res.active) {
-        if (message.value && message.value.data.length > 0) {
-          if (message.value.data[0].contextFlag) {
-            chatStore.deleteSubMessage(topic.value, message.value.data[0].id)
+        if (messages.value && messages.value.length) {
+          if (messages.value[0].contextFlag) {
+            await chatStore.deleteMessage(topic.value, messages.value[0].id)
           } else {
-            message.value.data.unshift({
+            const newMessage = chatStore.utils.newChatMessage(props.topic.id, messages.value.length, {
               contextFlag: true,
-              id: uniqueId(),
-              modelId: "",
-              time: formatSecond(Date.now()),
               content: { role: "", content: "" },
-              status: 200,
             })
+            await chatStore.api.addChatMessage(newMessage)
+            messages.value.unshift(newMessage)
           }
-          await chatStore.api.updateChatMessage(message.value)
           emit("contextClean")
         }
       }

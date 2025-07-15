@@ -7,30 +7,22 @@ export const useContext = () => {
   /**
    * @description 获取上下文，如果不存在则创建一个，messageDataId可能是子对话id
    */
-  const fetchTopicContext = (
-    topicId: string,
-    modelId: string,
-    messageDataId: string,
-    messageId: string,
-    provider: LLMProvider
-  ) => {
+  const fetchTopicContext = (topicId: string, modelId: string, messageId: string, provider: LLMProvider) => {
     if (!llmChats[topicId]) {
       llmChats[topicId] = []
       llmChats[topicId].push({
         modelId: modelId,
         provider: markRaw(provider),
         messageId: messageId,
-        messageDataId: messageDataId,
       })
       return llmChats[topicId][0]
     }
-    const res = llmChats[topicId].find(item => item.messageId === messageId && item.messageDataId === messageDataId)
+    const res = llmChats[topicId].find(item => item.messageId === messageId)
     if (!res) {
       llmChats[topicId].push({
         modelId: modelId,
         provider: markRaw(provider),
         messageId: messageId,
-        messageDataId: messageDataId,
       })
       return llmChats[topicId].slice(-1)[0]
     } else {
@@ -122,11 +114,11 @@ export const useContext = () => {
   function hasTopic(topicId: string) {
     return !!llmChats[topicId]
   }
-  function findContext(topicId: string, messageDataId: string): ChatContext | undefined {
+  function findContext(topicId: string, messageId: string): ChatContext | undefined {
     if (hasTopic(topicId)) {
-      return llmChats[topicId].find(item => item.messageDataId === messageDataId)
+      return llmChats[topicId].find(item => item.messageId === messageId)
     }
-    console.warn(`[findContext] topicId not found.${topicId} ${messageDataId}`)
+    console.warn(`[findContext] topicId not found.${topicId} ${messageId}`)
     return undefined
   }
   function findTopicContext(topicId: string): ChatContext[] | undefined {

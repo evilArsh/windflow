@@ -4,7 +4,7 @@ import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { Role } from "@renderer/types"
 const props = defineProps<{
-  messageItem: ChatMessage2
+  message: ChatMessage2
   hideToken?: boolean
   hideLogo?: boolean
   hideTime?: boolean
@@ -13,12 +13,10 @@ const props = defineProps<{
 }>()
 const modelsStore = useModelsStore()
 const providerStore = useProviderStore()
-const messageItem = computed(() => props.messageItem)
-const isAssistant = computed(() => props.messageItem.content.role === Role.Assistant)
+const message = computed(() => props.message)
+const isAssistant = computed(() => props.message.content.role === Role.Assistant)
 const svgSrc = computed(() =>
-  providerStore.getProviderLogo(
-    messageItem.value.modelId ? modelsStore.find(messageItem.value.modelId)?.providerName : "user"
-  )
+  providerStore.getProviderLogo(message.value.modelId ? modelsStore.find(message.value.modelId)?.providerName : "user")
 )
 </script>
 <template>
@@ -29,11 +27,11 @@ const svgSrc = computed(() =>
     <div class="chat-item-title" :class="{ reverse: !isAssistant }">
       <div v-if="isAssistant" class="flex items-center gap-0.5rem flex-wrap">
         <el-text v-if="!hideProvider" class="name">
-          {{ modelsStore.find(messageItem.modelId)?.providerName }}
+          {{ modelsStore.find(message.modelId)?.providerName }}
         </el-text>
-        <el-text v-if="!hideModel" type="primary">{{ modelsStore.find(messageItem.modelId)?.modelName }}</el-text>
+        <el-text v-if="!hideModel" type="primary">{{ modelsStore.find(message.modelId)?.modelName }}</el-text>
       </div>
-      <el-text v-if="!hideTime" size="small" class="time">{{ formatSecond(messageItem.createAt) }}</el-text>
+      <el-text v-if="!hideTime" size="small" class="time">{{ formatSecond(message.createAt) }}</el-text>
     </div>
     <slot></slot>
     <div v-if="isAssistant && !hideToken" class="flex items-center flex-wrap">
@@ -41,13 +39,13 @@ const svgSrc = computed(() =>
         <template #icon>
           <i-material-symbols:arrow-upward-alt class="text-1.2rem"></i-material-symbols:arrow-upward-alt>
         </template>
-        <el-text size="small">{{ toNumber(messageItem.promptTokens) }}</el-text>
+        <el-text size="small">{{ toNumber(message.promptTokens) }}</el-text>
       </ContentBox>
       <ContentBox>
         <template #icon>
           <i-material-symbols:arrow-downward-alt class="text-1.2rem"></i-material-symbols:arrow-downward-alt>
         </template>
-        <el-text size="small">{{ toNumber(messageItem.completionTokens) }}</el-text>
+        <el-text size="small">{{ toNumber(message.completionTokens) }}</el-text>
       </ContentBox>
     </div>
   </div>

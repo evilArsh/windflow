@@ -142,7 +142,7 @@ export const useMenu = (
       try {
         if (selectedTopic.value) {
           const nodes = chatStore.utils.getAllNodes(selectedTopic.value)
-          for (const item of nodes) {
+          for await (const item of nodes) {
             if (window.api) {
               await window.api.mcp.stopTopicServers(item.id)
             }
@@ -151,9 +151,7 @@ export const useMenu = (
             // 终止请求
             chatStore.terminateAll(item)
             // 删除消息缓存
-            if (item.chatMessageId) {
-              delete chatMessage.value[item.chatMessageId]
-            }
+            delete chatMessage.value[item.id]
           }
           treeRef.value?.remove(selectedTopic.value)
           await chatStore.api.delChatTopic(nodes)

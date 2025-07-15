@@ -4,11 +4,9 @@ import { cloneDeep, merge } from "lodash-es"
 import { Reactive } from "vue"
 
 export const useUtils = (
-  _topicList: Reactive<Array<ChatTopicTree>>,
   chatMessage: Reactive<Record<string, ChatMessage2[]>>,
   chatLLMConfig: Reactive<Record<string, ChatLLMConfig>>,
-  chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>,
-  _currentNodeKey: Ref<string>
+  chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>
 ) => {
   /**
    * @description 根据消息id查找缓存的聊天数据
@@ -32,17 +30,17 @@ export const useUtils = (
    * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的子聊天messageDataId的索引
    */
   const findChatMessageChild = (
+    topicId: string,
     messageId: string,
-    childMessageId: string,
-    parentMessageDataId?: string
+    parentMessageId?: string
   ): [ChatMessage2 | undefined, number] => {
-    const m = findChatMessage(messageId)
-    if (!m) return [undefined, -1]
+    const messages = findChatMessage(topicId)
+    if (!messages) return [undefined, -1]
     let index = -1
-    if (parentMessageDataId) {
-      const parent = m.data.find(item => item.id === parentMessageDataId)
+    if (parentMessageId) {
+      const parent = messages.find(item => item.id === parentMessageId)
       const child = parent?.children?.find((item, i) => {
-        if (item.id === childMessageId) {
+        if (item.id === messageId) {
           index = i
           return true
         }
@@ -50,8 +48,8 @@ export const useUtils = (
       })
       return [child, index]
     } else {
-      const res = m.data.find((item, i) => {
-        if (item.id === childMessageId) {
+      const res = messages.find((item, i) => {
+        if (item.id === messageId) {
           index = i
           return true
         }
@@ -60,22 +58,6 @@ export const useUtils = (
       return [res, index]
     }
   }
-  /**
-   * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的messageDataId的索引
-   */
-  const findChatMessageChildByTopic = (
-    topic: ChatTopic,
-    messageDataId: string,
-    parentMessageDataId?: string
-  ): [ChatMessage2 | undefined, number] => {
-    if (!topic.chatMessageId) {
-      return [undefined, -1]
-    }
-    const message = findChatMessage(topic.chatMessageId)
-    if (!message) [undefined, -1]
-    return findChatMessageChild(topic.chatMessageId, messageDataId, parentMessageDataId)
-  }
-
   function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
     return {
       id: uniqueId(),
@@ -90,7 +72,7 @@ export const useUtils = (
       maxContextLength: 7,
     }
   }
-  function newChatMessageData(initial?: Partial<ChatMessage2>): ChatMessage2 {
+  function newChatMessage(topicId: string, index: number, initial?: Partial<ChatMessage2>): ChatMessage2 {
     return merge(
       {
         id: uniqueId(),
@@ -103,6 +85,7 @@ export const useUtils = (
         modelId: "",
         parentId: "",
       },
+      { index, topicId },
       initial
     )
   }
@@ -139,10 +122,10 @@ export const useUtils = (
     findChatTTIConfig,
     findChatMessage,
     findChatMessageChild,
-    findChatMessageChildByTopic,
+    // findChatMessageChildByTopic,
     // findChatMessageByTopic,
     newTopic,
-    newChatMessageData,
+    newChatMessage,
     cloneTopic,
     topicToTree,
     getAllNodes,

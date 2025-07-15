@@ -10,7 +10,7 @@ import {
 import { db } from "@renderer/usable/useDatabase"
 import PQueue from "p-queue"
 import { Reactive } from "vue"
-import { chatMessageDefault, chatTopicDefault } from "./default"
+import { chatTopicDefault } from "./default"
 import useSettingsStore from "@renderer/store/settings"
 import { cloneDeep } from "lodash-es"
 
@@ -20,11 +20,6 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   const cnfQueue = markRaw(new PQueue({ concurrency: 1 }))
   const settingsStore = useSettingsStore()
 
-  async function createNewMessage() {
-    const msg = chatMessageDefault()
-    await addChatMessage(msg)
-    return msg
-  }
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(cloneDeep(data))
   }
@@ -73,6 +68,9 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
       })
     }
     return res
+  }
+  async function deleteChatMessage(messageId: string) {
+    return db.chatMessage.delete(messageId)
   }
   async function getTopic(topicId: string) {
     return db.chatTopic.get(topicId)
@@ -130,7 +128,6 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
   return {
     fetch,
-    createNewMessage,
     addChatTopic,
     addChatMessage,
     addChatLLMConfig,
@@ -144,5 +141,6 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
     getChatTTIConfig,
     getChatLLMConfig,
     delChatTopic,
+    deleteChatMessage,
   }
 }

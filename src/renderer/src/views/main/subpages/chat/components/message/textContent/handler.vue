@@ -6,7 +6,7 @@ import { CallBackFn } from "@renderer/lib/shared/types"
 import { Role } from "@renderer/types"
 import { code1xx } from "@shared/types/bridge"
 const props = defineProps<{
-  messageItem: ChatMessage2
+  message: ChatMessage2
   topic: ChatTopic
   parent?: ChatMessage2
   hideEdit?: boolean
@@ -19,28 +19,28 @@ const { t } = useI18n()
 const chatStore = useChatStore()
 
 const topic = computed(() => props.topic)
-const messageItem = computed(() => props.messageItem)
-const isAssistant = computed(() => props.messageItem.content.role === Role.Assistant)
+const message = computed(() => props.message)
+const isAssistant = computed(() => props.message.content.role === Role.Assistant)
 
 const isProcessing = computed(() => {
-  return isArray(messageItem.value.children) && messageItem.value.children.length > 0
-    ? messageItem.value.children.some(child => {
+  return isArray(message.value.children) && message.value.children.length > 0
+    ? message.value.children.some(child => {
         return code1xx(child.status) || child.status == 206
       })
-    : code1xx(messageItem.value.status) || messageItem.value.status == 206
+    : code1xx(message.value.status) || message.value.status == 206
 })
 
 const isFinish = computed(() => {
-  return isArray(messageItem.value.children) && messageItem.value.children.length > 0
-    ? messageItem.value.children.every(child => child.finish)
-    : messageItem.value.finish
+  return isArray(message.value.children) && message.value.children.length > 0
+    ? message.value.children.every(child => child.finish)
+    : message.value.finish
 })
 function terminate(done: CallBackFn) {
-  chatStore.terminate(topic.value, messageItem.value.id, props.parent?.id)
+  chatStore.terminate(topic.value, message.value.id, props.parent?.id)
   done()
 }
 function restart() {
-  chatStore.restart(topic.value, messageItem.value.id, props.parent?.id)
+  chatStore.restart(topic.value, message.value.id, props.parent?.id)
 }
 </script>
 <template>

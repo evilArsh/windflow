@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import useChatStore from "@renderer/store/chat"
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatTopic } from "@renderer/types"
 import { errorToText } from "@shared/error"
 import { useThrottleFn } from "@vueuse/core"
 const props = defineProps<{
-  message: ChatMessage
   topic: ChatTopic
 }>()
 const { t } = useI18n()

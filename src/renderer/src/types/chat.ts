@@ -18,7 +18,7 @@ export type ChatMessage2 = {
    */
   topicId: string
   /**
-   * @description 消息时间
+   * @description 消息创建时间
    */
   createAt: number
   /**
@@ -175,10 +175,6 @@ export interface ChatContext {
    * @description 当前消息ID
    */
   messageId: string
-  /**
-   * @description 当前子消息id
-   */
-  messageDataId: string
   provider?: LLMProvider
   handler?: LLMRequestHandler
 }

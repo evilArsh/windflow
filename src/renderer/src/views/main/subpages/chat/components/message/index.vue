@@ -4,7 +4,7 @@ import Handler from "./handler/index.vue"
 import useChatStore from "@renderer/store/chat"
 import TextContent from "./textContent/index.vue"
 import RightPanel from "./rightPanel/index.vue"
-import { ChatMessage, ChatTopicTree } from "@renderer/types"
+import { ChatTopicTree } from "@renderer/types"
 import { useMsgContext } from "../../index"
 const props = defineProps<{
   topic?: ChatTopicTree
@@ -15,14 +15,11 @@ const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("conten
 const { showRightPanel, toggleRightPanel } = props.context
 
 const topic = computed(() => props.topic?.node)
-const message = ref<ChatMessage>()
 watch(
   topic,
   val => {
     if (!val) return
     window.setTimeout(handler.onToBottom)
-    const m = chatStore.utils.findChatMessageByTopic(val)
-    message.value = m
   },
   { immediate: true }
 )
@@ -64,9 +61,9 @@ const handler = {
           </div>
         </el-card>
       </template>
-      <TextContent :topic :message :context />
-      <template v-if="message" #handler>
-        <Handler :topic :message @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
+      <TextContent :topic :context />
+      <template #handler>
+        <Handler :topic @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>
     </ContentLayout>
     <RightPanel v-show="showRightPanel" :context :topic></RightPanel>
