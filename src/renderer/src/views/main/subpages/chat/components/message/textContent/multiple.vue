@@ -124,11 +124,7 @@ const itemStyle = computed<CSSProperties>(() => {
 })
 async function del() {
   try {
-    if (!childLength.value) return
-    const ids = Array.from(message.value.children?.map(item => item.id) ?? [])
-    for await (const id of ids) {
-      await chatStore.deleteMessage(props.topic, id, message.value.id)
-    }
+    await chatStore.deleteMessage(props.topic, message.value.id)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

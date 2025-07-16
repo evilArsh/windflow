@@ -65,6 +65,10 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
       res.forEach(item => {
         item.finish = true
         item.status = 200
+        item.children?.forEach(child => {
+          child.finish = true
+          child.status = 200
+        })
       })
     }
     return res

@@ -55,6 +55,8 @@ export default defineStore("chat_topic", () => {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
     const { model, providerMeta, provider } = meta
+    // 多个模型同时聊天时，父消息的children在请求
+    const messageParent = parentMessageId ? utils.findChatMessageChild(topic.id, parentMessageId)[0] : undefined
     let chatContext = findContext(topic.id, message.id)
     const messageContextIndex = messages.findIndex(item => item.id === (parentMessageId ? parentMessageId : message.id))
     // 消息上下文
@@ -94,7 +96,7 @@ export default defineStore("chat_topic", () => {
           message.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
-        api.updateChatMessage(message)
+        api.updateChatMessage(messageParent ?? message)
       },
       utils.findChatLLMConfig(topic.id)
     )
@@ -125,7 +127,7 @@ export default defineStore("chat_topic", () => {
       message.finish = false
       message.status = 100
       message.createAt = Date.now()
-      sendMessage(topic, message, parentMessageId)
+      sendMessage(topic, message)
     }
   }
   async function send(topic: ChatTopic) {
@@ -219,27 +221,26 @@ export default defineStore("chat_topic", () => {
     if (!messages) return
     terminate(topic, messageId, parentMessageId)
     const [message, index] = utils.findChatMessageChild(topic.id, messageId, parentMessageId)
-    if (message && index > -1) {
-      if (parentMessageId) {
-        message.children?.splice(index, 1)
-        if (!message.children?.length) {
-          const [_, index] = utils.findChatMessageChild(topic.id, messageId)
-          if (index >= 0) {
-            messages.splice(index, 1)
-            await api.deleteChatMessage(messageId)
-          }
-        } else {
-          await api.updateChatMessage(message)
-        }
-      } else {
-        messages.splice(index, 1)
-        await api.deleteChatMessage(messageId)
-      }
-    } else {
+    if (!message) {
       console.warn(
         "[deleteMessage]",
         `cannot find child messageDataId: ${messageId} in parent messageDataId: ${parentMessageId}`
       )
+      return
+    }
+    if (parentMessageId) {
+      const [parentMessage, parentIndex] = utils.findChatMessageChild(topic.id, parentMessageId)
+      if (!parentMessage) return
+      parentMessage.children?.splice(index, 1)
+      if (!parentMessage.children?.length) {
+        messages.splice(parentIndex, 1)
+        await api.deleteChatMessage(messageId)
+      } else {
+        await api.updateChatMessage(parentMessage)
+      }
+    } else {
+      messages.splice(index, 1)
+      await api.deleteChatMessage(messageId)
     }
   }
   /**
