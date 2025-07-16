@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage2, ChatTopic } from "@renderer/types/chat"
+import { ChatMessage, ChatTopic } from "@renderer/types/chat"
 import Single from "./single.vue"
 import Multiple from "./multiple.vue"
 import Divider from "./divider.vue"
@@ -13,7 +13,7 @@ const props = defineProps<{
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
-const messages = computed<ChatMessage2[] | undefined>(() => chatMessage.value[props.topic.id])
+const messages = computed<ChatMessage[] | undefined>(() => chatMessage.value[props.topic.id])
 </script>
 <template>
   <div v-if="messages" class="flex flex-col-reverse p-1.5rem gap2.5rem">

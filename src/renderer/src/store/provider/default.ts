@@ -4,6 +4,7 @@ import { ModelType, ProviderMeta, ModelActiveStatus } from "@renderer/types"
 export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] => {
   return [
     {
+      id: uniqueId(),
       name: "deepseek",
       logo: getIconHTML(providerSvgIcon, "deepseek"),
       alias: "深度求索",
@@ -14,17 +15,13 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
         models: { method: "GET", url: "/models" },
         llmChat: { method: "POST", url: "/chat/completions" },
         balance: { method: "GET", url: "/user/balance" },
-        textToImage: { method: "GET", url: "" },
-        imageToText: { method: "GET", url: "" },
-        textToVideo: { method: "GET", url: "" },
-        speechToText: { method: "GET", url: "" },
-        textToSpeech: { method: "GET", url: "" },
       },
       selectedTypes: [ModelType.Chat, ModelType.ChatReasoner],
       selectedSubProviders: ["deepseek"],
       activeStatus: ModelActiveStatus.All,
     },
     {
+      id: uniqueId(),
       name: "siliconflow",
       alias: "硅基流动",
       logo: getIconHTML(providerSvgIcon, "siliconflow"),
@@ -46,6 +43,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       activeStatus: ModelActiveStatus.All,
     },
     {
+      id: uniqueId(),
       name: "volcengine",
       alias: "火山引擎",
       logo: getIconHTML(providerSvgIcon, "volcengine"),
@@ -67,6 +65,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       activeStatus: ModelActiveStatus.All,
     },
     {
+      id: uniqueId(),
       name: "openai",
       alias: "OpenAI",
       logo: getIconHTML(providerSvgIcon, "openai"),

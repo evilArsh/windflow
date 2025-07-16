@@ -1,7 +1,7 @@
 import { defineStore, storeToRefs } from "pinia"
 import {
   ChatLLMConfig,
-  ChatMessage2,
+  ChatMessage,
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
@@ -21,7 +21,7 @@ export default defineStore("chat_topic", () => {
   const { providerMetas } = storeToRefs(providerStore)
   const { fetchTopicContext, getMessageContext, findContext, initContext } = useContext()
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
-  const chatMessage = reactive<Record<string, ChatMessage2[]>>({}) // 聊天信息缓存,topicId作为key
+  const chatMessage = reactive<Record<string, ChatMessage[]>>({}) // 聊天信息缓存,topicId作为key
   const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
@@ -49,7 +49,7 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 发送消息，当`parentMessageDataId`存在时，`messageData`为其子消息
    */
-  const sendMessage = async (topic: ChatTopic, message: ChatMessage2, parentMessageId?: string) => {
+  const sendMessage = async (topic: ChatTopic, message: ChatMessage, parentMessageId?: string) => {
     const meta = getMeta(message.modelId)
     if (!meta) return
     const messages = utils.findChatMessage(topic.id)
@@ -142,9 +142,11 @@ export default defineStore("chat_topic", () => {
     await api.addChatMessage(newUserMessage)
     messages.unshift(newUserMessage)
 
-    const newMessage = utils.newChatMessage(topic.id, messages.length, {
-      content: defaultLLMMessage(),
-    })
+    const newMessage = reactive(
+      utils.newChatMessage(topic.id, messages.length, {
+        content: defaultLLMMessage(),
+      })
+    )
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
     if (availableModels.length > 1) {
       availableModels.forEach(modelId => {

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatMessage2, ChatTopic } from "@renderer/types"
+import { ChatMessage, ChatTopic } from "@renderer/types"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import { errorToText } from "@shared/error"
 import { ElMessageBox } from "element-plus"
@@ -14,7 +14,7 @@ const emit = defineEmits<{
 const chatStore = useChatStore()
 const { chatMessage } = storeToRefs(chatStore)
 const topic = computed(() => props.topic)
-const messages = computed<ChatMessage2[] | undefined>(() => chatMessage.value[props.topic.id])
+const messages = computed<ChatMessage[] | undefined>(() => chatMessage.value[props.topic.id])
 
 const shortcut = useShortcut()
 const { t } = useI18n()

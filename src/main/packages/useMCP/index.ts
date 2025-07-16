@@ -39,7 +39,7 @@ import { useToolCall, useToolName } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
-import { cloneDeep } from "lodash"
+import { cloneDeep } from "lodash-es"
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
 export default (globalBus: EventBus): MCPService & ServiceCore => {

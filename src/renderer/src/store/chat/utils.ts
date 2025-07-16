@@ -1,17 +1,17 @@
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
-import { ChatLLMConfig, ChatMessage2, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
 import { cloneDeep, merge } from "lodash-es"
 import { Reactive } from "vue"
 
 export const useUtils = (
-  chatMessage: Reactive<Record<string, ChatMessage2[]>>,
+  chatMessage: Reactive<Record<string, ChatMessage[]>>,
   chatLLMConfig: Reactive<Record<string, ChatLLMConfig>>,
   chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>
 ) => {
   /**
    * @description 根据消息id查找缓存的聊天数据
    */
-  const findChatMessage = (topicId: string): ChatMessage2[] | undefined => {
+  const findChatMessage = (topicId: string): ChatMessage[] | undefined => {
     return chatMessage[topicId]
   }
   /**
@@ -33,7 +33,7 @@ export const useUtils = (
     topicId: string,
     messageId: string,
     parentMessageId?: string
-  ): [ChatMessage2 | undefined, number] => {
+  ): [ChatMessage | undefined, number] => {
     const messages = findChatMessage(topicId)
     if (!messages) return [undefined, -1]
     let index = -1
@@ -58,47 +58,42 @@ export const useUtils = (
       return [res, index]
     }
   }
-  function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
-    return {
-      id: uniqueId(),
-      label,
-      parentId,
-      icon: getDefaultIcon(),
-      content: "",
-      modelIds: cloneDeep(modelIds),
-      prompt: "you are a helpful assistant",
-      createAt: Date.now(),
-      requestCount: 0,
-      maxContextLength: 7,
-    }
-  }
-  function newChatMessage(topicId: string, index: number, initial?: Partial<ChatMessage2>): ChatMessage2 {
+  // function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
+  function newTopic(index: number, initial?: Partial<ChatTopic>): ChatTopic {
     return merge(
       {
         id: uniqueId(),
-        status: 200,
-        createAt: Date.now(),
-        finish: true,
-        content: "",
-        index: 0,
-        topicId: "",
-        modelId: "",
+        index,
+        label: "",
         parentId: "",
-      },
-      { index, topicId },
+        icon: getDefaultIcon(),
+        content: "",
+        modelIds: [],
+        prompt: "you are a helpful assistant",
+        createAt: Date.now(),
+        requestCount: 0,
+        maxContextLength: 7,
+      } as ChatTopic,
       initial
     )
   }
-  function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
-    return cloneDeep({
-      ...topic,
-      id: uniqueId(),
-      label,
-      parentId,
-      chatMessageId: "",
-      requestCount: 0,
-      maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
-    })
+  // function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
+  function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
+    return cloneDeep(
+      merge(
+        {},
+        topic,
+        {
+          id: uniqueId(),
+          label: "",
+          parentId: "",
+          chatMessageId: "",
+          requestCount: 0,
+          maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
+        },
+        initial
+      )
+    )
   }
   function topicToTree(topic: ChatTopic): ChatTopicTree {
     return {
@@ -115,6 +110,23 @@ export const useUtils = (
       res.push(...getAllNodes(item))
     })
     return res
+  }
+  function newChatMessage(topicId: string, index: number, initial?: Partial<ChatMessage>): ChatMessage {
+    return merge(
+      {
+        id: uniqueId(),
+        status: 200,
+        createAt: Date.now(),
+        finish: true,
+        content: "",
+        index: 0,
+        topicId: "",
+        modelId: "",
+        parentId: "",
+      },
+      { index, topicId },
+      initial
+    )
   }
 
   return {

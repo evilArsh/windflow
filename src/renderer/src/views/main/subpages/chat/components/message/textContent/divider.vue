@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { ChatMessage2, ChatTopic } from "@renderer/types"
+import { ChatMessage, ChatTopic } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
 import { errorToText } from "@shared/error"
 import { CallBackFn } from "@renderer/lib/shared/types"
 const props = defineProps<{
-  message: ChatMessage2
+  message: ChatMessage
   topic: ChatTopic
 }>()
 const chatStore = useChatStore()

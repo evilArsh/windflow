@@ -82,13 +82,13 @@ export type ProviderMeta = {
     /**
      * @description 模型列表接口
      */
-    models: { method: Method; url: string }
-    llmChat: { method: Method; url: string }
-    textToImage: { method: Method; url: string }
-    imageToText: { method: Method; url: string }
-    textToVideo: { method: Method; url: string }
-    speechToText: { method: Method; url: string }
-    textToSpeech: { method: Method; url: string }
+    models?: { method: Method; url: string }
+    llmChat?: { method: Method; url: string }
+    textToImage?: { method: Method; url: string }
+    imageToText?: { method: Method; url: string }
+    textToVideo?: { method: Method; url: string }
+    speechToText?: { method: Method; url: string }
+    textToSpeech?: { method: Method; url: string }
     /**
      * @description 账户信息接口
      */

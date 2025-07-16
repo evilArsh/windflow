@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage2, ChatTopic } from "@renderer/types/chat"
+import { ChatMessage, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"
 import Handler from "./handler.vue"
@@ -14,14 +14,14 @@ import { useThrottleFn } from "@vueuse/core"
 import { useMsgContext } from "../../../index"
 import { errorToText } from "@shared/error"
 const props = defineProps<{
-  message: ChatMessage2
+  message: ChatMessage
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
 const id = useId()
 const chatStore = useChatStore()
 const message = computed(() => props.message)
-const messageChildren = computed<ChatMessage2[]>(() => {
+const messageChildren = computed<ChatMessage[]>(() => {
   if (layout.type === types.Tab) {
     return message.value?.children?.filter(item => item.id === layout.currentTabId) ?? []
   } else {

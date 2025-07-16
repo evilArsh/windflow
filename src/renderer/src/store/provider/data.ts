@@ -3,7 +3,6 @@ import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
 import { getIconHTML } from "@renderer/components/SvgPicker"
 import { ProviderMeta, SettingKeys } from "@renderer/types"
 import { db } from "@renderer/usable/useDatabase"
-import { useThrottleFn } from "@vueuse/core"
 import { Reactive } from "vue"
 import { providerDefault } from "./default"
 import { Settings } from "@renderer/types"
@@ -16,7 +15,7 @@ export const useData = (
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
-  const update = useThrottleFn(async (data: ProviderMeta) => db.providerMeta.put(cloneDeep(data)), 300, true)
+  const update = async (data: ProviderMeta) => db.providerMeta.put(cloneDeep(data))
   const add = async (data: ProviderMeta) => await db.providerMeta.add(cloneDeep(data))
 
   const fetch = async () => {

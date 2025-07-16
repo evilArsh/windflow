@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ChatMessage2 } from "@renderer/types/chat"
+import { ChatMessage } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { Role } from "@renderer/types"
 const props = defineProps<{
-  message: ChatMessage2
+  message: ChatMessage
   hideToken?: boolean
   hideLogo?: boolean
   hideTime?: boolean

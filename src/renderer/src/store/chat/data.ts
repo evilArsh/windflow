@@ -1,6 +1,6 @@
 import {
   ChatLLMConfig,
-  ChatMessage2,
+  ChatMessage,
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
@@ -23,7 +23,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(cloneDeep(data))
   }
-  async function addChatMessage(data: ChatMessage2) {
+  async function addChatMessage(data: ChatMessage) {
     return db.chatMessage.add(cloneDeep(data))
   }
   /**
@@ -43,7 +43,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatMessage = async (data: ChatMessage2) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
+  const updateChatMessage = async (data: ChatMessage) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
   async function updateChatLLMConfig(data: ChatLLMConfig) {
     return db.chatLLMConfig.put(cloneDeep(data))
   }
@@ -60,7 +60,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
    * @description 查找对应的聊天消息
    */
   async function getChatMessage(topicId: string) {
-    const res = await db.chatMessage.where("topicId").equals(topicId).sortBy("index")
+    const res = (await db.chatMessage.where("topicId").equals(topicId).sortBy("index")).reverse()
     if (res) {
       res.forEach(item => {
         item.finish = true
@@ -103,12 +103,13 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
         } else {
           if (maps[item.parentId]) {
             maps[item.parentId].children.push(maps[item.id])
+            maps[item.parentId].children.sort((a, b) => a.node.index - b.node.index)
           }
         }
       })
       return res
     }
-    const data = await db.chatTopic.orderBy("createAt").toArray()
+    const data = await db.chatTopic.toCollection().sortBy("index")
     const defaultData = chatTopicDefault()
     for (const item of defaultData) {
       if (!data.find(v => v.id === item.id)) {
@@ -120,7 +121,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
     const nodeKeyData = (await db.settings.get(SettingKeys.ChatCurrentNodeKey)) as Settings<string> | undefined
     currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
     topicList.push(
-      ...assembleTopicTree(data, async item => {
+      ...assembleTopicTree(data, item => {
         item.node.requestCount = 0
       })
     )

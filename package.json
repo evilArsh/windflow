@@ -1,6 +1,6 @@
 {
   "name": "ai-chat",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
   "author": "wuxiaolong <arshdebian@163.com>",
@@ -87,7 +87,7 @@
     "@types/chance": "^1.1.7",
     "@types/hash-sum": "^1.0.2",
     "@types/hast": "^3.0.4",
-    "@types/lodash": "^4.17.20",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.0.13",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@unocss/preset-icons": "^66.3.3",

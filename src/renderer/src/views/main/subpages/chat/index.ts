@@ -2,7 +2,7 @@ import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
 import type Node from "element-plus/es/components/tree/src/model/node"
-import { ChatTopicTree, SettingKeys } from "@renderer/types"
+import { ChatTopic, ChatTopicTree, SettingKeys } from "@renderer/types"
 import { storeToRefs } from "pinia"
 import useChatStore from "@renderer/store/chat"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
@@ -204,11 +204,21 @@ export const useMenu = (
         ElMessage.warning(t("chat.topicSwitching"))
         return
       }
-      const topic =
-        parentId && selectedTopic.value
-          ? chatStore.utils.cloneTopic(selectedTopic.value.node, parentId, t("chat.addChat"))
-          : chatStore.utils.newTopic(parentId ?? null, [], t("chat.addChat"))
-      if (parentId) tree.pushDefaultExpandedKeys(parentId)
+      let topic: ChatTopic
+      if (parentId && selectedTopic.value) {
+        tree.pushDefaultExpandedKeys(parentId)
+        topic = chatStore.utils.cloneTopic(selectedTopic.value.node, {
+          parentId,
+          label: t("chat.addChat"),
+          index: selectedTopic.value.children.length,
+        })
+      } else {
+        topic = chatStore.utils.newTopic(topicList.value.length, {
+          parentId,
+          modelIds: [],
+          label: t("chat.addChat"),
+        })
+      }
       await chatStore.api.addChatTopic(topic)
       const newNode: ChatTopicTree = chatStore.utils.topicToTree(topic)
       if (parentId) {
@@ -254,13 +264,28 @@ export const useMenu = (
     onNodeDrop: (draggingNode: Node, dropNode: Node, dropType: NodeDropType) => {
       if (dropType === "before" || dropType === "after") {
         draggingNode.data.node.parentId = dropNode.data.node.parentId
-        draggingNode.data.node.createAt =
-          dropType === "before" ? dropNode.data.node.createAt - 1 : dropNode.data.node.createAt + 1
+        draggingNode.data.node.index = dropType === "before" ? dropNode.data.node.index : dropNode.data.node.index + 1
+        const siblings: ChatTopicTree[] = dropNode.parent
+          ? isArray(dropNode.parent.data)
+            ? dropNode.parent.data
+            : dropNode.parent.data.children
+          : topicList.value
+        const currentIndex = siblings.findIndex(item => item.id === dropNode.data.node.id)
+        siblings
+          .slice(dropType === "before" ? currentIndex : currentIndex + 1)
+          .reduce<number>((prev: number, item: ChatTopicTree) => {
+            if (item.node.index <= prev) {
+              item.node.index += 1
+              chatStore.api.updateChatTopic(item.node)
+            }
+            return item.node.index
+          }, draggingNode.data.node.index)
+        chatStore.api.updateChatTopic(draggingNode.data.node)
       } else if (dropType === "inner") {
         draggingNode.data.node.parentId = dropNode.data.node.id
-        draggingNode.data.node.createAt = dropNode.data.node.createAt + 1
+        draggingNode.data.node.index = dropNode.data.children.length
+        chatStore.api.updateChatTopic(draggingNode.data.node)
       }
-      chatStore.api.updateChatTopic(draggingNode.data.node)
     },
     filterNode: (value: string, data: TreeNodeData): boolean => {
       return data.node.label.includes(value)

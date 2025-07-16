@@ -1,5 +1,5 @@
-import { ChatContext, ChatMessage2, ChatTopic, LLMMessage, LLMProvider, Role } from "@renderer/types"
-import { cloneDeep } from "lodash"
+import { ChatContext, ChatMessage, ChatTopic, LLMMessage, LLMProvider, Role } from "@renderer/types"
+import { cloneDeep } from "lodash-es"
 
 export const useContext = () => {
   // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key
@@ -40,7 +40,7 @@ export const useContext = () => {
    *
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
-  const getMessageContext = (topic: ChatTopic, message: ChatMessage2[]) => {
+  const getMessageContext = (topic: ChatTopic, message: ChatMessage[]) => {
     let context: LLMMessage[] = []
     let userTurn = true
     const extractData = (data: LLMMessage): LLMMessage => {
@@ -57,8 +57,8 @@ export const useContext = () => {
         ? Math.max(1, topic.maxContextLength)
         : topic.maxContextLength
       : 7
-    let data: ChatMessage2 | undefined
-    let item: ChatMessage2
+    let data: ChatMessage | undefined
+    let item: ChatMessage
     while (true) {
       data = message.shift()
       if (!data || data.contextFlag) {

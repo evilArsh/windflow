@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage2, ChatTopic } from "@renderer/types/chat"
+import { ChatMessage, ChatTopic } from "@renderer/types/chat"
 import { errorToText } from "@shared/error"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
@@ -13,8 +13,8 @@ import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
 import { useMsgContext } from "../../../index"
 const props = defineProps<{
-  message: ChatMessage2
-  parent?: ChatMessage2
+  message: ChatMessage
+  parent?: ChatMessage
   topic: ChatTopic
   header?: boolean
   context: ReturnType<typeof useMsgContext>
@@ -30,18 +30,18 @@ const message = computed(() => props.message)
 const id = useId()
 const rawDlg = useTemplateRef("rawDlg")
 const rawTextDlg = reactive({
-  data: undefined as ChatMessage2 | undefined,
+  data: undefined as ChatMessage | undefined,
   onChange: markRaw((value: string) => {
     if (rawTextDlg.data) {
       rawTextDlg.data.content.content = value
       chatStore.api.updateChatMessage(rawTextDlg.data)
     }
   }),
-  edit: markRaw((msg: ChatMessage2) => {
+  edit: markRaw((msg: ChatMessage) => {
     rawTextDlg.data = msg
     rawDlg.value?.open()
   }),
-  del: markRaw(async (m: ChatMessage2) => {
+  del: markRaw(async (m: ChatMessage) => {
     try {
       await chatStore.deleteMessage(topic.value, m.id, props.parent?.id)
     } catch (error) {

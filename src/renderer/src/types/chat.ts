@@ -1,8 +1,8 @@
 import { HttpStatusCode } from "@shared/code"
 import { LLMMessage, LLMRequestHandler, LLMProvider } from "."
-export type ChatMessage2 = {
+export type ChatMessage = {
   /**
-   * @description 单个消息ID
+   * @description 消息ID
    */
   id: string
   /**
@@ -44,7 +44,7 @@ export type ChatMessage2 = {
   /**
    * @description 多个模型同时请求
    */
-  children?: Array<ChatMessage2>
+  children?: Array<ChatMessage>
   /**
    * @description 多模型同时请求时，标识父ChatMessageData的ID
    */
@@ -58,22 +58,23 @@ export type ChatMessage2 = {
    */
   promptTokens?: number
 }
-// export type ChatMessage = {
-//   /**
-//    * @description 消息ID
-//    */
-//   id: string
-//   data: Array<ChatMessage2>
-// }
 export type ChatTopic = {
   /**
    * @description 会话ID
    */
   id: string
   /**
+   * @description 会话创建时间
+   */
+  createAt: number
+  /**
+   * @description 会话序号
+   */
+  index: number
+  /**
    * @description 父会话id
    */
-  parentId: string | null
+  parentId?: string | null
   /**
    * @description 会话名称
    */
@@ -106,10 +107,6 @@ export type ChatTopic = {
    * @description 最大上下文聊天个数
    */
   maxContextLength?: number
-  /**
-   * @description 会话创建时间
-   */
-  createAt: number
 }
 
 export type ChatLLMConfig = {
