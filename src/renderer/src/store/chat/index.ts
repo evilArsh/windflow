@@ -73,8 +73,8 @@ export default defineStore("chat_topic", () => {
       model,
       providerMeta,
       mcpServersIds,
-      res => {
-        const { data, status } = res
+      value => {
+        const { data, status } = value
         message.completionTokens = toNumber(data.usage?.completion_tokens)
         message.promptTokens = toNumber(data.usage?.prompt_tokens)
         message.status = status
@@ -86,8 +86,8 @@ export default defineStore("chat_topic", () => {
           topic.requestCount = Math.max(0, topic.requestCount - 1)
           if (parentMessageId) return // 多模型请求时不总结标题
           if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-            chatContext.provider.summarize(JSON.stringify(message), model, providerMeta).then(res => {
-              if (res) topic.label = res
+            chatContext.provider.summarize(JSON.stringify(message), model, providerMeta).then(data => {
+              if (data) topic.label = data
             })
           }
         } else if (status == 100) {

@@ -14,17 +14,5 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
         env: {},
       },
     },
-    {
-      type: "stdio",
-      id: "server-filesystem",
-      name: "server-filesystem",
-      description: "",
-      params: {
-        url: "",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-filesystem", "D:\\"],
-        env: {},
-      },
-    },
   ]
 }
