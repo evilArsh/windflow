@@ -127,7 +127,7 @@ export default defineStore("chat_topic", () => {
       message.finish = false
       message.status = 100
       message.createAt = Date.now()
-      sendMessage(topic, message)
+      sendMessage(topic, message, parentMessageId)
     }
   }
   async function send(topic: ChatTopic) {
@@ -234,7 +234,7 @@ export default defineStore("chat_topic", () => {
       parentMessage.children?.splice(index, 1)
       if (!parentMessage.children?.length) {
         messages.splice(parentIndex, 1)
-        await api.deleteChatMessage(messageId)
+        await api.deleteChatMessage(parentMessageId)
       } else {
         await api.updateChatMessage(parentMessage)
       }
