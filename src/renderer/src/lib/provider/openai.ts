@@ -7,8 +7,10 @@ import {
   LLMRequest,
   LLMRequestHandler,
   TextToImageRequest,
+  RequestHandler,
 } from "@renderer/types"
 import { BridgeResponse } from "@shared/types/bridge"
+import { useSingleLLMChat } from "./compatible/request"
 // import OpenAi from "openai"
 
 export class OpenAI implements Provider {
@@ -35,9 +37,10 @@ export class OpenAI implements Provider {
     _context: string,
     _modelMeta: ModelMeta,
     _provider: ProviderMeta,
+    _callback: (message: LLMResponse) => void,
     _reqConfig?: LLMRequest
-  ): Promise<string> {
-    return ""
+  ): Promise<RequestHandler> {
+    return useSingleLLMChat()
   }
   textToImage(
     _text: string,

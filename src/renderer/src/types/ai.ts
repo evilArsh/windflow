@@ -9,6 +9,10 @@ export enum Role {
   Developer = "developer",
 }
 
+export interface RequestHandler {
+  terminate: () => void
+}
+
 // --- llm
 export interface LLMRequest {
   stream?: boolean
@@ -70,10 +74,8 @@ export interface LLMResponse {
    */
   msg?: string
 }
-
-export interface LLMRequestHandler {
+export interface LLMRequestHandler extends RequestHandler {
   chat: (message: LLMRequest, providerMeta: ProviderMeta) => AsyncGenerator<LLMResponse>
-  terminate: () => void
 }
 
 // --- llm

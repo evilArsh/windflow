@@ -152,7 +152,6 @@ export function parseResponse(text: string, stream: boolean): LLMResponse {
 
 export function mergeRequestConfig(messages: LLMMessage[], modelMeta: ModelMeta, req?: LLMRequest): LLMRequest {
   const conf: LLMRequest = {
-    // max_tokens: 4096,
     stream: true,
     ...req,
     model: modelMeta.modelName,

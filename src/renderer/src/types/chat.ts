@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
-import { LLMMessage, LLMRequestHandler, LLMProvider } from "."
+import { LLMMessage, Provider, RequestHandler } from "."
 export type ChatMessage = {
   /**
    * @description 消息ID
@@ -172,6 +172,6 @@ export interface ChatContext {
    * @description 当前消息ID
    */
   messageId: string
-  provider?: LLMProvider
-  handler?: LLMRequestHandler
+  provider?: Provider
+  handler?: RequestHandler
 }

@@ -5,6 +5,9 @@ import {
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
+  ModelMeta,
+  ModelType,
+  Provider,
   ProviderMeta,
   Role,
 } from "@renderer/types"
@@ -46,15 +49,24 @@ export default defineStore("chat_topic", () => {
     }
     return { model, providerMeta, provider }
   }
-  /**
-   * @description 发送消息，当`parentMessageDataId`存在时，`messageData`为其子消息
-   */
-  const sendMessage = async (topic: ChatTopic, message: ChatMessage, parentMessageId?: string) => {
-    const meta = getMeta(message.modelId)
-    if (!meta) return
+  const sendTTIMessage = (
+    topic: ChatTopic,
+    model: ModelMeta,
+    providerMeta: ProviderMeta,
+    provider: Provider,
+    message: ChatMessage,
+    parentMessageId?: string
+  ) => {}
+  const sendLLMMessage = async (
+    topic: ChatTopic,
+    model: ModelMeta,
+    providerMeta: ProviderMeta,
+    provider: Provider,
+    message: ChatMessage,
+    parentMessageId?: string
+  ) => {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
-    const { model, providerMeta, provider } = meta
     // 多个模型同时聊天时，父消息的children在请求
     const messageParent = parentMessageId ? utils.findChatMessageChild(topic.id, parentMessageId)[0] : undefined
     let chatContext = findContext(topic.id, message.id)
@@ -65,7 +77,6 @@ export default defineStore("chat_topic", () => {
     chatContext = chatContext ?? fetchTopicContext(topic.id, message.modelId, message.id, provider)
     if (!chatContext.provider) chatContext.provider = provider
     if (chatContext.handler) chatContext.handler.terminate()
-
     const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
     topic.requestCount = Math.max(1, topic.requestCount + 1)
     chatContext.handler = await chatContext.provider.chat(
@@ -86,8 +97,10 @@ export default defineStore("chat_topic", () => {
           topic.requestCount = Math.max(0, topic.requestCount - 1)
           if (parentMessageId) return // 多模型请求时不总结标题
           if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-            chatContext.provider.summarize(JSON.stringify(message), model, providerMeta).then(data => {
-              if (data) topic.label = data
+            chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
+              if (isString(value.data)) {
+                topic.label = value.data
+              }
             })
           }
         } else if (status == 100) {
@@ -100,6 +113,25 @@ export default defineStore("chat_topic", () => {
       },
       utils.findChatLLMConfig(topic.id)
     )
+  }
+  /**
+   * @description 发送消息，当`parentMessageDataId`存在时，`messageData`为其子消息
+   */
+  const sendMessage = async (topic: ChatTopic, message: ChatMessage, parentMessageId?: string) => {
+    const meta = getMeta(message.modelId)
+    if (!meta) return
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) return
+    const { model, providerMeta, provider } = meta
+    if (model.type.includes(ModelType.Chat) || model.type.includes(ModelType.ChatReasoner)) {
+      return sendLLMMessage(topic, model, providerMeta, provider, message, parentMessageId)
+    } else if (
+      model.type.includes(ModelType.TextToImage) ||
+      model.type.includes(ModelType.ImageToImage) ||
+      model.type.includes(ModelType.ImageToText)
+    ) {
+      return sendTTIMessage(topic, model, providerMeta, provider, message, parentMessageId)
+    }
   }
   /**
    * @description `parentMessageDataId`存在时，表示restart子聊天；否则表示restart父聊天或者restart所有子聊天；

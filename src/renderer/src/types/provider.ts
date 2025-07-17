@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMRequest, LLMMessage, LLMRequestHandler, LLMResponse, TextToImageRequest } from "."
+import { LLMRequest, LLMMessage, LLMResponse, TextToImageRequest, RequestHandler } from "."
 import { BridgeResponse } from "@shared/types/bridge"
 export enum ModelType {
   Chat = "Chat",
@@ -120,14 +120,22 @@ export interface LLMProvider {
     mcpServersIds: Array<string>,
     callback: (message: LLMResponse) => void,
     reqConfig?: LLMRequest
-  ): Promise<LLMRequestHandler>
-  summarize(context: string, model: ModelMeta, provider: ProviderMeta, reqConfig?: LLMRequest): Promise<string>
+  ): Promise<RequestHandler>
+  summarize(
+    context: string,
+    model: ModelMeta,
+    provider: ProviderMeta,
+    callback: (message: LLMResponse) => void,
+    reqConfig?: LLMRequest
+  ): Promise<RequestHandler>
 }
 
 /**
  * Text to Image provider
+ * Image to Text
+ * Image to Image
  */
-export interface TTIProvider {
+export interface ImageProvider {
   textToImage(
     text: string,
     model: ModelMeta,
@@ -135,17 +143,13 @@ export interface TTIProvider {
     reqConfig?: TextToImageRequest
   ): Promise<BridgeResponse<string>>
 }
-// image-to-text
-
-// image-to-image
-
 // text-to-video
 
 // video-to-text
 
 // video-to-video
 
-export interface Provider extends LLMProvider, TTIProvider {
+export interface Provider extends LLMProvider, ImageProvider {
   name(): string
   fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 }

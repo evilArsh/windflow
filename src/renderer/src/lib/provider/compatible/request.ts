@@ -37,8 +37,8 @@ async function* request(
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMResponse> {
   const { api } = providerMeta
-  const response = await fetch(resolvePath([api.url, api.llmChat.url], false), {
-    method: api.llmChat.method,
+  const response = await fetch(resolvePath([api.url, api.llmChat?.url ?? ""], false), {
+    method: api.llmChat?.method,
     headers: {
       "Content-Type": ContentType.ApplicationJson,
       Authorization: `Bearer ${api.key}`,
