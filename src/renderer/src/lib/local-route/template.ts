@@ -134,7 +134,6 @@ export class RouterTree {
    * @param comp 要添加的路由对应的 Component
    */
   private push(parent: Node, parentAbsPath: string, path: string, comp: AsyncComponnet): void {
-    // debugger
     if (path.length === 0) return
     const subCount = path.match(vars.SUBPAGE_REG)?.length ?? 0
     if (subCount === 0) {

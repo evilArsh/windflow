@@ -72,7 +72,7 @@ const check = reactive({
     check.isIndeterminateSubProviders = val.length > 0 && val.length < filter.subProviders.length
   }),
 })
-async function onRefreshModel(done: CallBackFn) {
+async function onRefreshModel(done?: CallBackFn) {
   try {
     if (data.value) {
       const provider = providerStore.providerManager.getProvider(data.value.name)
@@ -87,9 +87,9 @@ async function onRefreshModel(done: CallBackFn) {
         }
       }
     }
-    done()
+    done?.()
   } catch (e) {
-    done()
+    done?.()
     ElMessage.error(errorToText(e))
   }
 }
@@ -127,7 +127,7 @@ watch(
             <el-input v-model="data.api.url" />
           </el-form-item>
           <el-form-item :label="t('provider.apiKey')" class="w-full">
-            <el-input v-model="data.api.key" show-password />
+            <el-input v-model="data.api.key" show-password @change="_ => onRefreshModel" />
           </el-form-item>
           <el-form-item :label="t('provider.model.name')" class="w-full">
             <el-card shadow="never" class="w-full">

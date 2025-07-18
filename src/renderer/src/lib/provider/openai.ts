@@ -1,15 +1,15 @@
 import {
-  LLMMessage,
+  Message,
   LLMResponse,
   Provider,
   ProviderMeta,
   ModelMeta,
   LLMRequest,
   LLMRequestHandler,
-  TextToImageRequest,
+  MediaRequest,
   RequestHandler,
+  MediaResponse,
 } from "@renderer/types"
-import { BridgeResponse } from "@shared/types/bridge"
 import { useSingleLLMChat } from "./compatible/request"
 // import OpenAi from "openai"
 
@@ -23,7 +23,7 @@ export class OpenAI implements Provider {
     return []
   }
   async chat(
-    _messages: LLMMessage[],
+    _messages: Message[],
     _modelMeta: ModelMeta,
     _providerMeta: ProviderMeta,
     _mcpServersIds: string[],
@@ -32,7 +32,6 @@ export class OpenAI implements Provider {
   ): Promise<LLMRequestHandler> {
     throw new Error("Method not implemented.")
   }
-
   async summarize(
     _context: string,
     _modelMeta: ModelMeta,
@@ -42,12 +41,12 @@ export class OpenAI implements Provider {
   ): Promise<RequestHandler> {
     return useSingleLLMChat()
   }
-  textToImage(
-    _text: string,
+  async textToImage(
+    _message: MediaRequest,
     _model: ModelMeta,
     _provider: ProviderMeta,
-    _reqConfig?: TextToImageRequest
-  ): Promise<BridgeResponse<string>> {
-    throw new Error("Method not implemented.")
+    _callback: (message: MediaResponse) => void
+  ): Promise<RequestHandler> {
+    return { terminate: () => {} }
   }
 }

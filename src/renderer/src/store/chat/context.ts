@@ -1,4 +1,4 @@
-import { ChatContext, ChatMessage, ChatTopic, LLMMessage, LLMProvider, Role } from "@renderer/types"
+import { ChatContext, ChatMessage, ChatTopic, Message, Provider, Role } from "@renderer/types"
 import { cloneDeep } from "lodash-es"
 
 export const useContext = () => {
@@ -7,7 +7,7 @@ export const useContext = () => {
   /**
    * @description 获取上下文，如果不存在则创建一个，messageDataId可能是子对话id
    */
-  const fetchTopicContext = (topicId: string, modelId: string, messageId: string, provider: LLMProvider) => {
+  const fetchTopicContext = (topicId: string, modelId: string, messageId: string, provider: Provider) => {
     if (!llmChats[topicId]) {
       llmChats[topicId] = []
       llmChats[topicId].push({
@@ -41,9 +41,9 @@ export const useContext = () => {
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
   const getMessageContext = (topic: ChatTopic, message: ChatMessage[]) => {
-    let context: LLMMessage[] = []
+    let context: Message[] = []
     let userTurn = true
-    const extractData = (data: LLMMessage): LLMMessage => {
+    const extractData = (data: Message): Message => {
       return {
         role: data.role,
         content: data.content,

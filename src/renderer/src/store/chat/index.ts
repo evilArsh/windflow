@@ -16,7 +16,7 @@ import useModelsStore from "@renderer/store/model"
 import { useContext } from "./context"
 import { useData } from "./data"
 import { useUtils } from "./utils"
-import { defaultTTIConfig, defaultLLMConfig, defaultLLMMessage } from "./default"
+import { defaultTTIConfig, defaultLLMConfig, defaultMessage } from "./default"
 
 export default defineStore("chat_topic", () => {
   const providerStore = useProviderStore()
@@ -49,14 +49,46 @@ export default defineStore("chat_topic", () => {
     }
     return { model, providerMeta, provider }
   }
-  const sendTTIMessage = (
+  const sendMediaMessage = async (
     topic: ChatTopic,
     model: ModelMeta,
     providerMeta: ProviderMeta,
     provider: Provider,
-    message: ChatMessage,
-    parentMessageId?: string
-  ) => {}
+    message: ChatMessage
+  ) => {
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) return
+    if (
+      model.type.includes(ModelType.TextToImage) ||
+      model.type.includes(ModelType.ImageToImage) ||
+      model.type.includes(ModelType.ImageToText)
+    ) {
+      let chatContext = findContext(topic.id, message.id)
+      chatContext = chatContext ?? fetchTopicContext(topic.id, message.modelId, message.id, provider)
+      if (!chatContext.provider) chatContext.provider = provider
+      if (chatContext.handler) chatContext.handler.terminate()
+      topic.requestCount = Math.max(1, topic.requestCount + 1)
+      const askMessage = messages.find(item => item.id === message.fromId)
+      const cnf = utils.findChatTTIConfig(topic.id)
+      chatContext.handler = await chatContext.provider.textToImage(
+        { ...cnf, prompt: askMessage?.content.content },
+        model,
+        providerMeta,
+        res => {
+          console.log("[textToImage]", res)
+          message.finish = true
+          message.status = res.status
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+        }
+      )
+    } else {
+      console.log("[media request not implement]", model, provider)
+      message.finish = true
+      message.status = 200
+      message.content.content = "暂未支持，敬请期待"
+      topic.requestCount = Math.max(0, topic.requestCount - 1)
+    }
+  }
   const sendLLMMessage = async (
     topic: ChatTopic,
     model: ModelMeta,
@@ -128,16 +160,20 @@ export default defineStore("chat_topic", () => {
     } else if (
       model.type.includes(ModelType.TextToImage) ||
       model.type.includes(ModelType.ImageToImage) ||
-      model.type.includes(ModelType.ImageToText)
+      model.type.includes(ModelType.ImageToText) ||
+      model.type.includes(ModelType.TextToVideo) ||
+      model.type.includes(ModelType.SpeechToText) ||
+      model.type.includes(ModelType.TextToSpeech)
     ) {
-      return sendTTIMessage(topic, model, providerMeta, provider, message, parentMessageId)
+      return sendMediaMessage(topic, model, providerMeta, provider, message)
     }
   }
   /**
-   * @description `parentMessageDataId`存在时，表示restart子聊天；否则表示restart父聊天或者restart所有子聊天；
-   * 当子聊天存在时，父聊天不存在实际的请求，只是一个壳
+   * @description `parentMessageId`存在时，表示restart多模型回答模式下的其中一个子聊天；
+   * 否则表示restart单模型或多模型回答模式下的所有子聊天；
+   * 多模型回答模式下，父message不存在实际的请求
    */
-  function restart(topic: ChatTopic, messageId: string, parentMessageId?: string) {
+  async function restart(topic: ChatTopic, messageId: string, parentMessageId?: string) {
     initContext(topic.id)
     terminate(topic, messageId, parentMessageId)
     const messages = utils.findChatMessage(topic.id)
@@ -150,16 +186,20 @@ export default defineStore("chat_topic", () => {
       console.warn(`[restart] message not found.${messageId}`)
       return
     }
-    if (!parentMessageId && message.children && message.children.length) {
-      message.children.forEach(child => {
-        restart(topic, child.id, message.id)
-      })
-    } else {
-      message.content = defaultLLMMessage()
+    const reset = (message: ChatMessage) => {
+      message.content = defaultMessage()
       message.finish = false
       message.status = 100
       message.createAt = Date.now()
-      sendMessage(topic, message, parentMessageId)
+    }
+    if (!parentMessageId && message.children && message.children.length) {
+      for (const child of message.children) {
+        reset(child)
+        await sendMessage(topic, child, message.id)
+      }
+    } else {
+      reset(message)
+      return sendMessage(topic, message, parentMessageId)
     }
   }
   async function send(topic: ChatTopic) {
@@ -178,7 +218,8 @@ export default defineStore("chat_topic", () => {
 
     const newMessage = reactive(
       utils.newChatMessage(topic.id, messages.length, {
-        content: defaultLLMMessage(),
+        content: defaultMessage(),
+        fromId: newUserMessage.id,
       })
     )
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
@@ -188,8 +229,9 @@ export default defineStore("chat_topic", () => {
         newMessage.children.push(
           utils.newChatMessage(topic.id, newMessage.children.length, {
             parentId: newMessage.id,
-            content: defaultLLMMessage(),
+            content: defaultMessage(),
             modelId,
+            fromId: newUserMessage.id,
           })
         )
       })
@@ -199,11 +241,11 @@ export default defineStore("chat_topic", () => {
     await api.addChatMessage(newMessage)
     messages.unshift(newMessage)
     if (newMessage.children && newMessage.children.length) {
-      newMessage.children.forEach(child => {
-        sendMessage(topic, child, newMessage.id)
-      })
+      for (const child of newMessage.children) {
+        await sendMessage(topic, child, newMessage.id)
+      }
     } else {
-      sendMessage(topic, newMessage)
+      await sendMessage(topic, newMessage)
     }
     topic.content = ""
     await api.updateChatTopic(topic)

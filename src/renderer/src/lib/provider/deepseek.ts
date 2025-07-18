@@ -1,7 +1,6 @@
-import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
+import { ProviderMeta, ModelMeta, ModelType, ModelsResponse, RequestHandler, MediaRequest } from "@renderer/types"
 import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
-import { BridgeResponse } from "@shared/types/bridge"
 
 export class DeepSeek extends Compatible {
   constructor() {
@@ -24,7 +23,7 @@ export class DeepSeek extends Compatible {
       subProviderName: provider.name,
     }))
   }
-  async textToImage(_text: string, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<BridgeResponse<string>> {
-    return { code: 404, msg: "not supported", data: "" }
+  async textToImage(_message: MediaRequest, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<RequestHandler> {
+    return { terminate: () => {} }
   }
 }

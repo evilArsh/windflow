@@ -2,9 +2,9 @@
 import mermaid from "mermaid"
 import useParser from "./worker"
 import CodeBlock from "./components/CodeBlock/index.vue"
-import { LLMContent } from "@renderer/types"
+import { Content } from "@renderer/types"
 const props = defineProps<{
-  content: LLMContent
+  content: Content
 }>()
 
 mermaid.initialize({
@@ -20,7 +20,7 @@ mermaid.initialize({
 const { html, parse, destroy, init } = useParser({
   code: CodeBlock,
 })
-function handleContent(content: LLMContent) {
+function handleContent(content: Content) {
   if (!isString(content)) return
   if (!content) {
     html.value = h("span", "")

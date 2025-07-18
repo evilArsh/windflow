@@ -1,4 +1,4 @@
-import { LLMToolCall, LLMResponse, Role, LLMMessage, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
+import { LLMToolCall, LLMResponse, Role, Message, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
 import { AxiosInstance } from "axios"
 import { errorToText } from "@shared/error"
 import { merge } from "lodash-es"
@@ -7,7 +7,7 @@ export function usePartialData() {
   let result: LLMResponse = defaultData()
   let tools: Record<string, LLMToolCall> = {}
   const toolsHistory: LLMToolCall[][] = []
-  const tool_calls_chain: LLMMessage[] = []
+  const tool_calls_chain: Message[] = []
   const content: string[] = []
   const reasoning_content: string[] = []
 
@@ -39,7 +39,7 @@ export function usePartialData() {
     toolsHistory.push(getTools())
     tools = {}
   }
-  function addLocalMCPCallResults(data: LLMMessage) {
+  function addLocalMCPCallResults(data: Message) {
     tool_calls_chain.push(data)
   }
   function getResponse(): LLMResponse {
@@ -150,7 +150,7 @@ export function parseResponse(text: string, stream: boolean): LLMResponse {
   }
 }
 
-export function mergeRequestConfig(messages: LLMMessage[], modelMeta: ModelMeta, req?: LLMRequest): LLMRequest {
+export function mergeRequestConfig(messages: Message[], modelMeta: ModelMeta, req?: LLMRequest): LLMRequest {
   const conf: LLMRequest = {
     stream: true,
     ...req,

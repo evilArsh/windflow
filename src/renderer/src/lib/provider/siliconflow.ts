@@ -1,7 +1,18 @@
-import { ProviderMeta, ModelMeta, ModelType, ModelsResponse } from "@renderer/types"
+import {
+  ProviderMeta,
+  ModelMeta,
+  ModelType,
+  ModelsResponse,
+  MediaResponse,
+  RequestHandler,
+  MediaRequest,
+} from "@renderer/types"
 import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
-import { BridgeResponse } from "@shared/types/bridge"
+import { useSingleRequest } from "./http"
+import { AxiosError, CanceledError } from "axios"
+import { errorToText } from "@shared/error"
+import { cloneDeep } from "lodash-es"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -23,8 +34,40 @@ export class SiliconFlow extends Compatible {
   name(): string {
     return "siliconflow"
   }
-  async textToImage(_text: string, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<BridgeResponse<string>> {
-    return { code: 404, msg: "not supported", data: "" }
+  async textToImage(
+    message: MediaRequest,
+    model: ModelMeta,
+    provider: ProviderMeta,
+    callback: (message: MediaResponse) => void
+  ): Promise<RequestHandler> {
+    const handler = useSingleRequest()
+    const data = cloneDeep(message)
+    data.model = model.modelName
+    data.image_size = data.size
+    data.batch_size = data.n
+    const request = async () => {
+      try {
+        const res = await handler.request({
+          url: resolvePath([provider.api.url, provider.api.textToImage?.url ?? ""], false),
+          method: provider.api.textToImage?.method,
+          headers: {
+            Authorization: `Bearer ${provider.api.key}`,
+          },
+          data,
+        })
+        callback({ data: res.data, status: res.status, msg: res.statusText })
+      } catch (err) {
+        if (err instanceof CanceledError) {
+          callback({ data: err, status: 499, msg: err.message })
+        } else if (err instanceof AxiosError) {
+          callback({ data: err.message, status: err.status ?? 500, msg: err.message })
+        } else {
+          callback({ data: err, status: 500, msg: errorToText(err) })
+        }
+      }
+    }
+    request()
+    return handler
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
     patchAxios(provider, this.axios)

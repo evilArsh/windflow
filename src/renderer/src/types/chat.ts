@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@shared/code"
-import { LLMMessage, Provider, RequestHandler } from "."
+import { Message, Provider, RequestHandler } from "."
 export type ChatMessage = {
   /**
    * @description 消息ID
@@ -24,7 +24,7 @@ export type ChatMessage = {
   /**
    * @description 消息内容,包含用户消息和模型返回的消息
    */
-  content: LLMMessage
+  content: Message
   /**
    * @description 当前消息为上下文分界点
    */
@@ -49,6 +49,10 @@ export type ChatMessage = {
    * @description 多模型同时请求时，标识父ChatMessageData的ID
    */
   parentId?: string
+  /**
+   * @description 如果当前消息为AI响应，则标识当前消息是对哪个提问的响应
+   */
+  fromId?: string
   /**
    * @description 本次请求中模型产生的token数
    */

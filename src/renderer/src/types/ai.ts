@@ -1,5 +1,6 @@
 import { HttpStatusCode } from "@shared/code"
 import { ProviderMeta } from "."
+import { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios"
 
 export enum Role {
   System = "system",
@@ -12,19 +13,22 @@ export enum Role {
 export interface RequestHandler {
   terminate: () => void
 }
-
+export interface GeneralRequestHandler extends RequestHandler {
+  request: <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>) => Promise<R>
+  getInstance: () => AxiosInstance
+}
 // --- llm
 export interface LLMRequest {
   stream?: boolean
   [x: string]: unknown
 }
-export type LLMContent = string | Record<string, unknown> | Array<Record<string, unknown>>
-export interface LLMMessage {
+export type Content = string | Record<string, unknown> | Array<Record<string, unknown>>
+export interface Message {
   role: string
   /**
    * 消息内容
    */
-  content: LLMContent
+  content: Content
   /**
    * 推理内容
    */
@@ -40,7 +44,7 @@ export interface LLMMessage {
   /**
    * mcp工具调用结果
    */
-  tool_calls_chain?: Array<LLMMessage>
+  tool_calls_chain?: Array<Message>
   /**
    * 是否是流式返回
    */
@@ -64,7 +68,7 @@ export interface LLMToolCall {
 }
 
 export interface LLMResponse {
-  data: LLMMessage
+  data: Message
   /**
    * 当前消息对应的状态码
    */
@@ -77,24 +81,20 @@ export interface LLMResponse {
 export interface LLMRequestHandler extends RequestHandler {
   chat: (message: LLMRequest, providerMeta: ProviderMeta) => AsyncGenerator<LLMResponse>
 }
-
 // --- llm
 
-// --- tti
-export interface TextToImageRequest {
-  model: string
-  prompt: string
+// --- media
+export interface MediaResponse {
+  data: unknown
   /**
-   * @description 图片尺寸
+   * 当前消息对应的状态码
    */
-  size?: string
+  status: HttpStatusCode
   /**
-   * @description 生成图片数量
+   * 状态码对应的提示信息
    */
-  n?: number
-  /**
-   * @description 随机种子
-   */
-  seed?: number
-  // [x: string]: unknown
+  msg?: string
+}
+export interface MediaRequest {
+  [x: string]: unknown
 }

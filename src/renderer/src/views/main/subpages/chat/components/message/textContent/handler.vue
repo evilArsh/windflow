@@ -5,6 +5,7 @@ import useChatStore from "@renderer/store/chat"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { Role } from "@renderer/types"
 import { code1xx } from "@shared/types/bridge"
+import { errorToText } from "@shared/error"
 const props = defineProps<{
   message: ChatMessage
   topic: ChatTopic
@@ -39,8 +40,14 @@ function terminate(done: CallBackFn) {
   chatStore.terminate(topic.value, message.value.id, props.parent?.id)
   done()
 }
-function restart() {
-  chatStore.restart(topic.value, message.value.id, props.parent?.id)
+async function restart(done: CallBackFn) {
+  try {
+    await chatStore.restart(topic.value, message.value.id, props.parent?.id)
+    done()
+  } catch (error) {
+    msg({ code: 500, msg: errorToText(error) })
+    done()
+  }
 }
 </script>
 <template>
@@ -61,9 +68,9 @@ function restart() {
     </el-tooltip>
     <el-tooltip :show-after="1000" v-if="isAssistant" :content="t('chat.regenerate')" placement="bottom">
       <ContentBox class="m0!" background>
-        <el-button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
+        <Button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
-        </el-button>
+        </Button>
       </ContentBox>
     </el-tooltip>
     <el-tooltip :show-after="1000" v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">

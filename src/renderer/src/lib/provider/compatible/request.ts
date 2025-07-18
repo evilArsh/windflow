@@ -2,7 +2,7 @@ import {
   LLMResponse,
   Role,
   LLMToolCall,
-  LLMMessage,
+  Message,
   LLMRequest,
   LLMRequestHandler,
   ModelMeta,
@@ -85,7 +85,7 @@ export function useSingleLLMChat(): LLMRequestHandler {
 }
 
 export async function makeRequest(
-  context: LLMMessage[],
+  context: Message[],
   providerMeta: ProviderMeta,
   modelMeta: ModelMeta,
   requestHandler: LLMRequestHandler,
@@ -101,7 +101,7 @@ export async function makeRequest(
     const toolList = await loadMCPTools(mcpServersIds)
     console.log("[load local MCP tools]", toolList)
     // 调用MCP工具并返回的调用结果
-    let reqToolsData: LLMMessage[] = []
+    let reqToolsData: Message[] = []
     // LLM返回的需要调用的工具列表
     let neededCallTools: LLMToolCall[] = []
     while (true) {

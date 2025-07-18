@@ -1,6 +1,5 @@
-import { ProviderMeta, ModelMeta } from "@renderer/types"
+import { ProviderMeta, ModelMeta, MediaResponse, RequestHandler, MediaRequest } from "@renderer/types"
 import { Compatible } from "./compatible"
-import { BridgeResponse } from "@shared/types/bridge"
 
 export class Volcengine extends Compatible {
   constructor() {
@@ -12,7 +11,12 @@ export class Volcengine extends Compatible {
   async fetchModels(_provider: ProviderMeta): Promise<ModelMeta[]> {
     return []
   }
-  async textToImage(_text: string, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<BridgeResponse<string>> {
-    return { code: 404, msg: "not supported", data: "" }
+  async textToImage(
+    _message: MediaRequest,
+    _model: ModelMeta,
+    _provider: ProviderMeta,
+    _callback: (message: MediaResponse) => void
+  ): Promise<RequestHandler> {
+    return { terminate: () => {} }
   }
 }

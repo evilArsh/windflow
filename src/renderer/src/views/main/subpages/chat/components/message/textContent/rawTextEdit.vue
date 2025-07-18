@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import useDialog from "@renderer/usable/useDialog"
-import { LLMContent } from "@renderer/types"
+import { Content } from "@renderer/types"
 import { ref } from "vue"
 const props = defineProps<{
-  data?: LLMContent
+  data?: Content
 }>()
 const emit = defineEmits<{
   (e: "change", data: string): void

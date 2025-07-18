@@ -1,6 +1,5 @@
 import { Method } from "axios"
-import { LLMRequest, LLMMessage, LLMResponse, TextToImageRequest, RequestHandler } from "."
-import { BridgeResponse } from "@shared/types/bridge"
+import { LLMRequest, Message, LLMResponse, MediaRequest, RequestHandler, MediaResponse } from "."
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
@@ -92,7 +91,7 @@ export type ProviderMeta = {
     /**
      * @description 账户信息接口
      */
-    balance: { method: Method; url: string }
+    balance?: { method: Method; url: string }
   }
   /**
    * @description 模型列表中需要展示的模型类型
@@ -114,7 +113,7 @@ export type ProviderMeta = {
  */
 export interface LLMProvider {
   chat(
-    messages: LLMMessage[],
+    messages: Message[],
     model: ModelMeta,
     provider: ProviderMeta,
     mcpServersIds: Array<string>,
@@ -131,25 +130,21 @@ export interface LLMProvider {
 }
 
 /**
- * Text to Image provider
- * Image to Text
- * Image to Image
+ * @description media provider
+ * Image,Video,Audio
  */
-export interface ImageProvider {
+export interface MediaProvider {
   textToImage(
-    text: string,
+    message: MediaRequest,
     model: ModelMeta,
     provider: ProviderMeta,
-    reqConfig?: TextToImageRequest
-  ): Promise<BridgeResponse<string>>
+    callback: (message: MediaResponse) => void
+  ): Promise<RequestHandler>
 }
 // text-to-video
-
 // video-to-text
-
 // video-to-video
-
-export interface Provider extends LLMProvider, ImageProvider {
+export interface Provider extends LLMProvider, MediaProvider {
   name(): string
   fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 }

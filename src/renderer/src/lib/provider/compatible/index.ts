@@ -1,5 +1,5 @@
 import {
-  LLMMessage,
+  Message,
   LLMResponse,
   ProviderMeta,
   ModelMeta,
@@ -7,23 +7,27 @@ import {
   Role,
   RequestHandler,
   Provider,
+  MediaResponse,
+  MediaRequest,
 } from "@renderer/types"
 import { createInstance } from "../http"
 import { useSingleLLMChat, makeRequest } from "./request"
 import { mergeRequestConfig, generateSummaryText } from "./utils"
-import { BridgeResponse } from "@shared/types/bridge"
 
 export abstract class Compatible implements Provider {
   axios = createInstance()
   constructor() {}
   abstract fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
   abstract name(): string
-  abstract textToImage(text: string, modelMeta: ModelMeta, provider: ProviderMeta): Promise<BridgeResponse<string>>
-  /**
-   * @description `LLMProvider` implementation
-   */
+  abstract textToImage(
+    message: MediaRequest,
+    model: ModelMeta,
+    provider: ProviderMeta,
+    callback: (message: MediaResponse) => void
+  ): Promise<RequestHandler>
+
   async chat(
-    messages: LLMMessage[],
+    messages: Message[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
     mcpServersIds: string[],
@@ -34,9 +38,7 @@ export abstract class Compatible implements Provider {
     makeRequest(messages, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
     return requestHandler
   }
-  /**
-   * @description `LLMProvider` implementation
-   */
+
   async summarize(
     context: string,
     modelMeta: ModelMeta,

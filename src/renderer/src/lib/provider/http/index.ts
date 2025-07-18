@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosInstance } from "axios"
+import { GeneralRequestHandler } from "@renderer/types"
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 
 export const createInstance = (): AxiosInstance => {
   const instance = axios.create()
@@ -23,4 +24,25 @@ export const createInstance = (): AxiosInstance => {
   return instance
 }
 
-export const defaultInstance = createInstance()
+export function useSingleRequest(): GeneralRequestHandler {
+  let abortController: AbortController | undefined
+  const instance = createInstance()
+  function request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R> {
+    terminate()
+    abortController = new AbortController()
+    config.signal = abortController.signal
+    return instance.request(config)
+  }
+  function terminate() {
+    abortController?.abort("Request Aborted")
+    abortController = undefined
+  }
+  function getInstance() {
+    return instance
+  }
+  return {
+    getInstance,
+    request,
+    terminate,
+  }
+}

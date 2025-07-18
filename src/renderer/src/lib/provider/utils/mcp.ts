@@ -1,4 +1,4 @@
-import { LLMMessage, LLMToolCall, Role } from "@renderer/types"
+import { Message, LLMToolCall, Role } from "@renderer/types"
 import { useToolCall } from "@shared/mcp"
 import json5 from "json5"
 export async function loadMCPTools(mcpServersIds: string[]) {
@@ -18,13 +18,13 @@ export async function loadMCPTools(mcpServersIds: string[]) {
   })
   return tools
 }
-export async function callTools(tools: LLMToolCall[]): Promise<LLMMessage[]> {
+export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
   try {
     if (!window.api) {
       console.warn("[call tools] window.api not found")
       return []
     }
-    const results: LLMMessage[] = []
+    const results: Message[] = []
     for (const tool of tools) {
       const args = tool.function.arguments
         ? json5.parse(useToolCall().normalizetoolCallArgs(tool.function.arguments))
