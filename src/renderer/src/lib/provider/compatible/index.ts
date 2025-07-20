@@ -7,7 +7,7 @@ import {
   Role,
   RequestHandler,
   Provider,
-  MediaResponse,
+  ImageResponse,
   MediaRequest,
 } from "@renderer/types"
 import { createInstance } from "../http"
@@ -23,7 +23,7 @@ export abstract class Compatible implements Provider {
     message: MediaRequest,
     model: ModelMeta,
     provider: ProviderMeta,
-    callback: (message: MediaResponse) => void
+    callback: (message: ImageResponse) => void
   ): Promise<RequestHandler>
 
   async chat(

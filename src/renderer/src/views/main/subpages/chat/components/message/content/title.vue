@@ -14,18 +14,18 @@ const props = defineProps<{
 const modelsStore = useModelsStore()
 const providerStore = useProviderStore()
 const message = computed(() => props.message)
-const isAssistant = computed(() => props.message.content.role === Role.Assistant)
+const isUser = computed(() => props.message.content.role === Role.User)
 const svgSrc = computed(() =>
   providerStore.getProviderLogo(message.value.modelId ? modelsStore.find(message.value.modelId)?.providerName : "user")
 )
 </script>
 <template>
-  <div class="chat-item-header" :class="{ reverse: !isAssistant }">
+  <div class="chat-item-header" :class="{ reverse: isUser }">
     <ContentBox v-if="!hideLogo" class="m0! flex-shrink-0" background>
       <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
     </ContentBox>
-    <div class="chat-item-title" :class="{ reverse: !isAssistant }">
-      <div v-if="isAssistant" class="flex items-center gap-0.5rem flex-wrap">
+    <div class="chat-item-title" :class="{ reverse: isUser }">
+      <div v-if="!isUser" class="flex items-center gap-0.5rem flex-wrap">
         <el-text v-if="!hideProvider" class="name">
           {{ modelsStore.find(message.modelId)?.providerName }}
         </el-text>
@@ -34,7 +34,7 @@ const svgSrc = computed(() =>
       <el-text v-if="!hideTime" size="small" class="time">{{ formatSecond(message.createAt) }}</el-text>
     </div>
     <slot></slot>
-    <div v-if="isAssistant && !hideToken" class="flex items-center flex-wrap">
+    <div v-if="!isUser && !hideToken" class="flex items-center flex-wrap">
       <ContentBox>
         <template #icon>
           <i-material-symbols:arrow-upward-alt class="text-1.2rem"></i-material-symbols:arrow-upward-alt>

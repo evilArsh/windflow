@@ -8,6 +8,7 @@ import Handler from "./handler.vue"
 import Title from "./title.vue"
 import Loading from "./loading.vue"
 import MCPCall from "./mcpcall.vue"
+import Image from "./image.vue"
 import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
@@ -49,9 +50,13 @@ const rawTextDlg = reactive({
     }
   }),
 })
-const isAssistant = computed(() => props.message.content.role === Role.Assistant)
+const isUser = computed(() => message.value.content.role === Role.User)
+
+const isText = computed(() => !message.value.type || message.value.type === "text")
+const isImage = computed(() => message.value.type === "image")
+
 const isPartial = computed(() => {
-  return props.message.status < 200 || props.message.status == 206
+  return message.value.status < 200 || message.value.status == 206
 })
 const updateAffix = () => {
   nextTick(affixRef.value?.update)
@@ -67,7 +72,7 @@ defineExpose({
 })
 </script>
 <template>
-  <MsgBubble class="chat-item-container" :class="{ reverse: !isAssistant }" :reverse="!isAssistant" :id>
+  <MsgBubble class="chat-item-container" :class="{ reverse: isUser }" :reverse="isUser" :id>
     <template v-if="header" #header>
       <Affix ref="affix" :offset="42" :target="`#${id}`">
         <Title :message>
@@ -75,12 +80,13 @@ defineExpose({
         </Title>
       </Affix>
     </template>
-    <div class="chat-item-content" :class="{ reverse: !isAssistant }">
-      <Loading v-if="isAssistant" :message></Loading>
-      <MCPCall v-if="isAssistant" :message :topic></MCPCall>
-      <Markdown v-if="isAssistant" :content="message.content.content" />
-      <i-svg-spinners:pulse-3 v-if="isAssistant && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
-      <el-text v-if="!isAssistant" type="primary" class="self-end!">
+    <div class="chat-item-content" :class="{ reverse: isUser }">
+      <Loading v-if="!isUser" :message></Loading>
+      <MCPCall v-if="!isUser" :message :topic></MCPCall>
+      <Image v-if="!isUser && isImage" :message></Image>
+      <Markdown v-if="!isUser && isText" :content="message.content.content" />
+      <i-svg-spinners:pulse-3 v-if="!isUser && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
+      <el-text v-if="isUser" type="primary" class="self-end!">
         {{ message.content.content }}
       </el-text>
     </div>

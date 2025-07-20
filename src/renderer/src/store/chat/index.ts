@@ -63,6 +63,8 @@ export default defineStore("chat_topic", () => {
       model.type.includes(ModelType.ImageToImage) ||
       model.type.includes(ModelType.ImageToText)
     ) {
+      message.type = "image"
+      message.status = 100
       let chatContext = findContext(topic.id, message.id)
       chatContext = chatContext ?? fetchTopicContext(topic.id, message.modelId, message.id, provider)
       if (!chatContext.provider) chatContext.provider = provider
@@ -75,7 +77,7 @@ export default defineStore("chat_topic", () => {
         model,
         providerMeta,
         res => {
-          console.log("[textToImage]", res)
+          message.content = res.data
           message.finish = true
           message.status = res.status
           topic.requestCount = Math.max(0, topic.requestCount - 1)
@@ -99,6 +101,7 @@ export default defineStore("chat_topic", () => {
   ) => {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
+    message.type = "text"
     // 多个模型同时聊天时，父消息的children在请求
     const messageParent = parentMessageId ? utils.findChatMessageChild(topic.id, parentMessageId)[0] : undefined
     let chatContext = findContext(topic.id, message.id)
@@ -210,16 +213,16 @@ export default defineStore("chat_topic", () => {
       console.error("[send] message not found")
       return
     }
-    const newUserMessage = utils.newChatMessage(topic.id, messages.length, {
+    const userMessage = utils.newChatMessage(topic.id, messages.length, {
       content: { role: Role.User, content: topic.content },
     })
-    await api.addChatMessage(newUserMessage)
-    messages.unshift(newUserMessage)
+    await api.addChatMessage(userMessage)
+    messages.unshift(userMessage)
 
     const newMessage = reactive(
       utils.newChatMessage(topic.id, messages.length, {
         content: defaultMessage(),
-        fromId: newUserMessage.id,
+        fromId: userMessage.id,
       })
     )
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
@@ -231,7 +234,7 @@ export default defineStore("chat_topic", () => {
             parentId: newMessage.id,
             content: defaultMessage(),
             modelId,
-            fromId: newUserMessage.id,
+            fromId: userMessage.id,
           })
         )
       })

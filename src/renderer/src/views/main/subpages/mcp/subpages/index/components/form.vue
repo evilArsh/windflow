@@ -54,7 +54,7 @@ const formRules = ref<FormRules>({
     required: true,
     trigger: "blur",
     validator: (_, value, cb) => {
-      cb(isValidUrl(value) ? undefined : new Error(t("form.invalidUrl")))
+      cb(isValidHttpUrl(value) ? undefined : new Error(t("form.invalidUrl")))
     },
   },
   type: { required: true, message: "", trigger: "blur" },

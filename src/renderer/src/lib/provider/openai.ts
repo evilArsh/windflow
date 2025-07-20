@@ -8,7 +8,7 @@ import {
   LLMRequestHandler,
   MediaRequest,
   RequestHandler,
-  MediaResponse,
+  ImageResponse,
 } from "@renderer/types"
 import { useSingleLLMChat } from "./compatible/request"
 // import OpenAi from "openai"
@@ -45,7 +45,7 @@ export class OpenAI implements Provider {
     _message: MediaRequest,
     _model: ModelMeta,
     _provider: ProviderMeta,
-    _callback: (message: MediaResponse) => void
+    _callback: (message: ImageResponse) => void
   ): Promise<RequestHandler> {
     return { terminate: () => {} }
   }

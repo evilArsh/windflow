@@ -22,7 +22,7 @@ export interface LLMRequest {
   stream?: boolean
   [x: string]: unknown
 }
-export type Content = string | Record<string, unknown> | Array<Record<string, unknown>>
+export type Content = string | Record<string, unknown> | Array<Record<string, unknown>> | string[]
 export interface Message {
   role: string
   /**
@@ -84,8 +84,8 @@ export interface LLMRequestHandler extends RequestHandler {
 // --- llm
 
 // --- media
-export interface MediaResponse {
-  data: unknown
+export interface ImageResponse {
+  data: Message
   /**
    * 当前消息对应的状态码
    */

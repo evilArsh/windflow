@@ -26,6 +26,10 @@ export type ChatMessage = {
    */
   content: Message
   /**
+   * @description 消息类型，默认为'text'消息
+   */
+  type?: "text" | "image" | "audio" | "video"
+  /**
    * @description 当前消息为上下文分界点
    */
   contextFlag?: boolean

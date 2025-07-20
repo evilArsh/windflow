@@ -41,7 +41,7 @@ const handler = {
       for (const [name, value] of Object.entries(changedData.mcpServers)) {
         if (!isObject(value.env)) value.env = {}
         if (!isArray(value.args)) value.args = []
-        if (!isValidUrl(value.url)) {
+        if (!isValidHttpUrl(value.url)) {
           value.url = ""
         }
         const existed: MCPServerParam | undefined = servers.value.find(v => v.name === name)

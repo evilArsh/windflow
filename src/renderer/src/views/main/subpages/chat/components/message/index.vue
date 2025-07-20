@@ -2,7 +2,7 @@
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import Handler from "./handler/index.vue"
 import useChatStore from "@renderer/store/chat"
-import TextContent from "./textContent/index.vue"
+import Content from "./content/index.vue"
 import RightPanel from "./rightPanel/index.vue"
 import { ChatTopicTree } from "@renderer/types"
 import { useMsgContext } from "../../index"
@@ -61,7 +61,7 @@ const handler = {
           </div>
         </el-card>
       </template>
-      <TextContent :topic :context />
+      <Content :topic :context></Content>
       <template #handler>
         <Handler :topic @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>

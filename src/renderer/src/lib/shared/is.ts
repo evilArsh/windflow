@@ -19,14 +19,15 @@ export const isPromise = <T = any>(val: unknown): val is Promise<T> => {
 }
 export const isUndefined = (val: unknown): val is undefined => typeof val === "undefined"
 export const isBoolean = (val: unknown): val is boolean => typeof val === "boolean"
-export const isIndexOutOfRange = (index: number, length: number): boolean => {
-  return index < 0 || index >= length
-}
-export const isValidUrl = (url: string): boolean => {
+
+export const isValidHttpUrl = (url: string): boolean => {
   try {
     const u = new URL(url)
     return u.protocol === "http:" || u.protocol === "https:"
   } catch (_e) {
     return false
   }
+}
+export const isBase64Image = (str: string) => {
+  return /^data:image\/(png|jpe?g|gif|webp|svg\+xml|x-icon|bmp|tiff);base64,([a-zA-Z0-9+/]+={0,2})$/i.test(str)
 }

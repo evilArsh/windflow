@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMRequest, Message, LLMResponse, MediaRequest, RequestHandler, MediaResponse } from "."
+import { LLMRequest, Message, LLMResponse, MediaRequest, RequestHandler, ImageResponse } from "."
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
@@ -138,7 +138,7 @@ export interface MediaProvider {
     message: MediaRequest,
     model: ModelMeta,
     provider: ProviderMeta,
-    callback: (message: MediaResponse) => void
+    callback: (message: ImageResponse) => void
   ): Promise<RequestHandler>
 }
 // text-to-video

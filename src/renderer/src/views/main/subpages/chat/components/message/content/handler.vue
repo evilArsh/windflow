@@ -21,7 +21,7 @@ const chatStore = useChatStore()
 
 const topic = computed(() => props.topic)
 const message = computed(() => props.message)
-const isAssistant = computed(() => props.message.content.role === Role.Assistant)
+const isUser = computed(() => props.message.content.role === Role.User)
 
 const isProcessing = computed(() => {
   return isArray(message.value.children) && message.value.children.length > 0
@@ -52,7 +52,7 @@ async function restart(done: CallBackFn) {
 </script>
 <template>
   <div class="flex items-center flex-wrap">
-    <el-tooltip :show-after="1000" v-if="isAssistant" :content="t('chat.terminate')" placement="bottom">
+    <el-tooltip :show-after="1000" v-if="!isUser" :content="t('chat.terminate')" placement="bottom">
       <ContentBox class="m0!" background>
         <Button
           text
@@ -66,7 +66,7 @@ async function restart(done: CallBackFn) {
         </Button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip :show-after="1000" v-if="isAssistant" :content="t('chat.regenerate')" placement="bottom">
+    <el-tooltip :show-after="1000" v-if="!isUser" :content="t('chat.regenerate')" placement="bottom">
       <ContentBox class="m0!" background>
         <Button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>

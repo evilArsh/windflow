@@ -3,9 +3,10 @@ import {
   ModelMeta,
   ModelType,
   ModelsResponse,
-  MediaResponse,
+  ImageResponse,
   RequestHandler,
   MediaRequest,
+  Role,
 } from "@renderer/types"
 import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
@@ -38,7 +39,7 @@ export class SiliconFlow extends Compatible {
     message: MediaRequest,
     model: ModelMeta,
     provider: ProviderMeta,
-    callback: (message: MediaResponse) => void
+    callback: (message: ImageResponse) => void
   ): Promise<RequestHandler> {
     const handler = useSingleRequest()
     const data = cloneDeep(message)
@@ -55,14 +56,25 @@ export class SiliconFlow extends Compatible {
           },
           data,
         })
-        callback({ data: res.data, status: res.status, msg: res.statusText })
+        callback({
+          data: {
+            content: res.data.images.map((v: { url: string }) => v.url),
+            role: Role.Assistant,
+          },
+          status: res.status,
+          msg: res.statusText,
+        })
       } catch (err) {
         if (err instanceof CanceledError) {
-          callback({ data: err, status: 499, msg: err.message })
+          callback({ data: { content: err.message, role: Role.Assistant }, status: 499, msg: err.message })
         } else if (err instanceof AxiosError) {
-          callback({ data: err.message, status: err.status ?? 500, msg: err.message })
+          callback({
+            data: { content: err.message, role: Role.Assistant },
+            status: err.status ?? 500,
+            msg: err.message,
+          })
         } else {
-          callback({ data: err, status: 500, msg: errorToText(err) })
+          callback({ data: { content: errorToText(err), role: Role.Assistant }, status: 500, msg: errorToText(err) })
         }
       }
     }
