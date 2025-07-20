@@ -79,7 +79,13 @@ onBeforeUnmount(abortAll)
 </script>
 <template>
   <div class="flex gap-.5rem">
-    <el-image v-for="(img, index) in images" :key="index" :src="img" loading="lazy"></el-image>
+    <el-image
+      v-for="(img, index) in images"
+      :key="index"
+      preview-teleported
+      :preview-src-list="images"
+      :src="img"
+      loading="lazy"></el-image>
   </div>
 </template>
 <style lang="scss" scoped></style>
