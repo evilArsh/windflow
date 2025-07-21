@@ -133,8 +133,8 @@ export default defineStore("chat_topic", () => {
           if (parentMessageId) return // 多模型请求时不总结标题
           if (topic.label === window.defaultTopicTitle && chatContext.provider) {
             chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
-              if (isString(value.data)) {
-                topic.label = value.data
+              if (isString(value.data.content)) {
+                topic.label = value.data.content
               }
             })
           }

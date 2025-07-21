@@ -14,6 +14,7 @@ const useImages = () => {
   const images = ref<string[]>([])
   const http = useRequest()
   const queue = new PQueue()
+  const isPending = ref(false)
 
   const blobToBase64 = async (blob: Blob) =>
     new Promise<string>((resolve, reject) => {
@@ -39,16 +40,27 @@ const useImages = () => {
       msg({ code: 500, msg: errorToText(error) })
     }
   }
+  queue.addListener("idle", () => (isPending.value = false))
+  queue.addListener("add", () => (isPending.value = true))
+  queue.addListener("active", () => (isPending.value = true))
+  // queue.addListener("next", () => (isPending.value = true))
   return {
     images,
-    isPending: () => queue.size > 0 || queue.pending > 0,
-    abortAll: http.abortAll,
+    isPending,
+    abortAll: () => {
+      http.abortAll()
+      queue.clear()
+    },
     addBase64: (img: string) => images.value.push(img),
     clearImages: () => (images.value.length = 0),
     download,
+    dispose: () => {
+      queue.removeAllListeners()
+      abortAll()
+    },
   }
 }
-const { images, download, isPending, abortAll, addBase64, clearImages } = useImages()
+const { images, download, isPending, abortAll, dispose, addBase64, clearImages } = useImages()
 watch(
   () => message.value.content.content,
   value => {
@@ -63,27 +75,25 @@ watch(
         }
         download(url)
       })
+    } else {
+      clearImages()
     }
   },
   { immediate: true }
 )
-watch(
-  images,
-  val => {
-    if (!val.length) return
-    chatstore.api.updateChatMessage({
-      ...message.value,
-      content: {
-        ...message.value.content,
-        content: val,
-      },
-    })
-    if (isPending()) return
-    message.value.content.content = val
-  },
-  { deep: true }
-)
-onBeforeUnmount(abortAll)
+watch(isPending, val => {
+  if (val) return
+  if (!images.value.length) return
+  chatstore.api.updateChatMessage({
+    ...message.value,
+    content: {
+      ...message.value.content,
+      content: Array.from(images.value),
+    },
+  })
+  message.value.content.content = Array.from(images.value)
+})
+onBeforeUnmount(dispose)
 </script>
 <template>
   <div class="flex gap-.5rem">

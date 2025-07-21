@@ -9,10 +9,12 @@ import Title from "./title.vue"
 import Loading from "./loading.vue"
 import MCPCall from "./mcpcall.vue"
 import Image from "./image.vue"
+import Error from "./error.vue"
 import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
 import { useMsgContext } from "../../../index"
+import { code1xx, code2xx } from "@shared/types/bridge"
 const props = defineProps<{
   message: ChatMessage
   parent?: ChatMessage
@@ -54,6 +56,7 @@ const isUser = computed(() => message.value.content.role === Role.User)
 
 const isText = computed(() => !message.value.type || message.value.type === "text")
 const isImage = computed(() => message.value.type === "image")
+const isException = computed(() => !(code1xx(message.value.status) || code2xx(message.value.status)))
 
 const isPartial = computed(() => {
   return message.value.status < 200 || message.value.status == 206
@@ -83,6 +86,7 @@ defineExpose({
     <div class="chat-item-content" :class="{ reverse: isUser }">
       <Loading v-if="!isUser" :message></Loading>
       <MCPCall v-if="!isUser" :message :topic></MCPCall>
+      <Error v-if="isException" :message></Error>
       <Image v-if="!isUser && isImage" :message></Image>
       <Markdown v-if="!isUser && isText" :content="message.content.content" />
       <i-svg-spinners:pulse-3 v-if="!isUser && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>

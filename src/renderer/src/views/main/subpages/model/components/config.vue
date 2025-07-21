@@ -127,7 +127,7 @@ watch(
             <el-input v-model="data.api.url" />
           </el-form-item>
           <el-form-item :label="t('provider.apiKey')" class="w-full">
-            <el-input v-model="data.api.key" show-password @change="_ => onRefreshModel" />
+            <el-input v-model="data.api.key" show-password @change="_ => onRefreshModel()" />
           </el-form-item>
           <el-form-item :label="t('provider.model.name')" class="w-full">
             <el-card shadow="never" class="w-full">

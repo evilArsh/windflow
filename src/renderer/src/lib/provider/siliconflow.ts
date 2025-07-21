@@ -69,7 +69,7 @@ export class SiliconFlow extends Compatible {
           callback({ data: { content: err.message, role: Role.Assistant }, status: 499, msg: err.message })
         } else if (err instanceof AxiosError) {
           callback({
-            data: { content: err.message, role: Role.Assistant },
+            data: { content: errorToText(err.response?.data), role: Role.Assistant },
             status: err.status ?? 500,
             msg: err.message,
           })

@@ -94,7 +94,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     } catch (error) {
       await context.removeContext(id)
       log.debug("[MCP startServer error]", error)
-      emitStatus(globalBus, id, ctx.status, ctx.reference, 500, errorToText(error))
+      emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 500, errorToText(error))
     }
   }
   async function stopServer(topicId: string, id: string): Promise<void> {
