@@ -40,7 +40,8 @@ export const useContext = () => {
    *
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
-  const getMessageContext = (topic: ChatTopic, message: ChatMessage[]) => {
+  const getMessageContext = (topic: ChatTopic, messages: ChatMessage[]) => {
+    const filteredMessage = messages.filter(msg => !msg.type || msg.type === "text")
     let context: Message[] = []
     let userTurn = true
     const extractData = (data: Message): Message => {
@@ -60,7 +61,7 @@ export const useContext = () => {
     let data: ChatMessage | undefined
     let item: ChatMessage
     while (true) {
-      data = message.shift()
+      data = filteredMessage.shift()
       if (!data || data.contextFlag) {
         if (userTurn) {
           // user-assistant消息pair中，无user消息，此时删除assistant消息

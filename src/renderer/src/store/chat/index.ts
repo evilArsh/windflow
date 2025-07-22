@@ -6,7 +6,6 @@ import {
   ChatTopicTree,
   ChatTTIConfig,
   ModelMeta,
-  ModelType,
   Provider,
   ProviderMeta,
   Role,
@@ -58,12 +57,7 @@ export default defineStore("chat_topic", () => {
   ) => {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
-    if (
-      model.type.includes(ModelType.TextToImage) ||
-      model.type.includes(ModelType.ImageToImage) ||
-      model.type.includes(ModelType.ImageToText)
-    ) {
-      message.type = "image"
+    if (modelsStore.utils.isImageType(model)) {
       message.status = 100
       let chatContext = findContext(topic.id, message.id)
       chatContext = chatContext ?? fetchTopicContext(topic.id, message.modelId, message.id, provider)
@@ -101,7 +95,6 @@ export default defineStore("chat_topic", () => {
   ) => {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
-    message.type = "text"
     // 多个模型同时聊天时，父消息的children在请求
     const messageParent = parentMessageId ? utils.findChatMessageChild(topic.id, parentMessageId)[0] : undefined
     let chatContext = findContext(topic.id, message.id)
@@ -158,15 +151,13 @@ export default defineStore("chat_topic", () => {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
     const { model, providerMeta, provider } = meta
-    if (model.type.includes(ModelType.Chat) || model.type.includes(ModelType.ChatReasoner)) {
+    if (modelsStore.utils.isChatType(model)) {
       return sendLLMMessage(topic, model, providerMeta, provider, message, parentMessageId)
     } else if (
-      model.type.includes(ModelType.TextToImage) ||
-      model.type.includes(ModelType.ImageToImage) ||
-      model.type.includes(ModelType.ImageToText) ||
-      model.type.includes(ModelType.TextToVideo) ||
-      model.type.includes(ModelType.SpeechToText) ||
-      model.type.includes(ModelType.TextToSpeech)
+      modelsStore.utils.isImageType(model) ||
+      modelsStore.utils.isVideoType(model) ||
+      modelsStore.utils.isTTSType(model) ||
+      modelsStore.utils.isASRType(model)
     ) {
       return sendMediaMessage(topic, model, providerMeta, provider, message)
     }
@@ -213,12 +204,11 @@ export default defineStore("chat_topic", () => {
       console.error("[send] message not found")
       return
     }
-    const userMessage = utils.newChatMessage(topic.id, messages.length, {
-      content: { role: Role.User, content: topic.content },
-    })
-    await api.addChatMessage(userMessage)
-    messages.unshift(userMessage)
-
+    const userMessage = reactive(
+      utils.newChatMessage(topic.id, messages.length, {
+        content: { role: Role.User, content: topic.content },
+      })
+    )
     const newMessage = reactive(
       utils.newChatMessage(topic.id, messages.length, {
         content: defaultMessage(),
@@ -227,6 +217,8 @@ export default defineStore("chat_topic", () => {
     )
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
     if (availableModels.length > 1) {
+      userMessage.type = "multi-models"
+      newMessage.type = "multi-models"
       availableModels.forEach(modelId => {
         if (!newMessage.children) newMessage.children = []
         newMessage.children.push(
@@ -240,9 +232,25 @@ export default defineStore("chat_topic", () => {
       })
     } else {
       newMessage.modelId = availableModels[0]
+      const meta = getMeta(newMessage.modelId)
+      if (!meta) {
+        newMessage.content.content = `unknown model id :${newMessage.modelId}`
+      } else {
+        newMessage.type = modelsStore.utils.isImageType(meta.model)
+          ? "image"
+          : modelsStore.utils.isVideoType(meta.model)
+            ? "video"
+            : modelsStore.utils.isTTSType(meta.model) || modelsStore.utils.isASRType(meta.model)
+              ? "audio"
+              : "text"
+        userMessage.type = newMessage.type
+      }
     }
+    await api.addChatMessage(userMessage)
+    messages.unshift(userMessage)
     await api.addChatMessage(newMessage)
     messages.unshift(newMessage)
+
     if (newMessage.children && newMessage.children.length) {
       for (const child of newMessage.children) {
         await sendMessage(topic, child, newMessage.id)

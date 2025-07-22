@@ -55,13 +55,6 @@ const event = reactive({
   },
 })
 const {
-  // x: targetX,
-  // y: targetY,
-  // width: targetWidth,
-  // height: targetHeight,
-  update: updateTargetBounding,
-} = useElementBounding(targetEl)
-const {
   x: affixX,
   y: affixY,
   // width: affixWidth,
@@ -87,7 +80,6 @@ const needRecalc = () => {
 }
 const update = () => {
   updateAffixBounding()
-  updateTargetBounding()
   event.affix.needFloat = false
   if (
     event.affix.directions.includes(Direction.Left) ||
@@ -156,7 +148,6 @@ function init() {
     targetEl.value = document.querySelector(target) as HTMLElement | null
   }
   updateAffixBounding()
-  updateTargetBounding()
 }
 const throttledUpdate = useThrottleFn(update, 250, true)
 onMounted(() => {

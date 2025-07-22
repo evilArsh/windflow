@@ -1,6 +1,6 @@
 {
   "name": "ai-chat",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
   "author": "wuxiaolong <arshdebian@163.com>",

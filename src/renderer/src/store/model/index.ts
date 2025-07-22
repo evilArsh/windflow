@@ -1,10 +1,12 @@
 import { ModelMeta } from "@renderer/types"
 import { defineStore } from "pinia"
 import { useData } from "./data"
+import { useUtils } from "./utils"
 export default defineStore("model", () => {
   const models = reactive<ModelMeta[]>([]) // 所有模型
-  const cache = markRaw<Map<string, ModelMeta>>(new Map()) // 检索缓存
+  const cache: Map<string, ModelMeta> = new Map() // 检索缓存
   const api = useData(models)
+  const utils = useUtils()
 
   function setModel(newModel: ModelMeta) {
     cache.set(newModel.id, newModel)
@@ -32,5 +34,6 @@ export default defineStore("model", () => {
     find,
     findByProvider,
     api,
+    utils,
   }
 })
