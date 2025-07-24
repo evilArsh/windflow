@@ -22,7 +22,7 @@ const { t } = useI18n()
         <ContentBox
           background
           default-lock
-          style="--box-active-shadow-color: transparent; --box-active-bg-color: #f5f5f5">
+          style="--box-active-shadow-color: transparent; --box-active-bg-color: var(--el-fill-color)">
           <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
           <template #footer>
             <Message :topic></Message>
@@ -31,7 +31,7 @@ const { t } = useI18n()
         <ContentBox
           background
           default-lock
-          style="--box-active-shadow-color: transparent; --box-active-bg-color: #f5f5f5">
+          style="--box-active-shadow-color: transparent; --box-active-bg-color: var(--el-fill-color)">
           <el-text type="primary">{{ t("chat.settings.inputLabel") }}</el-text>
           <template #footer>
             <Global :topic></Global>

@@ -69,7 +69,12 @@ export default defineConfig({
         resolvers: [IconsResolver(), ElementPlusResolver()],
       }),
       Components({
-        resolvers: [IconsResolver(), ElementPlusResolver()],
+        resolvers: [
+          IconsResolver(),
+          ElementPlusResolver({
+            importStyle: "sass",
+          }),
+        ],
         dts: true,
         globs: ["./src/renderer/src/components/*/index.vue", "./src/components/*/index.vue"],
       }),
@@ -79,5 +84,12 @@ export default defineConfig({
         brotliSize: true,
       }),
     ],
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use "@renderer/app/element/styles/element-plus.scss" as *;`,
+        },
+      },
+    },
   },
 })

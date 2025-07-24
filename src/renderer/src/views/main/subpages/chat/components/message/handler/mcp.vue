@@ -125,7 +125,7 @@ const serverHandler = {
                   <div class="flex items-center">
                     <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.mcp.clone')">
                       <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(server)">
-                        <i class="i-ep:copy-document c-#888"></i>
+                        <i class="i-ep:copy-document"></i>
                       </ContentBox>
                     </el-tooltip>
                     <el-popconfirm

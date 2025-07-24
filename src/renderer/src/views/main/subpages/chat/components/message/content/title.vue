@@ -51,15 +51,9 @@ const svgSrc = computed(() =>
   </div>
 </template>
 <style lang="scss" scoped>
-html.dark {
-  .chat-item-header {
-    --title-bg-color: #1f1f1f;
-  }
-}
 .chat-item-header {
-  --title-bg-color: #fff;
   flex-wrap: wrap;
-  background-color: var(--title-bg-color);
+  background-color: var(--el-card-bg-color);
   border-radius: 0 1rem 1rem 0;
   padding: 0.25rem 0.5rem;
   display: flex;

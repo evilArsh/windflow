@@ -13,23 +13,10 @@ pre {
       display: inline-block;
       width: 2em;
       margin-right: 1em;
-      color: #666;
+      color: var(--el-text-color-regular);
       text-align: right;
       user-select: none;
     }
-  }
-}
-html.dark {
-  .markdown-container {
-    table th {
-      background-color: #313131;
-    }
-
-    table th,
-    table td {
-      border: 1px solid #000;
-    }
-
   }
 }
 .markdown-container {
@@ -42,12 +29,12 @@ html.dark {
 
   table th,
   table td {
-    border: 1px solid #ddd;
+    border: 1px solid var(--el-border-color-lighter);
     padding: 8px;
   }
 
   table th {
-    background-color: #f2f2f2;
+    background-color: var(--el-fill-color-dark);
     text-align: left;
   }
   ol,

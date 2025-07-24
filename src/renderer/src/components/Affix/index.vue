@@ -179,22 +179,13 @@ defineExpose({
   </div>
 </template>
 <style lang="scss" scoped>
-html.dark {
-  .comp-affix.fix {
-    --affix-shadow-color: rgba(255, 255, 255, 0.15);
-  }
-}
 .comp-affix {
-  --affix-shadow-color: transparent;
-  &.fix {
-    --affix-shadow-color: rgba(0, 0, 0, 0.1);
-  }
   .comp-affix-inner {
     transition: box-shadow 0.3s;
-    box-shadow: 0 2px 12px 0 var(--affix-shadow-color);
     border-radius: 1rem;
     &.fix {
       position: fixed;
+      box-shadow: var(--el-box-shadow);
     }
   }
 }

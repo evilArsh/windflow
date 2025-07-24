@@ -9,7 +9,6 @@ export default () => {
         useMaxWidth: true,
         htmlLabels: true,
       },
-      fontFamily: "Maple Mono CN",
       theme: "default",
     })
   }

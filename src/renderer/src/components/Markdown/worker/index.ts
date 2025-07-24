@@ -23,14 +23,14 @@ export const createProcessor = () => {
       .use(remarkEmoji)
       // 将mdast解析为hast
       .use(remarkRehype, {
-        allowDangerousHtml: false,
+        allowDangerousHtml: true,
         allowDangerousCharacters: false,
       })
       .use(rehypeMathjax)
       .use(rehypeHrToBr)
       .use(rehypeUrlAttributes)
       .use(rehypeStringify, {
-        allowDangerousHtml: false,
+        allowDangerousHtml: true,
         allowDangerousCharacters: false,
       })
   )

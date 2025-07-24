@@ -14,7 +14,6 @@ mermaid.initialize({
     useMaxWidth: true,
     htmlLabels: true,
   },
-  fontFamily: "Maple Mono CN",
   theme: "default",
 })
 const { html, parse, destroy, init } = useParser({

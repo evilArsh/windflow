@@ -35,18 +35,9 @@ const resizeStyle = ref<CSSProperties>({
   </div>
 </template>
 <style lang="scss" scoped>
-html.dark {
-  .right-panel {
-    --right-panel-bg-color: #141414;
-    --right-panel-border-color: #000;
-  }
-}
 .right-panel {
-  --right-panel-border-color: #d9d9d9;
-  --right-panel-bg-color: #fff;
-
-  background-color: var(--right-panel-bg-color);
-  border-left: solid 1px var(--right-panel-border-color);
+  background-color: var(--el-fill-color-blank);
+  border-left: solid 1px var(--el-border-color-light);
   display: flex;
   padding: 1rem;
   position: relative;

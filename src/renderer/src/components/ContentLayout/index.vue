@@ -152,42 +152,29 @@ onBeforeUnmount(() => {
   }
   &:hover {
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(144, 147, 153, 0.3);
+      background-color: var(--el-fill-color-darker);
     }
   }
 }
-html.dark {
-  .content-container {
-    --content-container-bg-color: #141414;
-    --content-handler-bg-color: #161616;
-    --content-handler-border-color: #4c4c4c;
-  }
-}
 .content-container {
-  --content-container-bg-color: #ffffff;
-  --content-bg-color: transparent;
-  --content-header-bg-color: transparent;
   --content-header-height: 4rem;
-  --content-handler-bg-color: #ffffff;
-  --content-handler-border-color: #d9d9d9;
-
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--content-container-bg-color);
+  background-color: var(--el-fill-color-dark);
   .content-header {
     position: relative;
     z-index: 200;
     flex-shrink: 0;
     display: flex;
     flex-basis: var(--content-header-height);
-    background-color: var(--content-header-bg-color);
-    border-bottom: 1px solid var(--content-handler-border-color);
+    background-color: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-light);
   }
   .content-main {
     flex: 1;
-    background-color: var(--content-bg-color);
+    background-color: var(--el-bg-color);
     overflow: hidden;
     display: flex;
     &--inner {
@@ -200,8 +187,8 @@ html.dark {
     flex-shrink: 0;
     position: relative;
     display: flex;
-    background-color: var(--content-handler-bg-color);
-    border-top: 1px solid var(--content-handler-border-color);
+    background-color: var(--el-bg-color);
+    border-top: 1px solid var(--el-border-color-light);
     padding: 1rem;
     min-height: 15rem;
   }

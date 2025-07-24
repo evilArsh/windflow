@@ -209,14 +209,9 @@ const dlg = {
   </ContentLayout>
 </template>
 <style lang="scss" scoped>
-html.dark {
-  .mcp-config-list {
-    border-color: #494949;
-  }
-}
 .mcp-config-list {
   border-right: solid 1px;
-  border-color: #efefef;
+  border-color: var(--el-border-color-light);
   display: flex;
   flex-direction: column;
   overflow: hidden;

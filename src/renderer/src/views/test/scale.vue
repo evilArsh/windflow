@@ -111,7 +111,7 @@ const conf = ref<ScaleConfig>({
   scalable: true,
   containerStyle: {
     position: "absolute",
-    backgroundColor: "rgb(227,227,227)",
+    backgroundColor: "var(--el-color-info)",
     width: 501,
     height: 502,
   },

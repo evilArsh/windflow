@@ -15,17 +15,10 @@ onMounted(() => {})
   </div>
 </template>
 <style lang="scss" scoped>
-html.dark {
-  .main-container {
-    --main-container-bg: #141414;
-  }
-}
 .main-container {
-  --main-container-bg: #f1f1f1;
   --main-container-main-aside-width: 7rem;
   --main-container-content-header-height: 5rem;
-
-  background-color: var(--main-container-bg);
+  background-color: var(--el-bg-color-page);
   flex: 1;
   width: 100%;
   height: 100%;

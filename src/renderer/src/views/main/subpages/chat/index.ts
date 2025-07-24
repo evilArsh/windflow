@@ -94,7 +94,7 @@ export const useMenu = (
     },
     mask: false,
     maskStyle: {
-      backgroundColor: "rgba(0, 0, 0, 0)",
+      backgroundColor: "transparent",
       zIndex: z.FIXED - 1,
     },
   })

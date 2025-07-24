@@ -39,30 +39,18 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
   </div>
 </template>
 <style lang="scss" scoped>
-html.dark {
-  .subnav-container {
-    --subnav-provider-bg-color: #141414;
-    --subnav-provider-border-color: #1d1d1d;
-    --subnav-container-content-bg-color: #1d1d1d;
-  }
-}
 .subnav-container {
-  --subnav-container-bg-color: transparent;
-  --subnav-provider-bg-color: #efefef;
-  --subnav-provider-border-color: #d9d9d9;
-  --subnav-container-content-bg-color: #fdfdfd;
-
   flex: 1;
   display: flex;
   overflow: hidden;
-  background-color: var(--subnav-container-bg-color);
+  background-color: var(--el-fill-color-blank);
   .subnav-provider {
     overflow: hidden;
     min-width: 20rem;
-    background-color: var(--subnav-provider-bg-color);
+    background-color: var(--el-fill-color);
     display: flex;
     flex-direction: column;
-    border-right: solid 1px var(--subnav-provider-border-color);
+    border-right: solid 1px var(--el-border-color-lighter);
     position: relative;
   }
   .subnav-card {
@@ -75,7 +63,7 @@ html.dark {
     overflow: hidden;
   }
   .subnav-content {
-    background-color: var(--subnav-container-content-bg-color);
+    background-color: var(--el-fill-color);
     overflow: hidden;
     display: flex;
     flex: 1;

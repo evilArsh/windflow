@@ -15,7 +15,7 @@ export default (scaleRef: Readonly<Ref<ScaleInstance | null>>, target: Readonly<
     },
     mask: false,
     maskStyle: {
-      backgroundColor: "rgba(0, 0, 0, 0)",
+      backgroundColor: "transparent",
       zIndex: z.FIXED_MAX - 1,
     },
   })

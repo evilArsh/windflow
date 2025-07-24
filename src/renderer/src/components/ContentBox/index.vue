@@ -94,48 +94,27 @@ watch(
 .normal {
   --box-shadow-color: transparent;
   --box-active-shadow-color: transparent;
-
   --box-bg-color: transparent;
   --box-hover-bg-color: transparent;
   --box-active-bg-color: transparent;
 }
-html {
-  .comp-content-box {
-    --box-shadow-color: rgba(0, 0, 0, 0.1);
-    --box-active-shadow-color: rgba(0, 0, 0, 0.2);
-
+.comp-content-box {
+  // --box-shadow-color: var(--el-fill-color-lighter);
+  // --box-active-shadow-color: var(--el-fill-color-light);
+  --box-shadow-color: var(--el-color-primary-light-8);
+  --box-active-shadow-color: var(--el-color-primary-light-7);
+  --box-bg-color: transparent;
+  --box-hover-bg-color: var(--el-fill-color-dark);
+  --box-active-bg-color: var(--el-fill-color-darker);
+  &.background {
     --box-bg-color: transparent;
-    --box-hover-bg-color: rgba(249, 249, 249, 0.6);
-    --box-active-bg-color: rgba(249, 249, 249, 0.9);
-    &.background {
-      --box-bg-color: transparent;
-      --box-hover-bg-color: rgba(235, 235, 235, 1);
-      --box-active-bg-color: rgba(219, 219, 219, 1);
-    }
-    &.normal {
-      @extend .normal;
-    }
+    --box-hover-bg-color: var(--el-color-info-light-7);
+    --box-active-bg-color: var(--el-color-info-light-5);
+  }
+  &.normal {
+    @extend .normal;
   }
 }
-
-html.dark {
-  .comp-content-box {
-    --box-shadow-color: rgba(255, 255, 255, 0.2);
-    --box-active-shadow-color: rgba(255, 255, 255, 0.3);
-
-    --box-bg-color: transparent;
-    --box-hover-bg-color: transparent;
-    --box-active-bg-color: transparent;
-    &.background {
-      --box-hover-bg-color: var(--box-shadow-color);
-      --box-active-bg-color: var(--box-active-shadow-color);
-    }
-    &.normal {
-      @extend .normal;
-    }
-  }
-}
-
 .comp-content-box {
   user-select: none;
   cursor: pointer;
@@ -149,8 +128,8 @@ html.dark {
   background-color: var(--box-bg-color);
 
   --box-icon-color: var(--el-text-color-regular);
-  --box-icon-hover-color: rgba(10, 205, 255, 0.3);
-  --box-icon-active-color: rgba(10, 205, 255, 0.4);
+  --box-icon-hover-color: var(--el-color-primary-light-7);
+  --box-icon-active-color: var(--el-color-primary-light-5);
   &:hover {
     background-color: var(--box-hover-bg-color);
     box-shadow: 0 0 3px var(--box-shadow-color);

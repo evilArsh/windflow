@@ -101,15 +101,10 @@ onBeforeMount(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: solid 1px var(--nav-container-border-color);
+  border-right: solid 1px var(--el-border-color-lighter);
 }
 </style>
 <style lang="scss" scoped>
-html.dark {
-  .nav-container {
-    --nav-container-border-color: #141414;
-  }
-}
 .nav-container {
   --el-menu-base-level-padding: 0;
   --el-menu-horizontal-height: 100%;
@@ -118,20 +113,15 @@ html.dark {
   --el-menu-sub-item-height: auto;
   --el-menu-active-color: transparent;
   --el-menu-hover-bg-color: transparent;
-  --nav-container-bg-color: var(--el-card-bg-color);
-
   --el-card-border-color: transparent;
   --el-card-border-radius: 0;
   --el-card-padding: 0;
-
-  --nav-container-border-color: #d9d9d9;
-
   width: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--nav-container-bg-color);
+  background-color: var(--el-fill-color-blank);
   .nav-menu {
     flex: 1;
     overflow: hidden;
