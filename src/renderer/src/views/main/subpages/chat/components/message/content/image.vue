@@ -7,6 +7,7 @@ import PQueue from "p-queue"
 
 const props = defineProps<{
   message: ChatMessage
+  parent?: ChatMessage
 }>()
 const chatstore = useChatStore()
 const message = computed(() => props.message)
@@ -62,19 +63,25 @@ const useImages = () => {
 }
 const { images, download, isPending, abortAll, dispose, addBase64, clearImages } = useImages()
 watch(
-  () => message.value.content.content,
+  () => message.value.content,
   value => {
-    if (Array.isArray(value)) {
-      abortAll()
-      clearImages()
-      value.forEach((url: unknown) => {
-        if (!isString(url)) return
-        if (isBase64Image(url)) {
-          addBase64(url)
-          return
-        }
-        download(url)
-      })
+    console.log("[message.value.content]", message.value.content)
+    if (Array.isArray(value.content)) {
+      if (value.content.some((item: string | Record<string, unknown>) => isString(item) && !isBase64Image(item))) {
+        abortAll()
+        clearImages()
+        value.content.forEach((url: unknown) => {
+          if (!isString(url)) return
+          if (isBase64Image(url)) {
+            addBase64(url)
+            return
+          }
+          download(url)
+        })
+      } else {
+        clearImages()
+        value.content.filter(v => isString(v)).forEach(addBase64)
+      }
     } else {
       clearImages()
     }
@@ -82,16 +89,21 @@ watch(
   { immediate: true }
 )
 watch(isPending, val => {
+  console.log("[pending end]", images.value)
   if (val) return
   if (!images.value.length) return
-  chatstore.api.updateChatMessage({
-    ...message.value,
-    content: {
-      ...message.value.content,
-      content: Array.from(images.value),
-    },
-  })
   message.value.content.content = Array.from(images.value)
+  if (props.parent) {
+    chatstore.api.updateChatMessage(props.parent)
+  } else {
+    chatstore.api.updateChatMessage({
+      ...message.value,
+      content: {
+        ...message.value.content,
+        content: Array.from(images.value),
+      },
+    })
+  }
 })
 onBeforeUnmount(dispose)
 </script>

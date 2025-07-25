@@ -62,7 +62,7 @@ export default defineStore("chat_topic", () => {
       let chatContext = findContext(topic.id, message.id)
       chatContext = chatContext ?? fetchTopicContext(topic.id, message.modelId, message.id, provider)
       if (!chatContext.provider) chatContext.provider = provider
-      if (chatContext.handler) chatContext.handler.terminate()
+      chatContext.handler?.terminate()
       topic.requestCount = Math.max(1, topic.requestCount + 1)
       const askMessage = messages.find(item => item.id === message.fromId)
       const cnf = utils.findChatTTIConfig(topic.id)
@@ -210,25 +210,39 @@ export default defineStore("chat_topic", () => {
       })
     )
     const newMessage = reactive(
-      utils.newChatMessage(topic.id, messages.length, {
+      utils.newChatMessage(topic.id, messages.length + 1, {
         content: defaultMessage(),
         fromId: userMessage.id,
       })
     )
+    const getMessageType = (meta: ModelMeta) => {
+      return modelsStore.utils.isImageType(meta)
+        ? "image"
+        : modelsStore.utils.isVideoType(meta)
+          ? "video"
+          : modelsStore.utils.isTTSType(meta) || modelsStore.utils.isASRType(meta)
+            ? "audio"
+            : "text"
+    }
     const availableModels = topic.modelIds.filter(modelId => getMeta(modelId))
     if (availableModels.length > 1) {
       userMessage.type = "multi-models"
       newMessage.type = "multi-models"
       availableModels.forEach(modelId => {
         if (!newMessage.children) newMessage.children = []
-        newMessage.children.push(
-          utils.newChatMessage(topic.id, newMessage.children.length, {
-            parentId: newMessage.id,
-            content: defaultMessage(),
-            modelId,
-            fromId: userMessage.id,
-          })
-        )
+        const message = utils.newChatMessage(topic.id, newMessage.children.length, {
+          parentId: newMessage.id,
+          content: defaultMessage(),
+          modelId,
+          fromId: userMessage.id,
+        })
+        const meta = getMeta(modelId)
+        if (meta) {
+          message.type = getMessageType(meta.model)
+        } else {
+          message.content.content = `unknown model id :${newMessage.modelId}`
+        }
+        newMessage.children.push(message)
       })
     } else {
       newMessage.modelId = availableModels[0]
@@ -236,19 +250,13 @@ export default defineStore("chat_topic", () => {
       if (!meta) {
         newMessage.content.content = `unknown model id :${newMessage.modelId}`
       } else {
-        newMessage.type = modelsStore.utils.isImageType(meta.model)
-          ? "image"
-          : modelsStore.utils.isVideoType(meta.model)
-            ? "video"
-            : modelsStore.utils.isTTSType(meta.model) || modelsStore.utils.isASRType(meta.model)
-              ? "audio"
-              : "text"
+        newMessage.type = getMessageType(meta.model)
         userMessage.type = newMessage.type
       }
     }
-    await api.addChatMessage(userMessage)
+    await api.addChatMessage(toRaw(userMessage))
     messages.unshift(userMessage)
-    await api.addChatMessage(newMessage)
+    await api.addChatMessage(toRaw(newMessage))
     messages.unshift(newMessage)
 
     if (newMessage.children && newMessage.children.length) {

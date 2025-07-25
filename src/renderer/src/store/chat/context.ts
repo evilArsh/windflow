@@ -1,5 +1,4 @@
 import { ChatContext, ChatMessage, ChatTopic, Message, Provider, Role } from "@renderer/types"
-import { cloneDeep } from "lodash-es"
 
 export const useContext = () => {
   // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key
@@ -38,28 +37,31 @@ export const useContext = () => {
    * mcp调用中存在{tool_calls:[]}和{tool_call_id:""},存在`item.toolCallsChain`中，
    * 提交时作为消息上下文
    *
+   * messages 按照生成时间【倒序】排序
+   *
    * TODO: 中间有删除消息时,删除与之配对的`Role.Assistant`或者`Role.User`消息
    */
   const getMessageContext = (topic: ChatTopic, messages: ChatMessage[]) => {
-    const filteredMessage = messages.filter(msg => !msg.type || msg.type === "text")
-    let context: Message[] = []
-    let userTurn = true
     const extractData = (data: Message): Message => {
       return {
         role: data.role,
         content: data.content,
       }
     }
-    const arrayAndNotEmpty = (data: unknown): data is Array<unknown> => {
-      return Array.isArray(data) && data.length > 0
+    const lastUserAsk = messages.shift()
+    let userTurn = true
+    let context: Message[] = []
+    if (lastUserAsk && lastUserAsk.content.role === Role.User) {
+      context.unshift(extractData(lastUserAsk.content))
+      userTurn = false
     }
+    const filteredMessage = messages.filter(msg => !msg.type || msg.type === "text")
     const maxContextLength = isNumber(topic.maxContextLength)
       ? topic.maxContextLength >= 0
         ? Math.max(1, topic.maxContextLength)
         : topic.maxContextLength
       : 7
     let data: ChatMessage | undefined
-    let item: ChatMessage
     while (true) {
       data = filteredMessage.shift()
       if (!data || data.contextFlag) {
@@ -69,11 +71,9 @@ export const useContext = () => {
         }
         break
       }
-      item = cloneDeep(data)
-      item.content.reasoning_content = undefined // deepseek patch
       if (userTurn) {
-        if (item.content.role === Role.User) {
-          context.unshift(extractData(item.content))
+        if (data.content.role === Role.User) {
+          context.unshift(extractData(data.content))
           userTurn = false
         } else {
           // 丢弃上下文,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
@@ -84,19 +84,24 @@ export const useContext = () => {
           }
         }
       } else {
-        if (item.content.role == Role.Assistant) {
-          const content = extractData(item.content)
+        if (data.content.role == Role.Assistant) {
+          const content = extractData(data.content)
           context.unshift(content)
-          if (arrayAndNotEmpty(item.content.tool_calls) && arrayAndNotEmpty(item.content.tool_calls_chain)) {
-            for (let i = item.content.tool_calls_chain.length - 1; i >= 0; i--) {
-              const chain = extractData(item.content.tool_calls_chain[i])
-              chain.tool_call_id = item.content.tool_calls_chain[i].tool_call_id
+          if (
+            data.content.tool_calls &&
+            data.content.tool_calls.length &&
+            data.content.tool_calls_chain &&
+            data.content.tool_calls_chain.length
+          ) {
+            for (let i = data.content.tool_calls_chain.length - 1; i >= 0; i--) {
+              const chain = extractData(data.content.tool_calls_chain[i])
+              chain.tool_call_id = data.content.tool_calls_chain[i].tool_call_id
               context.unshift(chain)
             }
             context.unshift({
               role: content.role,
               content: "",
-              tool_calls: item.content.tool_calls,
+              tool_calls: Array.from(data.content.tool_calls),
             })
           }
           userTurn = true

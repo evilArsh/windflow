@@ -52,7 +52,7 @@ async function restart(done: CallBackFn) {
 </script>
 <template>
   <div class="flex items-center flex-wrap">
-    <el-tooltip :show-after="1000" v-if="!isUser" :content="t('chat.terminate')" placement="bottom">
+    <el-tooltip v-if="!isUser" :content="t('chat.terminate')" placement="bottom">
       <ContentBox class="m0!" background>
         <Button
           text
@@ -66,14 +66,14 @@ async function restart(done: CallBackFn) {
         </Button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip :show-after="1000" v-if="!isUser" :content="t('chat.regenerate')" placement="bottom">
+    <el-tooltip v-if="!isUser" :content="t('chat.regenerate')" placement="bottom">
       <ContentBox class="m0!" background>
         <Button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </Button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip :show-after="1000" v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">
+    <el-tooltip v-if="!hideEdit" :content="t('chat.editChat')" placement="bottom">
       <ContentBox class="m0!" background>
         <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
           <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>

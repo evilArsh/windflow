@@ -1,5 +1,6 @@
 import { ChatTopic, ChatLLMConfig, ChatTTIConfig, Message, Role } from "@renderer/types"
 import Chance from "chance"
+import { merge } from "lodash-es"
 export const chatTopicDefault = (): ChatTopic[] => []
 export function defaultTTIConfig(): Omit<ChatTTIConfig, "id" | "topicId"> {
   return {
@@ -22,19 +23,22 @@ export function defaultLLMConfig(): Omit<ChatLLMConfig, "id" | "topicId"> {
   }
 }
 
-export function defaultMessage(): Message {
-  return {
-    role: Role.Assistant,
-    content: "",
-    reasoning_content: "",
-    tool_call_id: "",
-    tool_calls: undefined,
-    tool_calls_chain: undefined,
-    finish_reason: "",
-    usage: {
-      completion_tokens: 0,
-      prompt_tokens: 0,
-      total_tokens: 0,
+export function defaultMessage(init?: Partial<Message>): Message {
+  return merge(
+    {
+      role: Role.Assistant,
+      content: "",
+      reasoning_content: "",
+      tool_call_id: "",
+      tool_calls: undefined,
+      tool_calls_chain: undefined,
+      finish_reason: "",
+      usage: {
+        completion_tokens: 0,
+        prompt_tokens: 0,
+        total_tokens: 0,
+      },
     },
-  }
+    init
+  )
 }

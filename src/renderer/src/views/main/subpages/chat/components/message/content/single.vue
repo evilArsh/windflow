@@ -87,7 +87,7 @@ defineExpose({
       <Loading v-if="!isUser" :message></Loading>
       <MCPCall v-if="!isUser" :message :topic></MCPCall>
       <Error v-if="isException" :message></Error>
-      <Image v-if="!isUser && isImage" :message></Image>
+      <Image v-if="!isUser && isImage" :message :parent></Image>
       <Markdown v-if="!isUser && isText" :content="message.content.content" />
       <i-svg-spinners:pulse-3 v-if="!isUser && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
       <el-text v-if="isUser" type="primary" class="self-end!">

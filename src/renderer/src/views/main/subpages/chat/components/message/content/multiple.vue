@@ -21,14 +21,14 @@ const props = defineProps<{
 const id = useId()
 const chatStore = useChatStore()
 const message = computed(() => props.message)
-const messageChildren = computed<ChatMessage[]>(() => {
+const messageChildren = computed<ChatMessage[] | undefined>(() => {
   if (layout.type === types.Tab) {
-    return message.value?.children?.filter(item => item.id === layout.currentTabId) ?? []
+    return message.value?.children?.filter(item => item.id === layout.currentTabId)
   } else {
-    return message.value.children ?? []
+    return message.value.children
   }
 })
-const childLength = computed(() => (Array.isArray(message.value.children) ? message.value.children.length : 0))
+const childLength = computed(() => message.value.children?.length ?? 0)
 const affixRefs = ref<InstanceType<typeof Single>[]>([])
 const types = {
   Grid: "grid",
