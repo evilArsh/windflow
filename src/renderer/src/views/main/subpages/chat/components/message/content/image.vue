@@ -65,7 +65,6 @@ const { images, download, isPending, abortAll, dispose, addBase64, clearImages }
 watch(
   () => message.value.content,
   value => {
-    console.log("[message.value.content]", message.value.content)
     if (Array.isArray(value.content)) {
       if (value.content.some((item: string | Record<string, unknown>) => isString(item) && !isBase64Image(item))) {
         abortAll()
@@ -89,7 +88,6 @@ watch(
   { immediate: true }
 )
 watch(isPending, val => {
-  console.log("[pending end]", images.value)
   if (val) return
   if (!images.value.length) return
   message.value.content.content = Array.from(images.value)

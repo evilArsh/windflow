@@ -10,11 +10,9 @@
     <template v-if="$slots.header" #header>
       <slot name="header"></slot>
     </template>
-    <div class="flex-1 overflow-hidden">
-      <el-scrollbar view-style="padding:10px">
-        <slot></slot>
-      </el-scrollbar>
-    </div>
+    <el-scrollbar class="flex-1" view-class="p-10px h-full">
+      <slot></slot>
+    </el-scrollbar>
     <template v-if="$slots.footer" #footer>
       <slot name="footer"></slot>
     </template>

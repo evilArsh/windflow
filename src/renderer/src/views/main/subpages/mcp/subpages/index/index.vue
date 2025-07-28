@@ -203,7 +203,7 @@ const dlg = {
     <el-dialog v-bind="dlgProps" v-on="dlgEvent">
       <Form class="h-70vh" @close="dlg.onFormClose" @change="dlg.onFormChange" :data="current"></Form>
     </el-dialog>
-    <el-dialog v-bind="listDlgProps" v-on="listDlgEvent">
+    <el-dialog v-bind="listDlgProps" v-on="listDlgEvent" style="--el-dialog-padding-primary: 0">
       <List class="h-70vh" @close="dlg.onListClose"></List>
     </el-dialog>
   </ContentLayout>

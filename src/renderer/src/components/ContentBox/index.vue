@@ -99,10 +99,10 @@ watch(
   --box-active-bg-color: transparent;
 }
 .comp-content-box {
-  // --box-shadow-color: var(--el-fill-color-lighter);
-  // --box-active-shadow-color: var(--el-fill-color-light);
-  --box-shadow-color: var(--el-color-primary-light-8);
-  --box-active-shadow-color: var(--el-color-primary-light-7);
+  --box-shadow-color: var(--el-fill-color-lighter);
+  --box-active-shadow-color: var(--el-fill-color-light);
+  // --box-shadow-color: var(--el-color-primary-light-8);
+  // --box-active-shadow-color: var(--el-color-primary-light-7);
   --box-bg-color: transparent;
   --box-hover-bg-color: var(--el-fill-color-dark);
   --box-active-bg-color: var(--el-fill-color-darker);

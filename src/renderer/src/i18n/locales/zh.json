@@ -124,6 +124,7 @@
     },
     "search": "搜索mcp服务",
     "service": {
+      "configList": "配置列表",
       "connecting": "工具{service}启动中",
       "deleteConfirm": "要重启吗?",
       "disabled": "工具已禁用，请先启用",

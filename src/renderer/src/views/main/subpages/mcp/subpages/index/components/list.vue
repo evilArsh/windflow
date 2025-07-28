@@ -77,6 +77,9 @@ onMounted(handler.init)
 </script>
 <template>
   <DialogPanel>
+    <template #header>
+      <el-text type="primary" size="large">{{ t("mcp.service.configList") }}</el-text>
+    </template>
     <MonacoEditor :value @change="onEditorChange" namespace="mcp" lang="json" filename="mcpServer.json"></MonacoEditor>
     <template #footer>
       <div class="flex gap1rem justify-end">
