@@ -1,5 +1,6 @@
 import path from "node:path"
 import { defineConfig, externalizeDepsPlugin } from "electron-vite"
+import VueDevTools from "vite-plugin-vue-devtools"
 import vue from "@vitejs/plugin-vue"
 import Unocss from "unocss/vite"
 import vueJsx from "@vitejs/plugin-vue-jsx"
@@ -47,6 +48,7 @@ export default defineConfig({
       ],
     },
     plugins: [
+      VueDevTools(),
       vue({
         template: {
           compilerOptions: {
