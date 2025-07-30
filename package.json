@@ -7,6 +7,7 @@
   "homepage": "https://vivcode.cn",
   "type": "module",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "postinstall": "electron-builder install-app-deps",
     "format": "prettier --write .",
     "prepare": "husky",
@@ -131,8 +132,8 @@
     "vue-tsc": "^3.0.4"
   },
   "license": "Apache-2.0",
-  "packageManager": "yarn@1.22.22",
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=20.17.0",
+    "pnpm": ">=10.12.4"
   }
 }

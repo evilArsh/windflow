@@ -1,18 +1,23 @@
-appId: com.electron.app
-productName: app
+appId: com.arch.aichat
+productName: AI-chat
 directories:
   buildResources: build
 files:
   - '!**/.vscode/*'
+  - '!**/.husky/*'
   - '!src/*'
+  - '!demo/*'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!*.config.{js,ts,mjs,cjs}'
+  - '!electron-builder.yml'
+  - '!{.editorconfig,.eslintrc-auto-import.json,.lintstagedrc.mjs,components.d.ts,eslint.config.mjs,stats.html}'
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
 win:
-  executableName: app
+  executableName: aichat
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -40,4 +45,4 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: https://example.com/auto-updates
+  url: https://resources.vivcode.cn/aichat/auto-updates

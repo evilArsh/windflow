@@ -40,7 +40,6 @@ async function onCreateNewTopic(done: CallBackFn) {
   done()
 }
 onMounted(() => {
-  window.defaultTopicTitle = t("chat.addChat")
   window.addEventListener("resize", dlg.clickMask)
   init()
 })
