@@ -4,7 +4,6 @@ import { ChatMessage } from "@renderer/types/chat"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
 import { useToolName } from "@shared/mcp"
-import { cloneDeep } from "lodash-es"
 
 const props = defineProps<{
   message: ChatMessage
@@ -48,7 +47,7 @@ watch(
           status: Status.InProgress,
         }
       }
-      Object.assign(callsData.value[call.id], cloneDeep(call))
+      Object.assign(callsData.value[call.id], structuredClone(call))
       callsData.value[call.id].function.name = name
     })
   },

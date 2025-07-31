@@ -1,7 +1,6 @@
 import type { Dir, MoveOptions, DragAttr, EventMap, MoveType } from "./types"
 import useEvent from "@renderer/usable/useEvent"
 import useTarget from "./useTarget"
-import { merge } from "lodash-es"
 export default function (): MoveType {
   const ev = useEvent()
   let moving = false
@@ -62,7 +61,7 @@ export default function (): MoveType {
   }
   function updateOption(options?: MoveOptions) {
     if (!options) return
-    merge(opt, options)
+    Object.assign(opt, options)
   }
   function enable() {
     tar.enable()

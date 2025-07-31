@@ -1,7 +1,7 @@
 import { MCPServerParam, MCPServerParamCore } from "@shared/types/mcp"
 import { defineStore } from "pinia"
 import { useData } from "./data"
-import { cloneDeep } from "lodash-es"
+
 import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
@@ -15,7 +15,7 @@ export default defineStore("mcp", () => {
    * 去掉多余mcp tool列表
    */
   function clonePure(server: MCPServerParam): MCPServerParam {
-    return cloneDeep({ ...server, tools: [], prompts: [], resources: [], resourceTemplates: [] })
+    return structuredClone({ ...server, tools: [], prompts: [], resources: [], resourceTemplates: [] })
   }
   function createNewId(): string {
     return uniqueNanoId(nanoIdAlphabet, 12)

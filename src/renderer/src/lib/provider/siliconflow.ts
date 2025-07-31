@@ -13,7 +13,6 @@ import { patchAxios } from "./compatible/utils"
 import { useSingleRequest } from "./http"
 import { AxiosError, CanceledError } from "axios"
 import { errorToText } from "@shared/error"
-import { cloneDeep } from "lodash-es"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -42,7 +41,7 @@ export class SiliconFlow extends Compatible {
     callback: (message: ImageResponse) => void
   ): Promise<RequestHandler> {
     const handler = useSingleRequest()
-    const data = cloneDeep(message)
+    const data = structuredClone(message)
     data.model = model.modelName
     data.image_size = data.size
     data.batch_size = data.n

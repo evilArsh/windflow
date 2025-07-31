@@ -12,8 +12,8 @@ export default (mainWindow: BrowserWindow, store: StoreCore): ServiceCore => {
   const onThemeUpdated = () => {
     mainWindow.setTitleBarOverlay(
       nativeTheme.shouldUseDarkColors
-        ? { color: "rgba(0,0,0,0)", symbolColor: "#ffffff" }
-        : { color: "rgba(0,0,0,0)", symbolColor: "#000000" }
+        ? { height: 40, color: "rgba(0,0,0,0)", symbolColor: "#ffffff" }
+        : { height: 40, color: "rgba(0,0,0,0)", symbolColor: "#000000" }
     )
   }
   async function setTheme(newTheme: Theme) {

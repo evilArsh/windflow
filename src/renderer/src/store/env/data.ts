@@ -3,7 +3,6 @@ import { Reactive } from "vue"
 import useSettingsStore from "@renderer/store/settings"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
-import { cloneDeep } from "lodash-es"
 
 export const useData = (env: Reactive<ToolEnvironment>) => {
   const settingsStore = useSettingsStore()
@@ -13,7 +12,7 @@ export const useData = (env: Reactive<ToolEnvironment>) => {
   }
   settingsStore.api.dataWatcher<ToolEnvironment>(SettingKeys.ToolEnvironment, env, defaultEnv(), data => {
     if (window.api) {
-      window.api.mcp.updateEnv(cloneDeep(data))
+      window.api.mcp.updateEnv(structuredClone(data))
     }
   })
   return {

@@ -2,14 +2,13 @@ import { db } from "@renderer/usable/useDatabase"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default"
-import { cloneDeep } from "lodash-es"
 
 export const useData = (servers: Reactive<MCPServerParam[]>) => {
   async function update(data: MCPServerParam) {
-    return db.mcpServer.put(cloneDeep(data))
+    return db.mcpServer.put(structuredClone(data))
   }
   async function add(data: MCPServerParam) {
-    return db.mcpServer.add(cloneDeep(data))
+    return db.mcpServer.add(structuredClone(data))
   }
   async function del(id: string) {
     return db.mcpServer.delete(id)

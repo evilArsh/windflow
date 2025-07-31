@@ -1,7 +1,6 @@
 import { LLMToolCall, LLMResponse, Role, Message, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
 import { AxiosInstance } from "axios"
 import { errorToText } from "@shared/error"
-import { merge } from "lodash-es"
 
 export function usePartialData() {
   let result: LLMResponse = defaultData()
@@ -15,7 +14,7 @@ export function usePartialData() {
     return { status: 100, data: { role: Role.Assistant, content: "" } }
   }
   function add(res: LLMResponse) {
-    result = merge({}, result, res)
+    result = { ...result, ...res }
     content.push((res.data.content as string) ?? "")
     reasoning_content.push((res.data.reasoning_content as string) ?? "")
     res.data.tool_calls?.forEach(tool => {

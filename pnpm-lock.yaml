@@ -32,6 +32,9 @@ importers:
       '@volar/monaco':
         specifier: ^2.4.22
         version: 2.4.22
+      '@vue/language-core':
+        specifier: ^3.0.4
+        version: 3.0.4(typescript@5.8.3)
       '@vue/language-service':
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.8.3)
@@ -83,9 +86,6 @@ importers:
       json5:
         specifier: ^2.2.3
         version: 2.2.3
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
       mermaid:
         specifier: ^11.9.0
         version: 11.9.0
@@ -158,6 +158,9 @@ importers:
       vfile-message:
         specifier: ^4.0.3
         version: 4.0.3
+      vscode-uri:
+        specifier: ^3.1.0
+        version: 3.1.0
       vue:
         specifier: ^3.5.18
         version: 3.5.18(typescript@5.8.3)
@@ -195,9 +198,6 @@ importers:
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4
-      '@types/lodash-es':
-        specifier: ^4.17.12
-        version: 4.17.12
       '@types/node':
         specifier: ^24.1.0
         version: 24.1.0

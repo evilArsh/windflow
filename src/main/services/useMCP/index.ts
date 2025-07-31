@@ -24,7 +24,7 @@ import { errorToText } from "@shared/error"
 import { EventBus, IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
-import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol"
+import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js"
 import {
   availableClients,
   createClient,
@@ -39,7 +39,7 @@ import { useToolCall, useToolName } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
-import { cloneDeep } from "lodash-es"
+
 export const name = "aichat-mcp-client"
 export const version = "v0.0.1"
 export default (globalBus: EventBus): MCPService & ServiceCore => {
@@ -300,7 +300,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     }
   }
   async function updateEnv(newEnv: ToolEnvironment) {
-    env = cloneDeep(newEnv)
+    env = structuredClone(newEnv)
   }
   async function getReferences(id: string): Promise<BridgeResponse<Array<string>>> {
     return responseData(200, "ok", context.getTopicReference(id))

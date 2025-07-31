@@ -6,7 +6,6 @@ import { AsyncCallBackFn, CallBackFn, FixedArray } from "@renderer/lib/shared/ty
 import { useElementBounding } from "@vueuse/core"
 import useEvent from "@renderer/usable/useEvent"
 import { isNumber } from "@renderer/lib/shared/is"
-import { merge } from "lodash-es"
 import { useDragOffset } from "./helper"
 import { type Ref } from "vue"
 export enum Status {
@@ -84,7 +83,7 @@ export default (data: {
   function stickCalculate(dir: AnimateDir, hooks?: MoveHook): { x: number; y: number; w: number; h: number } {
     const res = { x: 0, y: 0, w: 0, h: 0 }
     if (!data.targetEle.value) return res
-    const hook = merge(
+    const hook = Object.assign(
       {
         x: (_oldVal: number, newVal: number, _width: number, _height: number) => newVal,
         y: (_oldVal: number, newVal: number, _width: number, _height: number) => newVal,

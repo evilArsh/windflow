@@ -9,7 +9,6 @@ import streamlineDefault from "~icons/streamline-emojis/boar-1"
 import flagDefault from "~icons/circle-flags/cn"
 import type { Component } from "vue"
 import { getIcons, getIconData, iconToSVG, iconToHTML } from "@iconify/utils"
-import { sample } from "lodash-es"
 
 export const getSubIconSet = (iconMap: IconifyJSON, allIconKeys: string[], from: number, length: number) => {
   return getIcons(iconMap as IconifyJSON, allIconKeys.slice(from, from + length))
@@ -31,7 +30,10 @@ export const getIconHTML = (json: IconifyJSON, iconKey: string) => {
 }
 
 export const getDefaultIcon = (): string => {
-  return getIconHTML(iconMap.fluentEmojiFlat.icons, sample(iconMap.fluentEmojiFlat.iconsKeys) ?? "plus")
+  return getIconHTML(
+    iconMap.fluentEmojiFlat.icons,
+    iconMap.fluentEmojiFlat.iconsKeys[Math.floor(Math.random() * iconMap.fluentEmojiFlat.iconsKeys.length)] ?? "plus"
+  )
 }
 
 export const iconMap: Record<string, { title: Component; icons: IconifyJSON; iconsKeys: string[] }> = {
