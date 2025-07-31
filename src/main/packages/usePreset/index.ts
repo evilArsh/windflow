@@ -1,6 +1,6 @@
-import { ServiceCore } from "@main/types"
+import { PackageCore } from "@main/types"
 import { BrowserWindow } from "electron"
-export default (mainWindow: BrowserWindow): ServiceCore => {
+export default (mainWindow: BrowserWindow): PackageCore => {
   // 拦截所有导航（包括 window.location 跳转）
   mainWindow.webContents.on("will-navigate", (event, url) => {
     const contentUrl = mainWindow.webContents.getURL()
@@ -39,10 +39,8 @@ export default (mainWindow: BrowserWindow): ServiceCore => {
     })
     externalWindow.loadURL(url)
   }
-  function registerIpc() {}
   function dispose() {}
   return {
-    registerIpc,
     dispose,
   }
 }

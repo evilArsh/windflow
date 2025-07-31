@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import mermaid from "mermaid"
 import useParser from "./worker"
 import CodeBlock from "./components/CodeBlock/index.vue"
 import { Content } from "@renderer/types"
@@ -7,15 +6,6 @@ const props = defineProps<{
   content: Content
 }>()
 
-mermaid.initialize({
-  startOnLoad: false,
-  securityLevel: "loose",
-  flowchart: {
-    useMaxWidth: true,
-    htmlLabels: true,
-  },
-  theme: "default",
-})
 const { html, parse, destroy, init } = useParser({
   code: CodeBlock,
 })

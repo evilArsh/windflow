@@ -27,6 +27,7 @@
     "cleanMessage": "Clear Chat({shortcut})",
     "context": "Chat Context",
     "contextDivider": "Context Cleared",
+    "defaultPrompt": "you are a helpful assistant",
     "deleteFailed": "Delete failed",
     "editChat": "Edit",
     "llm": {

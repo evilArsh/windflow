@@ -26,6 +26,7 @@ const status = reactive({
   },
   toggleDark: () => {
     status.dark = !status.dark
+    window.api.theme.setTheme(status.dark ? "dark" : "light")
   },
 })
 const defaultRoute = ref("")

@@ -1,5 +1,12 @@
-import { presetAttributify, presetIcons, defineConfig, presetWebFonts, presetTypography } from "unocss"
-import presetWind3 from "@unocss/preset-wind3"
+import {
+  presetAttributify,
+  presetIcons,
+  defineConfig,
+  presetWebFonts,
+  presetWind3,
+  presetWind4,
+  presetTypography,
+} from "unocss"
 export default defineConfig({
   shortcuts: [],
   theme: {
@@ -16,6 +23,7 @@ export default defineConfig({
     presetWebFonts(),
     presetTypography(),
     presetWind3(),
+    presetWind4(),
     presetAttributify(),
   ],
 })

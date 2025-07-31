@@ -29,8 +29,12 @@ export const IpcChannel = {
   McpGetTopicServers: "mcp.getTopicServers",
   McpStopTopicServers: "mcp.stopTopicServers",
   McpHasReference: "mcp.hasReference",
+
   EnvTestEnv: "env.testEnv",
+
   FileChooseFilePath: "file.chooseFilePath",
+
+  ThemeSetTheme: "theme.setTheme",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -84,4 +88,8 @@ export interface EventBus {
   on: <T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) => void
   off: <T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) => void
   emit: <T extends EventKey>(event: T, data: EventMap[T]) => void
+}
+
+export interface ThemeService {
+  setTheme: (theme: "system" | "light" | "dark") => Promise<void>
 }

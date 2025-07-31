@@ -217,6 +217,7 @@ export const useMenu = (
           parentId,
           modelIds: [],
           label: t("chat.addChat"),
+          prompt: t("chat.defaultPrompt"),
         })
       }
       await chatStore.api.addChatTopic(topic)

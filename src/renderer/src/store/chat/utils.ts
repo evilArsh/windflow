@@ -58,7 +58,6 @@ export const useUtils = (
       return [res, index]
     }
   }
-  // function newTopic(parentId: string | null, modelIds: string[], label: string): ChatTopic {
   function newTopic(index: number, initial?: Partial<ChatTopic>): ChatTopic {
     return merge(
       {
@@ -77,7 +76,6 @@ export const useUtils = (
       initial
     )
   }
-  // function cloneTopic(topic: ChatTopic, parentId: string | null, label: string): ChatTopic {
   function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
     return cloneDeep(
       merge(
@@ -134,8 +132,6 @@ export const useUtils = (
     findChatTTIConfig,
     findChatMessage,
     findChatMessageChild,
-    // findChatMessageChildByTopic,
-    // findChatMessageByTopic,
     newTopic,
     newChatMessage,
     cloneTopic,

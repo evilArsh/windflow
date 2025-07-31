@@ -1,19 +1,32 @@
 import { app, shell, BrowserWindow } from "electron"
 import { join } from "path"
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils"
+import windowStateKeeper from "electron-window-state"
 import icon from "../../resources/icon.png?asset"
-import { registerService } from "./packages"
+import { registerService } from "./init"
 import { ServiceCore } from "./types"
 function createWindow(): BrowserWindow {
+  const mainWindowState = windowStateKeeper({
+    defaultWidth: 1366,
+    defaultHeight: 768,
+  })
+
   const mainWindow = new BrowserWindow({
-    width: 1366,
-    height: 768,
-    show: false,
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     minWidth: 1024,
     minHeight: 768,
+    titleBarStyle: "hidden",
+    show: false,
     autoHideMenuBar: true,
+    transparent: false,
+    titleBarOverlay: true,
+    movable: true,
     ...(platform.isLinux ? { icon } : {}),
     webPreferences: {
+      devTools: true,
       preload: join(__dirname, "../preload/index.mjs"),
       sandbox: false,
       webSecurity: false,
@@ -21,6 +34,7 @@ function createWindow(): BrowserWindow {
       webviewTag: true,
     },
   })
+  mainWindowState.manage(mainWindow)
   mainWindow.on("ready-to-show", () => {
     mainWindow.show()
   })
@@ -43,7 +57,7 @@ function init() {
     process.exit(0)
   } else {
     app.whenReady().then(() => {
-      electronApp.setAppUserModelId("com.arsh.aichat")
+      electronApp.setAppUserModelId("com.arch.aichat")
       // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
       app.on("browser-window-created", (_, window) => {
         optimizer.watchWindowShortcuts(window)

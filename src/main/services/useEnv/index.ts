@@ -39,7 +39,6 @@ export default (): EnvService & ServiceCore => {
   function dispose() {}
   return {
     testEnv,
-
     registerIpc,
     dispose,
   }
