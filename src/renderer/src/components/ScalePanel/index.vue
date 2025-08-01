@@ -31,10 +31,10 @@ const emit = defineEmits<{
   maskClick: []
   "update:modelValue": [data: ScaleConfig]
 }>()
-const { modelValue, dragTarget } = defineProps<ScaleProps>()
+const props = defineProps<ScaleProps>()
 const handle: Ref<ReturnType<typeof useHandle> | undefined> = ref()
 const config: Ref<ScaleConfig> = computed({
-  get: () => modelValue,
+  get: () => props.modelValue,
   set: val => emit("update:modelValue", val),
 })
 const headerRef = useTemplateRef("header")
@@ -60,7 +60,7 @@ const scale = useScale({
   config,
   targetEle: dragRef,
 })
-const targetRef = computed(() => unref(dragTarget))
+const targetRef = computed(() => toValue(props.dragTarget))
 const withHeader = computed(() => !!config.value.header)
 const useContentStyle = computed<CSSProperties>(() => values(contentStyle.value))
 const useHeaderStyle = computed<CSSProperties>(() => values(headerStyle.value))

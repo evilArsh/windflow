@@ -89,7 +89,7 @@ defineExpose({
   .handle-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--ai-gap-base);
     width: 100%;
   }
 }

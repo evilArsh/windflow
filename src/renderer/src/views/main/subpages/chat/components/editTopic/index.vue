@@ -35,7 +35,7 @@ defineExpose({
       <template #header>
         <el-text type="primary">{{ t("topic.edit") }}</el-text>
       </template>
-      <el-form ref="formRef" :model="form" class="w-100% h-100%" label-width="7rem">
+      <el-form ref="formRef" :model="form" class="w-100% h-100%" label-width="7rem" @submit.prevent>
         <el-form-item prop="label" :label="t('topic.title')">
           <el-input v-model="form.label" @input="onTopicUpdate" />
         </el-form-item>

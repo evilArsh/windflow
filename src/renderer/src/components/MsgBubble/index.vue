@@ -31,7 +31,7 @@ defineProps<{
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--ai-gap-base);
     min-width: 0;
     &.reverse {
       flex-direction: row-reverse;

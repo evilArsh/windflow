@@ -1,6 +1,6 @@
 {
   "name": "ai-chat",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
   "author": "wuxiaolong <arshdebian@163.com>",
@@ -54,6 +54,7 @@
     "hast-util-whitespace": "^3.0.0",
     "html-url-attributes": "^3.0.1",
     "json5": "^2.2.3",
+    "lodash.merge": "^4.6.2",
     "mermaid": "^11.9.0",
     "monaco-editor": "^0.52.2",
     "nanoid": "^5.1.5",
@@ -94,6 +95,7 @@
     "@types/estree": "^1.0.8",
     "@types/hash-sum": "^1.0.2",
     "@types/hast": "^3.0.4",
+    "@types/lodash.merge": "^4.6.9",
     "@types/node": "^24.1.0",
     "@types/unist": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^8.38.0",

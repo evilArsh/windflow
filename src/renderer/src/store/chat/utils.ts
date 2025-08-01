@@ -1,6 +1,6 @@
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep, merge } from "@shared/utils"
 import { Reactive } from "vue"
 
 export const useUtils = (
@@ -59,7 +59,7 @@ export const useUtils = (
     }
   }
   function newTopic(index: number, initial?: Partial<ChatTopic>): ChatTopic {
-    return Object.assign(
+    return merge(
       {
         id: uniqueId(),
         index,
@@ -78,7 +78,7 @@ export const useUtils = (
   }
   function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
     return cloneDeep(
-      Object.assign(
+      merge(
         {},
         topic,
         {
@@ -110,7 +110,7 @@ export const useUtils = (
     return res
   }
   function newChatMessage(topicId: string, index: number, initial?: Partial<ChatMessage>): ChatMessage {
-    return Object.assign(
+    return merge(
       {
         id: uniqueId(),
         status: 200,

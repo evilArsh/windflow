@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
     &--inner {
       display: flex;
       flex-direction: column;
-      gap: 2.5rem;
+      gap: var(--ai-gap-extre-large);
     }
   }
   .content-handler {

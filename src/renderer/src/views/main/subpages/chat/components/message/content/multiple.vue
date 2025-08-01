@@ -91,14 +91,14 @@ const containerStyle = computed<CSSProperties>(() => {
         display: "grid",
         gridTemplateColumns: `repeat(${layout.sliderValue}, 1fr)`,
         gridTemplateRows: "1fr",
-        gap: "1rem",
+        gap: "var(--ai-gap-medium)",
         flexDirection: "row",
       }
     case types.L2R:
       return {
         flex: 1,
         display: "flex",
-        gap: "1rem",
+        gap: "var(--ai-gap-medium)",
         overflow: "auto",
       }
     case types.Tab:

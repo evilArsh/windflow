@@ -36,16 +36,15 @@ const svgSrc = computed(() =>
     <slot></slot>
     <div v-if="!isUser && !hideToken" class="flex items-center flex-wrap">
       <ContentBox>
-        <template #icon>
+        <el-text type="info" size="small">token:</el-text>
+        <ContentBox wrap-class="m0! p0!" normal>
           <i-material-symbols:arrow-upward-alt class="text-1.2rem"></i-material-symbols:arrow-upward-alt>
-        </template>
-        <el-text size="small">{{ toNumber(message.promptTokens) }}</el-text>
-      </ContentBox>
-      <ContentBox>
-        <template #icon>
+          <el-text type="info" size="small"> {{ toNumber(message.promptTokens) }}</el-text>
+        </ContentBox>
+        <ContentBox wrap-class="m0! p0!" normal>
           <i-material-symbols:arrow-downward-alt class="text-1.2rem"></i-material-symbols:arrow-downward-alt>
-        </template>
-        <el-text size="small">{{ toNumber(message.completionTokens) }}</el-text>
+          <el-text type="info" size="small">{{ toNumber(message.completionTokens) }}</el-text>
+        </ContentBox>
       </ContentBox>
     </div>
   </div>
@@ -58,7 +57,7 @@ const svgSrc = computed(() =>
   padding: 0.25rem 0.5rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ai-gap-base);
   &.reverse {
     flex-direction: row-reverse;
     border-radius: 1rem 0 0 1rem;
@@ -67,7 +66,7 @@ const svgSrc = computed(() =>
 .chat-item-title {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ai-gap-base);
   .name {
     align-self: unset;
     font-weight: 600;

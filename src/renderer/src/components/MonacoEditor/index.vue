@@ -38,9 +38,7 @@ onMounted(async () => {
   ev.emit("mounted")
   const propsRaw = toRaw(props)
   ev.on("change", (code: string) => emit("change", code))
-  setTimeout(() => {
-    editorRef.value && create(editorRef.value, propsRaw)
-  }, 0)
+  editorRef.value && create(editorRef.value, propsRaw)
 })
 onBeforeUnmount(() => {
   ev.emit("beforeUnmount")

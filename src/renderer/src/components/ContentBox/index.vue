@@ -80,13 +80,13 @@ watch(
 <template>
   <div
     class="comp-content-box"
-    :class="{ active, normal, background, wrapClass }"
+    :class="[{ active, normal, background }, wrapClass]"
     :style="wrapStyle"
     @click="handle.click">
     <div v-if="$slots.header" class="box-header">
       <slot name="header"></slot>
     </div>
-    <div class="box-main" :style="mainStyle" :class="mainClass">
+    <div class="box-main" :style="mainStyle" :class="[mainClass]">
       <div v-if="$slots.icon" @click="handle.iconClick" :class="{ 'normal-icon': normalIcon }" class="box-icon">
         <slot name="icon"></slot>
       </div>
@@ -124,6 +124,7 @@ watch(
   }
 }
 .comp-content-box {
+  -webkit-app-region: no-drag;
   --content-box-padding: var(--ai-gap-small);
   --content-box-margin: var(--ai-gap-small);
   user-select: none;
@@ -134,7 +135,7 @@ watch(
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--ai-gap-base);
   background-color: var(--box-bg-color);
 
   --box-icon-color: var(--el-text-color-regular);
@@ -151,7 +152,7 @@ watch(
   }
   .box-main {
     display: flex;
-    gap: 5px;
+    gap: var(--ai-gap-base);
     align-items: center;
   }
   .box-icon {

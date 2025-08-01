@@ -29,6 +29,7 @@ async function init() {
       const topicTree = treeRef.value?.getCurrentNode()
       if (topicTree) {
         await setCurrentTopic(topicTree as ChatTopicTree)
+        chatStore.refreshChatTopicModelIds(topicTree.node)
       }
     }
   } catch (error) {
@@ -145,7 +146,7 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   flex-direction: column;
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ai-gap-base);
 }
 .chat-provider-content {
   flex: 1;
@@ -156,7 +157,7 @@ onBeforeUnmount(() => {
 }
 .chat-tree-node {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--ai-gap-base);
   flex: 1;
   padding-right: 1rem;
   overflow: hidden;
@@ -166,6 +167,6 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--ai-gap-base);
 }
 </style>

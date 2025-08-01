@@ -82,20 +82,20 @@ watchEffect(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ai-gap-base);
   .chat-input-header {
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--ai-gap-base);
   }
   .chat-input-actions {
     flex-shrink: 0;
     display: flex;
     background-color: var(--chat-input-actions-bg-color);
     justify-content: flex-end;
-    gap: 1rem;
+    gap: var(--ai-gap-base);
   }
 }
 </style>

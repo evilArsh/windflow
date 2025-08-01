@@ -151,7 +151,7 @@ onBeforeMount(() => {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--ai-gap-base);
     align-items: center;
     .nav-bottom-item {
       display: flex;

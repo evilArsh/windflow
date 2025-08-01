@@ -19,19 +19,13 @@ const { t } = useI18n()
         <el-text>{{ t("chat.settings.label") }}</el-text>
       </template>
       <div class="w-full h-40rem flex flex-col gap-1rem">
-        <ContentBox
-          background
-          default-lock
-          style="--box-active-shadow-color: transparent; --box-active-bg-color: var(--el-fill-color)">
+        <ContentBox>
           <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
           <template #footer>
             <Message :topic></Message>
           </template>
         </ContentBox>
-        <ContentBox
-          background
-          default-lock
-          style="--box-active-shadow-color: transparent; --box-active-bg-color: var(--el-fill-color)">
+        <ContentBox>
           <el-text type="primary">{{ t("chat.settings.inputLabel") }}</el-text>
           <template #footer>
             <Global :topic></Global>

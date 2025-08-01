@@ -1,4 +1,5 @@
 import { ChatTopic, ChatLLMConfig, ChatTTIConfig, Message, Role } from "@renderer/types"
+import { merge } from "@shared/utils"
 import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []
 export function defaultTTIConfig(): Omit<ChatTTIConfig, "id" | "topicId"> {
@@ -23,7 +24,7 @@ export function defaultLLMConfig(): Omit<ChatLLMConfig, "id" | "topicId"> {
 }
 
 export function defaultMessage(init?: Partial<Message>): Message {
-  return Object.assign(
+  return merge(
     {
       role: Role.Assistant,
       content: "",

@@ -77,7 +77,7 @@ defineExpose({
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: isUser }" :reverse="isUser" :id>
     <template v-if="header" #header>
-      <Affix ref="affix" :offset="84" :target="`#${id}`">
+      <Affix ref="affix" :offset="88" :target="`#${id}`">
         <Title :message>
           <Handler :topic :parent :message @delete="rawTextDlg.del(message)" @edit="rawTextDlg.edit(message)"></Handler>
         </Title>
@@ -108,7 +108,7 @@ defineExpose({
   display: flex;
   font-size: 1.4rem;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--ai-gap-base);
   padding: 1rem;
   &.reverse {
     justify-content: flex-end;

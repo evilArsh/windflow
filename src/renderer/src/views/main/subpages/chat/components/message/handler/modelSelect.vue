@@ -76,7 +76,7 @@ watchEffect(() => {
 .select-wrap {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--ai-gap-base);
   :deep(.el-checkbox) {
     margin-right: 0;
   }

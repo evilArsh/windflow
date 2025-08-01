@@ -143,7 +143,7 @@ export function useStatusListener(
   )
   function updateTarget() {
     if (move.value) {
-      move.value.setTarget(unref(target) ?? defaultTarget.value ?? null)
+      move.value.setTarget(toValue(target) ?? defaultTarget.value ?? null)
     }
   }
   /**

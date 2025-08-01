@@ -8,6 +8,7 @@ import useEvent from "@renderer/usable/useEvent"
 import { isNumber } from "@renderer/lib/shared/is"
 import { useDragOffset } from "./helper"
 import { type Ref } from "vue"
+import { merge } from "@shared/utils"
 export enum Status {
   NORMAL = "NORMAL",
   HIDDEN = "HIDDEN",
@@ -83,7 +84,7 @@ export default (data: {
   function stickCalculate(dir: AnimateDir, hooks?: MoveHook): { x: number; y: number; w: number; h: number } {
     const res = { x: 0, y: 0, w: 0, h: 0 }
     if (!data.targetEle.value) return res
-    const hook = Object.assign(
+    const hook = merge(
       {
         x: (_oldVal: number, newVal: number, _width: number, _height: number) => newVal,
         y: (_oldVal: number, newVal: number, _width: number, _height: number) => newVal,

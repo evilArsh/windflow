@@ -1,6 +1,7 @@
 import { AxiosError } from "axios"
 import { serializeError } from "serialize-error"
 import rfdc from "rfdc"
+import _merge from "lodash.merge"
 export function errorToText(error: unknown): string {
   if (typeof error === "string" || typeof error === "number") {
     return String(error)
@@ -25,3 +26,5 @@ export function useClone() {
 }
 
 export const cloneDeep = useClone().cloneDeep
+
+export const merge = _merge
