@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRequest } from "@renderer/lib/provider/http"
 import { ChatMessage } from "@renderer/types"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import useChatStore from "@renderer/store/chat"
 import PQueue from "p-queue"
 

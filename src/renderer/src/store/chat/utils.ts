@@ -1,5 +1,6 @@
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
+import { cloneDeep } from "@shared/utils"
 import { Reactive } from "vue"
 
 export const useUtils = (
@@ -76,7 +77,7 @@ export const useUtils = (
     )
   }
   function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
-    return structuredClone(
+    return cloneDeep(
       Object.assign(
         {},
         topic,

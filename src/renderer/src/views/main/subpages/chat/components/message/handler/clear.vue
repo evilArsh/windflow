@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ChatMessage, ChatTopic } from "@renderer/types"
 import useShortcut from "@renderer/views/main/usable/useShortcut"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"

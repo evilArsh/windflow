@@ -10,6 +10,7 @@ import "./usable/useFonts"
 import "./usable/useUnocss"
 import "./usable/useElement"
 import "./styles/index.scss"
+import "./styles/vars.global.scss"
 const app = createApp(App)
 app.use(pinia)
 app.use(router)

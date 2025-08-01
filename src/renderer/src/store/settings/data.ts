@@ -3,6 +3,7 @@ import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
 import PQueue from "p-queue"
+import { cloneDeep } from "@shared/utils"
 
 export const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
@@ -39,7 +40,7 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
     }
   }
   const update = useThrottleFn(async (data: Settings<SettingsValue>) =>
-    queue.add(async () => db.settings.put(structuredClone(data)))
+    queue.add(async () => db.settings.put(cloneDeep(data)))
   )
   /**
    * 配置数据监听，实时更新到数据库

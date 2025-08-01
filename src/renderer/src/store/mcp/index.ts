@@ -5,6 +5,7 @@ import { useData } from "./data"
 import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
+import { cloneDeep } from "@shared/utils"
 const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
@@ -15,7 +16,7 @@ export default defineStore("mcp", () => {
    * 去掉多余mcp tool列表
    */
   function clonePure(server: MCPServerParam): MCPServerParam {
-    return structuredClone({ ...server, tools: [], prompts: [], resources: [], resourceTemplates: [] })
+    return cloneDeep({ ...server, tools: [], prompts: [], resources: [], resourceTemplates: [] })
   }
   function createNewId(): string {
     return uniqueNanoId(nanoIdAlphabet, 12)

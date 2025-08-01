@@ -2,7 +2,7 @@
 import useSettingsStore from "@renderer/store/settings"
 import useChatStore from "@renderer/store/chat"
 import { ChatTopic, SettingKeys } from "@renderer/types"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

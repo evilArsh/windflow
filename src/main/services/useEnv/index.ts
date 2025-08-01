@@ -4,7 +4,7 @@ import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { EnvService, IpcChannel } from "@shared/types/service"
 import { ipcMain } from "electron"
 import { execCommand, resolvePath } from "./exec"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import log from "electron-log"
 export default (): EnvService & ServiceCore => {
   async function testEnv(args: ToolEnvironment): Promise<BridgeResponse<ToolEnvTestResult>> {

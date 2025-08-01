@@ -163,14 +163,16 @@ onBeforeUnmount(() => {
   flex-direction: column;
   overflow: hidden;
   background-color: var(--el-fill-color-dark);
+  border-radius: var(--el-border-radius-base);
   .content-header {
     position: relative;
-    z-index: 200;
+    // z-index: 200;
     flex-shrink: 0;
     display: flex;
     flex-basis: var(--content-header-height);
     background-color: var(--el-bg-color);
     border-bottom: 1px solid var(--el-border-color-light);
+    height: var(--ai-header-height);
   }
   .content-main {
     flex: 1;

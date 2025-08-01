@@ -5,7 +5,7 @@ import useSettings from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
 import { defaultLLMConfig } from "@renderer/store/chat/default"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

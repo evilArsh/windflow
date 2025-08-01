@@ -43,19 +43,17 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
   flex: 1;
   display: flex;
   overflow: hidden;
-  background-color: var(--el-fill-color-blank);
+  gap: var(--ai-gap-base);
   .subnav-provider {
     overflow: hidden;
     min-width: 20rem;
-    background-color: var(--el-fill-color);
+    background-color: var(--el-bg-color);
     display: flex;
     flex-direction: column;
-    border-right: solid 1px var(--el-border-color-lighter);
     position: relative;
   }
   .subnav-card {
     --el-card-border-color: transparent;
-    --el-card-border-radius: 0;
     --el-card-padding: 0.25rem;
     display: flex;
     flex-direction: column;
@@ -63,7 +61,6 @@ settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerSt
     overflow: hidden;
   }
   .subnav-content {
-    background-color: var(--el-fill-color);
     overflow: hidden;
     display: flex;
     flex: 1;

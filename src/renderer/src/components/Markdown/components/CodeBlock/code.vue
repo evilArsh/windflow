@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import useCopy from "./usable/useCopy"
 import useDownload from "./usable/useDownload"
 import { useShiki } from "@renderer/usable/useShiki"

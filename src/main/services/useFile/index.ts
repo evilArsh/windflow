@@ -1,5 +1,5 @@
 import { ServiceCore } from "@main/types"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { BridgeResponse, responseData } from "@shared/types/bridge"
 import { FileService, IpcChannel } from "@shared/types/service"
 import { dialog, ipcMain } from "electron"

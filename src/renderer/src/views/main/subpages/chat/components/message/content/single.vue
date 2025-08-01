@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChatMessage, ChatTopic } from "@renderer/types/chat"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
 import RawTextEdit from "./rawTextEdit.vue"
@@ -77,7 +77,7 @@ defineExpose({
 <template>
   <MsgBubble class="chat-item-container" :class="{ reverse: isUser }" :reverse="isUser" :id>
     <template v-if="header" #header>
-      <Affix ref="affix" :offset="42" :target="`#${id}`">
+      <Affix ref="affix" :offset="84" :target="`#${id}`">
         <Title :message>
           <Handler :topic :parent :message @delete="rawTextDlg.del(message)" @edit="rawTextDlg.edit(message)"></Handler>
         </Title>

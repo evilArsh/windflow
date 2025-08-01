@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { useThrottleFn } from "@vueuse/core"
 const chatStore = useChatStore()
 const { t } = useI18n()

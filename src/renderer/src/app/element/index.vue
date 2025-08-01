@@ -7,7 +7,7 @@ import useChatTopicStore from "@renderer/store/chat"
 import useMCPStore from "@renderer/store/mcp"
 import useEnvStore from "@renderer/store/env"
 import { ElNotification } from "element-plus"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 const ready = ref(false)
 const { t, locale } = useI18n()
 const epLocale = computed(() => (locale.value === "zh" ? zhCn : enUs))

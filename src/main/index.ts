@@ -5,6 +5,7 @@ import windowStateKeeper from "electron-window-state"
 import icon from "../../resources/icon.png?asset"
 import { registerService } from "./init"
 import { ServiceCore } from "./types"
+import { autoBackgroundColor, autoTitleBarOverlay } from "./services/useTheme"
 function createWindow(): BrowserWindow {
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1366,
@@ -22,7 +23,8 @@ function createWindow(): BrowserWindow {
     show: false,
     autoHideMenuBar: true,
     transparent: false,
-    titleBarOverlay: true,
+    titleBarOverlay: autoTitleBarOverlay(),
+    backgroundColor: autoBackgroundColor(),
     movable: true,
     ...(platform.isLinux ? { icon } : {}),
     webPreferences: {

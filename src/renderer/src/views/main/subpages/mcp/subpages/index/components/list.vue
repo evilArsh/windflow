@@ -2,7 +2,7 @@
 import MonacoEditor from "@renderer/components/MonacoEditor/index.vue"
 import useMcpStore from "@renderer/store/mcp"
 import DialogPanel from "@renderer/components/DialogPanel/index.vue"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { storeToRefs } from "pinia"
 import { MCPServerParam } from "@shared/types/mcp"
 type MCPServersConfig = { mcpServers: Record<string, MCPServerParam["params"]> }

@@ -12,6 +12,7 @@ import PQueue from "p-queue"
 import { Reactive } from "vue"
 import { chatTopicDefault } from "./default"
 import useSettingsStore from "@renderer/store/settings"
+import { cloneDeep } from "@shared/utils"
 
 export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKey: Ref<string>) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
@@ -20,35 +21,34 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   const settingsStore = useSettingsStore()
 
   async function addChatTopic(data: ChatTopic) {
-    return db.chatTopic.add(structuredClone(data))
+    return db.chatTopic.add(cloneDeep(data))
   }
   async function addChatMessage(data: ChatMessage) {
-    return db.chatMessage.add(structuredClone(data))
+    return db.chatMessage.add(cloneDeep(data))
   }
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
   const addChatLLMConfig = async (data: ChatLLMConfig) =>
-    cnfQueue.add(async () => db.chatLLMConfig.add(structuredClone(data)))
+    cnfQueue.add(async () => db.chatLLMConfig.add(cloneDeep(data)))
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
   const addChatTTIConfig = async (data: ChatTTIConfig) =>
-    cnfQueue.add(async () => db.chatTTIConfig.add(structuredClone(data)))
+    cnfQueue.add(async () => db.chatTTIConfig.add(cloneDeep(data)))
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatTopic = async (data: ChatTopic) => queue.add(async () => db.chatTopic.put(structuredClone(data)))
+  const updateChatTopic = async (data: ChatTopic) => queue.add(async () => db.chatTopic.put(cloneDeep(data)))
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatMessage = async (data: ChatMessage) =>
-    mqueue.add(async () => db.chatMessage.put(structuredClone(data)))
+  const updateChatMessage = async (data: ChatMessage) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
   async function updateChatLLMConfig(data: ChatLLMConfig) {
-    return db.chatLLMConfig.put(structuredClone(data))
+    return db.chatLLMConfig.put(cloneDeep(data))
   }
   async function updateChatTTIConfig(data: ChatTTIConfig) {
-    return db.chatTTIConfig.put(structuredClone(data))
+    return db.chatTTIConfig.put(cloneDeep(data))
   }
   async function getChatTTIConfig(topicId: string) {
     return db.chatTTIConfig.where("topicId").equals(topicId).first()

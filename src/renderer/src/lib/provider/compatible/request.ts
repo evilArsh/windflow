@@ -8,7 +8,7 @@ import {
   ModelMeta,
   ProviderMeta,
 } from "@renderer/types"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { ContentType } from "@shared/code"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"

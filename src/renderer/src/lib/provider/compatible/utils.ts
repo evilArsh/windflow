@@ -1,6 +1,6 @@
 import { LLMToolCall, LLMResponse, Role, Message, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
 import { AxiosInstance } from "axios"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 
 export function usePartialData() {
   let result: LLMResponse = defaultData()

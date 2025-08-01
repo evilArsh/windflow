@@ -36,8 +36,8 @@ onMounted(routes.toDefaultPath)
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">
-          <div class="my-1.2rem mb-2.4rem">
-            <ContentBox normal background>
+          <div class="mb-1rem">
+            <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("mcp.title") }}</el-text>
               <template #footer>
                 <el-text type="info">{{ t("mcp.subTitle") }}</el-text>

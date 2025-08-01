@@ -4,7 +4,9 @@ const {
   normal = false,
   normalIcon = false,
   wrapStyle = {},
+  wrapClass = "",
   mainStyle = {},
+  mainClass = "",
   defaultLock = false,
   needLock = false,
   stillLock = false,
@@ -12,7 +14,9 @@ const {
   // disabled = false,
 } = defineProps<{
   wrapStyle?: CSSProperties
+  wrapClass?: string
   mainStyle?: CSSProperties
+  mainClass?: string
   normal?: boolean
   /**
    * 图标是否有hover效果
@@ -74,11 +78,15 @@ watch(
 )
 </script>
 <template>
-  <div class="comp-content-box" :class="{ active, normal, background }" :style="wrapStyle" @click="handle.click">
+  <div
+    class="comp-content-box"
+    :class="{ active, normal, background, wrapClass }"
+    :style="wrapStyle"
+    @click="handle.click">
     <div v-if="$slots.header" class="box-header">
       <slot name="header"></slot>
     </div>
-    <div class="box-main" :style="mainStyle">
+    <div class="box-main" :style="mainStyle" :class="mainClass">
       <div v-if="$slots.icon" @click="handle.iconClick" :class="{ 'normal-icon': normalIcon }" class="box-icon">
         <slot name="icon"></slot>
       </div>
@@ -116,10 +124,12 @@ watch(
   }
 }
 .comp-content-box {
+  --content-box-padding: var(--ai-gap-small);
+  --content-box-margin: var(--ai-gap-small);
   user-select: none;
   cursor: pointer;
-  margin: 3px;
-  padding: 3px;
+  margin: var(--content-box-margin);
+  padding: var(--content-box-padding);
   border-radius: 5px;
   transition: all 0.3s ease;
   display: flex;

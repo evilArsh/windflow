@@ -60,12 +60,17 @@ onBeforeMount(() => {
   <el-card class="nav-container" body-class="nav-container-body" shadow="never">
     <div class="nav-menu">
       <el-scrollbar>
-        <el-menu :default-active="defaultRoute" @select="menuEv.onSelect" router>
+        <el-menu
+          style="--el-menu-bg-color: transparent"
+          :default-active="defaultRoute"
+          @select="menuEv.onSelect"
+          router>
           <el-menu-item v-for="item in pageNav" :key="item.index" :index="item.index" :disabled="item.disabled">
             <div class="nav-menu-item">
               <ContentBox
                 normal-icon
                 class="flex-1"
+                style="--content-box-padding: 0 var(--ai-gap-medium)"
                 :main-style="{ flexDirection: 'column' }"
                 background
                 still-lock
@@ -102,7 +107,6 @@ onBeforeMount(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: solid 1px var(--el-border-color-lighter);
 }
 </style>
 <style lang="scss" scoped>
@@ -122,22 +126,27 @@ onBeforeMount(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--el-fill-color-blank);
+  background-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
+  margin: var(--ai-gap-base);
+  -webkit-app-region: drag;
   .nav-menu {
     flex: 1;
     overflow: hidden;
   }
   .nav-menu-item {
+    -webkit-app-region: no-drag;
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     .nav-menu-item-icon {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
     }
   }
   .nav-bottom {
+    -webkit-app-region: no-drag;
     padding: 0.5rem 0;
     flex-shrink: 0;
     display: flex;

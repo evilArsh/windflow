@@ -1,5 +1,6 @@
 import { AxiosError } from "axios"
 import { serializeError } from "serialize-error"
+import rfdc from "rfdc"
 export function errorToText(error: unknown): string {
   if (typeof error === "string" || typeof error === "number") {
     return String(error)
@@ -14,3 +15,13 @@ export function errorToText(error: unknown): string {
     return JSON.stringify(e)
   }
 }
+
+export function useClone() {
+  const clone = rfdc()
+  function cloneDeep<T extends object>(obj: T): T {
+    return clone(obj)
+  }
+  return { cloneDeep }
+}
+
+export const cloneDeep = useClone().cloneDeep

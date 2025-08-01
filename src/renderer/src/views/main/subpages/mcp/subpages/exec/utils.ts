@@ -1,5 +1,5 @@
 import { code2xx } from "@shared/types/bridge"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { CallBackFn } from "@renderer/lib/shared/types"
 
 export async function chooseFile(): Promise<string> {

@@ -12,7 +12,7 @@ import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
 import { useSingleRequest } from "./http"
 import { AxiosError, CanceledError } from "axios"
-import { errorToText } from "@shared/error"
+import { cloneDeep, errorToText } from "@shared/utils"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -41,7 +41,7 @@ export class SiliconFlow extends Compatible {
     callback: (message: ImageResponse) => void
   ): Promise<RequestHandler> {
     const handler = useSingleRequest()
-    const data = structuredClone(message)
+    const data = cloneDeep(message)
     data.model = model.modelName
     data.image_size = data.size
     data.batch_size = data.n

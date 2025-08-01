@@ -11,7 +11,7 @@ import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@renderer/types"
 import Clear from "./clear.vue"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { useThrottleFn } from "@vueuse/core"
 const emit = defineEmits<{
   messageSend: []

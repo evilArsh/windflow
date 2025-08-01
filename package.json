@@ -69,6 +69,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "remark-squeeze-paragraphs": "^6.0.0",
+    "rfdc": "^1.4.1",
     "serialize-error": "^12.0.0",
     "shiki": "^3.8.1",
     "space-separated-tokens": "^2.0.2",

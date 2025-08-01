@@ -2,7 +2,7 @@
 import { ChatTopic } from "@renderer/types"
 import ModelSelect from "../message/handler/modelSelect.vue"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import useChatStore from "@renderer/store/chat"
 import { useThrottleFn } from "@vueuse/core"
 const props = defineProps<{

@@ -7,14 +7,30 @@ export enum Theme {
   dark = "dark",
   system = "system",
 }
+export const DarkOverlay: Electron.TitleBarOverlayOptions = {
+  height: 40,
+  color: "rgba(0,0,0,0)",
+  symbolColor: "#000000",
+}
+export const LightkOverlay: Electron.TitleBarOverlayOptions = {
+  height: 40,
+  color: "rgba(0,0,0,0)",
+  symbolColor: "#ffffff",
+}
+export const DarkBackgroundColor = "#1E1E1E"
+export const LightBackgroundColor = "#ffffff"
+
+export const autoTitleBarOverlay = () => {
+  return nativeTheme.shouldUseDarkColors ? LightkOverlay : DarkOverlay
+}
+export const autoBackgroundColor = () => {
+  return nativeTheme.shouldUseDarkColors ? DarkBackgroundColor : LightBackgroundColor
+}
 export default (mainWindow: BrowserWindow, store: StoreCore): ServiceCore => {
   let theme: Theme | undefined
   const onThemeUpdated = () => {
-    mainWindow.setTitleBarOverlay(
-      nativeTheme.shouldUseDarkColors
-        ? { height: 40, color: "rgba(0,0,0,0)", symbolColor: "#ffffff" }
-        : { height: 40, color: "rgba(0,0,0,0)", symbolColor: "#000000" }
-    )
+    mainWindow.setTitleBarOverlay(autoTitleBarOverlay())
+    mainWindow.setBackgroundColor(autoBackgroundColor())
   }
   async function setTheme(newTheme: Theme) {
     if (newTheme === theme) return

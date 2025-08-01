@@ -4,7 +4,7 @@ import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 const props = defineProps<{

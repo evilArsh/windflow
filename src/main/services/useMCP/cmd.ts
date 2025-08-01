@@ -1,9 +1,10 @@
 import { platform } from "@electron-toolkit/utils"
 import { ToolEnvironment } from "@shared/types/env"
 import { MCPServerParam } from "@shared/types/mcp"
+import { cloneDeep } from "@shared/utils"
 
 export function modifyPlatformCMD(env: ToolEnvironment, param: MCPServerParam): MCPServerParam {
-  const p = structuredClone(param)
+  const p = cloneDeep(param)
   if (platform.isWindows) {
     const command = p.params.command.toLowerCase().trim()
     if (command === "npx") {

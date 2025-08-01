@@ -20,7 +20,7 @@ import {
   MCPServerParamCore,
 } from "@shared/types/mcp"
 import { BridgeResponse, responseData } from "@shared/types/bridge"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { EventBus, IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
@@ -300,7 +300,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     }
   }
   async function updateEnv(newEnv: ToolEnvironment) {
-    env = structuredClone(newEnv)
+    env = newEnv
   }
   async function getReferences(id: string): Promise<BridgeResponse<Array<string>>> {
     return responseData(200, "ok", context.getTopicReference(id))

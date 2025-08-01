@@ -9,7 +9,7 @@ import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import { useMenu, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { CallBackFn } from "@renderer/lib/shared/types"
 const { t } = useI18n()
 const chatStore = useChatStore()

@@ -12,7 +12,7 @@ import { CSSProperties } from "@renderer/lib/shared/types"
 import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
 import { useMsgContext } from "../../../index"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 const props = defineProps<{
   message: ChatMessage
   topic: ChatTopic

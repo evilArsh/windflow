@@ -40,8 +40,8 @@ settingsStore.api.dataWatcher<string | undefined>(
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">
-          <div class="my-1.2rem mb-2.4rem">
-            <ContentBox normal background>
+          <div class="mb-1rem">
+            <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("model.title") }}</el-text>
               <template #footer>
                 <el-text type="info">{{ t("model.subTitle") }}</el-text>
@@ -67,7 +67,7 @@ settingsStore.api.dataWatcher<string | undefined>(
       </el-scrollbar>
     </template>
     <template #content>
-      <ContentLayout class="m-1rem">
+      <ContentLayout>
         <component
           :key="currentProvider?.name"
           :is="getComponent(currentProvider?.name)"

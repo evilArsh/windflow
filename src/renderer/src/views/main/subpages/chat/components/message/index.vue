@@ -39,7 +39,7 @@ const handler = {
 }
 </script>
 <template>
-  <div v-if="topic" class="flex flex-1 overflow-hidden">
+  <div v-if="topic" class="message-container">
     <ContentLayout
       :handler-height="topic.inputHeight"
       @update:handler-height="handler.onHandlerHeightChange"
@@ -73,6 +73,12 @@ const handler = {
   </div>
 </template>
 <style lang="scss" scoped>
+.message-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: var(--ai-gap-base);
+}
 .chat-header {
   --el-card-border-color: transparent;
   --el-card-border-radius: 0;

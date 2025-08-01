@@ -5,7 +5,7 @@ import useChatStore from "@renderer/store/chat"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import { Role } from "@renderer/types"
 import { code1xx } from "@shared/types/bridge"
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 const props = defineProps<{
   message: ChatMessage
   topic: ChatTopic

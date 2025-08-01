@@ -1,4 +1,4 @@
-import { errorToText } from "@shared/error"
+import { errorToText } from "@shared/utils"
 import { BridgeStatusResponse, responseCode } from "@shared/types/bridge"
 import { ToolTestParam } from "@shared/types/env"
 import { execa, ExecaError } from "execa"

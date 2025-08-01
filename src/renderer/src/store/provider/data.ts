@@ -6,6 +6,7 @@ import { db } from "@renderer/usable/useDatabase"
 import { Reactive } from "vue"
 import { providerDefault } from "./default"
 import { Settings } from "@renderer/types"
+import { cloneDeep } from "@shared/utils"
 
 export const useData = (
   metas: Reactive<Record<string, ProviderMeta>>,
@@ -14,8 +15,8 @@ export const useData = (
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
-  const update = async (data: ProviderMeta) => db.providerMeta.put(structuredClone(data))
-  const add = async (data: ProviderMeta) => await db.providerMeta.add(structuredClone(data))
+  const update = async (data: ProviderMeta) => db.providerMeta.put(cloneDeep(data))
+  const add = async (data: ProviderMeta) => await db.providerMeta.add(cloneDeep(data))
 
   const fetch = async () => {
     for (const key in metas) {
