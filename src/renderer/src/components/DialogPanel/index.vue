@@ -5,8 +5,7 @@
     header-class="flex-shrink-0"
     footer-class="flex-shrink-0"
     body-class="flex-1 overflow-hidden flex p0!"
-    shadow="never"
-    style="--el-card-padding: 1rem">
+    shadow="never">
     <template v-if="$slots.header" #header>
       <slot name="header"></slot>
     </template>
@@ -20,6 +19,8 @@
 </template>
 <style lang="scss" scoped>
 .dialog-panel {
+  --dialog-padding: 1rem;
+  --el-card-padding: var(--dialog-padding);
   flex: 1;
   display: flex;
   flex-direction: column;

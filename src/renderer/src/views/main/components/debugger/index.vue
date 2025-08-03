@@ -1,18 +1,24 @@
 <script lang="ts" setup>
 import { ScaleConfig } from "@renderer/components/ScalePanel/types"
+import useShortcut from "@renderer/views/main/usable/useShortcut"
+const shortcut = useShortcut()
 
 const scaleRef = useTemplateRef("scale")
 const headerRef = useTemplateRef<HTMLDivElement>("header")
+const defaults = {
+  width: () => window.innerWidth * 0.85,
+  height: () => window.innerHeight * 0.85,
+}
 const panelConfig = reactive<ScaleConfig>({
   containerStyle: {
     zIndex: z.FIXED,
     position: "fixed",
-    width: window.innerWidth * 0.5,
-    height: window.innerHeight * 0.6,
+    width: defaults.width(),
+    height: defaults.height(),
     left: 0,
     top: 0,
     overflow: "auto",
-    boxShadow: "var(--el-box-shadow-light)",
+    boxShadow: "var(--el-box-shadow-dark)",
     backgroundColor: "var(--el-bg-color)",
     minWidth: "20rem",
     minHeight: "20rem",
@@ -24,11 +30,17 @@ const panelConfig = reactive<ScaleConfig>({
 const db = shallowReactive({
   toggle() {
     if (scaleRef.value?.getStatus() === "NORMAL") {
-      scaleRef.value?.hideTo("center", true)
+      scaleRef.value?.hideTo("self", false)
     } else {
-      scaleRef.value?.show(true, "center")
+      panelConfig.containerStyle!.width = defaults.width()
+      panelConfig.containerStyle!.height = defaults.height()
+      scaleRef.value?.show(false, "center")
     }
   },
+})
+
+shortcut.listen("ctrl+d", res => {
+  if (res.active) db.toggle()
 })
 </script>
 <template>
@@ -37,7 +49,7 @@ const db = shallowReactive({
       <i-ic:round-terminal class="text-1.8rem"></i-ic:round-terminal>
     </ContentBox>
     <ScalePanel v-model="panelConfig" ref="scale" :drag-target="headerRef">
-      <el-card style="--el-card-padding: 1rem" class="w-full">
+      <DialogPanel>
         <template #header>
           <div class="flex-y-center h-3rem cursor-pointer">
             <div class="flex-1" ref="header">
@@ -50,8 +62,8 @@ const db = shallowReactive({
             </ContentBox>
           </div>
         </template>
-        <Debugger class="w-full"></Debugger>
-      </el-card>
+        <Debugger></Debugger>
+      </DialogPanel>
     </ScalePanel>
   </div>
 </template>

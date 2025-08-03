@@ -13,7 +13,6 @@ export interface EditorEv {
   change: (file: string) => void
 }
 export default () => {
-  // await editor?.getAction("monacoEditor.action.formatDocument")?.run()
   const ev: EventBus<EditorEv> = useEvent()
   let editor: _editor.IStandaloneCodeEditor | undefined
   const files: Set<string> = new Set()
@@ -38,6 +37,10 @@ export default () => {
     if (!editor) return
     if (editor.getValue() !== data.value) {
       editor.setValue(data.value)
+      if (data.autoFormat) {
+        editor.trigger("*", "editor.action.formatDocument", null)
+        // editor?.getAction("monacoEditor.action.formatDocument")?.run()
+      }
     }
   }
   function onLangChange(data: EditorProps) {

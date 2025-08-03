@@ -14,4 +14,5 @@ export interface EditorProps {
    * TODO: implement the props
    */
   readonly?: boolean
+  autoFormat?: boolean
 }

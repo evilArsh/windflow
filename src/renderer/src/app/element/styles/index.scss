@@ -25,13 +25,13 @@ svg:focus {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--el-fill-color-lighter);
+  background-color: var(--el-color-info-light-3);
   border-radius: 4px;
   transition: background-color 0.3s;
   opacity: 0.3;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--el-fill-color-dark);
+  background-color: var(--el-color-info);
 }
 ::-webkit-scrollbar-track:hover {
   border-radius: 4px;

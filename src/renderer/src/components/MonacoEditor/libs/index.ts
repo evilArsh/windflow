@@ -44,6 +44,10 @@ export async function initEnv(ev: EventBus<EditorEv>) {
     allowNonTsExtensions: true,
   })
 
+  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+    allowComments: true,
+  })
+
   // 加入css 提示
   monaco.languages.registerCompletionItemProvider("json", {
     provideCompletionItems(model, position) {

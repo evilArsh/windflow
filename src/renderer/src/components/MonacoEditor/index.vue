@@ -13,28 +13,27 @@ const props = withDefaults(defineProps<EditorProps>(), {
 const emit = defineEmits<{
   change: [data: string]
 }>()
-const editorRef = ref<HTMLDivElement>()
+const editorRef = shallowRef<HTMLDivElement>()
 const { create, dispose, ev, onValueChange, onLangChange, onFilenameChange, onNameSpaceChange } = useEditor()
 ctx.initEnv(ev)
 
 watch(
   () => props.value,
-  () => onValueChange({ ...toRaw(props) })
+  () => onValueChange(props)
 )
 watch(
   () => props.lang,
-  () => onLangChange({ ...toRaw(props) })
+  () => onLangChange(props)
 )
 watch(
   () => props.filename,
-  () => onFilenameChange({ ...toRaw(props) })
+  () => onFilenameChange(props)
 )
 watch(
   () => props.namespace,
-  () => onNameSpaceChange({ ...toRaw(props) })
+  () => onNameSpaceChange(props)
 )
-onMounted(async () => {
-  await nextTick()
+onMounted(() => {
   ev.emit("mounted")
   const propsRaw = toRaw(props)
   ev.on("change", (code: string) => emit("change", code))

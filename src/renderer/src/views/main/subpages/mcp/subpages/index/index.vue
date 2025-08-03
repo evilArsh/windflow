@@ -88,8 +88,9 @@ const dlg = {
         mcp.start(MCPRootTopicId, res)
       } else {
         if (current.value) Object.assign(current.value, data)
-        await mcp.api.update(mcp.clonePure(data))
-        await serverHandler.restart(data)
+        const newData = mcp.clonePure(data)
+        await mcp.api.update(newData)
+        await serverHandler.restart(newData)
       }
       msg({ code: 200, msg: "ok" })
     } catch (error) {
