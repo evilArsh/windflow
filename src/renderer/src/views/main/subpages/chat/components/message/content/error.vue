@@ -8,7 +8,7 @@ const message = computed(() => props.message)
 <template>
   <el-alert type="warning" show-icon :closable="false">
     <el-text>
-      {{ message.content.content }}
+      {{ message.msg }}
     </el-text>
   </el-alert>
 </template>

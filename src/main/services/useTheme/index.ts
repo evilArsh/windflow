@@ -10,18 +10,18 @@ export enum Theme {
 export const DarkOverlay: Electron.TitleBarOverlayOptions = {
   height: 40,
   color: "rgba(0,0,0,0)",
-  symbolColor: "#000000",
+  symbolColor: "#ffffff",
 }
 export const LightkOverlay: Electron.TitleBarOverlayOptions = {
   height: 40,
-  color: "rgba(0,0,0,0)",
-  symbolColor: "#ffffff",
+  color: "#ffffff",
+  symbolColor: "#1E1E1E",
 }
 export const DarkBackgroundColor = "#1E1E1E"
 export const LightBackgroundColor = "#ffffff"
 
 export const autoTitleBarOverlay = () => {
-  return nativeTheme.shouldUseDarkColors ? LightkOverlay : DarkOverlay
+  return nativeTheme.shouldUseDarkColors ? DarkOverlay : LightkOverlay
 }
 export const autoBackgroundColor = () => {
   return nativeTheme.shouldUseDarkColors ? DarkBackgroundColor : LightBackgroundColor

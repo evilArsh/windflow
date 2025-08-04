@@ -128,9 +128,10 @@ export function parseResponse(text: string, stream: boolean): LLMResponse {
       } catch (error) {
         return {
           status: 200,
+          msg: errorToText(error),
           data: {
             role: Role.Assistant,
-            content: errorToText(error),
+            content: "",
             reasoning_content: "",
           },
         }
@@ -140,9 +141,9 @@ export function parseResponse(text: string, stream: boolean): LLMResponse {
     console.log("[parseResponse error]", error, text)
     return {
       status: 200,
-      msg: "",
+      msg: errorToText(error),
       data: {
-        content: errorToText(error),
+        content: "",
         role: Role.Assistant,
       },
     }

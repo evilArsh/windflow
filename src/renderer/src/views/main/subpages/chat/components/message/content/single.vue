@@ -14,7 +14,6 @@ import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
 import { useMsgContext } from "../../../index"
-import { code1xx, code2xx } from "@shared/types/bridge"
 const props = defineProps<{
   message: ChatMessage
   parent?: ChatMessage
@@ -56,7 +55,7 @@ const isUser = computed(() => message.value.content.role === Role.User)
 
 const isText = computed(() => !message.value.type || message.value.type === "text")
 const isImage = computed(() => message.value.type === "image")
-const isException = computed(() => !(code1xx(message.value.status) || code2xx(message.value.status)))
+const isException = computed(() => !!message.value.msg)
 
 const isPartial = computed(() => {
   return message.value.status < 200 || message.value.status == 206

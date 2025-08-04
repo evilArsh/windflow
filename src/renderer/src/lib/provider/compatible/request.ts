@@ -48,7 +48,7 @@ async function* request(
   })
   if (response.status >= 300) {
     const res = await response.text()
-    throw new HttpCodeError(response.status, `HTTP error!,${res}`)
+    throw new HttpCodeError(response.status, `[HTTP error] ${res}`)
   }
   if (!response.body) {
     throw new Error("response body not found")
@@ -155,18 +155,24 @@ export async function makeRequest(
     }
   } catch (error) {
     if (error instanceof AbortError) {
-      partial.add({ status: 499, data: { content: "", stream: requestData.stream, role: Role.Assistant } })
+      partial.add({
+        msg: "request aborted",
+        status: 499,
+        data: { content: "", stream: requestData.stream, role: Role.Assistant },
+      })
       callback(partial.getResponse())
     } else if (error instanceof HttpCodeError) {
       partial.add({
+        msg: error.message,
         status: error.code(),
-        data: { content: error.message, stream: requestData.stream, role: Role.Assistant },
+        data: { content: "", stream: requestData.stream, role: Role.Assistant },
       })
       callback(partial.getResponse())
     } else {
       partial.add({
+        msg: errorToText(error),
         status: 500,
-        data: { content: errorToText(error), stream: requestData.stream, role: Role.Assistant },
+        data: { content: "", stream: requestData.stream, role: Role.Assistant },
       })
       callback(partial.getResponse())
     }

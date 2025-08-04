@@ -113,11 +113,12 @@ export default defineStore("chat_topic", () => {
       providerMeta,
       mcpServersIds,
       value => {
-        const { data, status } = value
+        const { data, status, msg } = value
         message.completionTokens = toNumber(data.usage?.completion_tokens)
         message.promptTokens = toNumber(data.usage?.prompt_tokens)
         message.status = status
         message.content = data
+        message.msg = msg
         if (status == 206) {
           message.finish = false
         } else if (status == 200) {
