@@ -21,10 +21,6 @@ async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
       const { done, value } = await reader.read()
       const lineStr = decoder.decode(value, { stream: !done })
       yield lineStr
-      // console.log("[line]", lineStr)
-      // for (const line of lineStr.split(/\r?\n/).filter(v => !!v)) {
-      //   yield line
-      // }
       if (done) break
     }
   } catch (error) {
@@ -110,7 +106,7 @@ export async function makeRequest(
         ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}),
       }
     }
-    console.log("[load local MCP tools]", toolList)
+    // console.log("[load local MCP tools]", toolList)
     // 调用MCP工具并返回的调用结果
     let callToolsResults: Message[] = []
     // LLM返回的需要调用的工具列表
@@ -118,10 +114,10 @@ export async function makeRequest(
     while (true) {
       neededCallTools = partial.getTools()
       if (neededCallTools.length) {
-        console.log("[tools selected by LLM]", neededCallTools)
+        // console.log("[tools selected by LLM]", neededCallTools)
         // 调用MCP工具并返回调用结果
         callToolsResults = await callTools(neededCallTools)
-        console.log("[call local tools]", callToolsResults)
+        // console.log("[call local tools]", callToolsResults)
       }
       callToolsResults.forEach(callResult => {
         partial.addToolCallResults({ ...callResult, stream })

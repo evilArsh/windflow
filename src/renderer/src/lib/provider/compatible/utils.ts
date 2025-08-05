@@ -40,8 +40,11 @@ export function usePartialData() {
    * @description 归档当前tools,开启下一轮的tool_calls
    */
   function archiveTools() {
-    toolsHistory.push(getTools())
-    tools = {}
+    const t = getTools()
+    if (t.length) {
+      toolsHistory.push(t)
+      tools = {}
+    }
   }
   function addToolCallResults(data: Message) {
     tool_calls_chain.push(data)
