@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { usePartialData, parseResponse } from "@renderer/lib/provider/compatible/utils"
+import { usePartialData, openAICompatParser } from "@renderer/lib/provider/compatible/utils"
 import { useDebounceFn } from "@vueuse/core"
 
 const leftStyle = ref<CSSProperties>({
@@ -17,8 +17,9 @@ const useLLM = () => {
 
   const parse = useDebounceFn((val: string) => {
     partial.reset()
-    const res = parseResponse(val, stream.value)
-    partial.add(res)
+    for (const res of openAICompatParser.parseLLM(val, stream.value)) {
+      partial.add(res)
+    }
     parsed.value = JSON.stringify(partial.getResponse())
   })
   watch(raw, parse)

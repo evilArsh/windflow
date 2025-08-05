@@ -129,6 +129,7 @@ export default defineStore("chat_topic", () => {
             chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
               if (isString(value.data.content)) {
                 topic.label = value.data.content
+                api.updateChatTopic(topic)
               }
             })
           }

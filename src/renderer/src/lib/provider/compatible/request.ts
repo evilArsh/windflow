@@ -8,11 +8,11 @@ import {
   ModelMeta,
   ProviderMeta,
 } from "@renderer/types"
-import { errorToText } from "@shared/utils"
+import { cloneDeep, errorToText } from "@shared/utils"
 import { ContentType } from "@shared/code"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
-import { mergeRequestConfig, parseResponse, usePartialData } from "./utils"
+import { mergeRequestConfig, openAICompatParser, usePartialData } from "./utils"
 async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {
     const reader = stream.getReader()
@@ -20,10 +20,11 @@ async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
     while (true) {
       const { done, value } = await reader.read()
       const lineStr = decoder.decode(value, { stream: !done })
+      yield lineStr
       // console.log("[line]", lineStr)
-      for (const line of lineStr.split(/\r?\n/).filter(v => !!v)) {
-        yield line
-      }
+      // for (const line of lineStr.split(/\r?\n/).filter(v => !!v)) {
+      //   yield line
+      // }
       if (done) break
     }
   } catch (error) {
@@ -58,13 +59,16 @@ async function* request(
       if (abortController.signal.aborted) {
         throw new AbortError("Request Aborted")
       }
-      const parsedData = parseResponse(line, true)
-      parsedData.data.stream = true
-      yield parsedData
+      for (const res of openAICompatParser.parseLLM(line, true)) {
+        res.data.stream = true
+        yield res
+      }
     }
   } else {
     const data = await response.text()
-    yield parseResponse(data, false)
+    for (const res of openAICompatParser.parseLLM(data, false)) {
+      yield res
+    }
   }
 }
 export function useSingleLLMChat(): LLMRequestHandler {
@@ -94,85 +98,78 @@ export async function makeRequest(
   requestBody?: LLMRequest
 ) {
   const partial = usePartialData()
-  const requestData = mergeRequestConfig(context, modelMeta, requestBody)
+  const stream = requestBody?.stream ?? true
+  const ctx = cloneDeep(context)
   try {
-    callback({ status: 100, data: { content: "", stream: requestData.stream, role: Role.Assistant } })
+    callback({ status: 100, data: { content: "", stream, role: Role.Assistant } })
     // 获取MCP工具列表
     const toolList = await loadMCPTools(mcpServersIds)
+    const appendTools = (req: LLMRequest, toolist: unknown) => {
+      return {
+        ...req,
+        ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}),
+      }
+    }
     console.log("[load local MCP tools]", toolList)
     // 调用MCP工具并返回的调用结果
-    let reqToolsData: Message[] = []
+    let callToolsResults: Message[] = []
     // LLM返回的需要调用的工具列表
     let neededCallTools: LLMToolCall[] = []
     while (true) {
-      if (toolList.length > 0) {
-        if (!neededCallTools.length) {
-          // 携带tools信息请求
-          const req = { ...requestData, tools: toolList, tool_calls: toolList }
-          for await (const content of requestHandler.chat(req, providerMeta)) {
-            partial.add({ ...content, status: content.status == 200 ? 206 : content.status })
-            callback(partial.getResponse())
-          }
-          neededCallTools = partial.getTools()
-          // 没有触发MCP工具调用
-          if (!neededCallTools.length) {
-            partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
-            callback(partial.getResponse())
-            return
-          }
-        }
+      neededCallTools = partial.getTools()
+      if (neededCallTools.length) {
         console.log("[tools selected by LLM]", neededCallTools)
         // 调用MCP工具并返回调用结果
-        reqToolsData = await callTools(neededCallTools)
-        console.log("[call local tools]", reqToolsData)
-        if (!reqToolsData.length) {
-          partial.add({ status: 200, data: { role: Role.Assistant, content: "" } })
-          callback(partial.getResponse())
-          return
-        }
-        // 添加大模型选择的tool_calls作为上下文
-        context.push({
-          role: Role.Assistant,
-          tool_calls: neededCallTools,
-          content: "",
-        })
+        callToolsResults = await callTools(neededCallTools)
+        console.log("[call local tools]", callToolsResults)
       }
-      reqToolsData.forEach(toolData => {
-        partial.addLocalMCPCallResults({ ...toolData, stream: requestData.stream })
-        context.push(toolData)
+      callToolsResults.forEach(callResult => {
+        partial.addToolCallResults({ ...callResult, stream })
+        const neededCalltool = neededCallTools.find(tool => tool.id === callResult.tool_call_id)
+        if (neededCalltool) {
+          ctx.push({
+            role: Role.Assistant,
+            tool_calls: [neededCalltool],
+            content: "",
+          })
+          ctx.push(callResult)
+        }
+        callback(partial.getResponse())
       })
-      callback(partial.getResponse())
-      // 处理工具调用结果
-      const reqBody = mergeRequestConfig(context, modelMeta, requestData)
       partial.archiveTools()
-      // 携带mcp调用结果请求
-      for await (const content of requestHandler.chat(reqBody, providerMeta)) {
+      for await (const content of requestHandler.chat(
+        appendTools(mergeRequestConfig(ctx, modelMeta, requestBody), toolList),
+        providerMeta
+      )) {
         partial.add(content)
         callback(partial.getResponse())
       }
-      neededCallTools = partial.getTools()
-      if (!neededCallTools.length) break
+      if (!partial.getTools().length) {
+        partial.done()
+        callback(partial.getResponse())
+        break
+      }
     }
   } catch (error) {
     if (error instanceof AbortError) {
       partial.add({
         msg: "request aborted",
         status: 499,
-        data: { content: "", stream: requestData.stream, role: Role.Assistant },
+        data: { content: "", stream, role: Role.Assistant },
       })
       callback(partial.getResponse())
     } else if (error instanceof HttpCodeError) {
       partial.add({
         msg: error.message,
         status: error.code(),
-        data: { content: "", stream: requestData.stream, role: Role.Assistant },
+        data: { content: "", stream, role: Role.Assistant },
       })
       callback(partial.getResponse())
     } else {
       partial.add({
         msg: errorToText(error),
         status: 500,
-        data: { content: "", stream: requestData.stream, role: Role.Assistant },
+        data: { content: "", stream, role: Role.Assistant },
       })
       callback(partial.getResponse())
     }

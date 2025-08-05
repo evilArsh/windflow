@@ -171,6 +171,7 @@
     },
     "status": "Status",
     "subTitle": "MCP Service Config",
+    "timeout": "connection timeout",
     "title": "MCP",
     "type": "Type",
     "url": "url"

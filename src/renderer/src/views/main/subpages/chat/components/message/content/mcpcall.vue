@@ -5,7 +5,8 @@ import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
 import { useToolName } from "@shared/mcp"
 import { cloneDeep } from "@shared/utils"
-
+import PureCode from "@renderer/components/Markdown/components/PureCode/index.vue"
+import json5 from "json5"
 const props = defineProps<{
   message: ChatMessage
 }>()
@@ -67,6 +68,15 @@ watch(
   },
   { deep: true, immediate: true }
 )
+const tool = {
+  transferJson(str: string) {
+    try {
+      return json5.stringify(json5.parse(str), null, 2)
+    } catch (_) {
+      return str
+    }
+  },
+}
 </script>
 <template>
   <div v-if="calls.length > 0" class="my-1rem">
@@ -88,13 +98,17 @@ watch(
           <ContentBox class="select-unset!">
             <el-text size="small" type="primary">{{ t("chat.mcpCall.arguments") }}</el-text>
             <template #footer>
-              <el-text size="small">{{ call.function.arguments }}</el-text>
+              <el-text>
+                <PureCode :code="tool.transferJson(call.function.arguments)" lang="json"></PureCode>
+              </el-text>
             </template>
           </ContentBox>
           <ContentBox class="select-unset!">
             <el-text size="small" type="primary">{{ t("chat.mcpCall.content") }}</el-text>
             <template #footer>
-              <el-text size="small">{{ call.content }}</el-text>
+              <el-text>
+                <PureCode :code="tool.transferJson(call.content)" lang="json"></PureCode>
+              </el-text>
             </template>
           </ContentBox>
         </div>

@@ -33,7 +33,7 @@ export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
       results.push({
         role: Role.Tool,
         // patch deepseek
-        content: json5.stringify(result),
+        content: json5.stringify(result.data.content),
         tool_call_id: tool.id,
       })
     }

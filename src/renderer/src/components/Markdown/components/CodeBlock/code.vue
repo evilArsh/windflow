@@ -1,38 +1,14 @@
 <script setup lang="ts">
-import { errorToText } from "@shared/utils"
 import useCopy from "./usable/useCopy"
 import useDownload from "./usable/useDownload"
-import { useShiki } from "@renderer/usable/useShiki"
-import { toVueRuntime } from "../../worker/toVueRuntime"
-const props = defineProps<{
+import PureCode from "../PureCode/index.vue"
+defineProps<{
   code: string
   lang: string
 }>()
-const Mermaid = defineAsyncComponent(() => import("./mermaid.vue"))
 const { copied, onCopy } = useCopy()
 const { download } = useDownload()
-const { codeToAst } = useShiki()
-const vnode = shallowRef<VNode>()
 const id = useId()
-watchEffect(() => {
-  if (props.lang === "mermaid") {
-    vnode.value = h(Mermaid, {
-      code: props.code,
-      lang: props.lang,
-    })
-  } else {
-    codeToAst(props.code, props.lang)
-      .then(res => {
-        vnode.value = toVueRuntime(res, {
-          ignoreInvalidStyle: true,
-          stylePropertyNameCase: "css",
-          passKeys: true,
-          passNode: true,
-        })
-      })
-      .catch(err => (vnode.value = h("div", { innerHTML: errorToText(err) })))
-  }
-})
 </script>
 <template>
   <div class="markdown-code-block">
@@ -51,7 +27,7 @@ watchEffect(() => {
           </div>
         </div>
       </template>
-      <component :is="vnode"></component>
+      <PureCode :code :lang></PureCode>
     </el-card>
   </div>
 </template>

@@ -66,6 +66,7 @@ const defaultData = (): MCPServerParam => ({
   referTopics: [],
   params: { url: "", command: "", args: [], env: {} },
   description: "",
+  timeout: 60000,
 })
 const clonedData = ref<MCPServerParam>(defaultData())
 const handler = {
@@ -120,6 +121,11 @@ watch(() => props.data, handler.init, { immediate: true, deep: true })
         <el-form-item :label="t('mcp.args')" required prop="params.args">
           <Args :model-value="clonedData.params.args"></Args>
         </el-form-item>
+        <!-- <el-form-item :label="t('mcp.timeout')" prop="params.env">
+          <div class="flex-y-center gap-[var(--ai-gap-base)]">
+            <el-input-number v-model="clonedData.timeout"></el-input-number>
+          </div>
+        </el-form-item> -->
         <el-form-item :label="t('mcp.env')" prop="params.env">
           <Env v-model="clonedData.params.env"></Env>
         </el-form-item>
