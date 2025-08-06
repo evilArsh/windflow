@@ -77,6 +77,7 @@ export function usePartialData() {
 export function useOpenAICompatParser() {
   const regStart = /^\s*data:\s*/
   const regKeepalive = /:\s*keep-alive/
+  const regJsonEdge = /^{.*}$/s
   const endFlag = "[DONE]"
 
   function parseLLM(text: string, stream: boolean): LLMResponse[] {
@@ -105,10 +106,16 @@ export function useOpenAICompatParser() {
               data: { role: Role.Assistant, content: "", reasoning_content: "" },
             }
           } else if (regStart.test(text)) {
-            const rawText = text.replace(regStart, "")
+            const rawText = text.replace(regStart, "").trim()
             if (rawText.startsWith(endFlag)) {
               return {
                 status: 200,
+                data: { role: Role.Assistant, content: "", reasoning_content: "" },
+              }
+            }
+            if (!regJsonEdge.test(rawText)) {
+              return {
+                status: 206,
                 data: { role: Role.Assistant, content: "", reasoning_content: "" },
               }
             }
@@ -149,7 +156,7 @@ export function useOpenAICompatParser() {
         ]
       }
     } catch (error) {
-      console.log("[parseResponse error]", error, text)
+      console.log("[parseResponse error]", error)
       return [
         {
           status: 200,

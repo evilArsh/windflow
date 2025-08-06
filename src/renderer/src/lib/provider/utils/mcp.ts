@@ -25,11 +25,17 @@ export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
       return []
     }
     const results: Message[] = []
+    const parse = (args: string) => {
+      try {
+        if (!args) return
+        return json5.parse(useToolCall().normalizetoolCallArgs(args))
+      } catch (e) {
+        console.log("[parse tool calls args error]", e, args)
+        return args
+      }
+    }
     for (const tool of tools) {
-      const args = tool.function.arguments
-        ? json5.parse(useToolCall().normalizetoolCallArgs(tool.function.arguments))
-        : tool.function.arguments
-      const result = await window.api.mcp.callTool(tool.function.name, args)
+      const result = await window.api.mcp.callTool(tool.function.name, parse(tool.function.arguments))
       results.push({
         role: Role.Tool,
         // patch deepseek
