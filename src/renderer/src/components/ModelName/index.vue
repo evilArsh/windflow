@@ -36,7 +36,7 @@ const iconMap = {
     <el-text class="flex-1" line-clamp="1">{{ data.modelName }}</el-text>
     <div class="flex gap.25rem flex-shrink-0">
       <ContentBox v-for="type in data.type" :key="type">
-        <el-tooltip :content="t(`modelType.${type}`)" placement="top">
+        <el-tooltip :content="t(`modelType.${type}`)" placement="top" :teleported="false">
           <component :is="iconMap[type]"></component>
         </el-tooltip>
       </ContentBox>

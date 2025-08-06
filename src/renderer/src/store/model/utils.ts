@@ -19,6 +19,9 @@ export const useUtils = () => {
   function isChatType(model: ModelMeta): boolean {
     return has(model, ModelType.Chat) || has(model, ModelType.ChatReasoner)
   }
+  function isChatReasonerType(model: ModelMeta): boolean {
+    return has(model, ModelType.ChatReasoner)
+  }
   /**
    * @description 是否包含
    * `ModelType.TextToImage`
@@ -57,6 +60,7 @@ export const useUtils = () => {
     is,
     has,
     isChatType,
+    isChatReasonerType,
     isImageType,
     isVideoType,
     isTTSType,

@@ -305,7 +305,7 @@ export const useMenu = (
   })
   watch(
     () => tree.searchKeyword,
-    useThrottleFn(v => treeRef.value?.filter(v))
+    useThrottleFn(v => treeRef.value?.filter(v), 250, true)
   )
   settingsStore.api.dataWatcher<string[]>(SettingKeys.ChatDefaultExpandedKeys, toRef(tree, "defaultExpandedKeys"), [])
   return {

@@ -6,6 +6,7 @@ import {
   ChatTopicTree,
   ChatTTIConfig,
   ModelMeta,
+  ModelType,
   Provider,
   ProviderMeta,
   Role,
@@ -124,6 +125,12 @@ export default defineStore("chat_topic", () => {
         } else if (status == 200) {
           message.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
+          if (message.content.reasoning_content) {
+            if (!modelsStore.utils.isChatReasonerType(model)) {
+              model.type.push(ModelType.ChatReasoner)
+              modelsStore.api.update(model)
+            }
+          }
           if (parentMessageId) return // 多模型请求时不总结标题
           if (topic.label === window.defaultTopicTitle && chatContext.provider) {
             chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
