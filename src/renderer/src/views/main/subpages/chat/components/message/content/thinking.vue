@@ -34,8 +34,13 @@ watch(
 )
 </script>
 <template>
-  <div v-if="reasoning_content" class="flex flex-col gap-0.5rem">
-    <el-collapse v-model="activeNames" accordion expand-icon-position="left">
+  <ContentBox v-if="reasoning_content">
+    <el-collapse
+      class="w-full"
+      border="solid 1px [var(--el-collapse-border-color)]"
+      v-model="activeNames"
+      accordion
+      expand-icon-position="right">
       <el-collapse-item name="1">
         <template #title>
           <div class="flex items-center gap-0.5rem">
@@ -46,9 +51,14 @@ watch(
             </el-text>
           </div>
         </template>
-        <Markdown v-if="reasoning_content" :content="reasoning_content"></Markdown>
+        <ContentBox>
+          <template #header>
+            <Copy :text="reasoning_content"></Copy>
+          </template>
+          <Markdown v-if="reasoning_content" :content="reasoning_content"></Markdown>
+        </ContentBox>
       </el-collapse-item>
     </el-collapse>
-  </div>
+  </ContentBox>
 </template>
 <style lang="scss" scoped></style>

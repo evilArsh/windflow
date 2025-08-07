@@ -6,6 +6,7 @@ import { useToolName } from "@shared/mcp"
 import { cloneDeep } from "@shared/utils"
 import PureCode from "@renderer/components/Markdown/components/PureCode/index.vue"
 import json5 from "json5"
+
 const props = defineProps<{
   message: Message
 }>()
@@ -79,41 +80,49 @@ const tool = {
 }
 </script>
 <template>
-  <div v-if="calls.length > 0" class="my-1rem">
-    <el-collapse expand-icon-position="left">
-      <el-collapse-item v-for="call in calls" :key="call.id" :name="call.id">
-        <template #title>
-          <div class="flex items-center gap-0.5rem">
-            <Spinner
-              destroy-icon
-              :model-value="call.status === Status.InProgress"
-              class="flex-shrink-0 text-1.2rem font-bold"></Spinner>
-            <i-twemoji:hammer-and-wrench class="text-1.2rem" />
-            <el-text size="small" type="primary">{{ serverName(call.serverId) }}</el-text>
-            <el-text size="small" type="danger">|</el-text>
-            <el-text size="small" type="info">{{ call.function.name }}</el-text>
+  <div v-if="calls.length > 0">
+    <ContentBox>
+      <el-collapse class="w-full" border="solid 1px [var(--el-collapse-border-color)]" expand-icon-position="left">
+        <el-collapse-item v-for="call in calls" :key="call.id" :name="call.id">
+          <template #title>
+            <div class="flex items-center gap-0.5rem">
+              <Spinner
+                destroy-icon
+                :model-value="call.status === Status.InProgress"
+                class="flex-shrink-0 text-1.2rem font-bold"></Spinner>
+              <i-twemoji:hammer-and-wrench class="text-1.2rem" />
+              <el-text size="small" type="primary">{{ serverName(call.serverId) }}</el-text>
+              <el-text size="small" type="danger">|</el-text>
+              <el-text size="small" type="info">{{ call.function.name }}</el-text>
+            </div>
+          </template>
+          <div class="flex flex-col gap.5rem max-h-30rem overflow-auto">
+            <ContentBox class="select-unset!">
+              <el-text size="small" type="primary">{{ t("chat.mcpCall.arguments") }}</el-text>
+              <template #end>
+                <Copy :text="call.function.arguments"></Copy>
+              </template>
+              <template #footer>
+                <el-text>
+                  <PureCode :code="tool.transferJson(call.function.arguments)" lang="json"></PureCode>
+                </el-text>
+              </template>
+            </ContentBox>
+            <ContentBox class="select-unset!">
+              <el-text size="small" type="primary">{{ t("chat.mcpCall.content") }}</el-text>
+              <template #end>
+                <Copy :text="call.content"></Copy>
+              </template>
+              <template #footer>
+                <el-text>
+                  <PureCode :code="tool.transferJson(call.content)" lang="json"></PureCode>
+                </el-text>
+              </template>
+            </ContentBox>
           </div>
-        </template>
-        <div class="flex flex-col gap.5rem max-h-50rem overflow-auto">
-          <ContentBox class="select-unset!">
-            <el-text size="small" type="primary">{{ t("chat.mcpCall.arguments") }}</el-text>
-            <template #footer>
-              <el-text>
-                <PureCode :code="tool.transferJson(call.function.arguments)" lang="json"></PureCode>
-              </el-text>
-            </template>
-          </ContentBox>
-          <ContentBox class="select-unset!">
-            <el-text size="small" type="primary">{{ t("chat.mcpCall.content") }}</el-text>
-            <template #footer>
-              <el-text>
-                <PureCode :code="tool.transferJson(call.content)" lang="json"></PureCode>
-              </el-text>
-            </template>
-          </ContentBox>
-        </div>
-      </el-collapse-item>
-    </el-collapse>
+        </el-collapse-item>
+      </el-collapse>
+    </ContentBox>
   </div>
 </template>
 <style lang="scss" scoped></style>

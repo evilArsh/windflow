@@ -3,7 +3,7 @@ import { DialogEmits, DialogProps } from "element-plus"
 type Writable<T> = {
   -readonly [K in keyof T]: T[K]
 }
-export default (preset?: Partial<Writable<DialogProps>>) => {
+export default function (preset?: Partial<Writable<DialogProps>>) {
   const data = ref<Partial<Writable<DialogProps>>>({
     modelValue: false,
     title: "",

@@ -1,6 +1,6 @@
 export default () => {
-  function download(code: string, lang: string, sequence: string) {
-    const fileName = `index_${sequence}.${lang}`
+  function downloadCode(code: string, lang: string, filename: string) {
+    const fileName = `${filename}.${lang}`
     const blob = new Blob([code], { type: "text/plain" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -14,5 +14,5 @@ export default () => {
     }, 100)
   }
 
-  return { download }
+  return { downloadCode }
 }
