@@ -6,7 +6,7 @@ import Markdown from "@renderer/components/Markdown/index.vue"
 import RawTextEdit from "./rawTextEdit.vue"
 import Handler from "./handler.vue"
 import Title from "./title.vue"
-import Loading from "./loading.vue"
+import Thinking from "./thinking.vue"
 import MCPCall from "./mcpcall.vue"
 import Image from "./image.vue"
 import Error from "./error.vue"
@@ -14,6 +14,7 @@ import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
 import { useMsgContext } from "../../../index"
+import { code1xx } from "@shared/types/bridge"
 const props = defineProps<{
   message: ChatMessage
   parent?: ChatMessage
@@ -52,14 +53,9 @@ const rawTextDlg = reactive({
   }),
 })
 const isUser = computed(() => message.value.content.role === Role.User)
-
 const isText = computed(() => !message.value.type || message.value.type === "text")
 const isImage = computed(() => message.value.type === "image")
-const isException = computed(() => !!message.value.msg)
-
-const isPartial = computed(() => {
-  return message.value.status < 200 || message.value.status == 206
-})
+const isPartial = computed(() => code1xx(message.value.status) || message.value.status == 206)
 const updateAffix = () => {
   nextTick(affixRef.value?.update)
 }
@@ -82,16 +78,22 @@ defineExpose({
         </Title>
       </Affix>
     </template>
-    <div class="chat-item-content" :class="{ reverse: isUser }">
-      <Loading v-if="!isUser" :message></Loading>
-      <MCPCall v-if="!isUser" :message :topic></MCPCall>
-      <Error v-if="isException" :message></Error>
-      <Image v-if="!isUser && isImage" :message :parent></Image>
-      <Markdown v-if="!isUser && isText" :content="message.content.content" />
-      <i-svg-spinners:pulse-3 v-if="!isUser && isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
-      <el-text v-if="isUser" type="primary" class="self-end!">
+    <div v-if="isUser" class="chat-item-content p-1rem reverse">
+      <el-text type="primary" class="self-end!">
         {{ message.content.content }}
       </el-text>
+    </div>
+    <div v-else class="chat-item-content p-1rem">
+      <Image v-if="isImage" :message :parent></Image>
+      <div v-else-if="isText" class="chat-item-content">
+        <div v-for="(child, index) in message.content.children" :key="index" class="chat-item-content">
+          <Thinking :message="child" :finish="!!message.finish"></Thinking>
+          <MCPCall :message="child"></MCPCall>
+          <Markdown :content="child.content" />
+        </div>
+        <Error :message></Error>
+      </div>
+      <i-svg-spinners:pulse-3 v-if="isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
     </div>
     <RawTextEdit ref="rawDlg" @change="rawTextDlg.onChange" :data="rawTextDlg.data?.content.content"></RawTextEdit>
   </MsgBubble>
@@ -105,10 +107,10 @@ defineExpose({
 .chat-item-content {
   flex: 1;
   display: flex;
+  flex-direction: column;
   font-size: 1.4rem;
   flex-direction: column;
   gap: var(--ai-gap-base);
-  padding: 1rem;
   &.reverse {
     justify-content: flex-end;
   }

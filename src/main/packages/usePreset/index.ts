@@ -1,5 +1,5 @@
 import { PackageCore } from "@main/types"
-import { BrowserWindow } from "electron"
+import { BrowserWindow, globalShortcut } from "electron"
 export default (mainWindow: BrowserWindow): PackageCore => {
   // 拦截所有导航（包括 window.location 跳转）
   mainWindow.webContents.on("will-navigate", (event, url) => {
@@ -20,6 +20,11 @@ export default (mainWindow: BrowserWindow): PackageCore => {
     return { action: "allow" }
   })
 
+  globalShortcut.register("CommandOrControl+Shift+I", () => {
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isFocused()) {
+      mainWindow.webContents.toggleDevTools()
+    }
+  })
   function openExternalWindow(mainWindow: BrowserWindow, url: string) {
     const parentBounds = mainWindow.getBounds()
     const parentWidth = parentBounds.width
@@ -39,7 +44,9 @@ export default (mainWindow: BrowserWindow): PackageCore => {
     })
     externalWindow.loadURL(url)
   }
-  function dispose() {}
+  function dispose() {
+    globalShortcut.unregisterAll()
+  }
   return {
     dispose,
   }

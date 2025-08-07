@@ -46,9 +46,9 @@ export interface Message {
    */
   tool_calls_chain?: Array<Message>
   /**
-   * 是否是流式返回
+   * 多轮对话消息
    */
-  stream?: boolean
+  children?: Array<Message>
   finish_reason?: string
   usage?: {
     completion_tokens: number

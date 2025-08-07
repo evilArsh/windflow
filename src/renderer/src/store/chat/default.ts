@@ -31,7 +31,7 @@ export function defaultMessage(init?: Partial<Message>): Message {
       reasoning_content: "",
       tool_call_id: "",
       tool_calls: undefined,
-      tool_calls_chain: undefined,
+      children: undefined,
       finish_reason: "",
       usage: {
         completion_tokens: 0,

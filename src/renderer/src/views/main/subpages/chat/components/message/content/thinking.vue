@@ -1,33 +1,40 @@
 <script setup lang="ts">
-import { ChatMessage } from "@renderer/types/chat"
+import { Message } from "@renderer/types"
 import Markdown from "@renderer/components/Markdown/index.vue"
 
 const props = defineProps<{
-  message: ChatMessage
+  message: Message
+  finish: boolean
 }>()
 const { t } = useI18n()
 const activeNames = ref<string[]>([])
-const regex = /[\r\n ]+/g
-const content = computed<string>(() => props.message.content.content as string)
-const thinking = computed(
-  () =>
-    !props.message.finish &&
-    (!content.value || (content.value.length < 5 && content.value.replace(regex, "").length == 0))
-)
+const content = computed<string | undefined>(() => props.message.content as string)
+const reasoning_content = computed<string | undefined>(() => props.message.reasoning_content)
+const thinking = ref(true)
+
 watch(
-  thinking,
-  v => {
-    if (v) {
-      activeNames.value = ["1"]
-    } else {
-      activeNames.value = []
+  [content, reasoning_content],
+  (val, oldVal) => {
+    if (props.finish) {
+      thinking.value = false
+      return
     }
+    if (!val[0]) {
+      if (val[1] && (!oldVal[1] || val[1] !== oldVal[1])) {
+        thinking.value = true
+      } else {
+        thinking.value = false
+      }
+    } else {
+      thinking.value = false
+    }
+    activeNames.value = thinking.value ? ["1"] : []
   },
   { immediate: true }
 )
 </script>
 <template>
-  <div v-if="message.content.reasoning_content" class="flex flex-col gap-0.5rem">
+  <div v-if="reasoning_content" class="flex flex-col gap-0.5rem">
     <el-collapse v-model="activeNames" accordion expand-icon-position="left">
       <el-collapse-item name="1">
         <template #title>
@@ -39,7 +46,7 @@ watch(
             </el-text>
           </div>
         </template>
-        <Markdown v-if="message.content.reasoning_content" :content="message.content.reasoning_content"></Markdown>
+        <Markdown v-if="reasoning_content" :content="reasoning_content"></Markdown>
       </el-collapse-item>
     </el-collapse>
   </div>

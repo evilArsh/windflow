@@ -24,7 +24,7 @@ async function undoContext(done: CallBackFn) {
     <ContentBox>
       <div class="flex items-center gap.5rem">
         <el-text>{{ t("chat.contextDivider") }}</el-text>
-        <Button text @click="undoContext">
+        <Button text @click="undoContext" size="small">
           <i-mdi:undo-variant class="text-1.4rem"></i-mdi:undo-variant>
         </Button>
       </div>

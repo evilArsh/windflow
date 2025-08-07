@@ -6,7 +6,7 @@ const props = defineProps<{
 const message = computed(() => props.message)
 </script>
 <template>
-  <el-alert class="alert" type="warning" show-icon :closable="false">
+  <el-alert v-if="message.msg" class="alert" type="warning" show-icon :closable="false">
     <el-text>
       {{ message.msg }}
     </el-text>

@@ -56,7 +56,6 @@ async function* request(
         throw new AbortError("Request Aborted")
       }
       for (const res of openAICompatParser.parseLLM(line, true)) {
-        res.data.stream = true
         yield res
       }
     }
@@ -94,45 +93,16 @@ export async function makeRequest(
   requestBody?: LLMRequest
 ) {
   const partial = usePartialData()
-  const stream = requestBody?.stream ?? true
   const ctx = cloneDeep(context)
   try {
-    callback({ status: 100, data: { content: "", stream, role: Role.Assistant } })
-    // 获取MCP工具列表
+    callback({ status: 100, data: { content: "", role: Role.Assistant } })
     const toolList = await loadMCPTools(mcpServersIds)
     const appendTools = (req: LLMRequest, toolist: unknown) => {
-      return {
-        ...req,
-        ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}),
-      }
+      return { ...req, ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}) }
     }
-    // console.log("[load local MCP tools]", toolList)
-    // 调用MCP工具并返回的调用结果
-    let callToolsResults: Message[] = []
-    // LLM返回的需要调用的工具列表
     let neededCallTools: LLMToolCall[] = []
+    let callToolResults: Message[] = []
     while (true) {
-      neededCallTools = partial.getTools()
-      if (neededCallTools.length) {
-        // console.log("[tools selected by LLM]", neededCallTools)
-        // 调用MCP工具并返回调用结果
-        callToolsResults = await callTools(neededCallTools)
-        // console.log("[call local tools]", callToolsResults)
-      }
-      callToolsResults.forEach(callResult => {
-        partial.addToolCallResults({ ...callResult, stream })
-        const neededCalltool = neededCallTools.find(tool => tool.id === callResult.tool_call_id)
-        if (neededCalltool) {
-          ctx.push({
-            role: Role.Assistant,
-            tool_calls: [neededCalltool],
-            content: "",
-          })
-          ctx.push(callResult)
-        }
-        callback(partial.getResponse())
-      })
-      partial.archiveTools()
       for await (const content of requestHandler.chat(
         appendTools(mergeRequestConfig(ctx, modelMeta, requestBody), toolList),
         providerMeta
@@ -140,7 +110,21 @@ export async function makeRequest(
         partial.add(content)
         callback(partial.getResponse())
       }
-      if (!partial.getTools().length) {
+      neededCallTools = partial.getTools()
+      if (neededCallTools.length) {
+        callToolResults = await callTools(neededCallTools)
+        console.log("[call result]", callToolResults)
+        callToolResults.forEach(callResult => {
+          partial.addToolCallResults(callResult)
+          const neededCalltool = neededCallTools.find(tool => tool.id === callResult.tool_call_id)
+          if (neededCalltool) {
+            ctx.push({ role: Role.Assistant, tool_calls: [neededCalltool], content: "" })
+            ctx.push(callResult)
+          }
+          callback(partial.getResponse())
+        })
+        partial.next()
+      } else {
         partial.done()
         callback(partial.getResponse())
         break
@@ -151,21 +135,21 @@ export async function makeRequest(
       partial.add({
         msg: "request aborted",
         status: 499,
-        data: { content: "", stream, role: Role.Assistant },
+        data: { content: "", role: Role.Assistant },
       })
       callback(partial.getResponse())
     } else if (error instanceof HttpCodeError) {
       partial.add({
         msg: error.message,
         status: error.code(),
-        data: { content: "", stream, role: Role.Assistant },
+        data: { content: "", role: Role.Assistant },
       })
       callback(partial.getResponse())
     } else {
       partial.add({
         msg: errorToText(error),
         status: 500,
-        data: { content: "", stream, role: Role.Assistant },
+        data: { content: "", role: Role.Assistant },
       })
       callback(partial.getResponse())
     }

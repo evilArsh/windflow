@@ -76,7 +76,7 @@ function init() {
         app.quit()
       }
     })
-    app.on("before-quit", () => {
+    app.on("will-quit", () => {
       serviceCore?.dispose()
     })
   }

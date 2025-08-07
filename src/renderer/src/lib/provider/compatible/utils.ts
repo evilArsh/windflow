@@ -3,72 +3,83 @@ import { AxiosInstance } from "axios"
 import { cloneDeep, errorToText, merge } from "@shared/utils"
 
 export function usePartialData() {
+  const defaultMessage = (): Message => ({ role: Role.Assistant, content: "" })
+  const defaultData = (): LLMResponse => ({ status: 100, data: defaultMessage(), msg: "" })
+  const mergeString = (...strs: Array<string | null | undefined>): string => strs.filter(s => !!s).join("")
+  let current: Message = defaultMessage()
+  let currentTools: Record<string, LLMToolCall> = {}
+  let currentContent: string | undefined = ""
+  let currentReasoningContent: string | undefined = ""
   let result: LLMResponse = defaultData()
-  let tools: Record<string, LLMToolCall> = {}
-  const toolsHistory: LLMToolCall[][] = []
-  const tool_calls_chain: Message[] = []
-  const content: string[] = []
-  const reasoning_content: string[] = []
-
-  function defaultData(): LLMResponse {
-    return { status: 100, data: { role: Role.Assistant, content: "" } }
+  const resetCurrent = () => {
+    current = defaultMessage()
+    currentTools = {}
+    currentContent = ""
+    currentReasoningContent = ""
   }
-  function add(res: LLMResponse) {
-    result = merge({}, result, res, {
-      status: res.status === 200 ? 206 : res.status,
-    })
-    content.push((res.data.content as string) ?? "")
-    reasoning_content.push((res.data.reasoning_content as string) ?? "")
-    res.data.tool_calls?.forEach(tool => {
+  function add(newData: LLMResponse) {
+    result.status = newData.status === 200 ? 206 : newData.status
+    result.msg = mergeString(result.msg, newData.msg)
+    currentContent = current.content as string
+    currentReasoningContent = current.reasoning_content as string
+    merge(current, newData.data)
+    current.content = mergeString(currentContent, newData.data.content as string)
+    current.reasoning_content = mergeString(currentReasoningContent, newData.data.reasoning_content as string)
+    newData.data.tool_calls?.forEach(tool => {
       if (isNumber(tool.index)) {
-        const mapTool = tools[tool.index]
+        const mapTool = currentTools[tool.index]
         if (mapTool) {
           mapTool.function.arguments += tool.function.arguments
         } else {
-          tools[tool.index] = tool
+          currentTools[tool.index] = tool
         }
       }
     })
   }
+  function addToolCallResults(data: Message) {
+    if (!current.tool_calls_chain) current.tool_calls_chain = []
+    current.tool_calls_chain.push(data)
+  }
   function done() {
-    result = merge({}, result, { status: 200, data: { role: Role.Assistant, content: "" } })
+    result.status = 200
   }
   function getTools(): LLMToolCall[] {
-    return Object.values(tools)
+    return Object.values(currentTools)
   }
   /**
-   * @description 归档当前tools,开启下一轮的tool_calls
+   * @description 归档当前tool calls loop,开启下一轮loop
    */
-  function archiveTools() {
-    const t = getTools()
-    if (t.length) {
-      toolsHistory.push(t)
-      tools = {}
+  function next() {
+    current.tool_calls = getTools()
+    if (!result.data.children) result.data.children = []
+    result.data.children.push(current)
+    if (!result.data.usage) {
+      result.data.usage = current.usage
+    } else {
+      result.data.usage.completion_tokens += toNumber(current.usage?.completion_tokens)
+      result.data.usage.prompt_tokens += toNumber(current.usage?.prompt_tokens)
+      result.data.usage.total_tokens += toNumber(current.usage?.total_tokens)
     }
-  }
-  function addToolCallResults(data: Message) {
-    tool_calls_chain.push(data)
+    resetCurrent()
   }
   function getResponse(): LLMResponse {
-    result.data.content = content.filter(s => !!s).join("")
-    result.data.reasoning_content = reasoning_content.filter(s => !!s).join("")
-    result.data.tool_calls = toolsHistory.flat().concat(getTools())
-    result.data.tool_calls_chain = Array.from(tool_calls_chain)
-    return result
+    return {
+      ...result,
+      data: {
+        ...result.data,
+        children: (result.data.children ?? []).concat([{ ...current, tool_calls: getTools() }]),
+      },
+    }
   }
   function reset() {
-    tools = {}
-    content.length = 0
-    reasoning_content.length = 0
-    tool_calls_chain.length = 0
-    toolsHistory.length = 0
+    resetCurrent()
     result = defaultData()
   }
   return {
     reset,
     add,
     done,
-    archiveTools,
+    next,
     addToolCallResults,
     getTools,
     getResponse,

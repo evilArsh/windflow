@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { LLMToolCall } from "@renderer/types"
-import { ChatMessage } from "@renderer/types/chat"
+import { LLMToolCall, Message } from "@renderer/types"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
 import { useToolName } from "@shared/mcp"
@@ -8,7 +7,7 @@ import { cloneDeep } from "@shared/utils"
 import PureCode from "@renderer/components/Markdown/components/PureCode/index.vue"
 import json5 from "json5"
 const props = defineProps<{
-  message: ChatMessage
+  message: Message
 }>()
 type CallStatus = LLMToolCall & {
   status: Status
@@ -21,13 +20,14 @@ enum Status {
 }
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
+const message = computed(() => props.message)
 const callsData = ref<Record<string, CallStatus>>({})
 const calls = computed(() => Object.values(callsData.value))
 const toolName = useToolName()
 const { t } = useI18n()
 const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.name ?? "")
 watch(
-  () => props.message.content.tool_calls,
+  () => message.value.tool_calls,
   v => {
     if (!isArray(v) || !v.length) {
       callsData.value = {}
@@ -56,7 +56,7 @@ watch(
   { deep: true, immediate: true }
 )
 watch(
-  () => props.message.content.tool_calls_chain,
+  () => message.value.tool_calls_chain,
   v => {
     if (!isArray(v)) return
     v.forEach(call => {
@@ -94,7 +94,7 @@ const tool = {
             <el-text size="small" type="info">{{ call.function.name }}</el-text>
           </div>
         </template>
-        <div class="flex flex-col gap.5rem">
+        <div class="flex flex-col gap.5rem max-h-50rem overflow-auto">
           <ContentBox class="select-unset!">
             <el-text size="small" type="primary">{{ t("chat.mcpCall.arguments") }}</el-text>
             <template #footer>

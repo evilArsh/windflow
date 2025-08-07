@@ -77,18 +77,14 @@ export const useContext = () => {
           userTurn = false
         } else {
           // 丢弃上下文,`DeepSeek-r1`要求消息必须是`Role.User`和`Role.Assistant`交替出现
-          if (context.length > 0) {
-            if (context[0].role === Role.Assistant) {
-              context.shift()
-            }
-          }
+          if (context.length > 0 && context[0].role === Role.Assistant) context.shift()
         }
       } else {
         if (data.content.role == Role.Assistant) {
-          const content = extractData(data.content)
-          content.tool_calls = data.content.tool_calls
-          content.tool_calls_chain = data.content.tool_calls_chain
-          context.unshift(content)
+          context.unshift({
+            role: data.content.role,
+            content: data.content.children?.map(item => item.content as string).join("\n") ?? "",
+          })
           userTurn = true
         } else {
           // drop
@@ -99,34 +95,6 @@ export const useContext = () => {
       context = context.slice(context.length - maxContextLength)
       if (context.length > 0 && context[0].role === Role.Assistant) context.shift()
     }
-    context = context.reduce<Message[]>((prev, current) => {
-      if (current.role === Role.User) {
-        prev.push(current)
-      } else {
-        if (
-          current.tool_calls &&
-          current.tool_calls.length &&
-          current.tool_calls_chain &&
-          current.tool_calls_chain.length
-        ) {
-          for (let i = 0; i < current.tool_calls_chain.length; i++) {
-            const chain = extractData(current.tool_calls_chain[i])
-            chain.tool_call_id = current.tool_calls_chain[i].tool_call_id
-            const tool_call = current.tool_calls.find(tool => tool.id && tool.id === chain.tool_call_id)
-            if (tool_call) {
-              prev.push({
-                role: Role.Assistant,
-                content: "",
-                tool_calls: [tool_call],
-              })
-              prev.push(chain)
-            }
-          }
-        }
-        prev.push(extractData(current))
-      }
-      return prev
-    }, [])
     context.unshift({ role: Role.System, content: JSON.stringify({ type: "text", content: topic.prompt }) })
     return context
   }
@@ -137,7 +105,6 @@ export const useContext = () => {
     if (hasTopic(topicId)) {
       return llmChats[topicId].find(item => item.messageId === messageId)
     }
-    // console.warn(`[findContext] topicId not found.${topicId} ${messageId}`)
     return undefined
   }
   function findTopicContext(topicId: string): ChatContext[] | undefined {
