@@ -75,6 +75,7 @@ export default defineStore("chat_topic", () => {
           message.content = res.data
           message.finish = true
           message.status = res.status
+          message.msg = res.msg
           topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
       )

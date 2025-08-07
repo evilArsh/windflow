@@ -65,15 +65,15 @@ export class SiliconFlow extends Compatible {
         })
       } catch (err) {
         if (err instanceof CanceledError) {
-          callback({ data: { content: err.message, role: Role.Assistant }, status: 499, msg: err.message })
+          callback({ data: { content: "", role: Role.Assistant }, status: 499, msg: err.message })
         } else if (err instanceof AxiosError) {
           callback({
-            data: { content: errorToText(err.response?.data), role: Role.Assistant },
+            data: { content: "", role: Role.Assistant },
             status: err.status ?? 500,
-            msg: err.message,
+            msg: errorToText(err.response?.data),
           })
         } else {
-          callback({ data: { content: errorToText(err), role: Role.Assistant }, status: 500, msg: errorToText(err) })
+          callback({ data: { content: "", role: Role.Assistant }, status: 500, msg: errorToText(err) })
         }
       }
     }
