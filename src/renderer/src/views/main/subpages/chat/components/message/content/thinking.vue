@@ -10,12 +10,12 @@ const { t } = useI18n()
 const activeNames = ref<string[]>([])
 const content = computed<string | undefined>(() => props.message.content as string)
 const reasoning_content = computed<string | undefined>(() => props.message.reasoning_content)
+const finish = computed<boolean>(() => props.finish)
 const thinking = ref(true)
-
 watch(
-  [content, reasoning_content],
+  [content, reasoning_content, finish],
   (val, oldVal) => {
-    if (props.finish) {
+    if (val[2]) {
       thinking.value = false
       return
     }
@@ -43,18 +43,16 @@ watch(
       expand-icon-position="right">
       <el-collapse-item name="1">
         <template #title>
-          <div class="flex items-center gap-0.5rem">
+          <div class="flex items-center gap-0.5rem px-1.5rem">
             <Spinner v-if="thinking" :model-value="true" class="text-1.4rem font-bold"></Spinner>
             <i-fluent-emoji-flat:glowing-star v-else class="text-1.4rem"></i-fluent-emoji-flat:glowing-star>
             <el-text type="primary" loading>
               {{ thinking ? t("chat.thinking") : t("chat.thinkingComplete") }}
             </el-text>
+            <!-- <Copy :text="reasoning_content"></Copy> -->
           </div>
         </template>
         <ContentBox>
-          <template #header>
-            <Copy :text="reasoning_content"></Copy>
-          </template>
           <Markdown v-if="reasoning_content" :content="reasoning_content"></Markdown>
         </ContentBox>
       </el-collapse-item>

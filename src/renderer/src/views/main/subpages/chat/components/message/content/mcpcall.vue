@@ -82,10 +82,10 @@ const tool = {
 <template>
   <div v-if="calls.length > 0">
     <ContentBox>
-      <el-collapse class="w-full" border="solid 1px [var(--el-collapse-border-color)]" expand-icon-position="left">
+      <el-collapse class="w-full" border="solid 1px [var(--el-collapse-border-color)]" expand-icon-position="right">
         <el-collapse-item v-for="call in calls" :key="call.id" :name="call.id">
           <template #title>
-            <div class="flex items-center gap-0.5rem">
+            <div class="flex items-center gap-0.5rem px-1.5rem">
               <Spinner
                 destroy-icon
                 :model-value="call.status === Status.InProgress"
