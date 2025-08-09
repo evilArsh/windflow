@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ScaleConfig } from "@renderer/components/ScalePanel/types"
-import useShortcut from "@renderer/views/main/usable/useShortcut"
+import useShortcut from "@renderer/usable/useShortcut"
 const shortcut = useShortcut()
 
 const scaleRef = useTemplateRef("scale")
@@ -40,7 +40,7 @@ const db = shallowReactive({
 })
 
 shortcut.listen("ctrl+d", res => {
-  if (res.active) db.toggle()
+  res && db.toggle()
 })
 </script>
 <template>

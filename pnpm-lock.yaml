@@ -80,6 +80,9 @@ importers:
       hast-util-whitespace:
         specifier: ^3.0.0
         version: 3.0.0
+      hotkeys-js:
+        specifier: ^3.13.15
+        version: 3.13.15
       html-url-attributes:
         specifier: ^3.0.1
         version: 3.0.1
@@ -3486,6 +3489,9 @@ packages:
   hosted-git-info@4.1.0:
     resolution: {integrity: sha512-kyCuEOWjJqZuDbRHzL8V93NzQhwIB71oFWSyzVo+KPZI+pnQPPxucdkrOZvkLRnrf5URsQM+IJ09Dw29cRALIA==}
     engines: {node: '>=10'}
+
+  hotkeys-js@3.13.15:
+    resolution: {integrity: sha512-gHh8a/cPTCpanraePpjRxyIlxDFrIhYqjuh01UHWEwDpglJKCnvLW8kqSx5gQtOuSsJogNZXLhOdbSExpgUiqg==}
 
   html-url-attributes@3.0.1:
     resolution: {integrity: sha512-ol6UPyBWqsrO6EJySPz2O7ZSr856WDrEzM5zMqp+FJJLGMW35cLYmmZnl0vztAZxRUoNZJFTCohfjuIJ8I4QBQ==}
@@ -9875,6 +9881,8 @@ snapshots:
   hosted-git-info@4.1.0:
     dependencies:
       lru-cache: 6.0.0
+
+  hotkeys-js@3.13.15: {}
 
   html-url-attributes@3.0.1: {}
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import useShortcut from "@renderer/views/main/usable/useShortcut"
 import ModelSelect from "./modelSelect.vue"
 import TextToImage from "./textToImage.vue"
 import LLMRequest from "./llmRequest.vue"
@@ -13,6 +12,7 @@ import { ChatTopic, SettingKeys } from "@renderer/types"
 import Clear from "./clear.vue"
 import { errorToText } from "@shared/utils"
 import { useThrottleFn } from "@vueuse/core"
+import useShortcut from "@renderer/usable/useShortcut"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []
@@ -29,9 +29,9 @@ const shortcut = useShortcut()
 const chatStore = useChatStore()
 
 const handler = {
-  send: async (res: { active: boolean }, done?: unknown) => {
+  send: async (active: boolean, done?: unknown) => {
     try {
-      if (res.active) {
+      if (active) {
         await chatStore.send(topic.value)
         await nextTick()
         emit("messageSend")

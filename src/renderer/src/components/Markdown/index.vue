@@ -24,6 +24,7 @@ const edit = shallowReactive({
   show: false,
   open: () => (edit.show = true),
   close: () => (edit.show = false),
+  toggle: () => (edit.show = !edit.show),
   onConfirm(value: string) {
     content.value = value
     emit("change", value)
@@ -47,7 +48,7 @@ onBeforeUnmount(destroy)
 </script>
 <template>
   <div class="markdown-container">
-    <Handler v-if="editable" @edit="edit.open"></Handler>
+    <Handler v-if="editable" @toggle-edit="edit.toggle"></Handler>
     <Input v-if="edit.show" :content="content" @confirm="edit.onConfirm" @cancel="edit.close"></Input>
     <component v-else :is="html"></component>
   </div>

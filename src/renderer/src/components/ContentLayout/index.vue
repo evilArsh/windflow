@@ -146,7 +146,7 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow: auto;
   display: flex;
-  // flex-direction: column-reverse;
+  flex-direction: column-reverse;
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
   }

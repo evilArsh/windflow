@@ -10,7 +10,7 @@ import {
 } from "@renderer/types"
 import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { type EntityTable } from "dexie"
-import { migrateToV2, migrateToV4 } from "./migrate"
+import { migrateToV2, migrateToV4, migrateToV5 } from "./migrate"
 
 export const name = "db-ai-chat"
 
@@ -65,5 +65,17 @@ db.version(4)
     mcpServer: "id",
   })
   .upgrade(migrateToV4)
+db.version(5)
+  .stores({
+    providerMeta: "name",
+    model: "id",
+    chatTopic: "id",
+    chatMessage: "id,topicId",
+    chatLLMConfig: "id,topicId",
+    chatTTIConfig: "id,topicId",
+    settings: "id",
+    mcpServer: "id",
+  })
+  .upgrade(migrateToV5)
 
 export { db }

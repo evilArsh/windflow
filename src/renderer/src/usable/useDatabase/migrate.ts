@@ -1,4 +1,5 @@
-import { ChatMessage, ChatTopic, ProviderMeta } from "@renderer/types"
+import { ChatMessage, ChatTopic, ProviderMeta, Role } from "@renderer/types"
+import { cloneDeep } from "@shared/utils"
 import { Transaction } from "dexie"
 
 export async function migrateToV2(tx: Transaction) {
@@ -55,4 +56,23 @@ export async function migrateToV4(tx: Transaction) {
   })
   await tx.table("chatMessage").clear()
   await tx.table("chatMessage").bulkAdd(newMessages)
+}
+
+export async function migrateToV5(tx: Transaction) {
+  console.log("[migrateToV5]")
+  await tx
+    .table("chatMessage")
+    .toCollection()
+    .modify((msg: ChatMessage) => {
+      if (msg.content.role === Role.Assistant && !msg.content.children) {
+        msg.content.children = [cloneDeep(msg.content)]
+      }
+      if (msg.children?.length) {
+        msg.children.forEach(child => {
+          if (!child.content.children) {
+            child.content.children = [cloneDeep(child.content)]
+          }
+        })
+      }
+    })
 }

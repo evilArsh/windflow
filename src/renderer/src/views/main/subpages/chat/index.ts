@@ -1,6 +1,5 @@
 import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
-import useShortcut from "@renderer/views/main/usable/useShortcut"
 import type Node from "element-plus/es/components/tree/src/model/node"
 import { ChatTopic, ChatTopicTree, SettingKeys } from "@renderer/types"
 import { storeToRefs } from "pinia"
@@ -12,6 +11,7 @@ import { errorToText } from "@shared/utils"
 import { useEventBus, useThrottleFn } from "@vueuse/core"
 import { CallBackFn } from "@renderer/lib/shared/types"
 import PQueue from "p-queue"
+import useShortcut from "@renderer/usable/useShortcut"
 
 export const useMsgContext = () => {
   const settingsStore = useSettingsStore()
@@ -42,10 +42,10 @@ export const useMsgContext = () => {
     settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, true)
 
     shortcut.listen("ctrl+b", res => {
-      if (res.active) toggleTreeMenu()
+      res && toggleTreeMenu()
     })
     shortcut.listen("ctrl+shift+b", res => {
-      if (res.active) toggleRightPanel()
+      res && toggleRightPanel()
     })
   }
   init()

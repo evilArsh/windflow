@@ -42,6 +42,6 @@ const resizeStyle = ref<CSSProperties>({
   padding: 1rem;
   position: relative;
   min-width: 20rem;
-  z-index: 999;
+  z-index: 100;
 }
 </style>

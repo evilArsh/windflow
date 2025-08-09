@@ -52,6 +52,7 @@
     "estree-util-is-identifier-name": "^3.0.0",
     "execa": "^9.6.0",
     "hast-util-whitespace": "^3.0.0",
+    "hotkeys-js": "^3.13.15",
     "html-url-attributes": "^3.0.1",
     "json5": "^2.2.3",
     "lodash.merge": "^4.6.2",

@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ChatMessage, ChatTopic } from "@renderer/types"
-import useShortcut from "@renderer/views/main/usable/useShortcut"
 import { errorToText } from "@shared/utils"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
+import useShortcut from "@renderer/usable/useShortcut"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -32,9 +32,9 @@ const handler = {
       return false
     }
   },
-  cleanMessage: async (res: { active: boolean }) => {
+  cleanMessage: async (active: boolean) => {
     try {
-      if (res.active) {
+      if (active) {
         const confirm = await handler.openTip(`${t("tip.deleteConfirm", { message: t("chat.messageRecord") })}`)
         if (confirm && messages.value) {
           for await (const messageId of messages.value.map(v => v.id)) {
@@ -46,9 +46,9 @@ const handler = {
       msg({ code: 500, msg: errorToText(error) })
     }
   },
-  cleanContext: async (res: { active: boolean }) => {
+  cleanContext: async (active: boolean) => {
     try {
-      if (res.active) {
+      if (active) {
         if (messages.value && messages.value.length) {
           if (messages.value[0].contextFlag) {
             await chatStore.deleteMessage(topic.value, messages.value[0].id)
