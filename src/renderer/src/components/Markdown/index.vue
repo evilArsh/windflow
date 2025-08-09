@@ -1,32 +1,55 @@
 <script setup lang="ts">
 import useParser from "./worker"
 import CodeBlock from "./components/CodeBlock/index.vue"
-import { Content } from "@renderer/types"
-const props = defineProps<{
-  content: Content
+import Handler from "./components/Handler/index.vue"
+import Input from "./components/Input/index.vue"
+const emit = defineEmits<{
+  "update:modelValue": [string]
+  change: [string]
 }>()
+const props = defineProps<{
+  editable?: boolean
+  modelValue: string
+}>()
+const content = computed({
+  get: () => props.modelValue,
+  set: value => emit("update:modelValue", value),
+})
 
 const { html, parse, destroy, init } = useParser({
   code: CodeBlock,
 })
-function handleContent(content: Content) {
-  if (!isString(content)) return
+
+const edit = shallowReactive({
+  show: false,
+  open: () => (edit.show = true),
+  close: () => (edit.show = false),
+  onConfirm(value: string) {
+    content.value = value
+    emit("change", value)
+    edit.close()
+  },
+})
+
+function handleContent(content: string) {
   if (!content) {
     html.value = h("span", "")
     return
   }
   parse(content)
 }
-watch(() => props.content, handleContent)
+watch(content, handleContent)
 onMounted(() => {
   init()
-  handleContent(props.content)
+  handleContent(content.value)
 })
 onBeforeUnmount(destroy)
 </script>
 <template>
   <div class="markdown-container">
-    <component :is="html"></component>
+    <Handler v-if="editable" @edit="edit.open"></Handler>
+    <Input v-if="edit.show" :content="content" @confirm="edit.onConfirm" @cancel="edit.close"></Input>
+    <component v-else :is="html"></component>
   </div>
 </template>
 <style lang="scss">

@@ -53,7 +53,7 @@ watch(
           </div>
         </template>
         <ContentBox>
-          <Markdown v-if="reasoning_content" :content="reasoning_content"></Markdown>
+          <Markdown v-if="reasoning_content" :model-value="reasoning_content"></Markdown>
         </ContentBox>
       </el-collapse-item>
     </el-collapse>
