@@ -11,7 +11,7 @@ const chatStore = useChatStore()
 const topic = computed(() => props.topic)
 const onInput = useThrottleFn(() => {
   try {
-    chatStore.api.updateChatTopic(topic.value)
+    chatStore.api.putChatTopic(topic.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

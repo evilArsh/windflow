@@ -277,15 +277,15 @@ export const useMenu = (
           .reduce<number>((prev: number, item: ChatTopicTree) => {
             if (item.node.index <= prev) {
               item.node.index += 1
-              chatStore.api.updateChatTopic(item.node)
+              chatStore.api.putChatTopic(item.node)
             }
             return item.node.index
           }, draggingNode.data.node.index)
-        chatStore.api.updateChatTopic(draggingNode.data.node)
+        chatStore.api.putChatTopic(draggingNode.data.node)
       } else if (dropType === "inner") {
         draggingNode.data.node.parentId = dropNode.data.node.id
         draggingNode.data.node.index = dropNode.data.children.length
-        chatStore.api.updateChatTopic(draggingNode.data.node)
+        chatStore.api.putChatTopic(draggingNode.data.node)
       }
     },
     filterNode: (value: string, data: TreeNodeData): boolean => {

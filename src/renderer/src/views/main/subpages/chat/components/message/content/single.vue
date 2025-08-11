@@ -35,7 +35,7 @@ const isText = computed(() => !message.value.type || message.value.type === "tex
 const isImage = computed(() => message.value.type === "image")
 const isPartial = computed(() => code1xx(message.value.status) || message.value.status == 206)
 async function onContentChange() {
-  chatStore.api.updateChatMessage(props.parent ?? props.message)
+  chatStore.api.putChatMessage(props.parent ?? props.message)
 }
 async function onContentDelete(m: ChatMessage) {
   try {

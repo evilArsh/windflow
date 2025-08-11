@@ -62,7 +62,7 @@ const layout = shallowReactive({
       layout.sliderMax = 100
     } else if (type === types.Tab) {
       if (!layout.currentTabId) {
-        if (message.value.children && message.value.children.length > 0) {
+        if (message.value.children?.length) {
           layout.currentTabId = message.value.children[0].id
         }
       }

@@ -92,6 +92,10 @@
       "seed": "Random Seed"
     }
   },
+  "error": {
+    "emptyModels": "no models found",
+    "noMessages": "no messages collection"
+  },
   "form": {
     "emptyValue": "Cannot have empty value",
     "invalidUrl": "Not a valid URL address",

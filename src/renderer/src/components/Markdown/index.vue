@@ -48,7 +48,7 @@ onBeforeUnmount(destroy)
 </script>
 <template>
   <div class="markdown-container">
-    <Handler v-if="editable" @toggle-edit="edit.toggle"></Handler>
+    <Handler v-if="editable && content" @toggle-edit="edit.toggle"></Handler>
     <Input v-if="edit.show" :content="content" @confirm="edit.onConfirm" @cancel="edit.close"></Input>
     <component v-else :is="html"></component>
   </div>

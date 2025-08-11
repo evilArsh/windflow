@@ -27,15 +27,20 @@ const { settings } = storeToRefs(settingsStore)
 const { t } = useI18n()
 const shortcut = useShortcut()
 const chatStore = useChatStore()
-
 const handler = {
   send: async (active: boolean, done?: unknown) => {
     try {
       if (active) {
+        if (!topic.value.content) {
+          isFunction(done) && done()
+          return
+        }
         await chatStore.send(topic.value)
+        topic.value.content = ""
+        await chatStore.api.putChatTopic(toValue(topic))
         await nextTick()
         emit("messageSend")
-        if (isFunction(done)) done()
+        isFunction(done) && done()
       }
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
@@ -43,7 +48,7 @@ const handler = {
   },
   onTopicUpdate: useThrottleFn(async () => {
     try {
-      await chatStore.api.updateChatTopic(topic.value)
+      await chatStore.api.putChatTopic(topic.value)
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }

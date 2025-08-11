@@ -1,13 +1,28 @@
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
-import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
+import {
+  ChatLLMConfig,
+  ChatMessage,
+  ChatTopic,
+  ChatTopicTree,
+  ChatTTIConfig,
+  ModelMeta,
+  ProviderMeta,
+} from "@renderer/types"
 import { cloneDeep, merge } from "@shared/utils"
 import { Reactive } from "vue"
+import useModelsStore from "@renderer/store/model"
+import useProviderStore from "@renderer/store/provider"
+import { storeToRefs } from "pinia"
 
 export const useUtils = (
   chatMessage: Reactive<Record<string, ChatMessage[]>>,
   chatLLMConfig: Reactive<Record<string, ChatLLMConfig>>,
   chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>
 ) => {
+  const providerStore = useProviderStore()
+  const modelsStore = useModelsStore()
+  const { providerMetas } = storeToRefs(providerStore)
+
   /**
    * @description 根据消息id查找缓存的聊天数据
    */
@@ -126,7 +141,49 @@ export const useUtils = (
       initial
     )
   }
-
+  function getMeta(modelId: string) {
+    if (!modelId) {
+      console.warn("[getMeta] modelId is empty")
+      return
+    }
+    const model = modelsStore.find(modelId) // 模型元数据
+    const providerMeta: ProviderMeta | undefined = providerMetas.value[model?.providerName ?? ""] // 提供商元数据
+    if (!(model && providerMeta)) {
+      console.warn("[getMeta] model or providerMeta not found", modelId)
+      return
+    }
+    const provider = providerStore.providerManager.getProvider(model.providerName)
+    if (!provider) {
+      console.warn("[getMeta] provider not found", model.providerName)
+      return
+    }
+    return { model, providerMeta, provider }
+  }
+  function getMessageType(meta: ModelMeta) {
+    return modelsStore.utils.isImageType(meta)
+      ? "image"
+      : modelsStore.utils.isVideoType(meta)
+        ? "video"
+        : modelsStore.utils.isTTSType(meta) || modelsStore.utils.isASRType(meta)
+          ? "audio"
+          : "text"
+  }
+  /**
+   * @description 递归重置聊天信息,重置项为响应结果,其他不变
+   */
+  function resetChatMessage(message: ChatMessage) {
+    message.finish = true
+    message.status = 200
+    message.createAt = Date.now()
+    message.msg = ""
+    message.completionTokens = 0
+    message.promptTokens = 0
+    if (message.children) {
+      message.children.forEach(child => {
+        resetChatMessage(child)
+      })
+    }
+  }
   return {
     findChatLLMConfig,
     findChatTTIConfig,
@@ -137,5 +194,8 @@ export const useUtils = (
     cloneTopic,
     topicToTree,
     getAllNodes,
+    getMessageType,
+    getMeta,
+    resetChatMessage,
   }
 }

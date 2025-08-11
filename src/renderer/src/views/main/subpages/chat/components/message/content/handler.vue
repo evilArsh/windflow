@@ -42,6 +42,7 @@ function terminate(done: CallBackFn) {
 async function restart(done: CallBackFn) {
   try {
     await chatStore.restart(topic.value, message.value.id, props.parent?.id)
+    await chatStore.api.putChatTopic(topic.value)
     done()
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
@@ -65,7 +66,7 @@ async function restart(done: CallBackFn) {
         </Button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip :show-after="1200" v-if="!isUser" :content="t('chat.regenerate')" placement="bottom">
+    <el-tooltip :show-after="1200" :content="t('chat.regenerate')" placement="bottom">
       <ContentBox class="m0!" background>
         <Button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>

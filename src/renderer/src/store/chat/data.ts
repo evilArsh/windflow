@@ -39,11 +39,11 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatTopic = async (data: ChatTopic) => queue.add(async () => db.chatTopic.put(cloneDeep(data)))
+  const putChatTopic = async (data: ChatTopic) => queue.add(async () => db.chatTopic.put(cloneDeep(data)))
   /**
    * 以队列方式更新数据，在频繁更新数据时保证更新顺序和请求顺序一致
    */
-  const updateChatMessage = async (data: ChatMessage) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
+  const putChatMessage = async (data: ChatMessage) => mqueue.add(async () => db.chatMessage.put(cloneDeep(data)))
   async function updateChatLLMConfig(data: ChatLLMConfig) {
     return db.chatLLMConfig.put(cloneDeep(data))
   }
@@ -137,8 +137,8 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
     addChatMessage,
     addChatLLMConfig,
     addChatTTIConfig,
-    updateChatTopic,
-    updateChatMessage,
+    putChatTopic,
+    putChatMessage,
     updateChatLLMConfig,
     updateChatTTIConfig,
     getTopic,

@@ -64,7 +64,7 @@ export default class Node {
 
   generate<T extends IterableRoute<T>>(router: Router, callback: (node: Router) => T): T {
     const dst: T = callback(router)
-    if (router.children && router.children.length > 0) {
+    if (router.children?.length) {
       dst.children = router.children.map(v => this.generate(v, callback))
     } else {
       dst.children = undefined

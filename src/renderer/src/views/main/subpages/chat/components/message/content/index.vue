@@ -20,7 +20,7 @@ const messages = computed<ChatMessage[] | undefined>(() => chatMessage.value[pro
     <el-divider style="--el-border-color: transparent" class="my-0.25rem!"></el-divider>
     <div v-for="message in messages" :key="message.id">
       <Divider v-if="message.contextFlag" :topic :message></Divider>
-      <Multiple v-else-if="message.children && message.children.length" :topic :context :message></Multiple>
+      <Multiple v-else-if="message.children?.length" :topic :context :message></Multiple>
       <Single v-else :topic :message :context header></Single>
     </div>
   </div>

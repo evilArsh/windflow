@@ -12,7 +12,7 @@ const props = defineProps<{
 const topic = computed<ChatTopic>(() => props.topic)
 const onPromptChange = useThrottleFn(async () => {
   try {
-    await chatStore.api.updateChatTopic(topic.value)
+    await chatStore.api.putChatTopic(topic.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

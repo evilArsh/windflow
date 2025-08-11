@@ -94,6 +94,10 @@
       "seed": "随机种子"
     }
   },
+  "error": {
+    "emptyModels": "请求模型为空",
+    "noMessages": "找不到消息集合"
+  },
   "form": {
     "emptyValue": "不能存在空值",
     "invalidUrl": "不是有效的URL地址",
