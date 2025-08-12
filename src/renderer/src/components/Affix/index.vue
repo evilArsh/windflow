@@ -186,6 +186,7 @@ defineExpose({
     &.fix {
       position: fixed;
       box-shadow: var(--el-box-shadow);
+      background-color: var(--el-card-bg-color);
     }
   }
 }

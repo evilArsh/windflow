@@ -52,7 +52,7 @@ const svgSrc = computed(() =>
 <style lang="scss" scoped>
 .chat-item-header {
   flex-wrap: wrap;
-  background-color: var(--el-card-bg-color);
+  // background-color: var(--el-card-bg-color);
   border-radius: 0 1rem 1rem 0;
   padding: 0.25rem 0.5rem;
   display: flex;

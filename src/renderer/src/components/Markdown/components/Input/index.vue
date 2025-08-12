@@ -11,7 +11,7 @@ const content = ref(props.content)
 const { t } = useI18n()
 </script>
 <template>
-  <DialogPanel>
+  <DialogPanel class="w-full">
     <el-input type="textarea" v-model="content" autosize></el-input>
     <template #footer>
       <el-button type="primary" @click="emit('confirm', content)">{{ t("btn.confirm") }}</el-button>

@@ -209,6 +209,9 @@ export default defineStore("chat_topic", () => {
     const content = config?.content ?? topic.content
     const modelIds = config?.modelIds ?? topic.modelIds
     const withExistUser = !!userMessage
+    if (withExistUser && userMessage.topicId !== topic.id) {
+      throw new Error(t("error.messageNotInTopic"))
+    }
     if (!modelIds.length) {
       throw new Error(t("error.emptyModels"))
     }
@@ -216,7 +219,7 @@ export default defineStore("chat_topic", () => {
     if (!messages) {
       throw new Error(t("error.noMessages"))
     }
-    const userIndex = withExistUser ? messages.findIndex(m => m.id === userMessage.id) : messages.length
+    const userIndex = withExistUser ? userMessage.index : messages.length
     const userMsg = withExistUser
       ? userMessage
       : reactive(
@@ -263,8 +266,12 @@ export default defineStore("chat_topic", () => {
     await api.putChatMessage(toRaw(userMsg))
     !withExistUser && messages.unshift(userMsg)
     await api.putChatMessage(toRaw(newMessage))
-    if (!withExistUser) {
-      messages.splice(userIndex - 1, 0, newMessage)
+    if (withExistUser) {
+      messages.splice(
+        messages.findIndex(m => m.id === userMessage.id),
+        0,
+        newMessage
+      )
     } else {
       messages.unshift(newMessage)
     }

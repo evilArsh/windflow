@@ -4,7 +4,7 @@ defineEmits<{
 }>()
 </script>
 <template>
-  <div class="flex">
+  <div class="flex bg-[var(--el-fill-color-lighter)] mb-1rem">
     <ContentBox>
       <div class="flex items-center">
         <el-button size="small" circle plain text type="primary" @click="$emit('toggleEdit')">

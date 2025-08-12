@@ -141,8 +141,12 @@ export const useMenu = (
     onDelete: async (done: CallBackFn) => {
       try {
         if (selectedTopic.value) {
+          if (queue.pending || queue.size) {
+            ElMessage.warning(t("chat.topicSwitching"))
+            return
+          }
           const nodes = chatStore.utils.getAllNodes(selectedTopic.value)
-          for await (const item of nodes) {
+          for (const item of nodes) {
             if (window.api) {
               await window.api.mcp.stopTopicServers(item.id)
             }
@@ -154,7 +158,7 @@ export const useMenu = (
             delete chatMessage.value[item.id]
           }
           treeRef.value?.remove(selectedTopic.value)
-          await chatStore.api.delChatTopic(nodes)
+          await queue.add(async () => chatStore.api.delChatTopic(nodes))
           if (selectedTopic.value === currentTopic.value) {
             currentTopic.value = undefined
           }

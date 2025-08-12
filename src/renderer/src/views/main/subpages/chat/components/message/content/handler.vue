@@ -52,7 +52,7 @@ async function restart(done: CallBackFn) {
 </script>
 <template>
   <div class="flex items-center flex-wrap">
-    <el-tooltip :show-after="1200" v-if="!isUser" :content="t('chat.terminate')" placement="bottom">
+    <el-tooltip :show-after="1500" v-if="!isUser" :content="t('chat.terminate')" placement="top">
       <ContentBox class="m0!" background>
         <Button
           text
@@ -66,11 +66,18 @@ async function restart(done: CallBackFn) {
         </Button>
       </ContentBox>
     </el-tooltip>
-    <el-tooltip :show-after="1200" :content="t('chat.regenerate')" placement="bottom">
+    <el-tooltip :show-after="1500" :content="t('chat.regenerate')" placement="top">
       <ContentBox class="m0!" background>
         <Button @click="restart" size="small" :disabled="!isFinish" circle plain text type="primary">
           <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
         </Button>
+      </ContentBox>
+    </el-tooltip>
+    <el-tooltip :show-after="1500" :content="t('chat.editChat')" placement="top">
+      <ContentBox class="m0!" background>
+        <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
+          <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
+        </el-button>
       </ContentBox>
     </el-tooltip>
     <el-popconfirm :title="t('tip.deleteConfirm')" @confirm="$emit('delete')">

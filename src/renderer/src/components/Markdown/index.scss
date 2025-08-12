@@ -22,6 +22,9 @@ pre {
 .markdown-container {
   position: relative;
   line-height: 1.5;
+  pre {
+    width: 100%;
+  }
   table {
     border-collapse: collapse;
     width: 100%;

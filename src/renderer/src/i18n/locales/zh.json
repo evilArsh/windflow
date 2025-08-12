@@ -96,6 +96,7 @@
   },
   "error": {
     "emptyModels": "请求模型为空",
+    "messageNotInTopic": "用户消息不属于当前聊天",
     "noMessages": "找不到消息集合"
   },
   "form": {
@@ -238,10 +239,12 @@
     "initError": "初始化错误",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中...",
+    "regenerate": "重新生成?",
     "reset": "即将重置?",
     "saveSuccess": "保存成功",
     "selectAll": "全选",
     "selectModel": "请选择模型",
+    "terminate": "终止吗？",
     "tip": "提示",
     "yes": "是的"
   },

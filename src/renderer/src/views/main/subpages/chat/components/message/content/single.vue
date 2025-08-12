@@ -34,6 +34,9 @@ const isUser = computed(() => message.value.content.role === Role.User)
 const isText = computed(() => !message.value.type || message.value.type === "text")
 const isImage = computed(() => message.value.type === "image")
 const isPartial = computed(() => code1xx(message.value.status) || message.value.status == 206)
+
+const md = useTemplateRef("md")
+const mdRefs = shallowRef<InstanceType<typeof Markdown>[]>([])
 async function onContentChange() {
   chatStore.api.putChatMessage(props.parent ?? props.message)
 }
@@ -43,6 +46,10 @@ async function onContentDelete(m: ChatMessage) {
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }
+}
+async function onEdit() {
+  md.value?.toggleEdit()
+  mdRefs.value?.forEach(md => md.toggleEdit())
 }
 const updateAffix = () => {
   nextTick(affixRef.value?.update)
@@ -62,14 +69,18 @@ defineExpose({
     <template v-if="header" #header>
       <Affix ref="affix" :offset="88" :target="`#${id}`">
         <Title :message>
-          <Handler :topic :parent :message @delete="onContentDelete(message)"></Handler>
+          <Handler :topic :parent :message @delete="onContentDelete(message)" @edit="onEdit"> </Handler>
         </Title>
       </Affix>
     </template>
     <div v-if="isUser" class="chat-item-content p-1rem reverse">
-      <el-text type="primary" class="self-end!">
-        {{ message.content.content }}
-      </el-text>
+      <Markdown
+        v-if="isString(message.content.content)"
+        v-model="message.content.content"
+        content-class="flex flex-col items-end"
+        ref="md"
+        @change="onContentChange"
+        editable></Markdown>
     </div>
     <div v-else class="chat-item-content p-1rem">
       <Image v-if="isImage" :message :parent></Image>
@@ -77,7 +88,12 @@ defineExpose({
         <div v-for="(child, index) in message.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.finish"></Thinking>
           <MCPCall :message="child"></MCPCall>
-          <Markdown v-if="isString(child.content)" editable v-model="child.content" @change="onContentChange" />
+          <Markdown
+            v-if="isString(child.content)"
+            :ref="ref => (mdRefs[index] = ref as InstanceType<typeof Markdown>)"
+            editable
+            v-model="child.content"
+            @change="onContentChange" />
         </div>
         <Error :message></Error>
       </div>

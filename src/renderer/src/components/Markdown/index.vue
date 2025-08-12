@@ -8,6 +8,8 @@ const emit = defineEmits<{
   change: [string]
 }>()
 const props = defineProps<{
+  contentClass?: string
+  showHandler?: boolean
   editable?: boolean
   modelValue: string
 }>()
@@ -22,9 +24,19 @@ const { html, parse, destroy, init } = useParser({
 
 const edit = shallowReactive({
   show: false,
-  open: () => (edit.show = true),
+  open: () => {
+    if (content.value) {
+      edit.show = true
+    }
+  },
   close: () => (edit.show = false),
-  toggle: () => (edit.show = !edit.show),
+  toggle: () => {
+    if (!edit.show) {
+      edit.open()
+    } else {
+      edit.close()
+    }
+  },
   onConfirm(value: string) {
     content.value = value
     emit("change", value)
@@ -45,12 +57,17 @@ onMounted(() => {
   handleContent(content.value)
 })
 onBeforeUnmount(destroy)
+defineExpose({
+  toggleEdit: edit.toggle,
+})
 </script>
 <template>
   <div class="markdown-container">
-    <Handler v-if="editable && content" @toggle-edit="edit.toggle"></Handler>
+    <Handler v-show="editable && content && showHandler" @toggle-edit="edit.toggle"></Handler>
     <Input v-if="edit.show" :content="content" @confirm="edit.onConfirm" @cancel="edit.close"></Input>
-    <component v-else :is="html"></component>
+    <div v-else class="w-full" :class="[contentClass]">
+      <component :is="html"></component>
+    </div>
   </div>
 </template>
 <style lang="scss">

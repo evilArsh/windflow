@@ -94,6 +94,7 @@
   },
   "error": {
     "emptyModels": "no models found",
+    "messageNotInTopic": "message not belong to current topic",
     "noMessages": "no messages collection"
   },
   "form": {
@@ -235,6 +236,7 @@
     "initError": "Init Error",
     "inputPlaceholder": "Enter your question",
     "loading": "Loading...",
+    "regenerate": "re-generate?",
     "reset": "Reset?",
     "saveSuccess": "Save successful",
     "selectAll": "Select All",
