@@ -38,8 +38,8 @@ import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
 
-export const name = "aichat-mcp-client"
-export const version = "v0.0.1"
+export const mcpName = "aichat-mcp-client"
+export const mcpVersion = "v0.0.1"
 export default (globalBus: EventBus): MCPService & ServiceCore => {
   let env: ToolEnvironment = defaultEnv()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
@@ -53,22 +53,22 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     try {
       if (ctx.client) {
         if (ctx.status === MCPClientStatus.Connecting) {
-          emitStatus(globalBus, id, ctx.status, ctx.reference, 102, `connecting`)
+          emitStatus(globalBus, id, name, ctx.status, ctx.reference, 102, `connecting`)
           return
         } else if (ctx.status === MCPClientStatus.Connected) {
           const pong = await ctx.client.ping()
           if (pong) {
             log.debug("[MCP startServer]", `[${name}]already created`)
-            emitStatus(globalBus, id, ctx.status, ctx.reference, 201, `[${name}]already created`)
+            emitStatus(globalBus, id, name, ctx.status, ctx.reference, 201, `[${name}]already created`)
             return
           } else {
             log.debug("[MCP startServer]", `[${name}]context found but client not connected`)
           }
         }
       }
-      ctx.client = createClient(name, version)
+      ctx.client = createClient(mcpName, mcpVersion)
       ctx.status = MCPClientStatus.Connecting
-      emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "connecting")
+      emitStatus(globalBus, id, name, ctx.status, ctx.reference, 200, "connecting")
       if (isStdioServerParams(ctx.params)) {
         ctx.transport = await createStdioTransport(ctx.client, env, ctx.params)
         log.debug("[MCP register stdio server]", `[${name}]created`)
@@ -87,23 +87,23 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
         throw new Error(err)
       }
       ctx.status = MCPClientStatus.Connected
-      emitStatus(globalBus, id, ctx.status, ctx.reference, 200, "ok")
+      emitStatus(globalBus, id, name, ctx.status, ctx.reference, 200, "ok")
     } catch (error) {
       await context.removeContext(id)
       log.debug("[MCP startServer error]", error)
-      emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 500, errorToText(error))
+      emitStatus(globalBus, id, name, MCPClientStatus.Disconnected, [], 500, errorToText(error))
     }
   }
   async function stopServer(topicId: string, id: string): Promise<void> {
     try {
       const ctx = context.getContext(id)
       if (!ctx) {
-        emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 404, `${id} not found`)
+        emitStatus(globalBus, id, "", MCPClientStatus.Disconnected, [], 404, `${id} not found`)
         return
       }
       if (topicId === MCPRootTopicId) {
         await context.removeContext(id)
-        emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, [], 200, "ok")
+        emitStatus(globalBus, ctx.params.id, ctx.params.name, MCPClientStatus.Disconnected, [], 200, "ok")
         return
       }
       context.removeReference(topicId, ctx.params.id)
@@ -112,10 +112,10 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
         // 如果只剩下配置界面的引用，则删除该mcp服务
         // 用户再次到配置界面时再启动，节约资源
         await context.removeContext(ctx.params.id)
-        emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, [], 200, "ok")
+        emitStatus(globalBus, ctx.params.id, ctx.params.name, MCPClientStatus.Disconnected, [], 200, "ok")
       } else {
         // 更新引用的refs
-        emitStatus(globalBus, ctx.params.id, MCPClientStatus.Connected, refs.data, 200, "ok")
+        emitStatus(globalBus, ctx.params.id, ctx.params.name, MCPClientStatus.Connected, refs.data, 200, "ok")
       }
     } catch (error) {
       log.error("[MCP stopServer error]", error)
@@ -125,11 +125,11 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     try {
       const ctx = context.getContext(id)
       if (!ctx) {
-        emitStatus(globalBus, id, MCPClientStatus.Disconnected, [], 404, `${id} not found`)
+        emitStatus(globalBus, id, "", MCPClientStatus.Disconnected, [], 404, `${id} not found`)
         return
       }
       await context.removeContext(ctx.params.id)
-      emitStatus(globalBus, ctx.params.id, MCPClientStatus.Disconnected, [], 200, "removed")
+      emitStatus(globalBus, ctx.params.id, ctx.params.name, MCPClientStatus.Disconnected, [], 200, "removed")
       return startServer(topicId, {
         ...ctx.params,
         ...params,
@@ -166,7 +166,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
             }))
             results.push(dst)
             cachedTools[res.value.id] = dst
-            log.debug("[MCP listTools]", `${res.value.id} tools cached`)
+            log.debug("[MCP listTools]", `[${context.getContext(res.value.id)?.params.name ?? ""}] cached`)
           }
         })
       }
@@ -265,7 +265,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     args?: Record<string, unknown>
   ): Promise<BridgeResponse<MCPCallToolResult>> {
     try {
-      const tools = await listTools()
+      const tools = await listTools(id)
       const tool = tools.data.find(tool => tool.name === toolname)
       if (tool) {
         const ctx = context.getContext(id)
@@ -281,14 +281,15 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
         }
         if (ctx.status === MCPClientStatus.Connected && ctx.client) {
           const res = (await ctx.client.callTool({
-            name,
+            name: toolname,
             arguments: args,
           })) as MCPCallToolResult
+          log.debug(`[calltool] [${toolname}]`)
           return responseData(200, "ok", res)
         }
         throw new Error(`server [${id}] not connected or client not found`)
       } else {
-        const msg = `tool [${name}] not found`
+        const msg = `tool [${toolname}] not found`
         return responseData(404, msg, { content: { type: "text", text: msg } })
       }
     } catch (error) {

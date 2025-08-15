@@ -12,6 +12,7 @@ export enum EventKey {
 
 export type MCPStatusEvent = {
   id: string
+  name?: string
   status: MCPClientStatus
   /**
    * 引用该服务的topic列表

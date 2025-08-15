@@ -89,6 +89,7 @@ export async function requestWithId<T>(serverId: string, request: () => Promise<
 export const emitStatus = (
   globalBus: EventBus,
   serverId: string,
+  serverName: string,
   status: MCPClientStatus,
   refs: Array<string>,
   code?: HttpStatusCode,
@@ -96,6 +97,7 @@ export const emitStatus = (
 ) => {
   globalBus.emit(EventKey.MCPStatusUpdate, {
     id: serverId,
+    name: serverName,
     status,
     refs,
     code,
