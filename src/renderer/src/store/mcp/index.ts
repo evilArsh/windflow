@@ -2,7 +2,6 @@ import { MCPServerParam, MCPServerParamCore } from "@shared/types/mcp"
 import { defineStore } from "pinia"
 import { useData } from "./data"
 
-import { useToolName } from "@shared/mcp"
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
 import { cloneDeep } from "@shared/utils"
@@ -11,7 +10,6 @@ export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
   const api = useData(servers)
-  const toolName = useToolName()
   /**
    * 去掉多余mcp tool列表
    */
@@ -57,24 +55,16 @@ export default defineStore("mcp", () => {
       window.api.mcp.listResourceTemplates(serverId),
     ])
     if (tools.status == "fulfilled") {
-      server.tools = tools.value.data.map(v => {
-        return { ...v, name: toolName.split(v.name).name }
-      })
+      server.tools = tools.value.data
     }
     if (prompts.status == "fulfilled") {
-      server.prompts = prompts.value.data.prompts.map(v => {
-        return { ...v, name: toolName.split(v.name).name }
-      })
+      server.prompts = prompts.value.data.prompts
     }
     if (resources.status == "fulfilled") {
-      server.resources = resources.value.data.resources.map(v => {
-        return { ...v, name: toolName.split(v.name).name }
-      })
+      server.resources = resources.value.data.resources
     }
     if (resourceTemplates.status == "fulfilled") {
-      server.resourceTemplates = resourceTemplates.value.data.resourceTemplates.map(v => {
-        return { ...v, name: toolName.split(v.name).name }
-      })
+      server.resourceTemplates = resourceTemplates.value.data.resourceTemplates
     }
   }
 

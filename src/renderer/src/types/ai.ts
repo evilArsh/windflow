@@ -57,6 +57,26 @@ export interface Message {
   }
   // [x: string]: unknown
 }
+/**
+ * 发送给LLM的tool calls参数
+ */
+export interface LLMToolCallRequest {
+  /**
+   * mcp server id
+   */
+  serverId: string
+  type: "function"
+  function: {
+    name: string
+    description?: string
+    parameters?: {
+      [x: string]: unknown
+    }
+  }
+}
+/**
+ * LLM返回的tool calls参数
+ */
 export interface LLMToolCall {
   function: {
     arguments: string
@@ -65,6 +85,10 @@ export interface LLMToolCall {
   id?: string
   type: "function"
   index?: number
+  /**
+   * mcp server id
+   */
+  serverId: string
 }
 
 export interface LLMResponse {

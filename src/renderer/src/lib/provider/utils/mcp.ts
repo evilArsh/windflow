@@ -1,13 +1,14 @@
-import { Message, LLMToolCall, Role } from "@renderer/types"
+import { Message, LLMToolCall, Role, LLMToolCallRequest } from "@renderer/types"
 import { useToolCall } from "@shared/mcp"
 import json5 from "json5"
-export async function loadMCPTools(mcpServersIds: string[]) {
+export async function loadMCPTools(mcpServersIds: string[]): Promise<LLMToolCallRequest[]> {
   if (!window.api) {
     console.warn("[load local MCP tools] window.api not found")
     return []
   }
-  const tools = (await window.api.mcp.listTools(mcpServersIds)).data.map(tool => {
+  const tools = (await window.api.mcp.listTools(mcpServersIds)).data.map<LLMToolCallRequest>(tool => {
     return {
+      serverId: tool.serverId,
       type: "function",
       function: {
         name: tool.name,
@@ -35,7 +36,7 @@ export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
       }
     }
     for (const tool of tools) {
-      const result = await window.api.mcp.callTool(tool.function.name, parse(tool.function.arguments))
+      const result = await window.api.mcp.callTool(tool.serverId, tool.function.name, parse(tool.function.arguments))
       results.push({
         role: Role.Tool,
         // patch deepseek

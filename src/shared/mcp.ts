@@ -1,30 +1,7 @@
-import { MCPToolDetail, NameSeprator } from "./types/mcp"
+import { MCPToolDetail } from "./types/mcp"
 import Ajv, { ErrorObject } from "ajv"
 import AjvErrors from "ajv-errors"
 // import addFormats from "ajv-formats"
-
-/**
- * @description 处理listTools,listPrompts,listResources,listResourceTemplates
- * 结果中的`name`字段，用于区分多服务中可能存在同名
- */
-export function useToolName() {
-  function patch(toolName: string, serverId: string) {
-    return `${toolName}${NameSeprator}${serverId}`
-  }
-  function split(toolName: string) {
-    const n = { name: "", serverId: "" }
-    const names = toolName.split(NameSeprator).filter(v => !!v)
-    if (names.length > 1) {
-      n.serverId = names.pop() ?? ""
-    }
-    n.name = names.join(NameSeprator)
-    return n
-  }
-  return {
-    patch,
-    split,
-  }
-}
 
 export function useToolCall() {
   const ajv = new Ajv({

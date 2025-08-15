@@ -2,7 +2,6 @@
 import { LLMToolCall, Message } from "@renderer/types"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
-import { useToolName } from "@shared/mcp"
 import { cloneDeep } from "@shared/utils"
 import PureCode from "@renderer/components/Markdown/components/PureCode/index.vue"
 import json5 from "json5"
@@ -24,7 +23,6 @@ const { servers } = storeToRefs(mcp)
 const message = computed(() => props.message)
 const callsData = ref<Record<string, CallStatus>>({})
 const calls = computed(() => Object.values(callsData.value))
-const toolName = useToolName()
 const { t } = useI18n()
 const serverName = computed(() => (serverId: string) => servers.value.find(v => v.id === serverId)?.name ?? "")
 watch(
@@ -36,22 +34,19 @@ watch(
     }
     v.forEach(call => {
       if (!call.id) return
-      const { name, serverId } = toolName.split(call.function.name)
       if (!callsData.value[call.id]) {
         callsData.value[call.id] = {
           function: {
             arguments: "",
-            name: "",
+            name: call.function.name,
           },
           type: "function",
-          serverId,
-
+          serverId: call.serverId,
           content: "",
           status: Status.InProgress,
         }
       }
       Object.assign(callsData.value[call.id], cloneDeep(call))
-      callsData.value[call.id].function.name = name
     })
   },
   { deep: true, immediate: true }

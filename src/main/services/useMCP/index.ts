@@ -1,6 +1,4 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-
-import { serializeError } from "serialize-error"
 import {
   MCPToolDetail,
   MCPCallToolResult,
@@ -35,7 +33,7 @@ import {
   requestWithId,
   useMCPContext,
 } from "./utils"
-import { useToolCall, useToolName } from "@shared/mcp"
+import { useToolCall } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
@@ -45,7 +43,6 @@ export const version = "v0.0.1"
 export default (globalBus: EventBus): MCPService & ServiceCore => {
   let env: ToolEnvironment = defaultEnv()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
-  const toolName = useToolName()
   const toolCall = useToolCall()
   const context = useMCPContext()
   async function startServer(topicId: string, params: MCPServerParam): Promise<void> {
@@ -165,7 +162,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           if (res.status === "fulfilled") {
             const dst = res.value.data.tools.map<MCPToolDetail>(tool => ({
               ...tool,
-              name: toolName.patch(tool.name, res.value.id),
+              serverId: res.value.id,
             }))
             results.push(dst)
             cachedTools[res.value.id] = dst
@@ -175,7 +172,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       }
       return responseData(200, "ok", results.flat())
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), [])
+      return responseData(500, errorToText(error), [])
     }
   }
   async function listPrompts(
@@ -196,14 +193,14 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           results.prompts.push(
             ...r.value.data.prompts.map(res => ({
               ...res,
-              name: toolName.patch(res.name, r.value.id),
+              serverId: r.value.id,
             }))
           )
         }
       })
       return responseData(200, "ok", results)
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), results)
+      return responseData(500, errorToText(error), results)
     }
   }
   async function listResources(
@@ -224,14 +221,14 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           results.resources.push(
             ...r.value.data.resources.map(res => ({
               ...res,
-              name: toolName.patch(res.name, r.value.id),
+              serverId: r.value.id,
             }))
           )
         }
       })
       return responseData(200, "ok", results)
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), results)
+      return responseData(500, errorToText(error), results)
     }
   }
   async function listResourceTemplates(
@@ -252,17 +249,18 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           results.resourceTemplates.push(
             ...r.value.data.resourceTemplates.map(res => ({
               ...res,
-              name: toolName.patch(res.name, r.value.id),
+              serverId: r.value.id,
             }))
           )
         }
       })
       return responseData(200, "ok", results)
     } catch (error) {
-      return responseData(500, JSON.stringify(serializeError(error)), results)
+      return responseData(500, errorToText(error), results)
     }
   }
   async function callTool(
+    id: string,
     toolname: string,
     args?: Record<string, unknown>
   ): Promise<BridgeResponse<MCPCallToolResult>> {
@@ -270,10 +268,9 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
       const tools = await listTools()
       const tool = tools.data.find(tool => tool.name === toolname)
       if (tool) {
-        const { serverId, name } = toolName.split(tool.name)
-        const ctx = context.getContext(serverId)
+        const ctx = context.getContext(id)
         if (!ctx) {
-          const msg = `server [${serverId}] not found`
+          const msg = `server [${id}] not found`
           return responseData(500, msg, { content: { type: "text", text: msg } })
         }
         const [validArgs, validErrors] = toolCall.validate(tool, args)
@@ -289,7 +286,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
           })) as MCPCallToolResult
           return responseData(200, "ok", res)
         }
-        throw new Error(`server [${serverId}] not connected or client not found`)
+        throw new Error(`server [${id}] not connected or client not found`)
       } else {
         const msg = `tool [${name}] not found`
         return responseData(404, msg, { content: { type: "text", text: msg } })
@@ -330,8 +327,8 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     ipcMain.handle(IpcChannel.McpListTools, async (_, id?: string | Array<string>) => {
       return listTools(id)
     })
-    ipcMain.handle(IpcChannel.McpCallTool, async (_, name: string, args?: Record<string, unknown>) => {
-      return callTool(name, args)
+    ipcMain.handle(IpcChannel.McpCallTool, async (_, id: string, name: string, args?: Record<string, unknown>) => {
+      return callTool(id, name, args)
     })
     ipcMain.handle(IpcChannel.McpUpdateEnv, async (_, newEnv: ToolEnvironment) => {
       return updateEnv(newEnv)

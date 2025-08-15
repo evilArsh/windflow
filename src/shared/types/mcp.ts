@@ -1,4 +1,3 @@
-export const NameSeprator = "___"
 /**
  * 配置界面虚拟topicID
  */
@@ -106,6 +105,10 @@ export interface MCPToolDetail {
    * tool name
    */
   name: string
+  /**
+   * mcp server id
+   */
+  serverId: string
   inputSchema?: {
     [x: string]: unknown
   }
@@ -144,6 +147,10 @@ export interface MCPCallToolResult {
 
 // -- resouce start ---
 export interface MCPResourceItem {
+  /**
+   * mcp server id
+   */
+  serverId: string
   uri: string
   name: string
   description?: string
@@ -162,6 +169,10 @@ export interface MCPListResourcesResponse {
 // -- prompt start ---
 export type MCPListPromptsRequestParams = MCPListResourcesRequestParams
 export interface MCPPromptItem {
+  /**
+   * mcp server id
+   */
+  serverId: string
   name: string
   description?: string
   arguments?: Array<{
@@ -178,6 +189,10 @@ export interface MCPListPromptsResponse {
 
 // -- resource template start ---
 export interface MCPResourceTemplatesItem {
+  /**
+   * mcp server id
+   */
+  serverId: string
   uriTemplate: string
   name: string
   description?: string

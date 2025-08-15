@@ -1,4 +1,13 @@
-import { LLMToolCall, LLMResponse, Role, Message, ModelMeta, LLMRequest, ProviderMeta } from "@renderer/types"
+import {
+  LLMToolCall,
+  LLMResponse,
+  Role,
+  Message,
+  ModelMeta,
+  LLMRequest,
+  ProviderMeta,
+  LLMToolCallRequest,
+} from "@renderer/types"
 import { AxiosInstance } from "axios"
 import { cloneDeep, errorToText, merge } from "@shared/utils"
 
@@ -6,6 +15,7 @@ export function usePartialData() {
   const defaultMessage = (): Message => ({ role: Role.Assistant, content: "" })
   const defaultData = (): LLMResponse => ({ status: 100, data: defaultMessage(), msg: "" })
   const mergeString = (...strs: Array<string | null | undefined>): string => strs.filter(s => !!s).join("")
+  let toolList: LLMToolCallRequest[] = []
   let current: Message = defaultMessage()
   let currentTools: Record<string, LLMToolCall> = {}
   let currentContent: string | undefined = ""
@@ -31,6 +41,7 @@ export function usePartialData() {
         if (mapTool) {
           mapTool.function.arguments += tool.function.arguments
         } else {
+          tool.serverId = toolList.find(t => t.function.name === tool.function.name)?.serverId ?? ""
           currentTools[tool.index] = tool
         }
       }
@@ -75,6 +86,12 @@ export function usePartialData() {
     resetCurrent()
     result = defaultData()
   }
+  /**
+   * 可用的mcp工具列表
+   */
+  function updateToolLists(lists: LLMToolCallRequest[]) {
+    toolList = lists
+  }
   return {
     reset,
     add,
@@ -83,6 +100,7 @@ export function usePartialData() {
     addToolCallResults,
     getTools,
     getResponse,
+    updateToolLists,
   }
 }
 export function useOpenAICompatParser() {

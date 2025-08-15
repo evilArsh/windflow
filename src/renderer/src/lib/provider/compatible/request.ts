@@ -97,6 +97,7 @@ export async function makeRequest(
   try {
     callback({ status: 100, data: { content: "", role: Role.Assistant } })
     const toolList = await loadMCPTools(mcpServersIds)
+    partial.updateToolLists(toolList)
     const appendTools = (req: LLMRequest, toolist: unknown) => {
       return { ...req, ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}) }
     }
