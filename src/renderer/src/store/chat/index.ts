@@ -98,8 +98,8 @@ export default defineStore("chat_topic", () => {
       mcpServersIds,
       value => {
         const { data, status, msg } = value
-        message.completionTokens = toNumber(data.usage?.completion_tokens)
-        message.promptTokens = toNumber(data.usage?.prompt_tokens)
+        message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
+        message.promptTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.prompt_tokens), 0)
         message.status = status
         message.content = data
         message.msg = msg

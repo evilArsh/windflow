@@ -88,7 +88,7 @@ export async function makeRequest(
   providerMeta: ProviderMeta,
   modelMeta: ModelMeta,
   requestHandler: LLMRequestHandler,
-  mcpServersIds: string[], // MCP服务器ID
+  mcpServersIds: string[],
   callback: (message: LLMResponse) => void,
   requestBody?: LLMRequest
 ) {

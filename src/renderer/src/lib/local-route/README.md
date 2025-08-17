@@ -1,15 +1,37 @@
 # 用法
 
 ```typescript
-const routes = localRoute.fetch.fetchTsx()
-const node = new localRoute.tpl.RouterTree({
+import { createWebHistory, createRouter, type RouteRecordRaw } from "vue-router"
+import * as localRoute from "@renderer/lib/local-route"
+
+export const initNode = new localRoute.tpl.RouterTree({
   index: "/",
-  layout: async () => await import("@/path/to/rootLayout.tsx"),
+  layout: async () => await import("@renderer/components/ParentView/index.vue"),
+  redirect: true,
+  redirectToChild: true,
+}).resolve(localRoute.fetch.fetchVue())
+
+export const initRoutes = initNode.iter<RouteRecordRaw>(router => {
+  return {
+    path: router.path,
+    redirect: router.redirect,
+    children: [],
+    component: router.component ?? undefined,
+  } as RouteRecordRaw
 })
-// node.setPrefix("/src/views/home") // 选择特定文件夹
-node.resolve(routes)
-console.log(node.generate())
-console.log(node.root)
+console.log("[routes]", initRoutes)
+const defaultPath = "/main/chat"
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    initRoutes,
+    { path: "", redirect: defaultPath },
+    { path: "/", redirect: defaultPath },
+    { path: "/:pathMatch(.*)*", redirect: defaultPath },
+  ],
+})
+export default router
+
 ```
 
 ## 相对路径用法
@@ -26,7 +48,7 @@ console.log(node.root)
 
 ```
 
-默认情况下访问`home->index.vue`的路由为`/mobile/home/index`,如果想以`mobile`为根路径，即通过`/home`访问；可以调用`tpl.setPrefix("/src/views/mobile/")`修改路径前缀，默认为`/src/views/`,此时`mobile`的同级的`static`目录将不可用
+默认为前缀为`/src/views/`，访问`home/index.vue`的路由为`/mobile/home/index`,如果想以`mobile`为根路径，即通过`/home/index`访问；可以调用`tpl.setPrefix("/src/views/mobile/")`修改路径前缀,此时`mobile`的同级的`static`目录将不可用
 
 ## 注意事项
 

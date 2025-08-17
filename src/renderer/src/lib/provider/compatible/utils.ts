@@ -64,13 +64,6 @@ export function usePartialData() {
     current.tool_calls = getTools()
     if (!result.data.children) result.data.children = []
     result.data.children.push(current)
-    if (!result.data.usage) {
-      result.data.usage = current.usage
-    } else {
-      result.data.usage.completion_tokens += toNumber(current.usage?.completion_tokens)
-      result.data.usage.prompt_tokens += toNumber(current.usage?.prompt_tokens)
-      result.data.usage.total_tokens += toNumber(current.usage?.total_tokens)
-    }
     resetCurrent()
   }
   function getResponse(): LLMResponse {
