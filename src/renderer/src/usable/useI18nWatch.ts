@@ -1,9 +1,7 @@
-import { CallBackFn } from "@renderer/lib/shared/types"
-
-export default (callback: CallBackFn) => {
+export default (callback: (locale: string) => void) => {
   const { locale } = useI18n()
   watch(locale, () => {
-    callback()
+    callback(locale.value)
   })
-  callback()
+  callback(locale.value)
 }
