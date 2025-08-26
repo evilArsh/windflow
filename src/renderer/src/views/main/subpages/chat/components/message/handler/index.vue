@@ -27,7 +27,7 @@ const { t } = useI18n()
 const shortcut = useShortcut()
 const chatStore = useChatStore()
 const handler = {
-  send: async (active: boolean, done?: unknown) => {
+  send: async (active: boolean, _key: string, done?: unknown) => {
     try {
       if (active) {
         if (!topic.value.content) {
