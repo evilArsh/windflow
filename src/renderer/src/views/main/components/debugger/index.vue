@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import { ScaleConfig } from "@renderer/components/ScalePanel/types"
-import useShortcut from "@renderer/usable/useShortcut"
+import { ScaleConfig } from "@toolmain/components"
+import { useShortcut, z } from "@toolmain/shared"
+import { DialogPanel, ScalePanel } from "@toolmain/components"
+
 const shortcut = useShortcut()
 
 const scaleRef = useTemplateRef("scale")

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
-import { CSSProperties } from "@renderer/lib/shared/types"
+import { CSSProperties, px } from "@toolmain/shared"
+import { DialogPanel } from "@toolmain/components"
 import Prompt from "./components/prompt.vue"
 import { useMsgContext } from "../../../index"
 const props = defineProps<{

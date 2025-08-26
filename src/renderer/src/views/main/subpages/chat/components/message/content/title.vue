@@ -2,6 +2,7 @@
 import { ChatMessage } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
+import { formatSecond, toNumber } from "@toolmain/shared"
 import { Role } from "@renderer/types"
 const props = defineProps<{
   message: ChatMessage

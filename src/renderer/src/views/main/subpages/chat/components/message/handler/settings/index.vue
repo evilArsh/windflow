@@ -2,6 +2,7 @@
 import { ChatTopic } from "@renderer/types"
 import Global from "./global.vue"
 import Message from "./message.vue"
+import { DialogPanel } from "@toolmain/components"
 defineProps<{
   topic: ChatTopic
 }>()

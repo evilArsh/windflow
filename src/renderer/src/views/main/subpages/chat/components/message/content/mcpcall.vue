@@ -2,9 +2,10 @@
 import { LLMToolCall, Message } from "@renderer/types"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep, isArray } from "@toolmain/shared"
 import PureCode from "@renderer/components/Markdown/components/PureCode/index.vue"
 import json5 from "json5"
+import { Spinner, Copy } from "@toolmain/components"
 
 const props = defineProps<{
   message: Message

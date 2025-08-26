@@ -7,12 +7,12 @@ import {
   SettingKeys,
   Settings,
 } from "@renderer/types"
-import { db } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/db"
 import PQueue from "p-queue"
 import { Reactive } from "vue"
 import { chatTopicDefault } from "./default"
 import useSettingsStore from "@renderer/store/settings"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKey: Ref<string>) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))

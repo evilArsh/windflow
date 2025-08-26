@@ -1,4 +1,4 @@
-import { BridgeResponse } from "./bridge"
+import { Response } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "./env"
 import { EventKey, EventMap } from "./eventbus"
 import {
@@ -41,47 +41,47 @@ export interface MCPService {
   /**
    * @description 获取引用mcp服务的topicId列表
    */
-  getReferences: (id: string) => Promise<BridgeResponse<Array<string>>>
+  getReferences: (id: string) => Promise<Response<Array<string>>>
   /**
    * @description 获取topicId引用的mcp服务列表
    */
-  getTopicServers: (topicId: string) => Promise<BridgeResponse<Array<string>>>
+  getTopicServers: (topicId: string) => Promise<Response<Array<string>>>
   /**
    * @description 停止`topicId`下启动的服务，如果服务在被其他topic使用，则只删除引用
    */
-  stopTopicServers: (topicId: string) => Promise<BridgeResponse<number>>
+  stopTopicServers: (topicId: string) => Promise<Response<number>>
   /**
    * @description 判断`topicId`是否引用了mcp服务
    */
-  hasReference: (id: string, topicId: string) => Promise<BridgeResponse<boolean>>
+  hasReference: (id: string, topicId: string) => Promise<Response<boolean>>
   startServer: (topicId: string, params: MCPServerParam) => Promise<void>
   stopServer: (topicId: string, id: string) => Promise<void>
   restartServer: (topicId: string, id: string, params?: MCPServerParamCore) => Promise<void>
-  callTool: (id: string, toolname: string, args?: Record<string, unknown>) => Promise<BridgeResponse<MCPCallToolResult>>
-  listTools: (id?: string | Array<string>) => Promise<BridgeResponse<MCPToolDetail[]>>
+  callTool: (id: string, toolname: string, args?: Record<string, unknown>) => Promise<Response<MCPCallToolResult>>
+  listTools: (id?: string | Array<string>) => Promise<Response<MCPToolDetail[]>>
   listResources: (
     id?: string | Array<string>,
     params?: MCPListResourcesRequestParams,
     options?: MCPRequestParams
-  ) => Promise<BridgeResponse<MCPListResourcesResponse>>
+  ) => Promise<Response<MCPListResourcesResponse>>
   listPrompts: (
     id?: string | Array<string>,
     params?: MCPListPromptsRequestParams,
     options?: MCPRequestParams
-  ) => Promise<BridgeResponse<MCPListPromptsResponse>>
+  ) => Promise<Response<MCPListPromptsResponse>>
   listResourceTemplates: (
     id?: string | Array<string>,
     params?: MCPListResourceTemplatesParams,
     options?: MCPRequestParams
-  ) => Promise<BridgeResponse<MCPListResourceTemplatesResponse>>
+  ) => Promise<Response<MCPListResourceTemplatesResponse>>
 }
 
 export interface EnvService {
-  testEnv: (args: ToolEnvironment) => Promise<BridgeResponse<ToolEnvTestResult>>
+  testEnv: (args: ToolEnvironment) => Promise<Response<ToolEnvTestResult>>
 }
 
 export interface FileService {
-  chooseFilePath: () => Promise<BridgeResponse<string>>
+  chooseFilePath: () => Promise<Response<string>>
 }
 
 export interface EventBus {

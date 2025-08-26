@@ -1,3 +1,4 @@
+import { isArray, isString } from "@toolmain/shared"
 import type { Element } from "hast"
 
 /**

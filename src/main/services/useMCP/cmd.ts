@@ -1,7 +1,7 @@
 import { platform } from "@electron-toolkit/utils"
 import { ToolEnvironment } from "@shared/types/env"
 import { MCPServerParam } from "@shared/types/mcp"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export function modifyPlatformCMD(env: ToolEnvironment, param: MCPServerParam): MCPServerParam {
   const p = cloneDeep(param)

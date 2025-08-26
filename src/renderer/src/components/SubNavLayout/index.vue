@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { CSSProperties } from "@renderer/lib/shared/types"
 import useSettingsStore from "@renderer/store/settings"
 import { SettingsValue } from "@renderer/types"
+import { CSSProperties } from "@toolmain/shared"
 const emit = defineEmits<{
   (e: "afterScale"): void
   (e: "scaling"): void

@@ -1,4 +1,6 @@
-import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
+import { ScaleInstance, ScaleConfig } from "@toolmain/components"
+import { z, toNumber } from "@toolmain/shared"
+
 export default (scaleRef: Readonly<Ref<ScaleInstance | null>>, target: Readonly<Ref<HTMLElement | null>>) => {
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({

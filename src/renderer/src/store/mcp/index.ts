@@ -4,7 +4,7 @@ import { useData } from "./data"
 
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep, uniqueNanoId } from "@toolmain/shared"
 const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))

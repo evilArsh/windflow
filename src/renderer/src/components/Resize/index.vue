@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import useScale, { ScaleEv } from "@renderer/components/ScalePanel/useScale"
-import type { ScaleConfig } from "@renderer/components/ScalePanel/types"
-import { type CSSProperties } from "@renderer/lib/shared/types"
-import { getValue } from "@renderer/lib/shared/styles"
+import { CSSProperties, getStyleValue, px } from "@toolmain/shared"
+import { ScaleConfig, useScale, ScaleEv } from "@toolmain/components"
+
 const props = defineProps<{
   /**
    * 大小,水平移动时指定为宽度,垂直移动时指定为高度
@@ -83,8 +82,8 @@ const barBottom = computed<string>(() => (isBottom.value ? "0" : "unset"))
 
 on(ScaleEv.SCALING, () => {
   emit("update:modelValue", {
-    width: getValue("width", scaleConfig.value.containerStyle?.width),
-    height: getValue("height", scaleConfig.value.containerStyle?.height),
+    width: getStyleValue("width", scaleConfig.value.containerStyle?.width),
+    height: getStyleValue("height", scaleConfig.value.containerStyle?.height),
   })
   emit("scaling")
 })

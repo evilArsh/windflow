@@ -3,7 +3,7 @@ import { Reactive } from "vue"
 import useSettingsStore from "@renderer/store/settings"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export const useData = (env: Reactive<ToolEnvironment>) => {
   const settingsStore = useSettingsStore()

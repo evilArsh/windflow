@@ -1,9 +1,9 @@
 import { ToolEnvironment } from "@shared/types/env"
 import { defineStore } from "pinia"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { CallBackFn } from "@toolmain/shared"
 import { useData } from "./data"
 import { defaultEnv } from "@shared/env"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export default defineStore("env", () => {
   const env = reactive<ToolEnvironment>(defaultEnv())

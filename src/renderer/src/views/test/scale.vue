@@ -57,7 +57,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ScaleConfig } from "@renderer/components/ScalePanel/types"
+import { ScaleConfig, ScalePanel } from "@toolmain/components"
 
 const scaleRef = useTemplateRef("scaleRef")
 const outerRef = useTemplateRef("outerRef")

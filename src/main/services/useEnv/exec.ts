@@ -1,15 +1,10 @@
-import { errorToText } from "@shared/utils"
-import { BridgeStatusResponse, responseCode } from "@shared/types/bridge"
+import { errorToText, StatusResponse, responseCode } from "@toolmain/shared"
 import { ToolTestParam } from "@shared/types/env"
 import { execa, ExecaError } from "execa"
 import log from "electron-log"
 import path from "node:path"
 
-export async function execCommand(
-  params: ToolTestParam,
-  command: string,
-  ...args: string[]
-): Promise<BridgeStatusResponse> {
+export async function execCommand(params: ToolTestParam, command: string, ...args: string[]): Promise<StatusResponse> {
   try {
     // const res = await execa({ stdout: ["pipe", "inherit"] })`${command}`
     log.debug(`[exec command] ${command} ${args.join(" ")}`)

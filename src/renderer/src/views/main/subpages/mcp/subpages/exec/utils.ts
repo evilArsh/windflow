@@ -1,6 +1,5 @@
-import { code2xx } from "@shared/types/bridge"
-import { errorToText } from "@shared/utils"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { code2xx, errorToText, msg } from "@toolmain/shared"
+import { CallBackFn } from "@toolmain/shared"
 
 export async function chooseFile(): Promise<string> {
   if (window.api) {

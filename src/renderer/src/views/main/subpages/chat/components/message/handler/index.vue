@@ -10,9 +10,8 @@ import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@renderer/types"
 import Clear from "./clear.vue"
-import { errorToText } from "@shared/utils"
+import { errorToText, isFunction, msg, useShortcut } from "@toolmain/shared"
 import { useThrottleFn } from "@vueuse/core"
-import useShortcut from "@renderer/usable/useShortcut"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []

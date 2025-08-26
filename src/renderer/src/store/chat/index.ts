@@ -18,6 +18,7 @@ import { useContext } from "./context"
 import { useData } from "./data"
 import { useUtils } from "./utils"
 import { defaultTTIConfig, defaultLLMConfig, defaultMessage } from "./default"
+import { toNumber, isString, uniqueId, isArray } from "@toolmain/shared"
 
 export default defineStore("chat_topic", () => {
   const modelsStore = useModelsStore()

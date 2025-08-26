@@ -1,6 +1,6 @@
 import { ProviderMeta } from "@renderer/types"
 import { defineStore } from "pinia"
-import { ProviderManager } from "@renderer/lib/provider"
+import { ProviderManager } from "@renderer/provider"
 import { useData } from "./data"
 
 export default defineStore("provider", () => {

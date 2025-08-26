@@ -6,7 +6,7 @@
   ],
   "compilerOptions": {
     "composite": true,
-    "types": ["node","electron-vite/node", "vite/client"],
+    "types": ["node","electron-vite/node", "vite/client","@toolmain/shared"],
     "strictNullChecks": true,
     "allowImportingTsExtensions":false,
     "target": "ESNext",

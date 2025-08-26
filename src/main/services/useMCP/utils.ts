@@ -5,12 +5,12 @@ import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 import { modifyPlatformCMD } from "./cmd"
 import log from "electron-log"
-import { errorToText } from "@shared/utils"
+import { errorToText } from "@toolmain/shared"
 import { MCPClientContext } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
 import { EventBus } from "@shared/types/service"
 import { EventKey } from "@shared/types/eventbus"
-import { HttpStatusCode } from "@shared/code"
+import { HttpStatusCode } from "@toolmain/shared"
 
 export function createClient(name: string, version: string) {
   return new Client({ name, version })

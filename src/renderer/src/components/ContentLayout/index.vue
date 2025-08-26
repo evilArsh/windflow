@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { CSSProperties } from "@renderer/lib/shared/types"
+import { CSSProperties, px, toNumber } from '@toolmain/shared';
+
 const emit = defineEmits<{
   (e: "update:handlerHeight", height: number): void
   (e: "scroll", x: number, y: number): void

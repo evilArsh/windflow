@@ -1,12 +1,12 @@
 import { IconifyJSON } from "@iconify/types"
-import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
+import { providerSvgIconKey } from "@renderer/app/hooks/useSvgIcon"
 import { ModelMeta } from "@renderer/types"
-import { db } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/db"
 import { useThrottleFn } from "@vueuse/core"
 import { Reactive } from "vue"
 import { modelsDefault } from "./default"
 import useProviderStore from "@renderer/store/provider"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export const useData = (models: Reactive<ModelMeta[]>) => {
   const providerSvgIcon = inject(providerSvgIconKey)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Element } from "hast"
 import { getLang } from "../../worker/utils"
+import { isUndefined } from "@toolmain/shared"
 const props = defineProps<{
   children?: string
   node?: Element

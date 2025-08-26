@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Affix from "@renderer/components/Affix/index.vue"
+import { Affix } from "@toolmain/components"
 const data = ref([{ id: useId() }, { id: useId() }])
 </script>
 <template>

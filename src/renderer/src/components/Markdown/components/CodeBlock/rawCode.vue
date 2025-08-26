@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useShiki } from "@renderer/usable/useShiki"
+import { useShiki } from "@toolmain/shared"
+
 const props = defineProps<{
   code: string
   lang: string

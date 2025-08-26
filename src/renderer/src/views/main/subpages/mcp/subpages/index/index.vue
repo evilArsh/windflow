@@ -2,13 +2,14 @@
 import useMcpStore from "@renderer/store/mcp"
 import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@shared/types/mcp"
 import { storeToRefs } from "pinia"
-import useDialog from "@renderer/usable/useDialog"
+import { msg, useDialog } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText } from "@shared/utils"
+import { errorToText } from "@toolmain/shared"
 import Form from "./components/form.vue"
 import List from "./components/list.vue"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { CallBackFn } from "@toolmain/shared"
+import { Spinner } from "@toolmain/components"
 import Loading from "./loading.vue"
 import Schema from "./schema.vue"
 import Prompt from "./prompt.vue"
@@ -17,15 +18,15 @@ import ResourceTpl from "./resourceTpl.vue"
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()
-const { dlgProps, dlgEvent, close, open } = useDialog({
+const { props, event, close, open } = useDialog({
   width: "70vw",
 })
 const tabs = shallowReactive({
   active: "config",
 })
 const {
-  dlgProps: listDlgProps,
-  dlgEvent: listDlgEvent,
+  props: listDlgProps,
+  event: listDlgEvent,
   open: listDlgOpen,
   close: listDlgClose,
 } = useDialog({
@@ -201,7 +202,7 @@ const dlg = {
       </el-tabs>
       <el-empty v-else class="mcp-config-tabs"></el-empty>
     </div>
-    <el-dialog v-bind="dlgProps" v-on="dlgEvent">
+    <el-dialog v-bind="props" v-on="event">
       <Form class="h-70vh" @close="dlg.onFormClose" @change="dlg.onFormChange" :data="current"></Form>
     </el-dialog>
     <el-dialog v-bind="listDlgProps" v-on="listDlgEvent" style="--el-dialog-padding-primary: 0">

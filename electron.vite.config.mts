@@ -89,7 +89,7 @@ export default defineConfig({
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@use "@renderer/app/element/styles/element-plus.scss" as *;`,
+          additionalData: `@use "@renderer/app/styles/element-plus.scss" as *;`,
         },
       },
     },

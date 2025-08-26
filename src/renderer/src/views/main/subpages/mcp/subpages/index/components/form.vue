@@ -2,8 +2,8 @@
 import Args from "./args.vue"
 import Env from "./env.vue"
 import useMcpStore from "@renderer/store/mcp"
-import DialogPanel from "@renderer/components/DialogPanel/index.vue"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { DialogPanel } from "@toolmain/components"
+import { CallBackFn, isNumber, isValidHttpUrl } from "@toolmain/shared"
 import { FormProps, FormRules } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
 

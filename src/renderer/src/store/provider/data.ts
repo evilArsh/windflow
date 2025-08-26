@@ -1,12 +1,12 @@
 import { IconifyJSON } from "@iconify/types"
-import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
+import { providerSvgIconKey } from "@renderer/app/hooks/useSvgIcon"
 import { getIconHTML } from "@renderer/components/SvgPicker"
 import { ProviderMeta, SettingKeys } from "@renderer/types"
-import { db } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/db"
 import { Reactive } from "vue"
 import { providerDefault } from "./default"
 import { Settings } from "@renderer/types"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export const useData = (
   metas: Reactive<Record<string, ProviderMeta>>,

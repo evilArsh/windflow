@@ -20,6 +20,7 @@ import { stringify as spaces } from "space-separated-tokens"
 import styleToJs from "style-to-js"
 import { VFileMessage } from "vfile-message"
 import { h, Fragment } from "vue"
+import { isObject, isString } from "@toolmain/shared"
 
 const emptyMap: Map<string, number> = new Map()
 const cap = /[A-Z]/g

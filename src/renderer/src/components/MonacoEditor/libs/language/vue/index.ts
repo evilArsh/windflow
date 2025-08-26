@@ -13,9 +13,9 @@ import themeLight from "shiki/themes/light-plus.mjs"
 
 import { reloadVueLanguageTools } from "./env"
 import { vueLangConfig } from "./langConfig"
-import { type EventBus } from "@renderer/usable/useEvent"
 import { EditorEv } from "@renderer/components/MonacoEditor/useEditor"
 import { uriParse } from "../../utils"
+import { EventBus } from "@toolmain/shared"
 
 async function registerVueHighlighter() {
   const highlighter = await createHighlighterCore({

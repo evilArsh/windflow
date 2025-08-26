@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import { usePartialData, openAICompatParser } from "@renderer/lib/provider/compatible/utils"
+import { usePartialData, openAICompatParser } from "@renderer/provider/compatible/utils"
+import { CSSProperties } from "@toolmain/shared"
 import { useDebounceFn } from "@vueuse/core"
+import { DialogPanel } from "@toolmain/components"
 
 const leftStyle = ref<CSSProperties>({
   width: "40%",

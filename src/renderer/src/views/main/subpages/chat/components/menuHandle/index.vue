@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type CallBackFn } from "@renderer/lib/shared/types"
+import { type CallBackFn } from "@toolmain/shared"
 const emit = defineEmits<{
   (e: "edit", event: MouseEvent): void
   (e: "delete", done: CallBackFn, event: MouseEvent): void

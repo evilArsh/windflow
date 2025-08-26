@@ -6,7 +6,7 @@ import { storeToRefs } from "pinia"
 import { ElMessage } from "element-plus"
 import ModelCard from "./model-card.vue"
 import type { CheckboxValueType } from "element-plus"
-import { errorToText } from "@shared/utils"
+import { CallBackFn, errorToText } from "@toolmain/shared"
 const { t } = useI18n()
 const props = defineProps<{
   providerName: string

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { CSSProperties } from "@renderer/lib/shared/types"
+import { CSSProperties } from "@toolmain/shared"
+
 const {
   normal = false,
   normalIcon = false,

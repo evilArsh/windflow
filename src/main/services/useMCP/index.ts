@@ -17,8 +17,8 @@ import {
   getPureParam,
   MCPServerParamCore,
 } from "@shared/types/mcp"
-import { BridgeResponse, responseData } from "@shared/types/bridge"
-import { errorToText } from "@shared/utils"
+import { Response, responseData } from "@toolmain/shared"
+import { errorToText } from "@toolmain/shared"
 import { EventBus, IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
@@ -140,7 +140,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     }
   }
 
-  async function listTools(id?: string | Array<string>): Promise<BridgeResponse<MCPToolDetail[]>> {
+  async function listTools(id?: string | Array<string>): Promise<Response<MCPToolDetail[]>> {
     const results: MCPToolDetail[][] = []
     try {
       const clients = availableClients(context.context, id)
@@ -179,7 +179,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     id?: string | Array<string>,
     params?: MCPListPromptsRequestParams,
     options?: RequestOptions
-  ): Promise<BridgeResponse<MCPListPromptsResponse>> {
+  ): Promise<Response<MCPListPromptsResponse>> {
     const results: MCPListPromptsResponse = { prompts: [] }
     try {
       const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listPrompts"]>> }>> = []
@@ -207,7 +207,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     id?: string | Array<string>,
     params?: MCPListResourcesRequestParams,
     options?: RequestOptions
-  ): Promise<BridgeResponse<MCPListResourcesResponse>> {
+  ): Promise<Response<MCPListResourcesResponse>> {
     const results: MCPListResourcesResponse = { resources: [] }
     try {
       const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listResources"]>> }>> = []
@@ -235,7 +235,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     id?: string | Array<string>,
     params?: MCPListResourceTemplatesParams,
     options?: RequestOptions
-  ): Promise<BridgeResponse<MCPListResourceTemplatesResponse>> {
+  ): Promise<Response<MCPListResourceTemplatesResponse>> {
     const results: MCPListResourceTemplatesResponse = { resourceTemplates: [] }
     try {
       const asyncReqs: Array<Promise<{ id: string; data: Awaited<ReturnType<Client["listResourceTemplates"]>> }>> = []
@@ -263,7 +263,7 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
     id: string,
     toolname: string,
     args?: Record<string, unknown>
-  ): Promise<BridgeResponse<MCPCallToolResult>> {
+  ): Promise<Response<MCPCallToolResult>> {
     try {
       const tools = await listTools(id)
       const tool = tools.data.find(tool => tool.name === toolname)
@@ -300,19 +300,19 @@ export default (globalBus: EventBus): MCPService & ServiceCore => {
   async function updateEnv(newEnv: ToolEnvironment) {
     env = newEnv
   }
-  async function getReferences(id: string): Promise<BridgeResponse<Array<string>>> {
+  async function getReferences(id: string): Promise<Response<Array<string>>> {
     return responseData(200, "ok", context.getTopicReference(id))
   }
-  async function getTopicServers(topicId: string): Promise<BridgeResponse<Array<string>>> {
+  async function getTopicServers(topicId: string): Promise<Response<Array<string>>> {
     return responseData(200, "ok", context.getServersByTopic(topicId))
   }
-  async function stopTopicServers(topicId: string): Promise<BridgeResponse<number>> {
+  async function stopTopicServers(topicId: string): Promise<Response<number>> {
     const servers = await getTopicServers(topicId)
     const asyncReqs = servers.data.map(serverId => stopServer(topicId, serverId))
     const res = await Promise.allSettled(asyncReqs)
     return responseData(200, "ok", res.filter(r => r.status === "fulfilled").length)
   }
-  async function hasReference(id: string, topicId: string): Promise<BridgeResponse<boolean>> {
+  async function hasReference(id: string, topicId: string): Promise<Response<boolean>> {
     return responseData(200, "ok", context.hasTopicReference(id, topicId))
   }
   function registerIpc() {

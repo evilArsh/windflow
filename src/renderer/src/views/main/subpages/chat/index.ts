@@ -1,4 +1,3 @@
-import { ScaleConfig, type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import type { NodeDropType } from "element-plus/es/components/tree/src/tree.type"
 import type Node from "element-plus/es/components/tree/src/model/node"
 import { ChatTopic, ChatTopicTree, SettingKeys } from "@renderer/types"
@@ -7,11 +6,11 @@ import useChatStore from "@renderer/store/chat"
 import { ElMessage, type ScrollbarInstance } from "element-plus"
 import type { TreeInstance, TreeNodeData } from "element-plus"
 import useSettingsStore from "@renderer/store/settings"
-import { errorToText } from "@shared/utils"
+import { errorToText, isArray, msg, toNumber, useShortcut, z } from "@toolmain/shared"
 import { useEventBus, useThrottleFn } from "@vueuse/core"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { CallBackFn } from "@toolmain/shared"
 import PQueue from "p-queue"
-import useShortcut from "@renderer/usable/useShortcut"
+import { ScaleConfig, ScaleInstance } from "@toolmain/components"
 
 export const useMsgContext = () => {
   const settingsStore = useSettingsStore()

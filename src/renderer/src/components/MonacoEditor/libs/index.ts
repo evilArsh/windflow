@@ -6,8 +6,8 @@ import HtmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker"
 import TsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker"
 import * as vueWorker from "./language/vue/index"
 import CSSDicts from "./dicts/cssstyle"
-import { type EventBus } from "@renderer/usable/useEvent"
 import { EditorEv } from "../useEditor"
+import { EventBus } from "@toolmain/shared"
 
 let inited = false
 

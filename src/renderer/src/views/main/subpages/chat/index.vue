@@ -5,12 +5,12 @@ import MessagePanel from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import EditTopic from "./components/editTopic/index.vue"
-import { type ScaleInstance } from "@renderer/components/ScalePanel/types"
 import MenuHandle from "./components/menuHandle/index.vue"
 import { useMenu, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText } from "@shared/utils"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { errorToText, msg } from "@toolmain/shared"
+import { CallBackFn } from "@toolmain/shared"
+import { ScaleInstance, Spinner, ScalePanel } from "@toolmain/components"
 const { t } = useI18n()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)

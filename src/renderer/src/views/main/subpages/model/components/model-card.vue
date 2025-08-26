@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ModelMeta } from "@renderer/types"
 import useModelStore from "@renderer/store/model"
-import { errorToText } from "@shared/utils"
+import { errorToText, msg } from "@toolmain/shared"
 const props = defineProps<{
   providerName: string
   data: ModelMeta[]

@@ -1,9 +1,9 @@
-import { db } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/db"
 import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
 import PQueue from "p-queue"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep, isFunction } from "@toolmain/shared"
 
 export const useData = (settings: Reactive<Record<string, Settings<SettingsValue>>>) => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))

@@ -1,5 +1,5 @@
+import { resolvePath } from "@toolmain/shared"
 import { editor, Uri } from "monaco-editor"
-import { resolvePath } from "@renderer/lib/shared/resource"
 
 export function getModel(uri: Uri): editor.ITextModel | null {
   return editor.getModel(uri)
@@ -20,6 +20,6 @@ export function getOrCreateModel(uri: Uri, lang: string | undefined, value: stri
  * 设置相对地址 `file:///foo/bar`
  */
 export function uriParse(filename: string, namespace?: string): Uri {
-  const _filename = resolvePath([namespace ?? "", filename], true)
+  const _filename = resolvePath([namespace ?? "", filename])
   return Uri.parse(`file://${_filename}`)
 }

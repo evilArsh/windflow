@@ -1,8 +1,8 @@
-import { db } from "@renderer/usable/useDatabase"
+import { db } from "@renderer/db"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default"
-import { cloneDeep } from "@shared/utils"
+import { cloneDeep } from "@toolmain/shared"
 
 export const useData = (servers: Reactive<MCPServerParam[]>) => {
   async function update(data: MCPServerParam) {

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import SvgPanel from "./panel.vue"
 import { iconMap } from "./index"
-import { providerSvgIconKey } from "@renderer/app/element/usable/useSvgIcon"
+import { providerSvgIconKey } from "@renderer/app/hooks/useSvgIcon"
 import Svg from "@renderer/components/Svg/index.vue"
 import { IconifyJSON } from "@iconify/types"
 import { getIconHTML } from "./index"
-import { ScaleInstance } from "../ScalePanel/types"
 import useScale from "./useScale"
+import { ScaleInstance, ScalePanel } from "@toolmain/components"
 const providerSvgIcon = inject(providerSvgIconKey)
 defineProps<{
   modelValue: string

@@ -2,9 +2,9 @@
 import { ChatTopic } from "@renderer/types"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
-import { CallBackFn } from "@renderer/lib/shared/types"
+import { CallBackFn, msg } from "@toolmain/shared"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText } from "@shared/utils"
+import { errorToText } from "@toolmain/shared"
 import MCPForm from "@renderer/views/main/subpages/mcp/subpages/index/components/form.vue"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 const props = defineProps<{

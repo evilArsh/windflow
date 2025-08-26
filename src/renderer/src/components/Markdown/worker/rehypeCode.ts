@@ -1,5 +1,6 @@
 import { visit } from "unist-util-visit"
 import { urlAttributes } from "html-url-attributes"
+import { isNumber } from "@toolmain/shared"
 // --- rehypeUrlAttributes
 const safeProtocol = /^(https?|ircs?|mailto|xmpp)$/i
 function urlTransform(value: string) {

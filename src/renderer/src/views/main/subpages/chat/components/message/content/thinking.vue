@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Message } from "@renderer/types"
 import Markdown from "@renderer/components/Markdown/index.vue"
+import { Spinner } from "@toolmain/components"
 
 const props = defineProps<{
   message: Message
@@ -49,7 +50,6 @@ watch(
             <el-text type="primary" loading>
               {{ thinking ? t("chat.thinking") : t("chat.thinkingComplete") }}
             </el-text>
-            <!-- <Copy :text="reasoning_content"></Copy> -->
           </div>
         </template>
         <ContentBox>

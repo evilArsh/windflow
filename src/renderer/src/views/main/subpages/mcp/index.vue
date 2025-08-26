@@ -3,9 +3,9 @@ import ContentBox from "@renderer/components/ContentBox/index.vue"
 import ITerminal from "~icons/material-symbols/terminal"
 import IGlobe from "~icons/material-symbols/globe"
 import IDisplaySettingsOutline from "~icons/material-symbols/display-settings-outline"
-import useI18nWatch from "@renderer/usable/useI18nWatch"
 import { type Component } from "vue"
 import { SettingKeys } from "@renderer/types"
+import { useI18nWatch } from "@toolmain/shared"
 const { t } = useI18n()
 
 const currentRoute = ref("")

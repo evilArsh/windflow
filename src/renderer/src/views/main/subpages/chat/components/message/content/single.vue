@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ChatMessage, ChatTopic } from "@renderer/types/chat"
-import { errorToText } from "@shared/utils"
+import { code1xx, errorToText, isString, msg } from "@toolmain/shared"
+import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
 import Handler from "./handler.vue"
@@ -9,11 +10,9 @@ import Thinking from "./thinking.vue"
 import MCPCall from "./mcpcall.vue"
 import Image from "./image.vue"
 import Error from "./error.vue"
-import Affix from "@renderer/components/Affix/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
 import { useMsgContext } from "../../../index"
-import { code1xx } from "@shared/types/bridge"
 const props = defineProps<{
   message: ChatMessage
   parent?: ChatMessage

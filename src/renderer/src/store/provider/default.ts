@@ -1,6 +1,7 @@
 import { IconifyJSON } from "@iconify/types"
 import { getIconHTML } from "@renderer/components/SvgPicker"
 import { ModelType, ProviderMeta, ModelActiveStatus } from "@renderer/types"
+import { uniqueId } from "@toolmain/shared"
 export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] => {
   return [
     {

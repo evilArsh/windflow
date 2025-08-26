@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "@shared/code"
+import { HttpStatusCode } from "@toolmain/shared"
 import { ProviderMeta } from "."
 import { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios"
 

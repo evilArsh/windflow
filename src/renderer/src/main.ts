@@ -1,1 +1,1 @@
-import "@renderer/app/element/index"
+import "@renderer/app/index"

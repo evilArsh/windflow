@@ -6,7 +6,8 @@ import Chance from "chance"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
 import { defaultTTIConfig } from "@renderer/store/chat/default"
-import { errorToText } from "@shared/utils"
+import { errorToText, msg } from "@toolmain/shared"
+import { DialogPanel, Spinner } from "@toolmain/components"
 const props = defineProps<{
   topic: ChatTopic
 }>()

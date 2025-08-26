@@ -1,4 +1,5 @@
 import { ChatContext, ChatMessage, ChatTopic, Message, Provider, Role } from "@renderer/types"
+import { isNumber } from "@toolmain/shared"
 
 export const useContext = () => {
   // 文本聊天请求缓存, 切换聊天时，继续请求,使用topicId作为key

@@ -5,8 +5,8 @@ import { useI18n } from "vue-i18n"
 import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
 import ITerminal from "~icons/material-symbols/terminal"
-import useI18nWatch from "@renderer/usable/useI18nWatch"
 import useSettingsStore from "@renderer/store/settings"
+import { useI18nWatch } from "@toolmain/shared"
 const { t } = useI18n()
 const route = useRoute()
 const settingsStore = useSettingsStore()

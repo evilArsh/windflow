@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { uniqueId } from "@toolmain/shared";
 import { useDebounceFn } from "@vueuse/core"
 import mermaid from "mermaid"
 const props = defineProps<{

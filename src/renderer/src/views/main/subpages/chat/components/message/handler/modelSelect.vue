@@ -3,6 +3,7 @@ import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider"
+import { DialogPanel } from "@toolmain/components"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()

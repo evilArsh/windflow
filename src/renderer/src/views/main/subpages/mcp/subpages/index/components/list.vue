@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import MonacoEditor from "@renderer/components/MonacoEditor/index.vue"
 import useMcpStore from "@renderer/store/mcp"
-import DialogPanel from "@renderer/components/DialogPanel/index.vue"
-import { errorToText } from "@shared/utils"
+import { DialogPanel } from "@toolmain/components"
+import { CallBackFn, errorToText, isArray, isObject, isValidHttpUrl, msg } from "@toolmain/shared"
 import { storeToRefs } from "pinia"
 import { MCPServerParam } from "@shared/types/mcp"
+import { useI18n } from "vue-i18n"
 type MCPServersConfig = { mcpServers: Record<string, MCPServerParam["params"]> }
 const emit = defineEmits<{
   close: []

@@ -8,7 +8,7 @@ import {
   ModelMeta,
   ProviderMeta,
 } from "@renderer/types"
-import { cloneDeep, merge } from "@shared/utils"
+import { cloneDeep, isNumber, merge, uniqueId } from "@toolmain/shared"
 import { Reactive } from "vue"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"

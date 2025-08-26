@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "@shared/code"
+import { HttpStatusCode } from "@toolmain/shared"
 import { MCPClientStatus } from "./mcp"
 
 export const CoreEventKey = "CoreEventKey"

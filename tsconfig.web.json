@@ -29,7 +29,7 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": ["element-plus/global", "unplugin-icons/types/vue"],
+    "types": ["element-plus/global", "unplugin-icons/types/vue","@toolmain/shared","@toolmain/libs"],
     "noEmit": false,
     "composite": true,
     "forceConsistentCasingInFileNames": true,

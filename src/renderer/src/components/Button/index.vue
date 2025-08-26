@@ -7,8 +7,8 @@
   </el-button>
 </template>
 <script lang="ts" setup>
+import { CallBackFn } from "@toolmain/shared"
 import { ElButton } from "element-plus"
-import { type CallBackFn } from "@renderer/lib/shared/types"
 const emit = defineEmits<(event: "click", done: CallBackFn, e: MouseEvent) => void>()
 const props = defineProps<{
   normal?: boolean

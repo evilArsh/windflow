@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import { ChatMessage, ChatTopic } from "@renderer/types"
-import { errorToText } from "@shared/utils"
+import { errorToText, msg, useShortcut } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
-import useShortcut from "@renderer/usable/useShortcut"
 const props = defineProps<{
   topic: ChatTopic
 }>()

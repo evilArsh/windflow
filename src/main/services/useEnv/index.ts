@@ -1,14 +1,14 @@
 import { ServiceCore } from "@main/types"
-import { BridgeResponse, BridgeStatusResponse } from "@shared/types/bridge"
+import { Response, StatusResponse } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { EnvService, IpcChannel } from "@shared/types/service"
 import { ipcMain } from "electron"
 import { execCommand, resolvePath } from "./exec"
-import { errorToText } from "@shared/utils"
+import { errorToText } from "@toolmain/shared"
 import log from "electron-log"
 export default (): EnvService & ServiceCore => {
-  async function testEnv(args: ToolEnvironment): Promise<BridgeResponse<ToolEnvTestResult>> {
-    const data: BridgeResponse<ToolEnvTestResult> = {
+  async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
+    const data: Response<ToolEnvTestResult> = {
       code: 200,
       msg: "ok",
       data: {
@@ -19,7 +19,7 @@ export default (): EnvService & ServiceCore => {
     try {
       const { uv, bun } = args
       log.debug("[testEnv]", args)
-      const req: Array<Promise<BridgeStatusResponse>> = [
+      const req: Array<Promise<StatusResponse>> = [
         execCommand(data.data.bun, resolvePath(bun.path), "--version"),
         execCommand(data.data.uv, resolvePath(uv.path), "--version"),
       ]

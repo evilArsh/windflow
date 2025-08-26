@@ -1,8 +1,7 @@
 import { editor as _editor } from "monaco-editor"
 import type { EditorProps } from "./types"
 import { getOrCreateModel, uriParse } from "./libs/utils"
-import { resolvePath } from "@renderer/lib/shared/resource"
-import useEvent, { type EventBus } from "@renderer/usable/useEvent"
+import { EventBus, resolvePath, useEvent } from "@toolmain/shared"
 export interface EditorEv {
   /**
    * 当前编辑器要打开的文件列表发生改变

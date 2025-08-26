@@ -2,6 +2,7 @@
 import useEnvStore from "@renderer/store/env"
 import { storeToRefs } from "pinia"
 import { onFileChoose } from "./utils"
+import { CallBackFn } from "@toolmain/shared"
 const envStore = useEnvStore()
 const { env } = storeToRefs(envStore)
 const { t } = useI18n()

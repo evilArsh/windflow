@@ -1,12 +1,12 @@
 import { ServiceCore } from "@main/types"
-import { errorToText } from "@shared/utils"
-import { BridgeResponse, responseData } from "@shared/types/bridge"
+import { errorToText } from "@toolmain/shared"
+import { Response, responseData } from "@toolmain/shared"
 import { FileService, IpcChannel } from "@shared/types/service"
 import { dialog, ipcMain } from "electron"
 import log from "electron-log"
 
 export default (): FileService & ServiceCore => {
-  async function chooseFilePath(): Promise<BridgeResponse<string>> {
+  async function chooseFilePath(): Promise<Response<string>> {
     try {
       const result = await dialog.showOpenDialog({
         properties: ["openFile"],
@@ -23,7 +23,7 @@ export default (): FileService & ServiceCore => {
     }
   }
   function registerIpc() {
-    ipcMain.handle(IpcChannel.FileChooseFilePath, async (_): Promise<BridgeResponse<string>> => {
+    ipcMain.handle(IpcChannel.FileChooseFilePath, async (_): Promise<Response<string>> => {
       return chooseFilePath()
     })
   }

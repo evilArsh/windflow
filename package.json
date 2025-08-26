@@ -1,6 +1,6 @@
 {
   "name": "ai-chat",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
   "author": "wuxiaolong <arshdebian@163.com>",
@@ -33,6 +33,9 @@
     "@iconify/utils": "^3.0.1",
     "@modelcontextprotocol/sdk": "^1.17.3",
     "@shikijs/monaco": "^3.11.0",
+    "@toolmain/components": "^1.2.8",
+    "@toolmain/libs": "^1.1.5",
+    "@toolmain/shared": "^1.2.6",
     "@unocss/reset": "66.4.2",
     "@volar/jsdelivr": "^2.4.23",
     "@volar/monaco": "^2.4.23",

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import useDownload from "@renderer/usable/useDownload"
+import { Copy } from "@toolmain/components"
+import { useDownload } from "@toolmain/shared"
 import PureCode from "../PureCode/index.vue"
 defineProps<{
   code: string

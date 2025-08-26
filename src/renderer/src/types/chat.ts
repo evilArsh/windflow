@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "@shared/code"
+import { HttpStatusCode } from "@toolmain/shared"
 import { Message, Provider, RequestHandler } from "."
 export type ChatMessage = {
   /**
