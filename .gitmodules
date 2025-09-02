@@ -1,4 +1,0 @@
-[submodule "submodules/toolmain"]
-	path = submodules/toolmain
-	url = git@github.com:evilArsh/toolmain.git
-	branch = main
