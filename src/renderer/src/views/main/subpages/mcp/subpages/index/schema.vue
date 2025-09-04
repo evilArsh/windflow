@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { MCPToolDetail } from "@shared/types/mcp"
-import { isArray } from "@toolmain/shared";
+import { isArray } from "@toolmain/shared"
 
 const props = defineProps<{ data: MCPToolDetail }>()
 const { t } = useI18n()

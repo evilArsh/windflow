@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { CSSProperties, px, toNumber } from '@toolmain/shared';
+import { CSSProperties, px, toNumber } from "@toolmain/shared"
 
 const emit = defineEmits<{
   (e: "update:handlerHeight", height: number): void
