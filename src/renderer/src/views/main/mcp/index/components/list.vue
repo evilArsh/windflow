@@ -2,7 +2,7 @@
 import MonacoEditor from "@renderer/components/MonacoEditor/index.vue"
 import useMcpStore from "@renderer/store/mcp"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn, errorToText, isArray, isObject, isValidHttpUrl, msg } from "@toolmain/shared"
+import { CallBackFn, errorToText, isArray, isObject, isHTTPUrl, msg } from "@toolmain/shared"
 import { storeToRefs } from "pinia"
 import { MCPServerParam } from "@shared/types/mcp"
 import { useI18n } from "vue-i18n"
@@ -42,7 +42,7 @@ const handler = {
       for (const [name, value] of Object.entries(changedData.mcpServers)) {
         if (!isObject(value.env)) value.env = {}
         if (!isArray(value.args)) value.args = []
-        if (!isValidHttpUrl(value.url)) {
+        if (!isHTTPUrl(value.url)) {
           value.url = ""
         }
         const existed: MCPServerParam | undefined = servers.value.find(v => v.name === name)

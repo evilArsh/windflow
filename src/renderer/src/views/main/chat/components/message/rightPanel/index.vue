@@ -2,6 +2,7 @@
 import { ChatTopic } from "@renderer/types"
 import { CSSProperties, px } from "@toolmain/shared"
 import { DialogPanel } from "@toolmain/components"
+import { Resize } from "@toolmain/components"
 import Prompt from "./components/prompt.vue"
 import { useMsgContext } from "../../../index"
 const props = defineProps<{
@@ -14,20 +15,18 @@ const emit = defineEmits<{
 const { emitToggle } = props.context
 const topic = computed<ChatTopic>(() => props.topic)
 // const { t } = useI18n()
-const rightNavRef = useTemplateRef("rightNav")
 const resizeStyle = ref<CSSProperties>({
   width: px(300),
 })
 </script>
 <template>
-  <div ref="rightNav" :style="resizeStyle" class="right-panel">
+  <div :style="resizeStyle" class="right-panel">
     <Resize
       v-model="resizeStyle"
       @scaling="emitToggle"
       @after-scale="emit('resizeChange')"
       size="8px"
-      direction="l"
-      :target="rightNavRef" />
+      direction="left" />
     <div class="flex flex-col flex-1">
       <Prompt :topic></Prompt>
       <el-divider class="my1.5rem!"></el-divider>

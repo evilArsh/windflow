@@ -3,6 +3,7 @@ import { RouterTree, fetchVue } from "@toolmain/libs"
 
 const initNode = new RouterTree({
   index: "/",
+  redirect: true,
 }).resolve(fetchVue())
 export const initRoutes = initNode.iter<RouteRecordRaw>(router => router as RouteRecordRaw)
 console.log("[routes]", initRoutes)

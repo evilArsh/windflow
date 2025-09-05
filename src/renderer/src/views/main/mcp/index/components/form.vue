@@ -3,7 +3,7 @@ import Args from "./args.vue"
 import Env from "./env.vue"
 import useMcpStore from "@renderer/store/mcp"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn, isNumber, isValidHttpUrl } from "@toolmain/shared"
+import { CallBackFn, isNumber, isHTTPUrl } from "@toolmain/shared"
 import { FormProps, FormRules } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
 
@@ -54,7 +54,7 @@ const formRules = ref<FormRules>({
     required: true,
     trigger: "blur",
     validator: (_, value, cb) => {
-      cb(isValidHttpUrl(value) ? undefined : new Error(t("form.invalidUrl")))
+      cb(isHTTPUrl(value) ? undefined : new Error(t("form.invalidUrl")))
     },
   },
   type: { required: true, message: "", trigger: "blur" },

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { CSSProperties, px, toNumber } from "@toolmain/shared"
-
+import { Resize } from "@toolmain/components"
 const emit = defineEmits<{
   (e: "update:handlerHeight", height: number): void
   (e: "scroll", x: number, y: number): void
@@ -24,7 +24,6 @@ const {
   chatMode?: boolean
 }>()
 
-const scaleRef = useTemplateRef("scale")
 const scrollRef = useTemplateRef("scroll")
 const scrollElRef = useTemplateRef("scrollEl")
 
@@ -127,8 +126,8 @@ onBeforeUnmount(() => {
       </el-scrollbar>
       <slot v-if="$slots.contentRight" name="contentRight"></slot>
     </div>
-    <div v-if="$slots.handler" ref="scale" class="content-handler" :style="handlerStyle">
-      <Resize v-model="handlerStyle" @after-scale="onAfterScale" size="8px" direction="t" :target="scaleRef" />
+    <div v-if="$slots.handler" class="content-handler" :style="handlerStyle">
+      <Resize v-model="handlerStyle" @after-scale="onAfterScale" size="8px" direction="top" />
       <slot name="handler"></slot>
     </div>
   </div>

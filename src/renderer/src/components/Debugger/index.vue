@@ -3,6 +3,7 @@ import { usePartialData, openAICompatParser } from "@renderer/provider/compatibl
 import { CSSProperties } from "@toolmain/shared"
 import { useDebounceFn } from "@vueuse/core"
 import { DialogPanel } from "@toolmain/components"
+import { Resize } from "@toolmain/components"
 
 const leftStyle = ref<CSSProperties>({
   width: "40%",
@@ -49,7 +50,7 @@ const { raw, parsed, stream } = useLLM()
             <el-input class="db-input" v-model="raw" resize="none" type="textarea"></el-input>
           </div>
           <div class="relative flex-shrink-0 w-6px h-full">
-            <Resize size="4px" direction="r" v-model="leftStyle" :target="rawInputRef"></Resize>
+            <Resize size="4px" direction="right" v-model="leftStyle" :target="rawInputRef"></Resize>
           </div>
           <MonacoEditor
             namespace="debugger"
