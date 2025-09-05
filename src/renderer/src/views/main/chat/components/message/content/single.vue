@@ -51,7 +51,7 @@ async function onEdit() {
   mdRefs.value?.forEach(md => md.toggleEdit())
 }
 const updateAffix = () => {
-  nextTick(affixRef.value?.update)
+  nextTick(() => affixRef.value?.update())
 }
 onMounted(() => {
   props.context.watchToggle(updateAffix)
