@@ -12,7 +12,7 @@ import Image from "./image.vue"
 import Error from "./error.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
-import { useMsgContext } from "../../../index"
+import { useMsgContext } from "../../../../index"
 const props = defineProps<{
   message: ChatMessage
   parent?: ChatMessage

@@ -11,7 +11,7 @@ import Title from "./title.vue"
 import { CSSProperties, isString, msg } from "@toolmain/shared"
 import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
-import { useMsgContext } from "../../../index"
+import { useMsgContext } from "../../../../index"
 import { errorToText } from "@toolmain/shared"
 const props = defineProps<{
   message: ChatMessage

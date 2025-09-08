@@ -3,8 +3,8 @@ import { ChatTopic } from "@renderer/types"
 import { CSSProperties, px } from "@toolmain/shared"
 import { DialogPanel } from "@toolmain/components"
 import { Resize } from "@toolmain/components"
-import Prompt from "./components/prompt.vue"
-import { useMsgContext } from "../../../index"
+import Prompt from "./prompt.vue"
+import { useMsgContext } from "../../../../index"
 const props = defineProps<{
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>

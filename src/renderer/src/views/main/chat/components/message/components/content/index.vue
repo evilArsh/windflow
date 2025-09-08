@@ -3,7 +3,7 @@ import { ChatMessage, ChatTopic } from "@renderer/types/chat"
 import Single from "./single.vue"
 import Multiple from "./multiple.vue"
 import Divider from "./divider.vue"
-import { useMsgContext } from "../../../index"
+import { useMsgContext } from "../../../../index"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 const chatStore = useChatStore()

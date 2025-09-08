@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import useEnvStore from "@renderer/store/env"
 import { storeToRefs } from "pinia"
-import { onFileChoose } from "./utils"
+import { onFileChoose } from "../utils"
 import { CallBackFn } from "@toolmain/shared"
 
 const envStore = useEnvStore()

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
-import Handler from "./handler/index.vue"
+import Handler from "./components/handler/index.vue"
 import useChatStore from "@renderer/store/chat"
-import Content from "./content/index.vue"
-import RightPanel from "./rightPanel/index.vue"
+import Content from "./components/content/index.vue"
+import RightPanel from "./components/rightPanel/index.vue"
 import { ChatTopicTree } from "@renderer/types"
 import { useMsgContext } from "../../index"
 const props = defineProps<{
