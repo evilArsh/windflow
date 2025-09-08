@@ -2,9 +2,8 @@
 import { ChatMessage, ChatTopic } from "@renderer/types/chat"
 import useChatStore from "@renderer/store/chat"
 
-import { CallBackFn, code1xx, isArray, msg } from "@toolmain/shared"
+import { errorToText, CallBackFn, code1xx, isArray, msg } from "@toolmain/shared"
 import { Role } from "@renderer/types"
-import { errorToText } from "@toolmain/shared"
 const props = defineProps<{
   message: ChatMessage
   topic: ChatTopic

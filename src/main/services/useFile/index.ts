@@ -1,6 +1,5 @@
 import { ServiceCore } from "@main/types"
-import { errorToText } from "@toolmain/shared"
-import { Response, responseData } from "@toolmain/shared"
+import { Response, responseData, errorToText } from "@toolmain/shared"
 import { FileService, IpcChannel } from "@shared/types/service"
 import { dialog, ipcMain } from "electron"
 import log from "electron-log"

@@ -8,8 +8,7 @@ import EditTopic from "./components/editTopic/index.vue"
 import MenuHandle from "./components/menuHandle/index.vue"
 import { useMenu, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText, msg } from "@toolmain/shared"
-import { CallBackFn } from "@toolmain/shared"
+import { errorToText, msg, CallBackFn } from "@toolmain/shared"
 import { ScaleInstance, Spinner, ScalePanel } from "@toolmain/components"
 const { t } = useI18n()
 const chatStore = useChatStore()

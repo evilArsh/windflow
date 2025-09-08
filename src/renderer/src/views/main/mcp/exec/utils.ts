@@ -1,5 +1,4 @@
-import { code2xx, errorToText, msg } from "@toolmain/shared"
-import { CallBackFn } from "@toolmain/shared"
+import { code2xx, errorToText, msg, CallBackFn } from "@toolmain/shared"
 
 export async function chooseFile(): Promise<string> {
   if (window.api) {

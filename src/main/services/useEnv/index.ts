@@ -1,10 +1,9 @@
 import { ServiceCore } from "@main/types"
-import { Response, StatusResponse } from "@toolmain/shared"
+import { Response, StatusResponse, errorToText } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { EnvService, IpcChannel } from "@shared/types/service"
 import { ipcMain } from "electron"
 import { execCommand, resolvePath } from "./exec"
-import { errorToText } from "@toolmain/shared"
 import log from "electron-log"
 export default (): EnvService & ServiceCore => {
   async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {

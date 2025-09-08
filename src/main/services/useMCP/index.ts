@@ -17,8 +17,7 @@ import {
   getPureParam,
   MCPServerParamCore,
 } from "@shared/types/mcp"
-import { Response, responseData } from "@toolmain/shared"
-import { errorToText } from "@toolmain/shared"
+import { errorToText, Response, responseData } from "@toolmain/shared"
 import { EventBus, IpcChannel, MCPService } from "@shared/types/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
