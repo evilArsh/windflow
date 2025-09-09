@@ -59,7 +59,7 @@ function init() {
     process.exit(0)
   } else {
     app.whenReady().then(() => {
-      electronApp.setAppUserModelId("com.arch.aichat")
+      electronApp.setAppUserModelId("com.arch.windflow")
       // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
       app.on("browser-window-created", (_, window) => {
         optimizer.watchWindowShortcuts(window)

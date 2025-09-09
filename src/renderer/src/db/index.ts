@@ -12,7 +12,7 @@ import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { type EntityTable } from "dexie"
 import { migrateToV2, migrateToV4, migrateToV5 } from "./migrate"
 
-export const name = "db-ai-chat"
+export const name = "db-windflow"
 
 const db = new Dexie(name) as Dexie & {
   providerMeta: EntityTable<ProviderMeta, "name">

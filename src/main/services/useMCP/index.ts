@@ -37,7 +37,7 @@ import { ServiceCore } from "@main/types"
 import { ToolEnvironment } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
 
-export const mcpName = "aichat-mcp-client"
+export const mcpName = "windflow-mcp-client"
 export const mcpVersion = "v0.0.1"
 export default (globalBus: EventBus): MCPService & ServiceCore => {
   let env: ToolEnvironment = defaultEnv()

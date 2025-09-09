@@ -1,4 +1,4 @@
-# AI chat
+# WindFlow
 
 ## Install
 

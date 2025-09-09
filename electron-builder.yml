@@ -1,5 +1,5 @@
-appId: com.arch.aichat
-productName: AI-chat
+appId: com.arch.windflow
+productName: WindFlow
 directories:
   buildResources: build
 files:
@@ -17,7 +17,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: aichat
+  executableName: windflow
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -45,4 +45,4 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: https://resources.vivcode.cn/aichat/auto-updates
+  url: https://resources.vivcode.cn/windflow/auto-updates
