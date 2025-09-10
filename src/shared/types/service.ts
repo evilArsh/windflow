@@ -93,3 +93,5 @@ export interface EventBus {
 export interface ThemeService {
   setTheme: (theme: "system" | "light" | "dark") => Promise<void>
 }
+
+export interface RAGService {}

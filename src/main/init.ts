@@ -8,6 +8,7 @@ import { useEnv } from "./services/useEnv"
 import { useFile } from "./services/useFile"
 import { useEventBus } from "./services/useEventBus"
 import { useTheme } from "./services/useTheme"
+import { useRAG } from "./services/useRAG"
 export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const preset = usePreset(mainWindow)
   const store = useStore()
@@ -17,6 +18,7 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const env = useEnv()
   const file = useFile()
   const theme = useTheme(mainWindow, store)
+  const rag = useRAG()
 
   function dispose() {
     theme.dispose()
@@ -25,6 +27,7 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
     env.dispose()
     file.dispose()
     preset.dispose()
+    rag.dispose()
 
     preset.dispose()
     store.dispose()
@@ -35,6 +38,7 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
     mcp.registerIpc()
     env.registerIpc()
     file.registerIpc()
+    rag.registerIpc()
   }
   return {
     dispose,
