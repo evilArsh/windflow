@@ -1,5 +1,4 @@
 import { db } from "@renderer/db"
-import { useThrottleFn } from "@vueuse/core"
 import { Settings, SettingsValue } from "@renderer/types"
 import { Reactive } from "vue"
 import PQueue from "p-queue"
@@ -22,26 +21,32 @@ export const useData = (settings: Reactive<Record<string, Settings<SettingsValue
    * @param defaultValue - The default value of the setting
    * @returns The setting value
    */
-  async function get<T extends SettingsValue>(id: string, defaultValue: T): Promise<Settings<T>> {
-    if (settings[id]) {
-      return settings[id] as Settings<T>
-    } else {
-      // 数据库查询
-      const data = (await db.settings.get(id)) as Settings<T> | undefined
-      if (data) {
-        settings[id] = data
-        return data
-      } else {
-        const val: Settings<T> = { id, value: defaultValue }
-        settings[id] = val
-        await db.settings.add(val)
-        return settings[id] as Settings<T>
+  const get = async <T extends SettingsValue>(id: string, defaultValue: T): Promise<Settings<T>> => {
+    return queue.add(
+      async () => {
+        if (settings[id]) {
+          return settings[id] as Settings<T>
+        } else {
+          // 数据库查询
+          const data = (await db.settings.get(id)) as Settings<T> | undefined
+          if (data) {
+            settings[id] = data
+            return data
+          } else {
+            const val: Settings<T> = { id, value: defaultValue }
+            settings[id] = val
+            await db.settings.add(val)
+            return settings[id] as Settings<T>
+          }
+        }
+      },
+      {
+        throwOnTimeout: true,
+        timeout: 30000,
       }
-    }
+    )
   }
-  const update = useThrottleFn(async (data: Settings<SettingsValue>) =>
-    queue.add(async () => db.settings.put(cloneDeep(data)))
-  )
+  const update = async (data: Settings<SettingsValue>) => queue.add(async () => db.settings.put(cloneDeep(data)))
   /**
    * 配置数据监听，实时更新到数据库
    */

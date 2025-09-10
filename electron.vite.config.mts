@@ -13,6 +13,14 @@ import { visualizer } from "rollup-plugin-visualizer"
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    optimizeDeps: {
+      exclude: ["@lancedb/lancedb"],
+    },
+    build: {
+      rollupOptions: {
+        external: ["@lancedb/lancedb"],
+      },
+    },
     resolve: {
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
@@ -67,7 +75,6 @@ export default defineConfig({
           enabled: true,
           filepath: "./.eslintrc-auto-import.json",
         },
-        dirs: ["./src/renderer/src/lib/shared", "./src/lib/shared"],
         resolvers: [IconsResolver(), ElementPlusResolver()],
       }),
       Components({

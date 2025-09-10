@@ -1,19 +1,19 @@
 import { ServiceCore } from "@main/types"
 import { BrowserWindow } from "electron"
-import usePreset from "./packages/usePreset"
+import { usePreset } from "./packages/usePreset"
+import { useStore } from "./packages/useStore"
 
-import useMcp from "./services/useMCP"
-import useEnv from "./services/useEnv"
-import useFile from "./services/useFile"
-import useEventBus from "./services/useEventBus"
-import useTheme from "./services/useTheme"
-import useStore from "./packages/useStore"
+import { useMCP } from "./services/useMCP"
+import { useEnv } from "./services/useEnv"
+import { useFile } from "./services/useFile"
+import { useEventBus } from "./services/useEventBus"
+import { useTheme } from "./services/useTheme"
 export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const preset = usePreset(mainWindow)
   const store = useStore()
 
   const bus = useEventBus(mainWindow)
-  const mcp = useMcp(bus)
+  const mcp = useMCP(bus)
   const env = useEnv()
   const file = useFile()
   const theme = useTheme(mainWindow, store)

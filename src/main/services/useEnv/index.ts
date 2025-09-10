@@ -5,7 +5,7 @@ import { EnvService, IpcChannel } from "@shared/types/service"
 import { ipcMain } from "electron"
 import { execCommand, resolvePath } from "./exec"
 import log from "electron-log"
-export default (): EnvService & ServiceCore => {
+export const useEnv = (): EnvService & ServiceCore => {
   async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
     const data: Response<ToolEnvTestResult> = {
       code: 200,

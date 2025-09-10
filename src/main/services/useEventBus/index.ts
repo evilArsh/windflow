@@ -3,7 +3,7 @@ import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@shared/types/event
 import { EventBus } from "@shared/types/service"
 import { BrowserWindow, ipcMain, IpcMainEvent } from "electron"
 import EventEmitter from "node:events"
-export default (mainWindow: BrowserWindow): ServiceCore & EventBus => {
+export const useEventBus = (mainWindow: BrowserWindow): ServiceCore & EventBus => {
   const bus = new EventEmitter()
   const listener = (_: IpcMainEvent, data: CoreEvent) => {
     bus.emit(data.type, data.data)

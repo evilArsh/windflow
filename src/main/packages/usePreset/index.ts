@@ -1,6 +1,6 @@
 import { PackageCore } from "@main/types"
 import { BrowserWindow, globalShortcut } from "electron"
-export default (mainWindow: BrowserWindow): PackageCore => {
+export const usePreset = (mainWindow: BrowserWindow): PackageCore => {
   // 拦截所有导航（包括 window.location 跳转）
   mainWindow.webContents.on("will-navigate", (event, url) => {
     const contentUrl = mainWindow.webContents.getURL()

@@ -39,7 +39,7 @@ import { defaultEnv } from "@shared/env"
 
 export const mcpName = "windflow-mcp-client"
 export const mcpVersion = "v0.0.1"
-export default (globalBus: EventBus): MCPService & ServiceCore => {
+export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
   let env: ToolEnvironment = defaultEnv()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolCall = useToolCall()

@@ -26,7 +26,7 @@ export const autoTitleBarOverlay = () => {
 export const autoBackgroundColor = () => {
   return nativeTheme.shouldUseDarkColors ? DarkBackgroundColor : LightBackgroundColor
 }
-export default (mainWindow: BrowserWindow, store: StoreCore): ServiceCore => {
+export const useTheme = (mainWindow: BrowserWindow, store: StoreCore): ServiceCore => {
   let theme: Theme | undefined
   const onThemeUpdated = () => {
     mainWindow.setTitleBarOverlay(autoTitleBarOverlay())

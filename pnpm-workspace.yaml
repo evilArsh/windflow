@@ -1,8 +1,13 @@
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - "electron"
-  - "electron-winstaller"
+packages:
+  - demo/*
 
 ignoredBuiltDependencies:
-  - "esbuild"
-  - "vue-demi"
+  - esbuild
+  - vue-demi
+
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - electron
+  - electron-winstaller
+  - protobufjs
+

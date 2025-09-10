@@ -4,7 +4,7 @@ import { FileService, IpcChannel } from "@shared/types/service"
 import { dialog, ipcMain } from "electron"
 import log from "electron-log"
 
-export default (): FileService & ServiceCore => {
+export const useFile = (): FileService & ServiceCore => {
   async function chooseFilePath(): Promise<Response<string>> {
     try {
       const result = await dialog.showOpenDialog({
