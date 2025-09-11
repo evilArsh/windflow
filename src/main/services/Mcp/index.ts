@@ -34,13 +34,15 @@ import {
 } from "./utils"
 import { useToolCall } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
-import { ToolEnvironment } from "@shared/types/env"
+import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
+import { useEnv } from "./env"
 
 export const mcpName = "windflow-mcp-client"
 export const mcpVersion = "v0.0.1"
 export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
-  let env: ToolEnvironment = defaultEnv()
+  let envParams: ToolEnvironment = defaultEnv()
+  const env = useEnv()
   const cachedTools: Record<string, MCPToolDetail[]> = {}
   const toolCall = useToolCall()
   const context = useMCPContext()
@@ -69,7 +71,7 @@ export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
       ctx.status = MCPClientStatus.Connecting
       emitStatus(globalBus, id, name, ctx.status, ctx.reference, 200, "connecting")
       if (isStdioServerParams(ctx.params)) {
-        ctx.transport = await createStdioTransport(ctx.client, env, ctx.params)
+        ctx.transport = await createStdioTransport(ctx.client, envParams, ctx.params)
         log.debug("[MCP register stdio server]", `[${name}]created`)
       } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
@@ -275,7 +277,7 @@ export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
         const [validArgs, validErrors] = toolCall.validate(tool, args)
         if (!validArgs) {
           return responseData(200, "args vailid error", {
-            content: { type: "text", text: JSON.stringify(validErrors ?? []) },
+            content: { type: "text", text: errorToText(validErrors) },
           })
         }
         if (ctx.status === MCPClientStatus.Connected && ctx.client) {
@@ -297,7 +299,7 @@ export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
     }
   }
   async function updateEnv(newEnv: ToolEnvironment) {
-    env = newEnv
+    envParams = newEnv
   }
   async function getReferences(id: string): Promise<Response<Array<string>>> {
     return responseData(200, "ok", context.getTopicReference(id))
@@ -313,6 +315,9 @@ export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
   }
   async function hasReference(id: string, topicId: string): Promise<Response<boolean>> {
     return responseData(200, "ok", context.hasTopicReference(id, topicId))
+  }
+  async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
+    return env.testEnv(args)
   }
   function registerIpc() {
     ipcMain.handle(IpcChannel.McpStartServer, async (_, topicId: string, params: MCPServerParam) => {
@@ -363,6 +368,10 @@ export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
         return listResourceTemplates(id, params, options)
       }
     )
+    // --- env
+    ipcMain.handle(IpcChannel.McpTestEnv, async (_, args: ToolEnvironment) => {
+      return testEnv(args)
+    })
   }
   function dispose() {
     context.dispose()
@@ -383,5 +392,6 @@ export const useMCP = (globalBus: EventBus): MCPService & ServiceCore => {
     listResourceTemplates,
     registerIpc,
     dispose,
+    testEnv,
   }
 }

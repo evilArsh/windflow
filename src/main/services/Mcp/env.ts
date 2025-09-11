@@ -1,11 +1,8 @@
-import { ServiceCore } from "@main/types"
 import { Response, StatusResponse, errorToText } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
-import { EnvService, IpcChannel } from "@shared/types/service"
-import { ipcMain } from "electron"
 import { execCommand, resolvePath } from "./exec"
 import log from "electron-log"
-export const useEnv = (): EnvService & ServiceCore => {
+export const useEnv = () => {
   async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
     const data: Response<ToolEnvTestResult> = {
       code: 200,
@@ -30,15 +27,7 @@ export const useEnv = (): EnvService & ServiceCore => {
       return data
     }
   }
-  function registerIpc() {
-    ipcMain.handle(IpcChannel.EnvTestEnv, async (_, args: ToolEnvironment) => {
-      return testEnv(args)
-    })
-  }
-  function dispose() {}
   return {
     testEnv,
-    registerIpc,
-    dispose,
   }
 }

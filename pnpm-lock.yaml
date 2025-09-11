@@ -19,7 +19,7 @@ importers:
         version: 3.0.1
       '@lancedb/lancedb':
         specifier: ^0.22.0
-        version: 0.22.0(apache-arrow@18.1.0)
+        version: 0.22.0(apache-arrow@21.0.0)
       '@modelcontextprotocol/sdk':
         specifier: ^1.17.5
         version: 1.17.5
@@ -59,6 +59,9 @@ importers:
       ajv-errors:
         specifier: ^3.0.0
         version: 3.0.0(ajv@8.17.1)
+      apache-arrow:
+        specifier: ^21.0.0
+        version: 21.0.0
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -661,8 +664,8 @@ packages:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
     engines: {node: '>=12'}
 
-  '@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2':
-    resolution: {tarball: https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2}
+  '@electron/node-gyp@git+https://git@github.com:electron/node-gyp.git#06b29aafb7708acef8b3669835c8a7857ebc92d2':
+    resolution: {commit: 06b29aafb7708acef8b3669835c8a7857ebc92d2, repo: git@github.com:electron/node-gyp.git, type: git}
     version: 10.2.0-electron.1
     engines: {node: '>=12.13.0'}
     hasBin: true
@@ -1597,9 +1600,6 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@20.19.13':
-    resolution: {integrity: sha512-yCAeZl7a0DxgNVteXFHt9+uyFbqXGy/ShC4BlcHkoE0AfGXYv/BUiplV72DjMYXHDBXFjhvr6DD1NiRVfB4j8g==}
-
   '@types/node@22.18.1':
     resolution: {integrity: sha512-rzSDyhn4cYznVG+PCzGe1lwuMYJrcBS1fc3JqSa2PvtABwWo+dZ1ij5OVok3tqfpEBCBoaR4d7upFJk73HRJDw==}
 
@@ -2118,8 +2118,8 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
-  apache-arrow@18.1.0:
-    resolution: {integrity: sha512-v/ShMp57iBnBp4lDgV8Jx3d3Q5/Hac25FWmQ98eMahUiHPXcvwIMKJD0hBIgclm/FCG+LwPkAKtkRO1O/W0YGg==}
+  apache-arrow@21.0.0:
+    resolution: {integrity: sha512-UueXr0y7S6SB6ToIEON0ZIwRln1EY05NIMXKfPu8fumASypkXXHEb6LRTZGh7vnYoQ9TgqNMNN1937wyY9lyFQ==}
     hasBin: true
 
   app-builder-bin@5.0.0-alpha.12:
@@ -2134,10 +2134,6 @@ packages:
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
-
-  array-back@3.1.0:
-    resolution: {integrity: sha512-TkuxA4UCOvxuDK6NZYXCalszEzj+TLszyASooky+i742l9TqsOdYCMJJupxRic61hwquNtppB3hgcuq9SVSH1Q==}
-    engines: {node: '>=6'}
 
   array-back@6.2.2:
     resolution: {integrity: sha512-gUAZ7HPyb4SJczXAMUXMGAvI976JoK3qEx9v1FTmeYuJj0IBiaKttG1ydtGKdkfqWkIkouke7nG8ufGy77+Cvw==}
@@ -2449,9 +2445,14 @@ packages:
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
-  command-line-args@5.2.1:
-    resolution: {integrity: sha512-H4UfQhZyakIjC74I9d34fGYDwk3XpSr17QhEd0Q3I9Xq1CETHo4Hcuo87WyWHpAF1aSLjLRf5lD9ZGX2qStUvg==}
-    engines: {node: '>=4.0.0'}
+  command-line-args@6.0.1:
+    resolution: {integrity: sha512-Jr3eByUjqyK0qd8W0SGFW1nZwqCaNCtbXjRo2cRJC1OYxWl3MZ5t1US3jq+cO4sPavqgw4l9BMGX0CBe+trepg==}
+    engines: {node: '>=12.20'}
+    peerDependencies:
+      '@75lb/nature': latest
+    peerDependenciesMeta:
+      '@75lb/nature':
+        optional: true
 
   command-line-usage@7.0.3:
     resolution: {integrity: sha512-PqMLy5+YGwhMh1wS04mVG44oqDsgyLRSKJBdOo1bnYhMKBW65gZF1dRp2OZRhiTjgUHljy99qkO7bsctLaw35Q==}
@@ -3394,9 +3395,14 @@ packages:
     resolution: {integrity: sha512-/t88Ty3d5JWQbWYgaOGCCYfXRwV1+be02WqYYlL6h0lEiUAMPM8o8qKGO01YIkOHzka2up08wvgYD0mDiI+q3Q==}
     engines: {node: '>= 0.8'}
 
-  find-replace@3.0.0:
-    resolution: {integrity: sha512-6Tb2myMioCAgv5kfvP5/PkZZ/ntTpVK39fHY7WkWBgvbeE+VHd/tZuZ4mrC+bxh4cfOZeYKVPaJIZtZXV7GNCQ==}
-    engines: {node: '>=4.0.0'}
+  find-replace@5.0.2:
+    resolution: {integrity: sha512-Y45BAiE3mz2QsrN2fb5QEtO4qb44NcS7en/0y9PEVsg351HsLeVclP8QPMH79Le9sH3rs5RSwJu99W0WPZO43Q==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@75lb/nature': latest
+    peerDependenciesMeta:
+      '@75lb/nature':
+        optional: true
 
   find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
@@ -3414,8 +3420,8 @@ packages:
     resolution: {integrity: sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw==}
     engines: {node: '>=16'}
 
-  flatbuffers@24.12.23:
-    resolution: {integrity: sha512-dLVCAISd5mhls514keQzmEG6QHmUUsNuWsb4tFafIUwvvgDjXhtfAYSKOzt5SWOy+qByV5pbsDZ+Vb7HUOBEdA==}
+  flatbuffers@25.2.10:
+    resolution: {integrity: sha512-7JlN9ZvLDG1McO3kbX0k4v+SUAg48L1rIwEvN6ZQl/eCtgJz9UylTMzE9wrmYrcorgxm3CX/3T/w5VAub99UUw==}
 
   flatted@3.3.3:
     resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
@@ -5708,10 +5714,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typical@4.0.0:
-    resolution: {integrity: sha512-VAH4IvQ7BDFYglMd7BPRDfLgxZZX4O4TFcRDA6EN5X7erNJJq+McIEp8np9aVtxrCJ6qx4GTYVfOWNjcqwZgRw==}
-    engines: {node: '>=8'}
-
   typical@7.3.0:
     resolution: {integrity: sha512-ya4mg/30vm+DOWfBg4YK3j2WD6TWtRkCbasOJr40CseYENzCUby/7rIvXA99JGsQHeNxLbnXdyLLxKSv3tauFw==}
     engines: {node: '>=12.17'}
@@ -6688,7 +6690,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2':
+  '@electron/node-gyp@git+https://git@github.com:electron/node-gyp.git#06b29aafb7708acef8b3669835c8a7857ebc92d2':
     dependencies:
       env-paths: 2.2.1
       exponential-backoff: 3.1.2
@@ -6725,7 +6727,7 @@ snapshots:
 
   '@electron/rebuild@3.7.0':
     dependencies:
-      '@electron/node-gyp': https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2
+      '@electron/node-gyp': git+https://git@github.com:electron/node-gyp.git#06b29aafb7708acef8b3669835c8a7857ebc92d2
       '@malept/cross-spawn-promise': 2.0.0
       chalk: 4.1.2
       debug: 4.4.1
@@ -7089,9 +7091,9 @@ snapshots:
   '@lancedb/lancedb-win32-x64-msvc@0.22.0':
     optional: true
 
-  '@lancedb/lancedb@0.22.0(apache-arrow@18.1.0)':
+  '@lancedb/lancedb@0.22.0(apache-arrow@21.0.0)':
     dependencies:
-      apache-arrow: 18.1.0
+      apache-arrow: 21.0.0
       reflect-metadata: 0.2.2
     optionalDependencies:
       '@lancedb/lancedb-darwin-arm64': 0.22.0
@@ -7599,10 +7601,6 @@ snapshots:
       '@types/unist': 3.0.3
 
   '@types/ms@2.1.0': {}
-
-  '@types/node@20.19.13':
-    dependencies:
-      undici-types: 6.21.0
 
   '@types/node@22.18.1':
     dependencies:
@@ -8337,17 +8335,19 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  apache-arrow@18.1.0:
+  apache-arrow@21.0.0:
     dependencies:
       '@swc/helpers': 0.5.17
       '@types/command-line-args': 5.2.3
       '@types/command-line-usage': 5.0.4
-      '@types/node': 20.19.13
-      command-line-args: 5.2.1
+      '@types/node': 24.3.1
+      command-line-args: 6.0.1
       command-line-usage: 7.0.3
-      flatbuffers: 24.12.23
+      flatbuffers: 25.2.10
       json-bignum: 0.0.3
       tslib: 2.8.1
+    transitivePeerDependencies:
+      - '@75lb/nature'
 
   app-builder-bin@5.0.0-alpha.12: {}
 
@@ -8393,8 +8393,6 @@ snapshots:
       - supports-color
 
   argparse@2.0.1: {}
-
-  array-back@3.1.0: {}
 
   array-back@6.2.2: {}
 
@@ -8778,12 +8776,12 @@ snapshots:
 
   comma-separated-tokens@2.0.3: {}
 
-  command-line-args@5.2.1:
+  command-line-args@6.0.1:
     dependencies:
-      array-back: 3.1.0
-      find-replace: 3.0.0
+      array-back: 6.2.2
+      find-replace: 5.0.2
       lodash.camelcase: 4.3.0
-      typical: 4.0.0
+      typical: 7.3.0
 
   command-line-usage@7.0.3:
     dependencies:
@@ -9969,9 +9967,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  find-replace@3.0.0:
-    dependencies:
-      array-back: 3.1.0
+  find-replace@5.0.2: {}
 
   find-up@5.0.0:
     dependencies:
@@ -9995,7 +9991,7 @@ snapshots:
       flatted: 3.3.3
       keyv: 4.5.4
 
-  flatbuffers@24.12.23: {}
+  flatbuffers@25.2.10: {}
 
   flatted@3.3.3: {}
 
@@ -12643,8 +12639,6 @@ snapshots:
       - supports-color
 
   typescript@5.9.2: {}
-
-  typical@4.0.0: {}
 
   typical@7.3.0: {}
 

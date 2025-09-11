@@ -3,9 +3,11 @@ import { join } from "path"
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils"
 import windowStateKeeper from "electron-window-state"
 import icon from "../../resources/icon.png?asset"
-import { registerService } from "./init"
+import { registerService } from "./services"
 import { ServiceCore } from "./types"
-import { autoBackgroundColor, autoTitleBarOverlay } from "./services/useTheme"
+import { autoBackgroundColor, autoTitleBarOverlay } from "./services/Theme"
+import { presetWindowContent } from "./misc"
+import { useEnv } from "./hooks/useEnv"
 function createWindow(): BrowserWindow {
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1366,
@@ -59,6 +61,8 @@ function init() {
     process.exit(0)
   } else {
     app.whenReady().then(() => {
+      useEnv().init()
+
       electronApp.setAppUserModelId("com.arch.windflow")
       // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
       app.on("browser-window-created", (_, window) => {
@@ -70,6 +74,7 @@ function init() {
       const mainWindow = createWindow()
       serviceCore = registerService(mainWindow)
       serviceCore.registerIpc()
+      presetWindowContent(mainWindow)
     })
     app.on("window-all-closed", () => {
       if (process.platform !== "darwin") {

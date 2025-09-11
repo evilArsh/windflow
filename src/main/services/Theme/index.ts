@@ -1,4 +1,4 @@
-import { StoreCore } from "@main/packages/useStore/types"
+import { useStore } from "@main/hooks/useStore"
 import { ServiceCore } from "@main/types"
 import { IpcChannel } from "@shared/types/service"
 import { BrowserWindow, ipcMain, nativeTheme } from "electron"
@@ -26,8 +26,10 @@ export const autoTitleBarOverlay = () => {
 export const autoBackgroundColor = () => {
   return nativeTheme.shouldUseDarkColors ? DarkBackgroundColor : LightBackgroundColor
 }
-export const useTheme = (mainWindow: BrowserWindow, store: StoreCore): ServiceCore => {
+export const useTheme = (mainWindow: BrowserWindow): ServiceCore => {
   let theme: Theme | undefined
+  const store = useStore()
+
   const onThemeUpdated = () => {
     mainWindow.setTitleBarOverlay(autoTitleBarOverlay())
     mainWindow.setBackgroundColor(autoBackgroundColor())

@@ -29,8 +29,7 @@ export const IpcChannel = {
   McpGetTopicServers: "mcp.getTopicServers",
   McpStopTopicServers: "mcp.stopTopicServers",
   McpHasReference: "mcp.hasReference",
-
-  EnvTestEnv: "env.testEnv",
+  McpTestEnv: "mcp.testEnv",
 
   FileChooseFilePath: "file.chooseFilePath",
 
@@ -74,6 +73,8 @@ export interface MCPService {
     params?: MCPListResourceTemplatesParams,
     options?: MCPRequestParams
   ) => Promise<Response<MCPListResourceTemplatesResponse>>
+  // --- env
+  testEnv: (env: ToolEnvironment) => Promise<Response<ToolEnvTestResult>>
 }
 
 export interface EnvService {
