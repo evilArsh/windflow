@@ -20,15 +20,21 @@ export function useLanceDB() {
       client = await connect(env.resolveDir(dbName))
     }
   }
-  async function query(query: LanceDBQuery) {
+  async function query({ tableName, queryVector, topK = 5, columns = [] }: LanceDBQuery) {
     if (!client) {
       throw new Error("LanceDB not initialized")
     }
-    const tb = await client.openTable(query.tableName)
-    const selectColumns = [...(query.columns ?? [])]
+    const table = await client.openTable(tableName)
+    let query = table.search(queryVector)
+
+    const selectColumns = Array.from(columns)
     if (!selectColumns.includes("id")) {
       selectColumns.push("id")
     }
+    query = query.select(selectColumns)
+    query = query.limit(topK)
+    const results = await query.toArray()
+    return results
   }
   async function createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
     if (!client) {
@@ -51,6 +57,7 @@ export function useLanceDB() {
     init,
 
     createTable,
+    query,
     listTables,
   }
 }
