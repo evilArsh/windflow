@@ -7,7 +7,7 @@ export interface CoreEvent {
   data: unknown
 }
 export enum EventKey {
-  MCPStatusUpdate = "MCPStatusUpdate",
+  MCPStatus = "MCPStatus",
   ServiceStatus = "ServiceStatus",
 }
 
@@ -32,6 +32,6 @@ export type ServiceStatus = {
 }
 
 export interface EventMap {
-  [EventKey.MCPStatusUpdate]: MCPStatusEvent
+  [EventKey.MCPStatus]: MCPStatusEvent
   [EventKey.ServiceStatus]: ServiceStatus
 }

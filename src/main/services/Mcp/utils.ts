@@ -94,7 +94,7 @@ export const emitStatus = (
   code?: HttpStatusCode,
   msg?: string
 ) => {
-  globalBus.emit(EventKey.MCPStatusUpdate, {
+  globalBus.emit(EventKey.MCPStatus, {
     id: serverId,
     name: serverName,
     status,

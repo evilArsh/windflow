@@ -68,8 +68,8 @@ export default defineStore("mcp", () => {
     }
   }
 
-  window.api.bus.on(EventKey.MCPStatusUpdate, async data => {
-    // console.log("[MCPStatusUpdate]", data)
+  window.api.bus.on(EventKey.MCPStatus, async data => {
+    // console.log("[MCPStatus]", data)
     const server = findServer(data.id)
     if (!server) return
     const status = data.status
