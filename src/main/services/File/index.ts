@@ -3,17 +3,24 @@ import { Response, responseData, errorToText } from "@toolmain/shared"
 import { FileService, IpcChannel } from "@shared/types/service"
 import { dialog, ipcMain } from "electron"
 import log from "electron-log"
+import { useStore } from "@main/hooks/useStore"
+import { useEnv } from "@main/hooks/useEnv"
 
 export const useFile = (): FileService & ServiceCore => {
+  const store = useStore()
+  const env = useEnv()
   async function chooseFilePath(): Promise<Response<string>> {
     try {
+      const defaultPath = store.get("OpenDefaultPath") ?? env.getRootDir()
       const result = await dialog.showOpenDialog({
+        defaultPath,
         properties: ["openFile"],
         filters: [{ name: "All Files", extensions: ["*"] }],
       })
       const res = result.filePaths
       log.debug("[chooseFilePath]", res)
       if (res.length > 0) {
+        store.set("OpenDefaultPath", res[0])
         return responseData(200, "success", res[0])
       }
       return responseData(200, "empty", "")

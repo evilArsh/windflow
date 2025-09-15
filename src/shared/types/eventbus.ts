@@ -8,7 +8,8 @@ export interface CoreEvent {
 }
 export enum EventKey {
   MCPStatus = "MCPStatus",
-  ServiceStatus = "ServiceStatus",
+  RAGStatus = "RAGStatus",
+  ServiceLog = "ServiceStatus",
 }
 
 export type MCPStatusEvent = {
@@ -23,7 +24,13 @@ export type MCPStatusEvent = {
   code?: HttpStatusCode
 }
 
-export type ServiceStatus = {
+export type RAGStatusEvent = {
+  // TODO:
+  msg?: string
+  code?: HttpStatusCode
+}
+
+export type ServiceLogEvent = {
   id: string
   service: string
   details?: Record<string, unknown>
@@ -33,5 +40,6 @@ export type ServiceStatus = {
 
 export interface EventMap {
   [EventKey.MCPStatus]: MCPStatusEvent
-  [EventKey.ServiceStatus]: ServiceStatus
+  [EventKey.RAGStatus]: RAGStatusEvent
+  [EventKey.ServiceLog]: ServiceLogEvent
 }

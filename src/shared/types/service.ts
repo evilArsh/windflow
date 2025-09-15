@@ -1,4 +1,4 @@
-import { Response } from "@toolmain/shared"
+import { Response, StatusResponse } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "./env"
 import { EventKey, EventMap } from "./eventbus"
 import {
@@ -14,6 +14,7 @@ import {
   MCPRequestParams,
   MCPServerParamCore,
 } from "./mcp"
+import { RAGEmbeddingConfig, RAGFileUpload, RAGSearchParam, RAGSearchResult } from "./rag"
 
 export const IpcChannel = {
   McpStartServer: "mcp.startServer",
@@ -34,6 +35,10 @@ export const IpcChannel = {
   FileChooseFilePath: "file.chooseFilePath",
 
   ThemeSetTheme: "theme.setTheme",
+
+  RagUpdateEmbedding: "rag.updateEmbedding",
+  RagSearch: "rag.search",
+  RagProcessFile: "rag.processFile",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -95,4 +100,8 @@ export interface ThemeService {
   setTheme: (theme: "system" | "light" | "dark") => Promise<void>
 }
 
-export interface RAGService {}
+export interface RAGService {
+  updateEmbedding: (config: RAGEmbeddingConfig) => Promise<StatusResponse>
+  search: (content: RAGSearchParam) => Promise<Response<RAGSearchResult | null>>
+  processFile: (file: RAGFileUpload) => Promise<void>
+}

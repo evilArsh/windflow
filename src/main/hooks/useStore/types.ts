@@ -1,5 +1,9 @@
 export interface StoreKey {
   MainWindowTheme: string
+  /**
+   * 记录打开目录时的默认位置
+   */
+  OpenDefaultPath: string
 }
 
 export interface StoreCore {

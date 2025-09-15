@@ -32,7 +32,7 @@ export type LanceCreateIndex = {
    *
    * * `hnswSq` 索引 (分层可导航小世界与标量量化)
    *
-   * @default hnsw
+   * @default hnswSq
    */
   indexType?: "hnswSq" | "ivfFlat"
   /**
@@ -47,8 +47,12 @@ export function useLanceDB() {
   const dbName = "lance.db"
   const env = useEnv()
   let client: Connection | undefined
+
+  function isOpen() {
+    return client?.isOpen() ?? false
+  }
   async function open() {
-    if (client) return
+    if (isOpen()) return
     client = await connect(env.resolveDir(dbName))
   }
   async function query({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery) {
@@ -62,8 +66,7 @@ export function useLanceDB() {
     if (!selectColumns.includes("id")) {
       selectColumns.push("id")
     }
-    query = query.select(selectColumns)
-    query = query.limit(topK)
+    query = query.select(selectColumns).limit(topK)
     const results = await query.toArray()
     return results
   }
@@ -119,6 +122,7 @@ export function useLanceDB() {
     client = undefined
   }
   return {
+    isOpen,
     open,
     close,
     createTable,

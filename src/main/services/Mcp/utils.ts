@@ -76,7 +76,10 @@ export function availableClients(
   })
   return res
 }
-export async function requestWithId<T>(serverId: string, request: () => Promise<T>): Promise<{ id: string; data: T }> {
+export async function requestWithId<T>(
+  serverId: string,
+  request: () => Promise<T> | T
+): Promise<{ id: string; data: T }> {
   const req = request()
   if (req instanceof Promise) {
     const data = await req
