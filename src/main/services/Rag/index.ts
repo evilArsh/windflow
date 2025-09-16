@@ -2,12 +2,14 @@ import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/types/service"
 import { useLanceDB } from "./db"
-import { RAGEmbeddingConfig, RAGFileUpload, RAGSearchParam, RAGSearchResult } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "@shared/types/rag"
 import { cloneDeep, Response, responseCode, StatusResponse } from "@toolmain/shared"
 import { ipcMain } from "electron"
+import { useFile } from "./doc"
 
 export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
   const db = useLanceDB()
+  const file = useFile(globalBus)
   let emConfig: RAGEmbeddingConfig | undefined
 
   async function updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
@@ -23,7 +25,9 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
     }
   }
 
-  async function processFile(file: RAGFileUpload): Promise<void> {}
+  async function processLocalFile(meta: RAGLocalFileMeta): Promise<void> {
+    file.readFile(meta)
+  }
 
   function registerIpc() {
     ipcMain.handle(IpcChannel.RagUpdateEmbedding, async (_, config: RAGEmbeddingConfig) => {
@@ -32,8 +36,8 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
     ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam) => {
       return search(content)
     })
-    ipcMain.handle(IpcChannel.RagProcessFile, async (_, file: RAGFileUpload) => {
-      return processFile(file)
+    ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta) => {
+      return processLocalFile(file)
     })
   }
 
@@ -46,6 +50,6 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
     dispose,
     updateEmbedding,
     search,
-    processFile,
+    processLocalFile,
   }
 }

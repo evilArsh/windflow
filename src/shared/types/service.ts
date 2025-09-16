@@ -14,7 +14,7 @@ import {
   MCPRequestParams,
   MCPServerParamCore,
 } from "./mcp"
-import { RAGEmbeddingConfig, RAGFileUpload, RAGSearchParam, RAGSearchResult } from "./rag"
+import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "./rag"
 
 export const IpcChannel = {
   McpStartServer: "mcp.startServer",
@@ -38,7 +38,7 @@ export const IpcChannel = {
 
   RagUpdateEmbedding: "rag.updateEmbedding",
   RagSearch: "rag.search",
-  RagProcessFile: "rag.processFile",
+  RagProcessLocalFile: "rag.processLocalFile",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -103,5 +103,5 @@ export interface ThemeService {
 export interface RAGService {
   updateEmbedding: (config: RAGEmbeddingConfig) => Promise<StatusResponse>
   search: (content: RAGSearchParam) => Promise<Response<RAGSearchResult | null>>
-  processFile: (file: RAGFileUpload) => Promise<void>
+  processLocalFile: (file: RAGLocalFileMeta) => Promise<void>
 }

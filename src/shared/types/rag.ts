@@ -21,6 +21,7 @@ export type RAGFile = {
    * file id
    */
   fileId: string
+  topicId?: string
   content: string
   fileName: string
   fileSize: number
@@ -41,7 +42,7 @@ export type RAGSearchResult = {
   mimeType: string
 }
 
-export type RAGFileUpload = {
+export interface RAGLocalFileMeta {
   /**
    * file's unique id
    */
@@ -54,4 +55,25 @@ export type RAGFileUpload = {
    * specify the scope of current file, if not set,the file will be used for all topics
    */
   topicId?: string
+}
+
+export enum RAGFileProcessStatus {
+  /**
+   * reading file
+   */
+  Pending = "Pending",
+  /**
+   * transforming file to vectors
+   */
+  Processing = "Processing",
+  Success = "Success",
+  Failed = "Failed",
+  NotFound = "NotFound",
+}
+
+export interface RAGLocalFileProcess extends RAGLocalFileMeta {
+  status: RAGFileProcessStatus
+  fileName: string
+  fileSize: number
+  mimeType: string
 }

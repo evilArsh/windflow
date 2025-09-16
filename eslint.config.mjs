@@ -164,7 +164,7 @@ export default [
       "n/no-unsupported-features/node-builtins": [
         "error",
         {
-          version: ">=18.0.0",
+          version: ">=20.0.0",
           ignores: [],
         },
       ],
