@@ -85,7 +85,7 @@ onBeforeUnmount(() => {
                     <template #icon>
                       <Svg class="max-w4rem h2rem" :src="data.node.icon"></Svg>
                     </template>
-                    <div class="flex-1 flex items-center overflow-hidden gap-0.25rem">
+                    <div class="flex-1 flex items-center overflow-hidden gap-0.25rem break-all">
                       <Spinner
                         destroy-icon
                         :model-value="data.node.requestCount > 0"

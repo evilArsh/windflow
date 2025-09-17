@@ -3,17 +3,27 @@ import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/types/service"
 import { useLanceDB } from "./db"
 import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "@shared/types/rag"
-import { cloneDeep, Response, responseCode, StatusResponse } from "@toolmain/shared"
+import { merge, Response, responseCode, StatusResponse } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { useFile } from "./doc"
 
+export const RAGServiceId = "RAGService"
 export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
+  let emConfig: RAGEmbeddingConfig = {
+    embedding: {
+      providerName: "",
+      model: "",
+      api: "",
+    },
+    dimensions: 1024,
+    maxChunks: 512,
+    maxTokens: 512,
+  }
   const db = useLanceDB()
   const file = useFile(globalBus)
-  let emConfig: RAGEmbeddingConfig | undefined
 
   async function updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
-    emConfig = cloneDeep(config)
+    emConfig = merge({}, emConfig, config)
     return responseCode(200, "ok")
   }
 

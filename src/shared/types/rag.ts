@@ -1,4 +1,5 @@
 export type RAGEmbeddingConfig = {
+  // todo: maybe need a rag processor id, user choose different embedding model to handle data
   embedding: {
     providerName: string
     model: string
@@ -9,6 +10,24 @@ export type RAGEmbeddingConfig = {
     model: string
     api: string
   }
+  /**
+   * dimensions of the embedding vector
+   *
+   * @default 1024
+   */
+  dimensions?: number
+  /**
+   * split text into chunks, the chunks of text must less than `maxChunks`
+   *
+   * @default 512
+   */
+  maxChunks?: number
+  /**
+   * max tokens of each chunk
+   *
+   * @default 512
+   */
+  maxTokens?: number
 }
 
 export type RAGFile = {
