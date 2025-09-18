@@ -36,7 +36,7 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
   }
 
   async function processLocalFile(meta: RAGLocalFileMeta): Promise<void> {
-    file.readFile(meta)
+    file.readFile(emConfig, meta)
   }
 
   function registerIpc() {
