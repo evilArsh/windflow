@@ -1,6 +1,5 @@
 import readline from "node:readline"
 import fs from "node:fs"
-import { RAGLocalFileProcess } from "@shared/types/rag"
 import csv from "csv-parser"
 import log from "electron-log"
 import pdf from "pdf-parse"
@@ -64,7 +63,7 @@ export function useReadLine(stream: fs.ReadStream): DataTransformer {
   }
 }
 
-export function useTextTransformer(meta: RAGLocalFileProcess): DataTransformer<string | symbol> {
+export function useTextTransformer(path: string): DataTransformer<string | symbol> {
   let stream: fs.ReadStream | null = null
   let lineTransformer: DataTransformer | null = null
   function done(): void {
@@ -74,7 +73,7 @@ export function useTextTransformer(meta: RAGLocalFileProcess): DataTransformer<s
   async function* next(): AsyncGenerator<string | symbol> {
     try {
       if (!stream) {
-        stream = fs.createReadStream(meta.path)
+        stream = fs.createReadStream(path)
       }
       if (!lineTransformer) {
         lineTransformer = useReadLine(stream)
@@ -94,7 +93,7 @@ export function useTextTransformer(meta: RAGLocalFileProcess): DataTransformer<s
   }
 }
 
-export function useCsvTransformer(meta: RAGLocalFileProcess): DataTransformer<string | symbol> {
+export function useCsvTransformer(path: string): DataTransformer<string | symbol> {
   let stream: fs.ReadStream | null = null
   function done(): void {
     !stream?.destroyed && stream?.destroy()
@@ -102,7 +101,7 @@ export function useCsvTransformer(meta: RAGLocalFileProcess): DataTransformer<st
   async function* next(): AsyncGenerator<any> {
     try {
       if (!stream) {
-        stream = fs.createReadStream(meta.path)
+        stream = fs.createReadStream(path)
       }
       for await (const line of streamToAsyncIterator(stream.pipe(csv()))) {
         // { NAME: 'Daffy Duck', AGE: '24' }
@@ -120,11 +119,11 @@ export function useCsvTransformer(meta: RAGLocalFileProcess): DataTransformer<st
   }
 }
 
-export function usePdfTransformer(meta: RAGLocalFileProcess): DataTransformer<string | symbol> {
+export function usePdfTransformer(path: string): DataTransformer<string | symbol> {
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
-      const buf = fs.readFileSync(meta.path)
+      const buf = fs.readFileSync(path)
       const res = await pdf(buf)
       yield res.text
       yield Flags.Done
@@ -139,11 +138,11 @@ export function usePdfTransformer(meta: RAGLocalFileProcess): DataTransformer<st
   }
 }
 
-export function useDocxTransformer(meta: RAGLocalFileProcess): DataTransformer<string | symbol> {
+export function useDocxTransformer(path: string): DataTransformer<string | symbol> {
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
-      const res = await mammoth.extractRawText({ path: meta.path })
+      const res = await mammoth.extractRawText({ path: path })
       yield res.value
       yield Flags.Done
     } catch (e) {
@@ -156,11 +155,11 @@ export function useDocxTransformer(meta: RAGLocalFileProcess): DataTransformer<s
     done,
   }
 }
-export function useXlsxTransformer(meta: RAGLocalFileProcess): DataTransformer<string | symbol> {
+export function useXlsxTransformer(path: string): DataTransformer<string | symbol> {
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
-      const workbook = new ExcelJS.stream.xlsx.WorkbookReader(meta.path, {
+      const workbook = new ExcelJS.stream.xlsx.WorkbookReader(path, {
         sharedStrings: "emit",
         hyperlinks: "emit",
         worksheets: "emit",

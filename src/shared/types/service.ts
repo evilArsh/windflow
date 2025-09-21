@@ -15,6 +15,7 @@ import {
   MCPServerParamCore,
 } from "./mcp"
 import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "./rag"
+import { Theme } from "./theme"
 
 export const IpcChannel = {
   McpStartServer: "mcp.startServer",
@@ -97,7 +98,7 @@ export interface EventBus {
 }
 
 export interface ThemeService {
-  setTheme: (theme: "system" | "light" | "dark") => Promise<void>
+  setTheme: (theme: Theme) => Promise<void>
 }
 
 export interface RAGService {

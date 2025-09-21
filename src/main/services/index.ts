@@ -1,18 +1,18 @@
 import { ServiceCore } from "@main/types"
 import { BrowserWindow } from "electron"
 
-import { useMCP } from "./Mcp"
-import { useFile } from "./File"
-import { useEventBus } from "./EventBus"
-import { useTheme } from "./Theme"
-import { useRAG } from "./Rag"
+import { MCPServiceImpl } from "./Mcp"
+import { FileServiceImpl } from "./File"
+import { EventBusImpl } from "./EventBus"
+import { ThemeServiceImpl } from "./Theme"
+import { RAGServiceImpl } from "./Rag"
 
 export function registerService(mainWindow: BrowserWindow): ServiceCore {
-  const bus = useEventBus(mainWindow)
-  const mcp = useMCP(bus)
-  const file = useFile()
-  const theme = useTheme(mainWindow)
-  const rag = useRAG(bus)
+  const bus = new EventBusImpl(mainWindow)
+  const mcp = new MCPServiceImpl(bus)
+  const file = new FileServiceImpl()
+  const theme = new ThemeServiceImpl(mainWindow)
+  const rag = new RAGServiceImpl(bus)
 
   function dispose() {
     theme.dispose()

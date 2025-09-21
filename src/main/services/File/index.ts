@@ -6,12 +6,12 @@ import log from "electron-log"
 import { useStore } from "@main/hooks/useStore"
 import { useEnv } from "@main/hooks/useEnv"
 
-export const useFile = (): FileService & ServiceCore => {
-  const store = useStore()
-  const env = useEnv()
-  async function chooseFilePath(): Promise<Response<string>> {
+export class FileServiceImpl implements FileService, ServiceCore {
+  #store = useStore()
+  #env = useEnv()
+  async chooseFilePath(): Promise<Response<string>> {
     try {
-      const defaultPath = store.get("OpenDefaultPath") ?? env.getRootDir()
+      const defaultPath = this.#store.get("OpenDefaultPath") ?? this.#env.getRootDir()
       const result = await dialog.showOpenDialog({
         defaultPath,
         properties: ["openFile"],
@@ -20,7 +20,7 @@ export const useFile = (): FileService & ServiceCore => {
       const res = result.filePaths
       log.debug("[chooseFilePath]", res)
       if (res.length > 0) {
-        store.set("OpenDefaultPath", res[0])
+        this.#store.set("OpenDefaultPath", res[0])
         return responseData(200, "success", res[0])
       }
       return responseData(200, "empty", "")
@@ -28,15 +28,10 @@ export const useFile = (): FileService & ServiceCore => {
       return responseData(500, errorToText(error), "")
     }
   }
-  function registerIpc() {
+  registerIpc() {
     ipcMain.handle(IpcChannel.FileChooseFilePath, async (_): Promise<Response<string>> => {
-      return chooseFilePath()
+      return this.chooseFilePath()
     })
   }
-  function dispose() {}
-  return {
-    chooseFilePath,
-    registerIpc,
-    dispose,
-  }
+  dispose() {}
 }

@@ -48,58 +48,8 @@ export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileProc
     chunkIndex: dst.length,
   })
 }
-export function useStatus() {
-  const fileStatus: Map<string, RAGLocalFileProcess> = new Map()
-  function get(id: string) {
-    return fileStatus.get(id)
-  }
-  function set(id: string, meta: RAGLocalFileProcess) {
-    fileStatus.set(id, meta)
-  }
-  function has(id: string) {
-    return fileStatus.has(id)
-  }
-  function updateStatus(id: string, status: RAGLocalFileProcess["status"]): boolean {
-    const file = get(id)
-    if (file) {
-      file.status = status
-      return true
-    }
-    return false
-  }
-  function remove(id: string) {
-    fileStatus.delete(id)
-  }
 
-  return {
-    get,
-    set,
-    has,
-    updateStatus,
-    remove,
-  }
-}
-
-export function useString() {
-  const parts: string[] = []
-  let len = 0
-  function append(str: string) {
-    parts.push(str)
-    len += str.length
-  }
-  function clear() {
-    parts.length = 0
-    len = 0
-  }
-  function toString() {
-    return parts.join("")
-  }
-  function length() {
-    return len
-  }
-  return { append, toString, length, clear }
-}
-
+// FIXME: 官方支持？
 export function streamToAsyncIterator<T = any>(stream: Readable): AsyncIterable<T> {
   return {
     [Symbol.asyncIterator]() {

@@ -3,36 +3,32 @@ import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@shared/types/event
 import { EventBus } from "@shared/types/service"
 import { BrowserWindow, ipcMain, IpcMainEvent } from "electron"
 import EventEmitter from "node:events"
-export const useEventBus = (mainWindow: BrowserWindow): ServiceCore & EventBus => {
-  const bus = new EventEmitter()
-  const listener = (_: IpcMainEvent, data: CoreEvent) => {
-    bus.emit(data.type, data.data)
+export class EventBusImpl implements ServiceCore, EventBus {
+  #mainWindow: BrowserWindow
+  #bus = new EventEmitter()
+  #listener = (_: IpcMainEvent, data: CoreEvent) => {
+    this.#bus.emit(data.type, data.data)
   }
-  function on<T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) {
-    bus.on(event, callback)
+  constructor(mainWindow: BrowserWindow) {
+    this.#mainWindow = mainWindow
   }
-  function off<T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) {
-    bus.off(event, callback)
+  on<T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) {
+    this.#bus.on(event, callback)
   }
-  function emit<T extends EventKey>(event: T, data: EventMap[T]) {
-    mainWindow.webContents.send(CoreEventKey, {
+  off<T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) {
+    this.#bus.off(event, callback)
+  }
+  emit<T extends EventKey>(event: T, data: EventMap[T]) {
+    this.#mainWindow.webContents.send(CoreEventKey, {
       type: event,
       data,
     } as CoreEvent)
   }
-
-  function registerIpc() {
-    ipcMain.on(CoreEventKey, listener)
+  registerIpc() {
+    ipcMain.on(CoreEventKey, this.#listener.bind(this))
   }
-  function dispose() {
-    ipcMain.off(CoreEventKey, listener)
-    bus.removeAllListeners()
-  }
-  return {
-    on,
-    off,
-    emit,
-    registerIpc,
-    dispose,
+  dispose() {
+    ipcMain.off(CoreEventKey, this.#listener.bind(this))
+    this.#bus.removeAllListeners()
   }
 }

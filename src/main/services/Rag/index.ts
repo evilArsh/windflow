@@ -23,16 +23,16 @@ import {
 } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import log from "electron-log"
-import { useFile } from "./doc"
-import { useStatus } from "./doc/utils"
+import { createProcessStatus, ProcessStatus } from "./task"
 import { fileTypeFromFile } from "file-type"
 import path from "path"
+import { readFile } from "./doc"
 
 export const RAGServiceId = "RAGService"
-export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
-  const status = useStatus()
-
-  let emConfig: RAGEmbeddingConfig = {
+export class RAGServiceImpl implements RAGService, ServiceCore {
+  #globalBus: EventBus
+  #ss: ProcessStatus = createProcessStatus()
+  #emConfig: RAGEmbeddingConfig = {
     embedding: {
       providerName: "",
       model: "",
@@ -42,26 +42,25 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
     maxChunks: 512,
     maxTokens: 512,
   }
-  const db = useLanceDB()
-  const file = useFile()
-
-  async function updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
-    emConfig = merge({}, emConfig, config)
+  #db = useLanceDB()
+  constructor(globalBus: EventBus) {
+    this.#globalBus = globalBus
+  }
+  async updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
+    this.#emConfig = merge({}, this.#emConfig, config)
     return responseCode(200, "ok")
   }
-
-  async function search(content: RAGSearchParam): Promise<Response<RAGSearchResult | null>> {
+  async search(content: RAGSearchParam): Promise<Response<RAGSearchResult | null>> {
     return {
       code: 200,
       msg: "",
       data: null,
     }
   }
-
-  async function processLocalFile(meta: RAGLocalFileMeta): Promise<void> {
+  async processLocalFile(meta: RAGLocalFileMeta): Promise<void> {
     try {
-      if (status.has(meta.id)) {
-        return log.debug(`[processLocalFile] file already exists,status: ${status.get(meta.id)?.status}`)
+      if (this.#ss.has(meta.id)) {
+        return log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
       }
       const ft = await fileTypeFromFile(meta.path)
       if (fs.existsSync(meta.path)) {
@@ -78,18 +77,18 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
         fileName: path.basename(meta.path),
         fileSize: stat.size,
       }
-      globalBus.emit(EventKey.RAGFileProcessStatus, data)
-      const chunksData = await file.readFile(emConfig, data)
+      this.#globalBus.emit(EventKey.RAGFileProcessStatus, data)
+      const chunksData = await readFile(data, this.#emConfig)
       if (code4xx(chunksData.code) || code5xx(chunksData.code)) {
         data.status = RAGFileProcessStatus.Failed
-        globalBus.emit(EventKey.RAGFileProcessStatus, data)
+        this.#globalBus.emit(EventKey.RAGFileProcessStatus, data)
       } else {
-        status.set(meta.id, data)
+        this.#ss.set(meta.id, data)
         // todo
       }
     } catch (error) {
       log.debug("[processLocalFile]", errorToText(error))
-      globalBus.emit(EventKey.ServiceLog, {
+      this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
         details: {
@@ -101,28 +100,19 @@ export const useRAG = (globalBus: EventBus): RAGService & ServiceCore => {
       })
     }
   }
-
-  function registerIpc() {
+  registerIpc() {
     ipcMain.handle(IpcChannel.RagUpdateEmbedding, async (_, config: RAGEmbeddingConfig) => {
-      return updateEmbedding(config)
+      return this.updateEmbedding(config)
     })
     ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam) => {
-      return search(content)
+      return this.search(content)
     })
     ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta) => {
-      return processLocalFile(file)
+      return this.processLocalFile(file)
     })
   }
 
-  function dispose() {
-    db.close()
-  }
-
-  return {
-    registerIpc,
-    dispose,
-    updateEmbedding,
-    search,
-    processLocalFile,
+  dispose() {
+    this.#db.close()
   }
 }

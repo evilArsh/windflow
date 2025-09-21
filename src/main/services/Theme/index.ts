@@ -1,12 +1,9 @@
 import { useStore } from "@main/hooks/useStore"
 import { ServiceCore } from "@main/types"
-import { IpcChannel } from "@shared/types/service"
+import { IpcChannel, ThemeService } from "@shared/types/service"
+import { Theme } from "@shared/types/theme"
 import { BrowserWindow, ipcMain, nativeTheme } from "electron"
-export enum Theme {
-  light = "light",
-  dark = "dark",
-  system = "system",
-}
+
 export const DarkOverlay: Electron.TitleBarOverlayOptions = {
   height: 40,
   color: "rgba(0,0,0,0)",
@@ -26,31 +23,31 @@ export const autoTitleBarOverlay = () => {
 export const autoBackgroundColor = () => {
   return nativeTheme.shouldUseDarkColors ? DarkBackgroundColor : LightBackgroundColor
 }
-export const useTheme = (mainWindow: BrowserWindow): ServiceCore => {
-  let theme: Theme | undefined
-  const store = useStore()
+export class ThemeServiceImpl implements ThemeService, ServiceCore {
+  #mainWindow: BrowserWindow
+  #theme: Theme | undefined
+  #store = useStore()
+  #onThemeUpdated = () => {
+    this.#mainWindow.setTitleBarOverlay(autoTitleBarOverlay())
+    this.#mainWindow.setBackgroundColor(autoBackgroundColor())
+  }
+  #init() {
+    nativeTheme.addListener("updated", this.#onThemeUpdated.bind(this))
+    this.setTheme(this.#store.get("MainWindowTheme", Theme.system) as Theme)
+  }
+  constructor(mainWindow: BrowserWindow) {
+    this.#mainWindow = mainWindow
+    this.#init()
+  }
+  async setTheme(newTheme: Theme) {
+    if (newTheme === this.#theme) return
+    this.#theme = newTheme
+    nativeTheme.themeSource = this.#theme
+    this.#store.set("MainWindowTheme", this.#theme)
+  }
+  registerIpc() {
+    ipcMain.handle(IpcChannel.ThemeSetTheme, async (_, newTheme: Theme) => this.setTheme(newTheme))
+  }
 
-  const onThemeUpdated = () => {
-    mainWindow.setTitleBarOverlay(autoTitleBarOverlay())
-    mainWindow.setBackgroundColor(autoBackgroundColor())
-  }
-  async function setTheme(newTheme: Theme) {
-    if (newTheme === theme) return
-    theme = newTheme
-    nativeTheme.themeSource = theme
-    store.set("MainWindowTheme", theme)
-  }
-  function registerIpc() {
-    ipcMain.handle(IpcChannel.ThemeSetTheme, async (_, newTheme: Theme) => setTheme(newTheme))
-  }
-  function init() {
-    nativeTheme.addListener("updated", onThemeUpdated)
-    setTheme(store.get("MainWindowTheme", Theme.system) as Theme)
-  }
-  init()
-  function dispose() {}
-  return {
-    registerIpc,
-    dispose,
-  }
+  dispose() {}
 }

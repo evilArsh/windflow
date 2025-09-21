@@ -61,6 +61,20 @@ export type RAGSearchResult = {
   mimeType: string
 }
 
+export enum RAGFileProcessStatus {
+  /**
+   * reading file
+   */
+  Pending = "Pending",
+  /**
+   * transforming file to vectors
+   */
+  Processing = "Processing",
+  Success = "Success",
+  Failed = "Failed",
+  NotFound = "NotFound",
+}
+
 export interface RAGLocalFileMeta {
   /**
    * file's unique id
@@ -74,20 +88,6 @@ export interface RAGLocalFileMeta {
    * specify the scope of current file, if not set,the file will be used for all topics
    */
   topicId?: string
-}
-
-export enum RAGFileProcessStatus {
-  /**
-   * reading file
-   */
-  Pending = "Pending",
-  /**
-   * transforming file to vectors
-   */
-  Processing = "Processing",
-  Success = "Success",
-  Failed = "Failed",
-  NotFound = "NotFound",
 }
 
 export interface RAGLocalFileProcess extends RAGLocalFileMeta {
