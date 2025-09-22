@@ -3,35 +3,19 @@ import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/types/service"
 import { useLanceDB } from "./db"
 import fs from "node:fs"
-import {
-  RAGEmbeddingConfig,
-  RAGFileProcessStatus,
-  RAGLocalFileMeta,
-  RAGLocalFileProcess,
-  RAGSearchParam,
-  RAGSearchResult,
-} from "@shared/types/rag"
-import {
-  code4xx,
-  code5xx,
-  errorToText,
-  merge,
-  Response,
-  responseCode,
-  StatusResponse,
-  uniqueId,
-} from "@toolmain/shared"
+import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "@shared/types/rag"
+import { errorToText, merge, Response, responseCode, StatusResponse, uniqueId } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import log from "electron-log"
-import { createProcessStatus, ProcessStatus } from "./task"
+import { createProcessStatus, ProcessStatus, TaskManager } from "./task"
 import { fileTypeFromFile } from "file-type"
 import path from "path"
-import { readFile } from "./doc"
 
 export const RAGServiceId = "RAGService"
 export class RAGServiceImpl implements RAGService, ServiceCore {
   #globalBus: EventBus
   #ss: ProcessStatus = createProcessStatus()
+  #task: TaskManager
   #emConfig: RAGEmbeddingConfig = {
     embedding: {
       providerName: "",
@@ -45,6 +29,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   #db = useLanceDB()
   constructor(globalBus: EventBus) {
     this.#globalBus = globalBus
+    this.#task = new TaskManager(this.#ss, this.#globalBus)
   }
   async updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
     this.#emConfig = merge({}, this.#emConfig, config)
@@ -70,22 +55,15 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!stat.isFile) {
         return log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
-      const data: RAGLocalFileProcess = {
-        ...meta,
-        status: RAGFileProcessStatus.Pending,
-        mimeType: ft?.mime || "application/octet-stream",
-        fileName: path.basename(meta.path),
-        fileSize: stat.size,
-      }
-      this.#globalBus.emit(EventKey.RAGFileProcessStatus, data)
-      const chunksData = await readFile(data, this.#emConfig)
-      if (code4xx(chunksData.code) || code5xx(chunksData.code)) {
-        data.status = RAGFileProcessStatus.Failed
-        this.#globalBus.emit(EventKey.RAGFileProcessStatus, data)
-      } else {
-        this.#ss.set(meta.id, data)
-        // todo
-      }
+      this.#task.process({
+        info: {
+          ...meta,
+          mimeType: ft?.mime || "application/octet-stream",
+          fileName: path.basename(meta.path),
+          fileSize: stat.size,
+        },
+        config: this.#emConfig,
+      })
     } catch (error) {
       log.debug("[processLocalFile]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {

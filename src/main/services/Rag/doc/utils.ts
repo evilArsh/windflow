@@ -1,4 +1,4 @@
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileProcess } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
 import { isUndefined, toNumber, uniqueId } from "@toolmain/shared"
 import { Tiktoken } from "js-tiktoken/lite"
 import cl100k_base from "js-tiktoken/ranks/cl100k_base"
@@ -35,7 +35,7 @@ export function isMaxChunksReached(dst: RAGFile[], config: RAGEmbeddingConfig) {
 /**
  * 向文件块中添加新的chunk
  */
-export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileProcess) {
+export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileInfo) {
   if (!content) return
   dst.push({
     id: uniqueId(),

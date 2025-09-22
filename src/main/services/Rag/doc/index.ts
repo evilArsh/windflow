@@ -1,4 +1,4 @@
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileProcess } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
 import mime from "mime-types"
 import { isSymbol, Response, responseData } from "@toolmain/shared"
 import {
@@ -34,7 +34,7 @@ export function useString() {
 export function useTextReader(config: RAGEmbeddingConfig) {
   const str = useString()
   const dst: RAGFile[] = []
-  async function read(meta: RAGLocalFileProcess, transformer: DataTransformer) {
+  async function read(meta: RAGLocalFileInfo, transformer: DataTransformer) {
     const pushLine = (line: string) => {
       if (isMaxTokensReached(str.toString(), config)) {
         addChunk(dst, str.toString(), meta)
@@ -66,7 +66,7 @@ export function useTextReader(config: RAGEmbeddingConfig) {
   }
 }
 
-export async function readFile(data: RAGLocalFileProcess, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
+export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
   const ext = mime.extension(data.mimeType) || "bin"
   const reader = useTextReader(config)
   let transformer: DataTransformer<string | symbol> | null = null

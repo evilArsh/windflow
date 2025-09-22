@@ -1,6 +1,6 @@
 import { HttpStatusCode } from "@toolmain/shared"
 import { MCPClientStatus } from "./mcp"
-import { RAGLocalFileProcess } from "./rag"
+import { RAGFileStatus, RAGLocalFileInfo } from "./rag"
 
 export const CoreEventKey = "CoreEventKey"
 export interface CoreEvent {
@@ -32,7 +32,8 @@ export type RAGStatusEvent = {
   code?: HttpStatusCode
 }
 
-export interface RAGFileProcessStatusEvent extends RAGLocalFileProcess {
+export interface RAGFileProcessStatusEvent extends RAGLocalFileInfo {
+  status: RAGFileStatus
   msg?: string
   code?: HttpStatusCode
 }
