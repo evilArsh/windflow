@@ -9,7 +9,7 @@ import {
   useTextTransformer,
   useXlsxTransformer,
 } from "./transformer"
-import { isMaxTokensReached, addChunk, isMaxChunksReached } from "./utils"
+import { isMaxTokensReached, addChunk, isMaxFileChunksReached } from "./utils"
 
 export function useString() {
   const parts: string[] = []
@@ -47,7 +47,7 @@ export function useTextReader(config: RAGEmbeddingConfig) {
       }
     }
     for await (const line of transformer.next()) {
-      if (isMaxChunksReached(dst, config)) {
+      if (isMaxFileChunksReached(dst, config)) {
         transformer.done()
         break
       }

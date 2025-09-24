@@ -29,8 +29,8 @@ export function isMaxTokensReached(text: string, config: RAGEmbeddingConfig) {
 /**
  * 文本是否达到chunk长度限制
  */
-export function isMaxChunksReached(dst: RAGFile[], config: RAGEmbeddingConfig) {
-  return dst.length >= toNumber(config.maxChunks)
+export function isMaxFileChunksReached(dst: RAGFile[], config: RAGEmbeddingConfig) {
+  return dst.length >= toNumber(config.maxFileChunks)
 }
 /**
  * 向文件块中添加新的chunk

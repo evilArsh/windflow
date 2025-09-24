@@ -7,9 +7,10 @@ import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult }
 import { errorToText, merge, Response, responseCode, StatusResponse, uniqueId } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import log from "electron-log"
-import { createProcessStatus, ProcessStatus, TaskManager } from "./task"
+import { createProcessStatus, createTaskManager } from "./task"
 import { fileTypeFromFile } from "file-type"
 import path from "path"
+import { ProcessStatus, TaskManager } from "./task/types"
 
 export const RAGServiceId = "RAGService"
 export class RAGServiceImpl implements RAGService, ServiceCore {
@@ -23,13 +24,14 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       api: "",
     },
     dimensions: 1024,
-    maxChunks: 512,
+    maxInputs: 20,
+    maxFileChunks: 512,
     maxTokens: 512,
   }
   #db = useLanceDB()
   constructor(globalBus: EventBus) {
     this.#globalBus = globalBus
-    this.#task = new TaskManager(this.#ss, this.#globalBus)
+    this.#task = createTaskManager(this.#ss, this.#globalBus)
   }
   async updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
     this.#emConfig = merge({}, this.#emConfig, config)
@@ -44,7 +46,10 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   }
   async processLocalFile(meta: RAGLocalFileMeta): Promise<void> {
     try {
-      if (this.#ss.has(meta.id)) {
+      if (!meta.path) {
+        throw new Error("[processLocalFile] file path is empty")
+      }
+      if (this.#ss.has(meta.path)) {
         return log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
       }
       const ft = await fileTypeFromFile(meta.path)
@@ -55,15 +60,15 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!stat.isFile) {
         return log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
-      this.#task.process({
-        info: {
+      this.#task.process(
+        {
           ...meta,
           mimeType: ft?.mime || "application/octet-stream",
           fileName: path.basename(meta.path),
           fileSize: stat.size,
         },
-        config: this.#emConfig,
-      })
+        this.#emConfig
+      )
     } catch (error) {
       log.debug("[processLocalFile]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {

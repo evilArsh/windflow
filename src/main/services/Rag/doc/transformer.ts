@@ -4,7 +4,6 @@ import csv from "csv-parser"
 import log from "electron-log"
 import pdf from "pdf-parse"
 import mammoth from "mammoth"
-import { streamToAsyncIterator } from "./utils"
 import ExcelJS from "exceljs"
 
 export const Flags = {
@@ -103,7 +102,8 @@ export function useCsvTransformer(path: string): DataTransformer<string | symbol
       if (!stream) {
         stream = fs.createReadStream(path)
       }
-      for await (const line of streamToAsyncIterator(stream.pipe(csv()))) {
+      // for await (const line of streamToAsyncIterator(stream.pipe(csv()))) {
+      for await (const line of stream.pipe(csv())) {
         // { NAME: 'Daffy Duck', AGE: '24' }
         yield JSON.stringify(line)
       }

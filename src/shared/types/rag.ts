@@ -1,14 +1,23 @@
+import { Method } from "@toolmain/shared"
 export type RAGEmbeddingConfig = {
   // todo: maybe need a rag processor id, user choose different embedding model to handle data
   embedding: {
     providerName: string
     model: string
     api: string
+    /**
+     * @default post
+     */
+    method?: Method
   }
   rerank?: {
     providerName: string
     model: string
     api: string
+    /**
+     * @default post
+     */
+    method?: Method
   }
   /**
    * dimensions of the embedding vector
@@ -17,17 +26,22 @@ export type RAGEmbeddingConfig = {
    */
   dimensions?: number
   /**
-   * split text into chunks, the chunks of text must less than `maxChunks`
-   *
-   * @default 512
-   */
-  maxChunks?: number
-  /**
    * max tokens of each chunk
    *
    * @default 512
    */
   maxTokens?: number
+  /**
+   * max inputs length when using embedding
+   * @default 20
+   */
+  maxInputs?: number
+  /**
+   * split text into chunks, the chunks of text must less than `maxFileChunks`
+   *
+   * @default 512
+   */
+  maxFileChunks?: number
 }
 
 export type RAGFile = {
