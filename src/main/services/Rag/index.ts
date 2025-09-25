@@ -1,7 +1,7 @@
 import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/types/service"
-import { useLanceDB } from "./db"
+import { initDB, LanceStore } from "./db"
 import fs from "node:fs"
 import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "@shared/types/rag"
 import { errorToText, merge, Response, responseCode, StatusResponse, uniqueId } from "@toolmain/shared"
@@ -28,7 +28,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     maxFileChunks: 512,
     maxTokens: 512,
   }
-  #db = useLanceDB()
+  #db = new LanceStore()
   constructor(globalBus: EventBus) {
     this.#globalBus = globalBus
     this.#task = createTaskManager(this.#ss, this.#globalBus)
@@ -37,7 +37,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     this.#emConfig = merge({}, this.#emConfig, config)
     return responseCode(200, "ok")
   }
-  async search(content: RAGSearchParam): Promise<Response<RAGSearchResult | null>> {
+  async search(_content: RAGSearchParam): Promise<Response<RAGSearchResult | null>> {
     return {
       code: 200,
       msg: "",
@@ -83,19 +83,34 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       })
     }
   }
-  registerIpc() {
-    ipcMain.handle(IpcChannel.RagUpdateEmbedding, async (_, config: RAGEmbeddingConfig) => {
-      return this.updateEmbedding(config)
-    })
-    ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam) => {
-      return this.search(content)
-    })
-    ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta) => {
-      return this.processLocalFile(file)
-    })
+  async registerIpc() {
+    try {
+      ipcMain.handle(IpcChannel.RagUpdateEmbedding, async (_, config: RAGEmbeddingConfig) => {
+        return this.updateEmbedding(config)
+      })
+      ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam) => {
+        return this.search(content)
+      })
+      ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta) => {
+        return this.processLocalFile(file)
+      })
+      await initDB(this.#db)
+    } catch (error) {
+      log.error("[RagService registerIpc error]", error)
+      this.#globalBus.emit(EventKey.ServiceLog, {
+        id: uniqueId(),
+        service: RAGServiceId,
+        details: {
+          function: "registerIpc",
+        },
+        msg: errorToText(error),
+        code: 500,
+      })
+    }
   }
 
   dispose() {
     this.#db.close()
+    this.#task.close()
   }
 }

@@ -82,6 +82,11 @@ class TaskManagerImpl implements TaskManager {
     }
     this.#ss.updateStatus(task.info.path, status)
     this.#emitStatus(task.info.path)
+    if (this.#ss.getLastStatus(task.info.path)?.status === RAGFileStatus.Failed) {
+      log.debug(`[TaskManager] task ${task.info.path} is failed`)
+      this.#ss.remove(task.info.path)
+      return
+    }
     const nextChain = this.#getNextChain(task)
     if (!nextChain) {
       log.debug(`[TaskManager] task ${task.info.path} is done`)
@@ -108,6 +113,11 @@ class TaskManagerImpl implements TaskManager {
     })
     chain.process(taskInfo)
     this.#emitStatus(info.path)
+  }
+  close() {
+    this.#chainLists.forEach(chain => {
+      chain.close()
+    })
   }
 }
 

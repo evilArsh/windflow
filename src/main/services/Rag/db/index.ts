@@ -2,6 +2,9 @@ import { connect, Connection, CreateTableOptions, Data, HnswSqOptions, Index, Iv
 import { useEnv } from "@main/hooks/useEnv"
 import { merge } from "@toolmain/shared"
 
+export const TableName = {
+  RAGFile: "rag_file",
+}
 export type LanceQuery = {
   tableName: string
   queryVector: number[]
@@ -43,23 +46,23 @@ export type LanceCreateIndex = {
   ivfFlatConfig?: IvfFlatOptions
 }
 
-export function useLanceDB() {
-  const dbName = "lance.db"
-  const env = useEnv()
-  let client: Connection | undefined
+export class LanceStore {
+  #dbName = "lance.db"
+  #env = useEnv()
+  #client: Connection | undefined
 
-  function isOpen() {
-    return client?.isOpen() ?? false
+  isOpen() {
+    return this.#client?.isOpen() ?? false
   }
-  async function open() {
-    if (isOpen()) return
-    client = await connect(env.resolveDir(dbName))
+  async open() {
+    if (this.isOpen()) return
+    this.#client = await connect(this.#env.resolveDir(this.#dbName))
   }
-  async function query({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery) {
-    if (!client) {
+  async query({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery) {
+    if (!this.#client) {
       throw new Error("[query] LanceDB not initialized")
     }
-    const table = await client.openTable(tableName)
+    const table = await this.#client.openTable(tableName)
     let query = table.search(queryVector)
 
     const selectColumns = Array.from(columns)
@@ -70,19 +73,32 @@ export function useLanceDB() {
     const results = await query.toArray()
     return results
   }
-  async function createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
-    if (!client) {
+  async createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
+    if (!this.#client) {
       throw new Error("[query] LanceDB not initialized")
     }
-    return client.createTable(tableName, data, options)
+    return this.#client.createTable(tableName, data, options)
   }
-  async function listTables(): Promise<string[]> {
-    if (!client) {
+  async insert(tableName: string, data: Data) {
+    if (!this.#client) {
       throw new Error("[query] LanceDB not initialized")
     }
-    return await client.tableNames()
+    const table = await this.#client.openTable(tableName)
+    return table.add(data)
   }
-  async function createIndex({
+  async listTables(): Promise<string[]> {
+    if (!this.#client) {
+      throw new Error("[query] LanceDB not initialized")
+    }
+    return await this.#client.tableNames()
+  }
+  async hasTable(tableName: string): Promise<boolean> {
+    if (!this.#client) {
+      throw new Error("[query] LanceDB not initialized")
+    }
+    return (await this.listTables()).includes(tableName)
+  }
+  async createIndex({
     tableName,
     indexName,
     indexType = "hnswSq",
@@ -90,14 +106,14 @@ export function useLanceDB() {
     hnswSqConfig,
     ivfFlatConfig,
   }: LanceCreateIndex) {
-    if (!client) {
+    if (!this.#client) {
       throw new Error("[createIndex] LanceDB not initialized")
     }
-    const tables = await listTables()
+    const tables = await this.listTables()
     if (!tables.includes(tableName)) {
       throw new Error(`[createIndex] Table ${tableName} not found`)
     }
-    const table = await client.openTable(tableName)
+    const table = await this.#client.openTable(tableName)
     if (indexType == "hnswSq") {
       table.createIndex(indexName, {
         config: Index.hnswSq(
@@ -116,18 +132,16 @@ export function useLanceDB() {
       })
     }
   }
-  function close() {
-    if (!client) return
-    client.close()
-    client = undefined
+  close() {
+    if (!this.#client) return
+    this.#client.close()
+    this.#client = undefined
   }
-  return {
-    isOpen,
-    open,
-    close,
-    createTable,
-    query,
-    listTables,
-    createIndex,
-  }
+}
+
+export async function initDB(db: LanceStore) {
+  await db.open()
+  await db.createTable(TableName.RAGFile, [], {
+    existOk: true,
+  })
 }

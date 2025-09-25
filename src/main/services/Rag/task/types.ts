@@ -26,9 +26,11 @@ export interface ProcessStatus {
 export interface TaskChain {
   taskId(): string
   process(data: TaskInfo): Promise<void>
+  close: () => void
 }
 
 export interface TaskManager {
   next: (task: TaskInfo, status: TaskInfoStatus) => Promise<void>
   process: (info: RAGLocalFileInfo, config: RAGEmbeddingConfig) => Promise<void>
+  close: () => void
 }

@@ -43,4 +43,8 @@ export class FileProcess implements TaskChain {
       }
     })
   }
+  close() {
+    // FIXME: need add signal, when quene clear, also break the async task or stop async result from going on exec
+    this.#queue.clear()
+  }
 }
