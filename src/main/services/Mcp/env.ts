@@ -2,7 +2,7 @@ import { Response, StatusResponse, errorToText } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { execCommand, resolvePath } from "./exec"
 import log from "electron-log"
-export const useEnv = () => {
+export const mcpEnv = () => {
   async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
     const data: Response<ToolEnvTestResult> = {
       code: 200,

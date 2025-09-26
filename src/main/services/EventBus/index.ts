@@ -4,12 +4,12 @@ import { EventBus } from "@shared/service"
 import { BrowserWindow, ipcMain, IpcMainEvent } from "electron"
 import EventEmitter from "node:events"
 export class EventBusImpl implements ServiceCore, EventBus {
-  #mainWindow: BrowserWindow
+  #mainWindow: BrowserWindow | undefined
   #bus = new EventEmitter()
   #listener = (_: IpcMainEvent, data: CoreEvent) => {
     this.#bus.emit(data.type, data.data)
   }
-  constructor(mainWindow: BrowserWindow) {
+  constructor(mainWindow?: BrowserWindow) {
     this.#mainWindow = mainWindow
   }
   on<T extends EventKey>(event: T, callback: (data: EventMap[T]) => void) {
@@ -19,10 +19,14 @@ export class EventBusImpl implements ServiceCore, EventBus {
     this.#bus.off(event, callback)
   }
   emit<T extends EventKey>(event: T, data: EventMap[T]) {
-    this.#mainWindow.webContents.send(CoreEventKey, {
-      type: event,
-      data,
-    } as CoreEvent)
+    if (this.#mainWindow) {
+      this.#mainWindow.webContents.send(CoreEventKey, {
+        type: event,
+        data,
+      } as CoreEvent)
+    } else {
+      this.#bus.emit(event, data)
+    }
   }
   registerIpc() {
     ipcMain.on(CoreEventKey, this.#listener.bind(this))

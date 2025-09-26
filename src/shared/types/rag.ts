@@ -5,6 +5,7 @@ export type RAGEmbeddingConfig = {
     providerName: string
     model: string
     api: string
+    apiKey?: string
     /**
      * @default post
      */
@@ -14,6 +15,7 @@ export type RAGEmbeddingConfig = {
     providerName: string
     model: string
     api: string
+    apiKey?: string
     /**
      * @default post
      */
