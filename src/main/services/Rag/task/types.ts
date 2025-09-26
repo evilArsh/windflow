@@ -30,7 +30,24 @@ export interface TaskChain {
 }
 
 export interface TaskManager {
+  /**
+   * when current task chain completed, call next to process next task
+   */
   next: (task: TaskInfo, status: TaskInfoStatus) => Promise<void>
+  /**
+   * start to process task
+   */
   process: (info: RAGLocalFileInfo, config: RAGEmbeddingConfig) => Promise<void>
+  /**
+   * close all tasks
+   */
   close: () => void
+}
+
+export type EmbeddingResponse = {
+  data?: Array<{ embedding: number[] }>
+  model: string
+  usage?: {
+    total_tokens: number
+  }
 }

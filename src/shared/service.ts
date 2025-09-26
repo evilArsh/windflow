@@ -1,6 +1,6 @@
-import { Response, StatusResponse } from "@toolmain/shared"
-import { ToolEnvironment, ToolEnvTestResult } from "./env"
-import { EventKey, EventMap } from "./eventbus"
+import { Response } from "@toolmain/shared"
+import { ToolEnvironment, ToolEnvTestResult } from "./types/env"
+import { EventKey, EventMap } from "./types/eventbus"
 import {
   MCPCallToolResult,
   MCPListPromptsRequestParams,
@@ -13,9 +13,9 @@ import {
   MCPServerParam,
   MCPRequestParams,
   MCPServerParamCore,
-} from "./mcp"
-import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "./rag"
-import { Theme } from "./theme"
+} from "./types/mcp"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "./types/rag"
+import { Theme } from "./types/theme"
 
 export const IpcChannel = {
   McpStartServer: "mcp.startServer",
@@ -37,7 +37,6 @@ export const IpcChannel = {
 
   ThemeSetTheme: "theme.setTheme",
 
-  RagUpdateEmbedding: "rag.updateEmbedding",
   RagSearch: "rag.search",
   RagProcessLocalFile: "rag.processLocalFile",
 }
@@ -102,7 +101,6 @@ export interface ThemeService {
 }
 
 export interface RAGService {
-  updateEmbedding: (config: RAGEmbeddingConfig) => Promise<StatusResponse>
-  search: (content: RAGSearchParam) => Promise<Response<RAGSearchResult | null>>
-  processLocalFile: (file: RAGLocalFileMeta) => Promise<void>
+  search: (content: RAGSearchParam, config: RAGEmbeddingConfig) => Promise<Response<RAGFile[]>>
+  processLocalFile: (file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => Promise<void>
 }

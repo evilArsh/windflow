@@ -8,7 +8,7 @@ import log from "electron-log"
 import { HttpStatusCode, errorToText } from "@toolmain/shared"
 import { MCPClientContext } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
-import { EventBus } from "@shared/types/service"
+import { EventBus } from "@shared/service"
 import { EventKey } from "@shared/types/eventbus"
 
 export function createClient(name: string, version: string) {

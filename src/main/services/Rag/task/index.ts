@@ -1,6 +1,6 @@
 import { EventKey } from "@shared/types/eventbus"
 import { RAGLocalFileInfo, RAGFileStatus, RAGEmbeddingConfig } from "@shared/types/rag"
-import { EventBus } from "@shared/types/service"
+import { EventBus } from "@shared/service"
 import log from "electron-log"
 import { FileProcess } from "./file"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
@@ -10,7 +10,7 @@ import { cloneDeep } from "@toolmain/shared"
 function updateStatus(info: TaskInfo, status: TaskInfoStatus) {
   const index = info.status.findIndex(f => f.taskId === status.taskId)
   if (index < -1) {
-    info.status.push(status)
+    info.status.push(cloneDeep(status))
   } else {
     info.status[index] = cloneDeep(status)
   }
@@ -93,6 +93,11 @@ class TaskManagerImpl implements TaskManager {
       this.#ss.remove(task.info.path)
       return
     }
+    this.#ss.updateStatus(task.info.path, {
+      taskId: nextChain.taskId(),
+      status: RAGFileStatus.Processing,
+    })
+    this.#emitStatus(task.info.path)
     nextChain.process(task)
   }
   async process(info: RAGLocalFileInfo, config: RAGEmbeddingConfig) {
@@ -109,7 +114,7 @@ class TaskManagerImpl implements TaskManager {
     this.#ss.set(info.path, taskInfo)
     this.#ss.updateStatus(info.path, {
       taskId: chain.taskId(),
-      status: RAGFileStatus.Pending,
+      status: RAGFileStatus.Processing,
     })
     chain.process(taskInfo)
     this.#emitStatus(info.path)

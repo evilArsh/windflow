@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron"
-import { EventBus, IpcChannel } from "@shared/types/service"
+import { EventBus, IpcChannel } from "@shared/service"
 import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@shared/types/eventbus"
 import EventEmitter from "node:events"
 import log from "electron-log"

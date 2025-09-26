@@ -18,7 +18,7 @@ import {
   MCPServerParamCore,
 } from "@shared/types/mcp"
 import { errorToText, Response, responseData } from "@toolmain/shared"
-import { EventBus, IpcChannel, MCPService } from "@shared/types/service"
+import { EventBus, IpcChannel, MCPService } from "@shared/service"
 import { ipcMain } from "electron"
 import log from "electron-log"
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js"

@@ -58,7 +58,7 @@ export class LanceStore {
     if (this.isOpen()) return
     this.#client = await connect(this.#env.resolveDir(this.#dbName))
   }
-  async query({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery) {
+  async query<T>({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery): Promise<T> {
     if (!this.#client) {
       throw new Error("[query] LanceDB not initialized")
     }
@@ -71,7 +71,7 @@ export class LanceStore {
     }
     query = query.select(selectColumns).limit(topK)
     const results = await query.toArray()
-    return results
+    return results as T
   }
   async createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
     if (!this.#client) {

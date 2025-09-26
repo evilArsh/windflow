@@ -1,6 +1,6 @@
 import { useStore } from "@main/hooks/useStore"
 import { ServiceCore } from "@main/types"
-import { IpcChannel, ThemeService } from "@shared/types/service"
+import { IpcChannel, ThemeService } from "@shared/service"
 import { Theme } from "@shared/types/theme"
 import { BrowserWindow, ipcMain, nativeTheme } from "electron"
 

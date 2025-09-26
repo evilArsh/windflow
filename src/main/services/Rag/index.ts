@@ -1,50 +1,69 @@
 import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
-import { EventBus, IpcChannel, RAGService } from "@shared/types/service"
-import { initDB, LanceStore } from "./db"
+import { EventBus, IpcChannel, RAGService } from "@shared/service"
+import { initDB, LanceStore, TableName } from "./db"
 import fs from "node:fs"
-import { RAGEmbeddingConfig, RAGLocalFileMeta, RAGSearchParam, RAGSearchResult } from "@shared/types/rag"
-import { errorToText, merge, Response, responseCode, StatusResponse, uniqueId } from "@toolmain/shared"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
+import { errorToText, isArray, Response, responseData, uniqueId } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import log from "electron-log"
 import { createProcessStatus, createTaskManager } from "./task"
 import { fileTypeFromFile } from "file-type"
 import path from "path"
-import { ProcessStatus, TaskManager } from "./task/types"
+import { EmbeddingResponse, ProcessStatus, TaskManager } from "./task/types"
+import axios from "axios"
 
 export const RAGServiceId = "RAGService"
 export class RAGServiceImpl implements RAGService, ServiceCore {
   #globalBus: EventBus
   #ss: ProcessStatus = createProcessStatus()
   #task: TaskManager
-  #emConfig: RAGEmbeddingConfig = {
-    embedding: {
-      providerName: "",
-      model: "",
-      api: "",
-    },
-    dimensions: 1024,
-    maxInputs: 20,
-    maxFileChunks: 512,
-    maxTokens: 512,
-  }
   #db = new LanceStore()
   constructor(globalBus: EventBus) {
     this.#globalBus = globalBus
     this.#task = createTaskManager(this.#ss, this.#globalBus)
   }
-  async updateEmbedding(config: RAGEmbeddingConfig): Promise<StatusResponse> {
-    this.#emConfig = merge({}, this.#emConfig, config)
-    return responseCode(200, "ok")
-  }
-  async search(_content: RAGSearchParam): Promise<Response<RAGSearchResult | null>> {
-    return {
-      code: 200,
-      msg: "",
-      data: null,
+  async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
+    try {
+      const vectors = await axios.request<EmbeddingResponse>({
+        url: config.embedding.api,
+        method: config.embedding.method ?? "post",
+        data: {
+          model: config.embedding.model,
+          input: params.content,
+          dimensions: config.dimensions,
+        },
+      })
+      if (!isArray(vectors.data?.data)) {
+        throw new Error(`[rag search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
+      }
+      await this.#db.open()
+      const res = await this.#db.query<any[]>({
+        tableName: TableName.RAGFile,
+        queryVector: vectors.data.data[0].embedding,
+        topK: 5,
+      })
+      return {
+        code: 200,
+        msg: "ok",
+        data: res,
+      }
+    } catch (error) {
+      log.error("[embedding search error]", error)
+      this.#globalBus.emit(EventKey.ServiceLog, {
+        id: uniqueId(),
+        service: RAGServiceId,
+        details: {
+          function: "search",
+          args: params,
+        },
+        msg: errorToText(error),
+        code: 500,
+      })
+      return responseData(500, errorToText(error), [])
     }
   }
-  async processLocalFile(meta: RAGLocalFileMeta): Promise<void> {
+  async processLocalFile(meta: RAGLocalFileMeta, config: RAGEmbeddingConfig): Promise<void> {
     try {
       if (!meta.path) {
         throw new Error("[processLocalFile] file path is empty")
@@ -67,7 +86,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
           fileName: path.basename(meta.path),
           fileSize: stat.size,
         },
-        this.#emConfig
+        config
       )
     } catch (error) {
       log.debug("[processLocalFile]", errorToText(error))
@@ -85,14 +104,11 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   }
   async registerIpc() {
     try {
-      ipcMain.handle(IpcChannel.RagUpdateEmbedding, async (_, config: RAGEmbeddingConfig) => {
-        return this.updateEmbedding(config)
+      ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
+        return this.search(content, config)
       })
-      ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam) => {
-        return this.search(content)
-      })
-      ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta) => {
-        return this.processLocalFile(file)
+      ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
+        return this.processLocalFile(file, config)
       })
       await initDB(this.#db)
     } catch (error) {

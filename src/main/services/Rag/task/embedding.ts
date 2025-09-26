@@ -1,18 +1,11 @@
 import { RAGFile, RAGFileStatus } from "@shared/types/rag"
 import PQueue from "p-queue"
-import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
+import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import log from "electron-log"
 import axios, { AxiosResponse } from "axios"
 import { errorToText, isArray, toNumber } from "@toolmain/shared"
 import { LanceStore, TableName } from "../db"
 
-type EmbeddingResponse = {
-  data?: Array<{ embedding: number[] }>
-  model: string
-  usage?: {
-    total_tokens: number
-  }
-}
 const requestWithChunks = async <T>(
   chunks: RAGFile[],
   request: () => Promise<T>

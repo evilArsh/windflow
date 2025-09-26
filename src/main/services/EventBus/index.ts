@@ -1,6 +1,6 @@
 import { ServiceCore } from "@main/types"
 import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@shared/types/eventbus"
-import { EventBus } from "@shared/types/service"
+import { EventBus } from "@shared/service"
 import { BrowserWindow, ipcMain, IpcMainEvent } from "electron"
 import EventEmitter from "node:events"
 export class EventBusImpl implements ServiceCore, EventBus {

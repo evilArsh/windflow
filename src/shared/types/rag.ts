@@ -1,6 +1,6 @@
 import { Method } from "@toolmain/shared"
 export type RAGEmbeddingConfig = {
-  // todo: maybe need a rag processor id, user choose different embedding model to handle data
+  id: string
   embedding: {
     providerName: string
     model: string
@@ -76,7 +76,6 @@ export type RAGSearchResult = {
 }
 
 export enum RAGFileStatus {
-  Pending = "Pending",
   Processing = "Processing",
   Success = "Success",
   Failed = "Failed",
@@ -98,7 +97,6 @@ export interface RAGLocalFileMeta {
 }
 
 export interface RAGLocalFileInfo extends RAGLocalFileMeta {
-  // status: RAGFileStatus
   fileName: string
   fileSize: number
   mimeType: string
