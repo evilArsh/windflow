@@ -3,11 +3,16 @@ import path from "node:path"
 import { RAGServiceImpl } from ".."
 import { uniqueId } from "@toolmain/shared"
 import { EventBusImpl } from "@main/services/EventBus"
+import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
 
 describe("main/src/Rag", () => {
   const bus = new EventBusImpl()
   const rag = new RAGServiceImpl(bus)
   it("test handle file", async () => {
+    let res: RAGFileProcessStatusEvent | undefined = undefined
+    bus.on(EventKey.RAGFileProcessStatus, data => {
+      res = data
+    })
     await rag.processLocalFile(
       {
         id: uniqueId(),
