@@ -1,4 +1,4 @@
-import "./modules/lance"
+import "./modules/elog"
 if (import.meta.hot) {
   import.meta.hot.accept(() => {
     // console.log("[accept]")

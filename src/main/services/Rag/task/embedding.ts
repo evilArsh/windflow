@@ -1,11 +1,13 @@
 import { RAGFile, RAGFileStatus } from "@shared/types/rag"
 import PQueue from "p-queue"
 import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
-import log from "electron-log"
 import axios, { AxiosResponse } from "axios"
 import { errorToText, isArray, toNumber } from "@toolmain/shared"
 import { LanceStore, TableName } from "../db"
+import { useLog } from "@main/hooks/useLog"
+import { RAGServiceId } from ".."
 
+const log = useLog(RAGServiceId)
 const requestWithChunks = async <T>(
   chunks: RAGFile[],
   request: () => Promise<T>
@@ -46,9 +48,14 @@ export class Embedding implements TaskChain {
           )
         }
         const asyncReqs: Array<Promise<{ chunks: RAGFile[]; response: Awaited<AxiosResponse<EmbeddingResponse>> }>> = []
+        log.debug(`[embedding process] start process chunk, info: `, info)
         for (let i = 0; i < info.data.length; i += maxinput) {
           const chunk = info.data.slice(i, i + maxinput)
           const inputContent = chunk.map(item => item.content)
+          log.debug(
+            `[embedding process] splitting chunks, total: ${info.data.length}, chunk: ${i}-${i + maxinput}`,
+            info.config
+          )
           asyncReqs.push(
             requestWithChunks(chunk, async () =>
               axios.request({
@@ -65,6 +72,7 @@ export class Embedding implements TaskChain {
         }
         const responses = await Promise.allSettled(asyncReqs)
         responses.forEach(res => {
+          log.debug(`[embedding process] response: `, res)
           if (res.status === "fulfilled") {
             const { chunks, response } = res.value
             const data = response.data?.data
@@ -91,6 +99,7 @@ export class Embedding implements TaskChain {
           }
         })
         await this.#db.open()
+        log.debug(`[embedding process] insert data to database`, info.data)
         this.#db.insert(TableName.RAGFile, info.data)
       } catch (error) {
         log.error("[embedding process error]", errorToText(error))

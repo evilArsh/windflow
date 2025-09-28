@@ -1,6 +1,7 @@
 import { connect, Connection, CreateTableOptions, Data, HnswSqOptions, Index, IvfFlatOptions } from "@lancedb/lancedb"
 import { useEnv } from "@main/hooks/useEnv"
 import { merge } from "@toolmain/shared"
+import path from "node:path"
 
 export const TableName = {
   RAGFile: "rag_file",
@@ -11,7 +12,12 @@ export type LanceQuery = {
   topK?: number
   columns?: string[]
 }
-
+export type LanceStoreConfig = {
+  /**
+   * if not set, use the default path of the app
+   */
+  rootDir?: string
+}
 export type LanceCreateIndex = {
   tableName: string
   /**
@@ -50,13 +56,20 @@ export class LanceStore {
   #dbName = "lance.db"
   #env = useEnv()
   #client: Connection | undefined
+  #config?: LanceStoreConfig
 
   isOpen() {
     return this.#client?.isOpen() ?? false
   }
+  constructor(config?: LanceStoreConfig) {
+    this.#client = undefined
+    this.#config = config
+  }
   async open() {
     if (this.isOpen()) return
-    this.#client = await connect(this.#env.resolveDir(this.#dbName))
+    this.#client = await connect(
+      this.#config?.rootDir ? path.resolve(this.#config.rootDir, this.#dbName) : this.#env.resolveDir(this.#dbName)
+    )
   }
   async query<T>({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery): Promise<T> {
     if (!this.#client) {

@@ -3,7 +3,6 @@ import { isUndefined, toNumber, uniqueId } from "@toolmain/shared"
 import { Tiktoken } from "js-tiktoken/lite"
 import cl100k_base from "js-tiktoken/ranks/cl100k_base"
 import { Readable } from "node:stream"
-
 /**
 https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 

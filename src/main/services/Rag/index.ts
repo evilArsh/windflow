@@ -1,27 +1,33 @@
 import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/service"
-import { initDB, LanceStore, TableName } from "./db"
+import { initDB, LanceStore, LanceStoreConfig, TableName } from "./db"
 import fs from "node:fs"
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
 import { errorToText, isArray, Response, responseData, uniqueId } from "@toolmain/shared"
 import { ipcMain } from "electron"
-import log from "electron-log"
 import { createProcessStatus, createTaskManager } from "./task"
-import { fileTypeFromFile } from "file-type"
 import path from "path"
 import { EmbeddingResponse, ProcessStatus, TaskManager } from "./task/types"
 import axios from "axios"
+import { useLog } from "@main/hooks/useLog"
 
 export const RAGServiceId = "RAGService"
+
+const log = useLog(RAGServiceId)
+
+export type RAGServiceConfig = {
+  store?: LanceStoreConfig
+}
 export class RAGServiceImpl implements RAGService, ServiceCore {
   #globalBus: EventBus
   #ss: ProcessStatus = createProcessStatus()
   #task: TaskManager
-  #db = new LanceStore()
-  constructor(globalBus: EventBus) {
+  #db: LanceStore
+  constructor(globalBus: EventBus, config?: RAGServiceConfig) {
     this.#globalBus = globalBus
     this.#task = createTaskManager(this.#ss, this.#globalBus)
+    this.#db = new LanceStore(config?.store)
   }
   async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
     try {
@@ -71,23 +77,17 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (this.#ss.has(meta.path)) {
         return log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
       }
-      const ft = await fileTypeFromFile(meta.path)
-      if (fs.existsSync(meta.path)) {
-        return log.error(`[processLocalFile] path ${meta.path} not exists`)
-      }
       const stat = fs.statSync(meta.path)
       if (!stat.isFile) {
         return log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
-      this.#task.process(
-        {
-          ...meta,
-          mimeType: ft?.mime || "application/octet-stream",
-          fileName: path.basename(meta.path),
-          fileSize: stat.size,
-        },
-        config
-      )
+      const metaInfo: RAGLocalFileInfo = {
+        ...meta,
+        fileName: path.basename(meta.path),
+        fileSize: stat.size,
+      }
+      log.debug("[processLocalFile] start ", metaInfo)
+      this.#task.process(metaInfo, config)
     } catch (error) {
       log.debug("[processLocalFile]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {

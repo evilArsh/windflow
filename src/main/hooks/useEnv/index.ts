@@ -4,10 +4,22 @@ import fs from "node:fs"
 
 export function useEnv() {
   const rootDirName = ".windflow"
-  function getRootDir() {
-    return path.resolve(app.getPath("userData"), rootDirName)
+  let rootPath = path.resolve(app.getPath("userData"), rootDirName)
+  /**
+   * @param create if not exists, create it
+   */
+  function setRootDir(dir: string, create?: boolean) {
+    rootPath = dir
+    if (create && !fs.existsSync(rootPath)) {
+      fs.mkdirSync(rootPath, { recursive: true })
+    }
   }
-
+  function getRootDir() {
+    return rootPath
+  }
+  /**
+   * concatenate `dir` after current root directory
+   */
   function resolveDir(dir: string) {
     return path.resolve(getRootDir(), dir)
   }
@@ -20,6 +32,7 @@ export function useEnv() {
   return {
     init,
 
+    setRootDir,
     getRootDir,
     resolveDir,
   }

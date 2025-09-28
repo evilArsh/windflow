@@ -1,6 +1,10 @@
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
 import mime from "mime-types"
 import { isSymbol, Response, responseData } from "@toolmain/shared"
+import { fileTypeFromFile } from "file-type"
+import { detectXml } from "@file-type/xml"
+import path from "path"
+
 import {
   DataTransformer,
   useCsvTransformer,
@@ -10,7 +14,17 @@ import {
   useXlsxTransformer,
 } from "./transformer"
 import { isMaxTokensReached, addChunk, isMaxFileChunksReached } from "./utils"
-
+import { useLog } from "@main/hooks/useLog"
+import { RAGServiceId } from ".."
+const log = useLog(RAGServiceId)
+export function detectFileTypeByExtension(filePath: string) {
+  const ext = path.extname(filePath).toLowerCase()
+  const textExtensions = [".txt", ".md"]
+  if (textExtensions.includes(ext)) {
+    return { ext: "txt", mime: "text/plain" }
+  }
+  return null
+}
 export function useString() {
   const parts: string[] = []
   let len = 0
@@ -47,6 +61,7 @@ export function useTextReader(config: RAGEmbeddingConfig) {
       }
     }
     for await (const line of transformer.next()) {
+      log.debug("[useTextReader readline]", line)
       if (isMaxFileChunksReached(dst, config)) {
         transformer.done()
         break
@@ -56,6 +71,9 @@ export function useTextReader(config: RAGEmbeddingConfig) {
       } else {
         pushLine("")
         transformer.done()
+        if (!isMaxTokensReached(str.toString(), config) && !isMaxFileChunksReached(dst, config)) {
+          addChunk(dst, str.toString(), meta)
+        }
         break
       }
     }
@@ -67,33 +85,43 @@ export function useTextReader(config: RAGEmbeddingConfig) {
 }
 
 export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
+  const ft = await fileTypeFromFile(data.path, { customDetectors: [detectXml] })
+  if (ft) {
+    data.mimeType = ft.mime
+  } else {
+    data.mimeType = mime.lookup(data.path) || "application/octet-stream"
+  }
   const ext = mime.extension(data.mimeType) || "bin"
   const reader = useTextReader(config)
   let transformer: DataTransformer<string | symbol> | null = null
+  log.debug(`[start readFile] ext: ${ext}, mimeType: ${data.mimeType}, path: ${data.path}`)
   try {
+    let resp: Response<RAGFile[]>
     if (ext === "pdf") {
       transformer = usePdfTransformer(data.path)
       const res = await reader.read(data, usePdfTransformer(data.path))
-      return responseData(200, "ok", res)
+      resp = responseData(200, "ok", res)
     } else if (ext === "csv") {
       transformer = useCsvTransformer(data.path)
       const res = await reader.read(data, useCsvTransformer(data.path))
-      return responseData(200, "ok", res)
+      resp = responseData(200, "ok", res)
     } else if (/docx?/.test(ext)) {
       transformer = useDocxTransformer(data.path)
       const res = await reader.read(data, useDocxTransformer(data.path))
-      return responseData(200, "ok", res)
+      resp = responseData(200, "ok", res)
     } else if (/xlsx?/.test(ext)) {
       transformer = useXlsxTransformer(data.path)
       const res = await reader.read(data, useXlsxTransformer(data.path))
-      return responseData(200, "ok", res)
+      resp = responseData(200, "ok", res)
     } else if (data.mimeType.startsWith("text/") || ["md", "js", "xml"].includes(ext)) {
       transformer = useTextTransformer(data.path)
       const res = await reader.read(data, useTextTransformer(data.path))
-      return responseData(200, "ok", res)
+      resp = responseData(200, "ok", res)
     } else {
-      return responseData(500, `file type ${data.mimeType} not supported`, [])
+      resp = responseData(500, `file type ${data.mimeType} not supported`, [])
     }
+    log.debug(`[read file finish]`, resp)
+    return resp
   } finally {
     transformer?.done()
   }

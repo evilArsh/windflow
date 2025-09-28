@@ -2,7 +2,7 @@ import readline from "node:readline"
 import fs from "node:fs"
 import csv from "csv-parser"
 import log from "electron-log"
-import pdf from "pdf-parse"
+import pdf from "pdf-parse/lib/pdf-parse.js"
 import mammoth from "mammoth"
 import ExcelJS from "exceljs"
 

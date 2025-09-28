@@ -1,15 +1,17 @@
 import { EventKey } from "@shared/types/eventbus"
 import { RAGLocalFileInfo, RAGFileStatus, RAGEmbeddingConfig } from "@shared/types/rag"
 import { EventBus } from "@shared/service"
-import log from "electron-log"
 import { FileProcess } from "./file"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
 import { Embedding } from "./embedding"
-import { cloneDeep } from "@toolmain/shared"
+import { cloneDeep, errorToText } from "@toolmain/shared"
+import { useLog } from "@main/hooks/useLog"
+import { RAGServiceId } from ".."
 
+const log = useLog(RAGServiceId)
 function updateStatus(info: TaskInfo, status: TaskInfoStatus) {
   const index = info.status.findIndex(f => f.taskId === status.taskId)
-  if (index < -1) {
+  if (index < 0) {
     info.status.push(cloneDeep(status))
   } else {
     info.status[index] = cloneDeep(status)
@@ -77,28 +79,40 @@ class TaskManagerImpl implements TaskManager {
     return this.#chainLists[current + 1]
   }
   async next(task: TaskInfo, status: TaskInfoStatus) {
-    if (!this.#ss.has(task.info.path)) {
-      throw new Error(`[TaskManager] task ${task.info.path} not exists`)
-    }
-    this.#ss.updateStatus(task.info.path, status)
-    this.#emitStatus(task.info.path)
-    if (this.#ss.getLastStatus(task.info.path)?.status === RAGFileStatus.Failed) {
-      log.debug(`[TaskManager] task ${task.info.path} is failed`)
+    try {
+      if (!this.#ss.has(task.info.path)) {
+        throw new Error(`[TaskManager] task ${task.info.path} not exists`)
+      }
+      log.debug(`[TaskManager] next task: `, task)
+      this.#ss.updateStatus(task.info.path, status)
+      this.#emitStatus(task.info.path)
+      if (this.#ss.getLastStatus(task.info.path)?.status === RAGFileStatus.Failed) {
+        log.debug(`[TaskManager] task ${task.info.path} is failed`)
+        this.#ss.updateStatus(task.info.path, { taskId: "", status: RAGFileStatus.Finish })
+        this.#emitStatus(task.info.path)
+        this.#ss.remove(task.info.path)
+        return
+      }
+      const nextChain = this.#getNextChain(task)
+      if (!nextChain) {
+        log.debug(`[TaskManager] task ${task.info.path} is done`)
+        this.#ss.updateStatus(task.info.path, { taskId: "", status: RAGFileStatus.Finish })
+        this.#emitStatus(task.info.path)
+        this.#ss.remove(task.info.path)
+        return
+      }
+      this.#ss.updateStatus(task.info.path, {
+        taskId: nextChain.taskId(),
+        status: RAGFileStatus.Processing,
+      })
+      this.#emitStatus(task.info.path)
+      nextChain.process(task)
+    } catch (error) {
+      log.error("[file process] error", errorToText(error))
+      this.#ss.updateStatus(task.info.path, { taskId: "", status: RAGFileStatus.Finish })
+      this.#emitStatus(task.info.path)
       this.#ss.remove(task.info.path)
-      return
     }
-    const nextChain = this.#getNextChain(task)
-    if (!nextChain) {
-      log.debug(`[TaskManager] task ${task.info.path} is done`)
-      this.#ss.remove(task.info.path)
-      return
-    }
-    this.#ss.updateStatus(task.info.path, {
-      taskId: nextChain.taskId(),
-      status: RAGFileStatus.Processing,
-    })
-    this.#emitStatus(task.info.path)
-    nextChain.process(task)
   }
   async process(info: RAGLocalFileInfo, config: RAGEmbeddingConfig) {
     const taskInfo: TaskInfo = {
@@ -116,8 +130,9 @@ class TaskManagerImpl implements TaskManager {
       taskId: chain.taskId(),
       status: RAGFileStatus.Processing,
     })
-    chain.process(taskInfo)
     this.#emitStatus(info.path)
+    log.debug("[process start]", taskInfo)
+    chain.process(taskInfo)
   }
   close() {
     this.#chainLists.forEach(chain => {

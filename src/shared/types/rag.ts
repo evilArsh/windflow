@@ -60,7 +60,7 @@ export type RAGFile = {
   content: string
   fileName: string
   fileSize: number
-  mimeType: string
+  mimeType?: string
   chunkIndex: number
 }
 
@@ -81,6 +81,10 @@ export enum RAGFileStatus {
   Processing = "Processing",
   Success = "Success",
   Failed = "Failed",
+  /**
+   * indicate the whole tasks are finished
+   */
+  Finish = "Finish",
 }
 
 export interface RAGLocalFileMeta {
@@ -101,5 +105,5 @@ export interface RAGLocalFileMeta {
 export interface RAGLocalFileInfo extends RAGLocalFileMeta {
   fileName: string
   fileSize: number
-  mimeType: string
+  mimeType?: string
 }
