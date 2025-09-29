@@ -8,9 +8,12 @@ import { errorToText, isArray, Response, responseData, uniqueId } from "@toolmai
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
 import path from "path"
-import { EmbeddingResponse, ProcessStatus, TaskManager } from "./task/types"
+import { EmbeddingResponse, ProcessStatus, TaskChain, TaskManager } from "./task/types"
 import axios from "axios"
 import { useLog } from "@main/hooks/useLog"
+import { Embedding } from "./task/embedding"
+import { FileProcess } from "./task/file"
+import { Store } from "./task/store"
 
 export const RAGServiceId = "RAGService"
 
@@ -24,16 +27,49 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   #ss: ProcessStatus = createProcessStatus()
   #task: TaskManager
   #db: LanceStore
+  #fileTask: TaskChain
+  #embeddingTask: TaskChain
+  #dbTask: TaskChain
   constructor(globalBus: EventBus, config?: RAGServiceConfig) {
     this.#globalBus = globalBus
+
     this.#task = createTaskManager(this.#ss, this.#globalBus)
     this.#db = new LanceStore(config?.store)
+
+    this.#fileTask = new FileProcess(this.#task)
+    this.#embeddingTask = new Embedding(this.#task)
+    this.#dbTask = new Store(this.#task, this.#db)
+
+    this.#task.addTaskChain(this.#fileTask)
+    this.#task.addTaskChain(this.#embeddingTask)
+    this.#task.addTaskChain(this.#dbTask)
+
+    this.#init()
+  }
+  async #init() {
+    try {
+      await initDB(this.#db)
+    } catch (error) {
+      log.error("[init]", error)
+      this.#globalBus.emit(EventKey.ServiceLog, {
+        id: uniqueId(),
+        service: RAGServiceId,
+        details: {
+          function: "#init",
+        },
+        msg: errorToText(error),
+        code: 500,
+      })
+    }
   }
   async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
     try {
       const vectors = await axios.request<EmbeddingResponse>({
         url: config.embedding.api,
         method: config.embedding.method ?? "post",
+        headers: {
+          Authorization: `Bearer ${config.embedding.apiKey}`,
+        },
         data: {
           model: config.embedding.model,
           input: params.content,
@@ -102,7 +138,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       })
     }
   }
-  async registerIpc() {
+  registerIpc() {
     try {
       ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
         return this.search(content, config)
@@ -110,7 +146,6 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
         return this.processLocalFile(file, config)
       })
-      await initDB(this.#db)
     } catch (error) {
       log.error("[RagService registerIpc error]", error)
       this.#globalBus.emit(EventKey.ServiceLog, {

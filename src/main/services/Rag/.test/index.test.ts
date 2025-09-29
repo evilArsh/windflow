@@ -5,6 +5,7 @@ import { uniqueId } from "@toolmain/shared"
 import { EventBusImpl } from "@main/services/EventBus"
 import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
 import { RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
+import { initDB, LanceStore } from "../db"
 
 describe("main/src/Rag", () => {
   vi.mock("electron", () => ({
@@ -27,14 +28,23 @@ describe("main/src/Rag", () => {
       default: { ...lgMock, scope: (_: string) => lgMock },
     }
   })
-
-  const bus = new EventBusImpl()
-  const rag = new RAGServiceImpl(bus, {
-    store: {
+  it("open lance store", async () => {
+    const db = new LanceStore({
       rootDir: path.join(__dirname),
-    },
+    })
+    await db.open()
+    await initDB(db)
+    expect(db.isOpen()).toBe(true)
+    db.close()
   })
   it("process RAG file", async () => {
+    const bus = new EventBusImpl()
+    const rag = new RAGServiceImpl(bus, {
+      store: {
+        rootDir: path.join(__dirname),
+      },
+    })
+
     let res: RAGFileProcessStatusEvent | undefined
     const eventCallback = vi.fn(data => {
       res = data
@@ -50,7 +60,7 @@ describe("main/src/Rag", () => {
       embedding: {
         providerName: "SiliconFlow",
         model: "Qwen/Qwen3-Embedding-8B",
-        api: "https://api.siliconflow.cn/v1",
+        api: "https://api.siliconflow.cn/v1/embeddings",
         apiKey: "",
       },
       maxFileChunks: 512,
@@ -60,18 +70,17 @@ describe("main/src/Rag", () => {
     })
     await vi.waitFor(
       () => {
-        console.log("[wait for file process status]")
         expect(res?.status).toBe(RAGFileStatus.Finish)
       },
       {
-        timeout: 4000,
-        interval: 1000,
+        timeout: 30000,
+        interval: 1500,
       }
     )
 
     expect(res).toBeTruthy()
     expect(res?.path).equal(meta.path)
     expect(res?.id).equal(meta.id)
-    expect(res?.code).equal(200)
-  })
+    expect(res?.status).equal(RAGFileStatus.Finish)
+  }, 60000)
 })

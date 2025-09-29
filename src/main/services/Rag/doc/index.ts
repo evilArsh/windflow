@@ -1,6 +1,6 @@
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
 import mime from "mime-types"
-import { isSymbol, Response, responseData } from "@toolmain/shared"
+import { isString, isSymbol, Response, responseData } from "@toolmain/shared"
 import { fileTypeFromFile } from "file-type"
 import { detectXml } from "@file-type/xml"
 import path from "path"
@@ -42,7 +42,13 @@ export function useString() {
   function length() {
     return len
   }
-  return { append, toString, length, clear }
+  function popLast() {
+    const latest = parts.pop()
+    if (isString(latest)) {
+      len -= latest.length
+    }
+  }
+  return { append, toString, length, clear, popLast }
 }
 
 export function useTextReader(config: RAGEmbeddingConfig) {
@@ -56,12 +62,13 @@ export function useTextReader(config: RAGEmbeddingConfig) {
       }
       str.append(line)
       if (isMaxTokensReached(str.toString(), config)) {
+        str.popLast()
+        addChunk(dst, str.toString(), meta)
         str.clear()
         str.append(line)
       }
     }
     for await (const line of transformer.next()) {
-      log.debug("[useTextReader readline]", line)
       if (isMaxFileChunksReached(dst, config)) {
         transformer.done()
         break
@@ -120,7 +127,6 @@ export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfi
     } else {
       resp = responseData(500, `file type ${data.mimeType} not supported`, [])
     }
-    log.debug(`[read file finish]`, resp)
     return resp
   } finally {
     transformer?.done()

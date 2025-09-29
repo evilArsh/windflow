@@ -3,7 +3,6 @@ import PQueue from "p-queue"
 import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import axios, { AxiosResponse } from "axios"
 import { errorToText, isArray, toNumber } from "@toolmain/shared"
-import { LanceStore, TableName } from "../db"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
 
@@ -18,18 +17,15 @@ const requestWithChunks = async <T>(
 export class Embedding implements TaskChain {
   #manager: TaskManager
   #queue: PQueue
-  #db: LanceStore
   constructor(manager: TaskManager) {
     this.#manager = manager
     this.#queue = new PQueue({ concurrency: 5 })
-    this.#db = new LanceStore()
   }
   taskId() {
-    return "task-embedding"
+    return "task_embedding"
   }
   close() {
     this.#queue.clear()
-    this.#db.close()
   }
   async process(info: TaskInfo) {
     this.#queue.add(async () => {
@@ -44,23 +40,34 @@ export class Embedding implements TaskChain {
         const maxinput = toNumber(info.config.maxInputs)
         if (!maxinput || !info.data.length) {
           throw new Error(
-            `[embedding process] inputs is invalid, max-inputs: ${maxinput}, data-length: ${info.data.length}`
+            `[embedding process] inputs is invalid, max_inputs: ${maxinput}, data_length: ${info.data.length}`
           )
         }
         const asyncReqs: Array<Promise<{ chunks: RAGFile[]; response: Awaited<AxiosResponse<EmbeddingResponse>> }>> = []
-        log.debug(`[embedding process] start process chunk, info: `, info)
+        log.debug(
+          `[embedding process] start process chunk, data_length: ${info.data.length}, info: `,
+          info.info,
+          info.config
+        )
         for (let i = 0; i < info.data.length; i += maxinput) {
           const chunk = info.data.slice(i, i + maxinput)
           const inputContent = chunk.map(item => item.content)
           log.debug(
-            `[embedding process] splitting chunks, total: ${info.data.length}, chunk: ${i}-${i + maxinput}`,
-            info.config
+            `[embedding process] splitting chunks, total_chunks: ${info.data.length}, current_chunk: ${i}-${i + maxinput}, content_length: ${inputContent.length}`
           )
+          inputContent.forEach((content, index) => {
+            log.debug(
+              `[embedding process] chunk content index: ${index}, length: ${content.length}, tokens: ${chunk[index].tokens}`
+            )
+          })
           asyncReqs.push(
             requestWithChunks(chunk, async () =>
               axios.request({
                 url: info.config.embedding.api,
                 method: info.config.embedding.method ?? "post",
+                headers: {
+                  Authorization: `Bearer ${info.config.embedding.apiKey}`,
+                },
                 data: {
                   model: info.config.embedding.model,
                   input: inputContent,
@@ -72,16 +79,16 @@ export class Embedding implements TaskChain {
         }
         const responses = await Promise.allSettled(asyncReqs)
         responses.forEach(res => {
-          log.debug(`[embedding process] response: `, res)
           if (res.status === "fulfilled") {
             const { chunks, response } = res.value
+            log.debug(`[embedding process] response: `, response.data, response.status, response.statusText)
             const data = response.data?.data
             const model = response.data?.model
             if (isArray(data)) {
-              log.debug(`[embedding response] data-length: ${data.length} model: ${model}`)
+              log.debug(`[embedding response] data_length: ${data.length} model: ${model}`)
               if (chunks.length !== data.length) {
                 throw new Error(
-                  `[embedding response] length of chunks doesn't match the length of returned data. ids-length: ${chunks.length} data-length: ${data.length}`
+                  `[embedding response] length of chunks doesn't match the length of returned data. ids_length: ${chunks.length} data_length: ${data.length}`
                 )
               }
               data.forEach((vector, index) => {
@@ -89,7 +96,7 @@ export class Embedding implements TaskChain {
               })
               log.debug(
                 `[embedding response]`,
-                `file: ${info.info.path}, total size: ${info.data.length}, chunk size: ${chunks.length}`
+                `file: ${info.info.path}\n total size: ${info.data.length}, chunk size: ${chunks.length}`
               )
             } else {
               log.error(`[embedding response format error]`, res.value)
@@ -98,9 +105,8 @@ export class Embedding implements TaskChain {
             log.error(`[embedding response error] ${errorToText(res.reason)}`)
           }
         })
-        await this.#db.open()
-        log.debug(`[embedding process] insert data to database`, info.data)
-        this.#db.insert(TableName.RAGFile, info.data)
+        statusResp.code = 200
+        statusResp.msg = "ok"
       } catch (error) {
         log.error("[embedding process error]", errorToText(error))
         statusResp.status = RAGFileStatus.Failed

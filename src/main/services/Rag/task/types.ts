@@ -30,6 +30,7 @@ export interface TaskChain {
 }
 
 export interface TaskManager {
+  addTaskChain(taskChain: TaskChain): void
   /**
    * when current task chain completed, call next to process next task
    */

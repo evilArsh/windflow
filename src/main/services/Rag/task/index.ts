@@ -1,9 +1,7 @@
 import { EventKey } from "@shared/types/eventbus"
 import { RAGLocalFileInfo, RAGFileStatus, RAGEmbeddingConfig } from "@shared/types/rag"
 import { EventBus } from "@shared/service"
-import { FileProcess } from "./file"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
-import { Embedding } from "./embedding"
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
@@ -58,7 +56,7 @@ class TaskManagerImpl implements TaskManager {
   constructor(ss: ProcessStatus, globalBus: EventBus) {
     this.#ss = ss
     this.#globalBus = globalBus
-    this.#chainLists = [new FileProcess(this), new Embedding(this)]
+    this.#chainLists = []
   }
   #emitStatus(filePath: string) {
     const s = this.#ss.get(filePath)
@@ -78,12 +76,15 @@ class TaskManagerImpl implements TaskManager {
     if (current + 1 >= this.#chainLists.length) return
     return this.#chainLists[current + 1]
   }
+  addTaskChain(taskChain: TaskChain): void {
+    this.#chainLists.push(taskChain)
+  }
   async next(task: TaskInfo, status: TaskInfoStatus) {
     try {
       if (!this.#ss.has(task.info.path)) {
         throw new Error(`[TaskManager] task ${task.info.path} not exists`)
       }
-      log.debug(`[TaskManager] next task: `, task)
+      log.debug(`[TaskManager] current task end: `, status)
       this.#ss.updateStatus(task.info.path, status)
       this.#emitStatus(task.info.path)
       if (this.#ss.getLastStatus(task.info.path)?.status === RAGFileStatus.Failed) {
@@ -106,6 +107,7 @@ class TaskManagerImpl implements TaskManager {
         status: RAGFileStatus.Processing,
       })
       this.#emitStatus(task.info.path)
+      log.debug(`[TaskManager] next task start,${nextChain.taskId()}, info: `, task.info, task.config)
       nextChain.process(task)
     } catch (error) {
       log.error("[file process] error", errorToText(error))

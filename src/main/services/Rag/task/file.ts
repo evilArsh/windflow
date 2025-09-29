@@ -14,7 +14,7 @@ export class FileProcess implements TaskChain {
     this.#queue = new PQueue({ concurrency: 5 })
   }
   taskId() {
-    return "task-fileProcess"
+    return "task_fileProcess"
   }
   async process(info: TaskInfo) {
     this.#queue.add(async () => {
@@ -42,7 +42,6 @@ export class FileProcess implements TaskChain {
         statusResp.msg = errorToText(error)
         statusResp.code = 500
       } finally {
-        log.debug("[file process] go to next task", statusResp)
         this.#manager.next(info, statusResp)
       }
     })

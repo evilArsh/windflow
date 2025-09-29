@@ -1,7 +1,20 @@
-import { connect, Connection, CreateTableOptions, Data, HnswSqOptions, Index, IvfFlatOptions } from "@lancedb/lancedb"
+import {
+  connect,
+  Connection,
+  CreateTableOptions,
+  Data,
+  HnswSqOptions,
+  Index,
+  IvfFlatOptions,
+  SchemaLike,
+} from "@lancedb/lancedb"
 import { useEnv } from "@main/hooks/useEnv"
-import { merge } from "@toolmain/shared"
+import { merge, uniqueId } from "@toolmain/shared"
 import path from "node:path"
+import * as arrow from "apache-arrow"
+import { RAGFile } from "@shared/types/rag"
+
+export const MaxDimensions = 4096
 
 export const TableName = {
   RAGFile: "rag_file",
@@ -53,7 +66,7 @@ export type LanceCreateIndex = {
 }
 
 export class LanceStore {
-  #dbName = "lance.db"
+  #dbName = "lance"
   #env = useEnv()
   #client: Connection | undefined
   #config?: LanceStoreConfig
@@ -66,10 +79,14 @@ export class LanceStore {
     this.#config = config
   }
   async open() {
-    if (this.isOpen()) return
-    this.#client = await connect(
-      this.#config?.rootDir ? path.resolve(this.#config.rootDir, this.#dbName) : this.#env.resolveDir(this.#dbName)
-    )
+    try {
+      if (this.isOpen()) return
+      this.#client = await connect(
+        this.#config?.rootDir ? path.resolve(this.#config.rootDir, this.#dbName) : this.#env.resolveDir(this.#dbName)
+      )
+    } catch (error) {
+      console.error("[store open error]", error)
+    }
   }
   async query<T>({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery): Promise<T> {
     if (!this.#client) {
@@ -91,6 +108,12 @@ export class LanceStore {
       throw new Error("[query] LanceDB not initialized")
     }
     return this.#client.createTable(tableName, data, options)
+  }
+  async createEmptyTable(tableName: string, schema: SchemaLike, options?: Partial<CreateTableOptions>) {
+    if (!this.#client) {
+      throw new Error("[query] LanceDB not initialized")
+    }
+    return this.#client.createEmptyTable(tableName, schema, options)
   }
   async insert(tableName: string, data: Data) {
     if (!this.#client) {
@@ -128,19 +151,33 @@ export class LanceStore {
     }
     const table = await this.#client.openTable(tableName)
     if (indexType == "hnswSq") {
-      table.createIndex(indexName, {
+      return table.createIndex(indexName, {
         config: Index.hnswSq(
-          merge({}, hnswSqConfig, {
-            distanceType,
-          })
+          merge(
+            {
+              numPartitions: 128,
+              numSubVectors: 16,
+            },
+            hnswSqConfig,
+            {
+              distanceType,
+            }
+          )
         ),
       })
     } else {
-      table.createIndex(indexName, {
+      return table.createIndex(indexName, {
         config: Index.ivfFlat(
-          merge({}, ivfFlatConfig, {
-            distanceType,
-          })
+          merge(
+            {
+              numPartitions: 128,
+              numSubVectors: 16,
+            },
+            ivfFlatConfig,
+            {
+              distanceType,
+            }
+          )
         ),
       })
     }
@@ -154,7 +191,31 @@ export class LanceStore {
 
 export async function initDB(db: LanceStore) {
   await db.open()
-  await db.createTable(TableName.RAGFile, [], {
-    existOk: true,
-  })
+  if (!db.hasTable(TableName.RAGFile)) {
+    await db.createEmptyTable(
+      TableName.RAGFile,
+      new arrow.Schema([
+        new arrow.Field("id", new arrow.Utf8(), false),
+        new arrow.Field(
+          "vector",
+          new arrow.FixedSizeList(MaxDimensions, new arrow.Field("item", new arrow.Float32(), false)),
+          false
+        ),
+        new arrow.Field("fileId", new arrow.Utf8(), false),
+        new arrow.Field("topicId", new arrow.Utf8(), true),
+        new arrow.Field("content", new arrow.Utf8(), false),
+        new arrow.Field("fileName", new arrow.Utf8(), false),
+        new arrow.Field("fileSize", new arrow.Uint32(), false),
+        new arrow.Field("mimeType", new arrow.Utf8(), true),
+        new arrow.Field("chunkIndex", new arrow.Int32(), false),
+        new arrow.Field("tokens", new arrow.Uint32(), true),
+      ]),
+      { existOk: true, mode: "create" }
+    )
+  }
+  // await db.createIndex({
+  //   tableName: TableName.RAGFile,
+  //   indexName: "vector",
+  //   indexType: "ivfFlat",
+  // })
 }

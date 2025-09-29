@@ -62,6 +62,10 @@ export type RAGFile = {
   fileSize: number
   mimeType?: string
   chunkIndex: number
+  /**
+   * tokens was calcalated for this string content
+   */
+  tokens?: number
 }
 
 export type RAGSearchParam = {
