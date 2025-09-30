@@ -1,7 +1,7 @@
 import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/service"
-import { initDB, LanceStore, LanceStoreConfig, TableName } from "./db"
+import { VectorStore, VectorStoreConfig } from "./db"
 import fs from "node:fs"
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
 import { errorToText, isArray, Response, responseData, uniqueId } from "@toolmain/shared"
@@ -14,19 +14,20 @@ import { useLog } from "@main/hooks/useLog"
 import { Embedding } from "./task/embedding"
 import { FileProcess } from "./task/file"
 import { Store } from "./task/store"
+import { combineTableName } from "./db/utils"
 
 export const RAGServiceId = "RAGService"
 
 const log = useLog(RAGServiceId)
 
 export type RAGServiceConfig = {
-  store?: LanceStoreConfig
+  store?: VectorStoreConfig
 }
 export class RAGServiceImpl implements RAGService, ServiceCore {
   #globalBus: EventBus
   #ss: ProcessStatus = createProcessStatus()
   #task: TaskManager
-  #db: LanceStore
+  #db: VectorStore
   #fileTask: TaskChain
   #embeddingTask: TaskChain
   #dbTask: TaskChain
@@ -34,7 +35,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     this.#globalBus = globalBus
 
     this.#task = createTaskManager(this.#ss, this.#globalBus)
-    this.#db = new LanceStore(config?.store)
+    this.#db = new VectorStore(config?.store)
 
     this.#fileTask = new FileProcess(this.#task)
     this.#embeddingTask = new Embedding(this.#task)
@@ -43,24 +44,6 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     this.#task.addTaskChain(this.#fileTask)
     this.#task.addTaskChain(this.#embeddingTask)
     this.#task.addTaskChain(this.#dbTask)
-
-    this.#init()
-  }
-  async #init() {
-    try {
-      await initDB(this.#db)
-    } catch (error) {
-      log.error("[init]", error)
-      this.#globalBus.emit(EventKey.ServiceLog, {
-        id: uniqueId(),
-        service: RAGServiceId,
-        details: {
-          function: "#init",
-        },
-        msg: errorToText(error),
-        code: 500,
-      })
-    }
   }
   async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
     try {
@@ -80,8 +63,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         throw new Error(`[rag search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
       }
       await this.#db.open()
-      const res = await this.#db.query<any[]>({
-        tableName: TableName.RAGFile,
+      const res = await this.#db.query({
+        tableName: combineTableName(params.topicId),
+        topicId: params.topicId,
         queryVector: vectors.data.data[0].embedding,
         topK: 5,
       })
@@ -138,7 +122,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       })
     }
   }
-  registerIpc() {
+  async registerIpc() {
     try {
       ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
         return this.search(content, config)

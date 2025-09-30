@@ -34,12 +34,14 @@ export function isMaxFileChunksReached(dst: RAGFile[], config: RAGEmbeddingConfi
 /**
  * 向文件块中添加新的chunk
  */
-export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileInfo) {
+export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileInfo, config: RAGEmbeddingConfig) {
   if (!content) return
   dst.push({
     id: uniqueId(),
     vector: [],
     fileId: meta.id,
+    configId: config.id,
+    topicId: meta.topicId,
     content,
     fileName: meta.fileName,
     fileSize: meta.fileSize,

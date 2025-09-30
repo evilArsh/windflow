@@ -2,17 +2,18 @@ import { RAGFileStatus } from "@shared/types/rag"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { errorToText } from "@toolmain/shared"
-import { LanceStore, TableName } from "../db"
+import { VectorStore } from "../db"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
+import { combineTableName, createTableSchema } from "../db/utils"
 
 const log = useLog(RAGServiceId)
 
 export class Store implements TaskChain {
   #manager: TaskManager
   #queue: PQueue
-  #db: LanceStore
-  constructor(manager: TaskManager, db: LanceStore) {
+  #db: VectorStore
+  constructor(manager: TaskManager, db: VectorStore) {
     this.#manager = manager
     this.#queue = new PQueue({ concurrency: 5 })
     this.#db = db
@@ -40,8 +41,16 @@ export class Store implements TaskChain {
           `[store process] will insert data to database, original-length: ${info.data.length}, avaliable_length: ${avaliableData.length}`
         )
         if (avaliableData.length) {
-          const res = await this.#db.insert(TableName.RAGFile, avaliableData)
-          log.debug(`[store process] insert data to database, result: `, res)
+          const tableName = combineTableName(info.info.topicId)
+          if (!(await this.#db.hasTable(tableName))) {
+            const schema = createTableSchema(info.config.dimensions)
+            await this.#db.createEmptyTable(tableName, schema)
+            const res = await this.#db.insert(tableName, avaliableData)
+            log.debug(`[store process] insert data to database, result: `, res)
+          } else {
+            const res = await this.#db.upsert(tableName, avaliableData)
+            log.debug(`[store process] upsert data to database, result: `, res)
+          }
         }
         statusResp.code = 200
         statusResp.msg = "ok"

@@ -57,13 +57,13 @@ export function useTextReader(config: RAGEmbeddingConfig) {
   async function read(meta: RAGLocalFileInfo, transformer: DataTransformer) {
     const pushLine = (line: string) => {
       if (isMaxTokensReached(str.toString(), config)) {
-        addChunk(dst, str.toString(), meta)
+        addChunk(dst, str.toString(), meta, config)
         str.clear()
       }
       str.append(line)
       if (isMaxTokensReached(str.toString(), config)) {
         str.popLast()
-        addChunk(dst, str.toString(), meta)
+        addChunk(dst, str.toString(), meta, config)
         str.clear()
         str.append(line)
       }
@@ -79,7 +79,7 @@ export function useTextReader(config: RAGEmbeddingConfig) {
         pushLine("")
         transformer.done()
         if (!isMaxTokensReached(str.toString(), config) && !isMaxFileChunksReached(dst, config)) {
-          addChunk(dst, str.toString(), meta)
+          addChunk(dst, str.toString(), meta, config)
         }
         break
       }

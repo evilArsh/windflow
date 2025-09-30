@@ -4,8 +4,9 @@ import { RAGServiceImpl } from ".."
 import { uniqueId } from "@toolmain/shared"
 import { EventBusImpl } from "@main/services/EventBus"
 import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
-import { RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
-import { initDB, LanceStore } from "../db"
+import { RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
+import { VectorStore } from "../db"
+import { combineTableName, createTableSchema } from "../db/utils"
 
 describe("main/src/Rag", () => {
   vi.mock("electron", () => ({
@@ -28,13 +29,38 @@ describe("main/src/Rag", () => {
       default: { ...lgMock, scope: (_: string) => lgMock },
     }
   })
-  it("open lance store", async () => {
-    const db = new LanceStore({
+  it("inserrt vector data", async () => {
+    const db = new VectorStore({
       rootDir: path.join(__dirname),
     })
     await db.open()
-    await initDB(db)
-    expect(db.isOpen()).toBe(true)
+    const topicId = "test_topic"
+    const tableName = combineTableName(topicId)
+    if (!(await db.hasTable(tableName))) {
+      await db.createEmptyTable(tableName, createTableSchema(128))
+    }
+    await db.clearTable(tableName)
+    const data: RAGFile[] = []
+    for (let i = 0; i < 128; i++) {
+      data.push({
+        id: `test_id: ${i}`,
+        topicId: topicId,
+        fileId: `file_id: ${i}`,
+        fileName: `file_name: ${i}`,
+        fileSize: i,
+        chunkIndex: i,
+        content: `content: ${i}`,
+        vector: new Array(i + 1).fill(i),
+        configId: "do_not_need_config_id",
+      })
+    }
+    await db.upsert(tableName, data)
+
+    await db.createIndex({
+      tableName: tableName,
+      indexName: "vector",
+      indexType: "ivfFlat",
+    })
     db.close()
   })
   it("process RAG file", async () => {
@@ -44,19 +70,22 @@ describe("main/src/Rag", () => {
         rootDir: path.join(__dirname),
       },
     })
-
     let res: RAGFileProcessStatusEvent | undefined
     const eventCallback = vi.fn(data => {
       res = data
     })
     bus.on(EventKey.RAGFileProcessStatus, eventCallback)
 
+    const topicId = "test_topic"
+
     const meta: RAGLocalFileMeta = {
       id: uniqueId(),
       path: path.join(__dirname, "test.md"),
+      topicId: topicId,
     }
     await rag.processLocalFile(meta, {
       id: "embedding-1",
+      name: "test",
       embedding: {
         providerName: "SiliconFlow",
         model: "Qwen/Qwen3-Embedding-8B",

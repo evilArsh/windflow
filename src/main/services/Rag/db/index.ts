@@ -3,35 +3,31 @@ import {
   Connection,
   CreateTableOptions,
   Data,
+  DeleteResult,
   HnswSqOptions,
   Index,
   IvfFlatOptions,
   SchemaLike,
 } from "@lancedb/lancedb"
 import { useEnv } from "@main/hooks/useEnv"
-import { merge, uniqueId } from "@toolmain/shared"
-import path from "node:path"
-import * as arrow from "apache-arrow"
 import { RAGFile } from "@shared/types/rag"
+import { merge } from "@toolmain/shared"
+import path from "node:path"
 
-export const MaxDimensions = 4096
-
-export const TableName = {
-  RAGFile: "rag_file",
-}
-export type LanceQuery = {
+export type VectorQuery = {
   tableName: string
+  topicId: string
   queryVector: number[]
   topK?: number
   columns?: string[]
 }
-export type LanceStoreConfig = {
+export type VectorStoreConfig = {
   /**
    * if not set, use the default path of the app
    */
   rootDir?: string
 }
-export type LanceCreateIndex = {
+export type VectorCreateIndex = {
   tableName: string
   /**
    * the table's  column name
@@ -65,16 +61,16 @@ export type LanceCreateIndex = {
   ivfFlatConfig?: IvfFlatOptions
 }
 
-export class LanceStore {
-  #dbName = "lance"
+export class VectorStore {
+  #dbName = "vector"
   #env = useEnv()
   #client: Connection | undefined
-  #config?: LanceStoreConfig
+  #config?: VectorStoreConfig
 
   isOpen() {
     return this.#client?.isOpen() ?? false
   }
-  constructor(config?: LanceStoreConfig) {
+  constructor(config?: VectorStoreConfig) {
     this.#client = undefined
     this.#config = config
   }
@@ -88,62 +84,76 @@ export class LanceStore {
       console.error("[store open error]", error)
     }
   }
-  async query<T>({ tableName, queryVector, topK = 5, columns = [] }: LanceQuery): Promise<T> {
+  async query({ tableName, queryVector, topicId, topK = 5, columns = [] }: VectorQuery): Promise<RAGFile[]> {
     if (!this.#client) {
-      throw new Error("[query] LanceDB not initialized")
+      throw new Error("[query] VectorDB not initialized")
     }
     const table = await this.#client.openTable(tableName)
     let query = table.search(queryVector)
-
     const selectColumns = Array.from(columns)
-    if (!selectColumns.includes("id")) {
+    if (!selectColumns.length || !selectColumns.includes("id")) {
       selectColumns.push("id")
+      query = query.select(selectColumns)
     }
-    query = query.select(selectColumns).limit(topK)
-    const results = await query.toArray()
-    return results as T
+    query = query.where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`).limit(topK)
+    const results = (await query.toArray()) as RAGFile[]
+    return results
   }
   async createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
     if (!this.#client) {
-      throw new Error("[query] LanceDB not initialized")
+      throw new Error("[query] VectorDB not initialized")
     }
     return this.#client.createTable(tableName, data, options)
   }
   async createEmptyTable(tableName: string, schema: SchemaLike, options?: Partial<CreateTableOptions>) {
     if (!this.#client) {
-      throw new Error("[query] LanceDB not initialized")
+      throw new Error("[query] VectorDB not initialized")
     }
     return this.#client.createEmptyTable(tableName, schema, options)
   }
   async insert(tableName: string, data: Data) {
     if (!this.#client) {
-      throw new Error("[query] LanceDB not initialized")
+      throw new Error("[query] VectorDB not initialized")
     }
     const table = await this.#client.openTable(tableName)
     return table.add(data)
   }
+  async upsert(tableName: string, data: Data) {
+    if (!this.#client) {
+      throw new Error("[query] VectorDB not initialized")
+    }
+    const table = await this.#client.openTable(tableName)
+    return table.mergeInsert("id").whenMatchedUpdateAll().whenNotMatchedInsertAll().execute(data)
+  }
   async listTables(): Promise<string[]> {
     if (!this.#client) {
-      throw new Error("[query] LanceDB not initialized")
+      throw new Error("[query] VectorDB not initialized")
     }
     return await this.#client.tableNames()
   }
   async hasTable(tableName: string): Promise<boolean> {
     if (!this.#client) {
-      throw new Error("[query] LanceDB not initialized")
+      throw new Error("[query] VectorDB not initialized")
     }
     return (await this.listTables()).includes(tableName)
+  }
+  async clearTable(tableName: string): Promise<DeleteResult> {
+    if (!this.#client) {
+      throw new Error("[query] VectorDB not initialized")
+    }
+    const table = await this.#client.openTable(tableName)
+    return await table.delete("1 = 1")
   }
   async createIndex({
     tableName,
     indexName,
-    indexType = "hnswSq",
+    indexType = "ivfFlat",
     distanceType = "cosine",
     hnswSqConfig,
     ivfFlatConfig,
-  }: LanceCreateIndex) {
+  }: VectorCreateIndex) {
     if (!this.#client) {
-      throw new Error("[createIndex] LanceDB not initialized")
+      throw new Error("[createIndex] VectorDB not initialized")
     }
     const tables = await this.listTables()
     if (!tables.includes(tableName)) {
@@ -187,35 +197,4 @@ export class LanceStore {
     this.#client.close()
     this.#client = undefined
   }
-}
-
-export async function initDB(db: LanceStore) {
-  await db.open()
-  if (!db.hasTable(TableName.RAGFile)) {
-    await db.createEmptyTable(
-      TableName.RAGFile,
-      new arrow.Schema([
-        new arrow.Field("id", new arrow.Utf8(), false),
-        new arrow.Field(
-          "vector",
-          new arrow.FixedSizeList(MaxDimensions, new arrow.Field("item", new arrow.Float32(), false)),
-          false
-        ),
-        new arrow.Field("fileId", new arrow.Utf8(), false),
-        new arrow.Field("topicId", new arrow.Utf8(), true),
-        new arrow.Field("content", new arrow.Utf8(), false),
-        new arrow.Field("fileName", new arrow.Utf8(), false),
-        new arrow.Field("fileSize", new arrow.Uint32(), false),
-        new arrow.Field("mimeType", new arrow.Utf8(), true),
-        new arrow.Field("chunkIndex", new arrow.Int32(), false),
-        new arrow.Field("tokens", new arrow.Uint32(), true),
-      ]),
-      { existOk: true, mode: "create" }
-    )
-  }
-  // await db.createIndex({
-  //   tableName: TableName.RAGFile,
-  //   indexName: "vector",
-  //   indexType: "ivfFlat",
-  // })
 }
