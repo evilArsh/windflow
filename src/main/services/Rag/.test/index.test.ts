@@ -29,19 +29,24 @@ describe("main/src/Rag", () => {
       default: { ...lgMock, scope: (_: string) => lgMock },
     }
   })
-  it("inserrt vector data", async () => {
+  it("clear table data", async () => {
     const db = new VectorStore({
       rootDir: path.join(__dirname),
     })
     await db.open()
-    const topicId = "test_topic"
+    const topicId = "test_topic_clear_table"
     const tableName = combineTableName(topicId)
-    if (!(await db.hasTable(tableName))) {
-      await db.createEmptyTable(tableName, createTableSchema(128))
+
+    const DataRows = 256
+
+    if (await db.hasTable(tableName)) {
+      await db.deleteTable(tableName)
     }
-    await db.clearTable(tableName)
+
+    await db.createEmptyTable(tableName, createTableSchema(128))
+
     const data: RAGFile[] = []
-    for (let i = 0; i < 128; i++) {
+    for (let i = 0; i < DataRows; i++) {
       data.push({
         id: `test_id: ${i}`,
         topicId: topicId,
@@ -50,17 +55,69 @@ describe("main/src/Rag", () => {
         fileSize: i,
         chunkIndex: i,
         content: `content: ${i}`,
-        vector: new Array(i + 1).fill(i),
+        vector: Array.from({ length: 128 }, () => Math.random()),
+        configId: "do_not_need_config_id",
+      })
+    }
+    await db.insert(tableName, data)
+
+    const res = await db.clearTable(tableName)
+    expect(res).toBe(DataRows)
+
+    db.close()
+  })
+  it("insert vector data", async () => {
+    const db = new VectorStore({
+      rootDir: path.join(__dirname),
+    })
+    await db.open()
+    const topicId = "test_insert_data_topic"
+    const tableName = combineTableName(topicId)
+    if (!(await db.hasTable(tableName))) {
+      await db.createEmptyTable(tableName, createTableSchema(128))
+    }
+    const DataRows = 256
+
+    await db.clearTable(tableName)
+    expect(await db.countRows(tableName)).equal(0)
+
+    const data: RAGFile[] = []
+    for (let i = 0; i < DataRows; i++) {
+      data.push({
+        id: `test_id: ${i}`,
+        topicId: topicId,
+        fileId: `file_id: ${i}`,
+        fileName: `file_name: ${i}`,
+        fileSize: i,
+        chunkIndex: i,
+        content: `content: ${i}`,
+        vector: Array.from({ length: 128 }, () => Math.random()),
+        configId: "do_not_need_config_id",
+      })
+    }
+    await db.insert(tableName, data)
+
+    expect(await db.countRows(tableName)).equal(DataRows)
+
+    data.length = 0
+
+    for (let i = 0; i < DataRows; i++) {
+      data.push({
+        id: `test_id: ${i}`,
+        topicId: topicId,
+        fileId: `file_id: ${i}`,
+        fileName: `file_name: ${i}`,
+        fileSize: i,
+        chunkIndex: i,
+        content: `content: ${i}`,
+        vector: Array.from({ length: 128 }, () => Math.random()),
         configId: "do_not_need_config_id",
       })
     }
     await db.upsert(tableName, data)
 
-    await db.createIndex({
-      tableName: tableName,
-      indexName: "vector",
-      indexType: "ivfFlat",
-    })
+    expect(await db.countRows(tableName)).equal(DataRows)
+
     db.close()
   })
   it("process RAG file", async () => {
@@ -76,7 +133,7 @@ describe("main/src/Rag", () => {
     })
     bus.on(EventKey.RAGFileProcessStatus, eventCallback)
 
-    const topicId = "test_topic"
+    const topicId = "test_topic_rag"
 
     const meta: RAGLocalFileMeta = {
       id: uniqueId(),

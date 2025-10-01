@@ -3,10 +3,10 @@ import {
   Connection,
   CreateTableOptions,
   Data,
-  DeleteResult,
   HnswSqOptions,
   Index,
   IvfFlatOptions,
+  IvfPqOptions,
   SchemaLike,
 } from "@lancedb/lancedb"
 import { useEnv } from "@main/hooks/useEnv"
@@ -50,15 +50,15 @@ export type VectorCreateIndex = {
    *
    * * `hnswSq` 索引 (分层可导航小世界与标量量化)
    *
-   * @default hnswSq
    */
-  indexType?: "hnswSq" | "ivfFlat"
+  indexType: "hnswSq" | "ivfFlat" | "ivfPq"
   /**
    * @default cosine
    */
   distanceType?: "l2" | "cosine" | "dot"
   hnswSqConfig?: HnswSqOptions
   ivfFlatConfig?: IvfFlatOptions
+  ivfPqConfig?: IvfPqOptions
 }
 
 export class VectorStore {
@@ -137,20 +137,36 @@ export class VectorStore {
     }
     return (await this.listTables()).includes(tableName)
   }
-  async clearTable(tableName: string): Promise<DeleteResult> {
+  async countRows(tableName: string): Promise<number> {
     if (!this.#client) {
       throw new Error("[query] VectorDB not initialized")
     }
     const table = await this.#client.openTable(tableName)
-    return await table.delete("1 = 1")
+    return table.countRows()
+  }
+  async clearTable(tableName: string): Promise<number> {
+    if (!this.#client) {
+      throw new Error("[query] VectorDB not initialized")
+    }
+    const table = await this.#client.openTable(tableName)
+    const rows = await table.countRows()
+    await table.delete("true")
+    return rows - (await table.countRows())
+  }
+  async deleteTable(tableName: string): Promise<void> {
+    if (!this.#client) {
+      throw new Error("[query] VectorDB not initialized")
+    }
+    return this.#client.dropTable(tableName)
   }
   async createIndex({
     tableName,
     indexName,
-    indexType = "ivfFlat",
+    indexType,
     distanceType = "cosine",
     hnswSqConfig,
     ivfFlatConfig,
+    ivfPqConfig,
   }: VectorCreateIndex) {
     if (!this.#client) {
       throw new Error("[createIndex] VectorDB not initialized")
@@ -175,13 +191,27 @@ export class VectorStore {
           )
         ),
       })
+    } else if (indexType == "ivfPq") {
+      return table.createIndex(indexName, {
+        config: Index.ivfPq(
+          merge(
+            {
+              numPartitions: 128,
+              numSubVectors: 16,
+            },
+            ivfPqConfig,
+            {
+              distanceType,
+            }
+          )
+        ),
+      })
     } else {
       return table.createIndex(indexName, {
         config: Index.ivfFlat(
           merge(
             {
               numPartitions: 128,
-              numSubVectors: 16,
             },
             ivfFlatConfig,
             {
