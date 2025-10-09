@@ -6,8 +6,8 @@ ignoredBuiltDependencies:
   - vue-demi
 
 onlyBuiltDependencies:
-  - "@parcel/watcher"
+  - '@parcel/watcher'
   - electron
   - electron-winstaller
+  - msw
   - protobufjs
-

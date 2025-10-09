@@ -88,6 +88,10 @@ export type RAGFile = {
    * tokens was calcalated for this string content
    */
   tokens?: number
+  /**
+   * distance between query vector and this record's vector, returned by vector store
+   */
+  _distance?: number
 }
 
 export type RAGSearchParam = {

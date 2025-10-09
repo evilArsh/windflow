@@ -52,3 +52,10 @@ export type EmbeddingResponse = {
     total_tokens: number
   }
 }
+export type RerankResponse = {
+  id: string
+  results: Array<{
+    index: number
+    relevance_score: number
+  }>
+}

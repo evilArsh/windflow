@@ -4,7 +4,7 @@ import { RAGServiceImpl } from ".."
 import { uniqueId } from "@toolmain/shared"
 import { EventBusImpl } from "@main/services/EventBus"
 import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
-import { RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
 import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"
 
@@ -29,6 +29,22 @@ describe("main/src/Rag", () => {
       default: { ...lgMock, scope: (_: string) => lgMock },
     }
   })
+
+  const config: RAGEmbeddingConfig = {
+    id: "embedding-1",
+    name: "test",
+    embedding: {
+      providerName: "SiliconFlow",
+      model: "Qwen/Qwen3-Embedding-8B",
+      api: "https://api.siliconflow.cn/v1/embeddings",
+      apiKey: "",
+    },
+    maxFileChunks: 512,
+    maxInputs: 20,
+    maxTokens: 512,
+    dimensions: 1024,
+  }
+
   it("clear table data", async () => {
     const db = new VectorStore({
       rootDir: path.join(__dirname),
@@ -62,7 +78,9 @@ describe("main/src/Rag", () => {
     await db.insert(tableName, data)
 
     const res = await db.clearTable(tableName)
+    const count = await db.countRows(tableName)
     expect(res).toBe(DataRows)
+    expect(count).equal(0)
 
     db.close()
   })
@@ -137,23 +155,11 @@ describe("main/src/Rag", () => {
 
     const meta: RAGLocalFileMeta = {
       id: uniqueId(),
-      path: path.join(__dirname, "test.md"),
+      path: path.join(__dirname, "work.xlsx"),
       topicId: topicId,
     }
-    await rag.processLocalFile(meta, {
-      id: "embedding-1",
-      name: "test",
-      embedding: {
-        providerName: "SiliconFlow",
-        model: "Qwen/Qwen3-Embedding-8B",
-        api: "https://api.siliconflow.cn/v1/embeddings",
-        apiKey: "",
-      },
-      maxFileChunks: 512,
-      maxInputs: 20,
-      maxTokens: 512,
-      dimensions: 1024,
-    })
+
+    await rag.processLocalFile(meta, config)
     await vi.waitFor(
       () => {
         expect(res?.status).toBe(RAGFileStatus.Finish)
@@ -163,10 +169,30 @@ describe("main/src/Rag", () => {
         interval: 1500,
       }
     )
-
     expect(res).toBeTruthy()
     expect(res?.path).equal(meta.path)
     expect(res?.id).equal(meta.id)
     expect(res?.status).equal(RAGFileStatus.Finish)
   }, 60000)
+
+  it("search RAG file", async () => {
+    const topicId = "test_topic_rag"
+    const bus = new EventBusImpl()
+    const rag = new RAGServiceImpl(bus, {
+      store: {
+        rootDir: path.join(__dirname),
+      },
+    })
+
+    const sRes = await rag.search(
+      {
+        content: "js闭包是什么",
+        topicId: topicId,
+      },
+      config
+    )
+    console.log(sRes)
+    expect(sRes.data.length).gt(0)
+    expect(sRes.code).equal(200)
+  }, 20000)
 })

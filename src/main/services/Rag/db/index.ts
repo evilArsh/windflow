@@ -8,6 +8,7 @@ import {
   IvfFlatOptions,
   IvfPqOptions,
   SchemaLike,
+  VectorQuery as LanceVectorQuery,
 } from "@lancedb/lancedb"
 import { useEnv } from "@main/hooks/useEnv"
 import { RAGFile } from "@shared/types/rag"
@@ -19,7 +20,7 @@ export type VectorQuery = {
   topicId: string
   queryVector: number[]
   topK?: number
-  columns?: string[]
+  // columns?: string[]
 }
 export type VectorStoreConfig = {
   /**
@@ -84,18 +85,29 @@ export class VectorStore {
       console.error("[store open error]", error)
     }
   }
-  async query({ tableName, queryVector, topicId, topK = 5, columns = [] }: VectorQuery): Promise<RAGFile[]> {
+  async query({ tableName, queryVector, topicId, topK = 5 }: VectorQuery): Promise<RAGFile[]> {
     if (!this.#client) {
       throw new Error("[query] VectorDB not initialized")
     }
     const table = await this.#client.openTable(tableName)
-    let query = table.search(queryVector)
-    const selectColumns = Array.from(columns)
-    if (!selectColumns.length || !selectColumns.includes("id")) {
-      selectColumns.push("id")
-      query = query.select(selectColumns)
-    }
-    query = query.where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`).limit(topK)
+    const query = (table.search(queryVector, "vector") as LanceVectorQuery)
+      .distanceType("cosine")
+      .select([
+        "_distance",
+        "id",
+        // "vector",
+        "fileId",
+        "configId",
+        "topicId",
+        "content",
+        "fileName",
+        "fileSize",
+        "chunkIndex",
+        "mimeType",
+        "tokens",
+      ])
+      .where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`)
+      .limit(topK)
     const results = (await query.toArray()) as RAGFile[]
     return results
   }
@@ -158,6 +170,14 @@ export class VectorStore {
       throw new Error("[query] VectorDB not initialized")
     }
     return this.#client.dropTable(tableName)
+  }
+  async hasIndex(tableName: string, indexName: string): Promise<boolean> {
+    if (!this.#client) {
+      throw new Error("[query] VectorDB not initialized")
+    }
+    const table = await this.#client.openTable(tableName)
+    const indices = await table.listIndices()
+    return !!indices.find(index => index.name === indexName)
   }
   async createIndex({
     tableName,

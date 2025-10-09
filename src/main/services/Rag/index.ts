@@ -4,11 +4,11 @@ import { EventBus, IpcChannel, RAGService } from "@shared/service"
 import { VectorStore, VectorStoreConfig } from "./db"
 import fs from "node:fs"
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
-import { errorToText, isArray, Response, responseData, uniqueId } from "@toolmain/shared"
+import { errorToText, isArray, Response, responseData, toNumber, uniqueId } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
 import path from "path"
-import { EmbeddingResponse, ProcessStatus, TaskChain, TaskManager } from "./task/types"
+import { EmbeddingResponse, ProcessStatus, RerankResponse, TaskChain, TaskManager } from "./task/types"
 import axios from "axios"
 import { useLog } from "@main/hooks/useLog"
 import { Embedding } from "./task/embedding"
@@ -47,6 +47,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   }
   async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
     try {
+      console.time("[embedding timeout]")
       const vectors = await axios.request<EmbeddingResponse>({
         url: config.embedding.api,
         method: config.embedding.method ?? "post",
@@ -59,20 +60,62 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
           dimensions: config.dimensions,
         },
       })
+      console.timeEnd("[embedding timeout]")
       if (!isArray(vectors.data?.data)) {
-        throw new Error(`[rag search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
+        throw new Error(`[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
       }
+      log.debug(
+        `[embedding search] content translated to vectors`,
+        `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
+      )
       await this.#db.open()
+      console.time("[search timeout]")
       const res = await this.#db.query({
         tableName: combineTableName(params.topicId),
         topicId: params.topicId,
         queryVector: vectors.data.data[0].embedding,
-        topK: 5,
       })
-      return {
-        code: 200,
-        msg: "ok",
-        data: res,
+      console.timeEnd("[search timeout]")
+      log.debug(`[embedding search] query result, length: ${res.length}, topicId: ${params.topicId}`)
+      if (config.rerank) {
+        log.debug(
+          `[embedding search] will rerank result, topicId: ${params.topicId}, rerank_provider: ${config.rerank.providerName}, rerank_model: ${config.rerank.model}`
+        )
+        const rerankRes = await axios.request<RerankResponse>({
+          url: config.embedding.api,
+          method: config.embedding.method ?? "post",
+          headers: {
+            Authorization: `Bearer ${config.embedding.apiKey}`,
+          },
+          data: {
+            model: config.rerank.model,
+            query: params.content,
+            documents: res.map(item => item.content),
+          },
+        })
+        const maxRanksIndex = rerankRes.data.results.reduce(
+          (prev, curr) => {
+            if (!prev) {
+              return curr
+            }
+            if (curr.relevance_score > prev.relevance_score) {
+              return curr
+            }
+            return prev
+          },
+          null as RerankResponse["results"][number] | null
+        )
+        if (!maxRanksIndex) {
+          return { code: 200, msg: "", data: [] }
+        }
+        log.debug("[embedding rerank]", res[maxRanksIndex.index])
+        return { code: 200, msg: "", data: [res[maxRanksIndex.index]] }
+      } else {
+        const results = res
+          // .filter(r => toNumber(r._distance) >= 0.7)
+          .sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
+        log.debug(`[embedding search finish] total_length: ${res.length}, score_gt_0.7_length: ${results.length}`)
+        return { code: 200, msg: "ok", data: results }
       }
     } catch (error) {
       log.error("[embedding search error]", error)
