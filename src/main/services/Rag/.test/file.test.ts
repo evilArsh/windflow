@@ -48,6 +48,7 @@ describe("main/src/Rag", () => {
     const meta: RAGLocalFileMeta = {
       id: uniqueId(),
       path: path.join(__dirname, "work.xlsx"),
+      // path: path.join(__dirname, "work2.xlsx"),
       topicId,
     }
     const stat = fs.statSync(meta.path)

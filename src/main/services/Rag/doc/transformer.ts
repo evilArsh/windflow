@@ -4,7 +4,9 @@ import csv from "csv-parser"
 import log from "electron-log"
 import pdf from "pdf-parse/lib/pdf-parse.js"
 import mammoth from "mammoth"
-import ExcelJS from "exceljs"
+import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValue } from "exceljs"
+import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
+import { Primitive } from "type-fest"
 
 export const Flags = {
   Error: Symbol("[ERROR]"),
@@ -156,19 +158,79 @@ export function useDocxTransformer(path: string): DataTransformer<string | symbo
   }
 }
 export function useXlsxTransformer(path: string): DataTransformer<string | symbol> {
+  function useCounter() {
+    // store oldest data with specified length
+    let header: ExcelJS.CellValue[] | null = null
+    const data: Array<ExcelJS.CellValue[]> = []
+    function add(newData: ExcelJS.CellValue[]) {
+      if (!header) {
+        header = newData
+      } else {
+        if (header.length < newData.length) {
+          header = newData
+        }
+      }
+      data.push(newData)
+    }
+    function clear() {
+      header = null
+      data.length = 0
+    }
+    function getData() {
+      return { header, data }
+    }
+    return {
+      clear,
+      add,
+      getData,
+    }
+  }
+  function getValue(cell: CellValue): string | null {
+    if (isNull(cell) || isUndefined(cell)) {
+      return null
+    }
+    if (isString(cell) || isNumber(cell) || isBoolean(cell) || isDate(cell)) {
+      return cell.toString()
+    } else if (Object.hasOwn(cell, "error")) {
+      return (cell as CellErrorValue).error
+    } else if (Object.hasOwn(cell, "text")) {
+      return (cell as CellHyperlinkValue).text
+    } else if (Object.hasOwn(cell, "result")) {
+      return String((cell as CellFormulaValue).result)
+    }
+    return null
+  }
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
       const workbook = new ExcelJS.stream.xlsx.WorkbookReader(path, {
-        sharedStrings: "emit",
+        sharedStrings: "cache",
         hyperlinks: "emit",
         worksheets: "emit",
         styles: "ignore",
       })
+      const counter = useCounter()
       for await (const worksheetReader of workbook) {
+        counter.clear()
         for await (const row of worksheetReader) {
-          yield JSON.stringify(row.values)
+          if (isArray(row.values)) {
+            counter.add(row.values)
+          }
         }
+        const { header, data } = counter.getData()
+        for (let i = 0; i < data.length; i++) {
+          const result: Record<string, Primitive> = {}
+          for (let j = 0; j < data[i].length; j++) {
+            const row = getValue(data[i][j])
+            const headerTitle = header && header.length >= data[i].length ? getValue(header[j]) : null
+            if (headerTitle) {
+              result[headerTitle] = row
+            }
+          }
+          yield JSON.stringify(result)
+        }
+        // console.log(row.values)
+        // yield JSON.stringify(row.values)
       }
       yield Flags.Done
     } catch (e) {
