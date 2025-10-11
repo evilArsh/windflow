@@ -5,10 +5,12 @@ import { useI18n } from "vue-i18n"
 import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
 import ITerminal from "~icons/material-symbols/terminal"
+import IBook from "~icons/material-symbols/book-4-spark"
 import useSettingsStore from "@renderer/store/settings"
 import { useI18nWatch } from "@toolmain/shared"
+import { Theme } from "@shared/types/theme"
 const { t } = useI18n()
-const route = useRoute()
+const router = useRouter()
 const settingsStore = useSettingsStore()
 const menuEv = {
   onSelect: (key: string) => {
@@ -26,7 +28,7 @@ const status = reactive({
   },
   toggleDark: () => {
     status.dark = !status.dark
-    window.api.theme.setTheme(status.dark ? "dark" : "light")
+    window.api.theme.setTheme(status.dark ? Theme.dark : Theme.light)
   },
 })
 const defaultRoute = ref("")
@@ -48,11 +50,16 @@ useI18nWatch(() => {
       label: t("nav.mcp"),
       icon: h(ITerminal),
     },
+    {
+      index: "/main/knowledge",
+      label: t("nav.knowledge"),
+      icon: h(IBook),
+    },
   ]
 })
 settingsStore.api.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
-onBeforeMount(() => {
-  const current = pageNav.value.find(v => route.path.startsWith(v.index))
+router.afterEach(to => {
+  const current = pageNav.value.find(v => to.path.startsWith(v.index))
   defaultRoute.value = current?.index ?? "/main/chat"
 })
 </script>
@@ -70,7 +77,7 @@ onBeforeMount(() => {
               <ContentBox
                 normal-icon
                 class="flex-1"
-                style="--content-box-padding: 0 var(--ai-gap-medium)"
+                style="--content-box-padding: var(--ai-gap-base)"
                 :main-style="{ flexDirection: 'column' }"
                 background
                 still-lock
@@ -140,9 +147,10 @@ onBeforeMount(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 0 var(--ai-gap-base) 0;
     cursor: pointer;
     .nav-menu-item-icon {
-      font-size: 1.6rem;
+      font-size: 1.8rem;
     }
   }
   .nav-bottom {

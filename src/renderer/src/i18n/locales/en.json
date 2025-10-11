@@ -102,6 +102,11 @@
     "invalidUrl": "Not a valid URL address",
     "requiredValue": "This value is required"
   },
+  "knowledge": {
+    "search": "search knowledge",
+    "subTitle": "Knowledge Service Config",
+    "title": "Knowledge"
+  },
   "lang": {
     "en": "English",
     "zh": "简体中文"
@@ -199,6 +204,7 @@
   },
   "nav": {
     "chat": "Chat",
+    "knowledge": "knowledge",
     "mcp": "MCP",
     "modelSetting": "Model"
   },

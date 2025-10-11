@@ -127,7 +127,7 @@ watch(
 .comp-content-box {
   -webkit-app-region: no-drag;
   --content-box-padding: var(--ai-gap-small);
-  --content-box-margin: var(--ai-gap-small);
+  --content-box-margin: 0;
   user-select: none;
   cursor: pointer;
   margin: var(--content-box-margin);

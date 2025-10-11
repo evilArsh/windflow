@@ -82,10 +82,6 @@ export interface MCPService {
   testEnv: (env: ToolEnvironment) => Promise<Response<ToolEnvTestResult>>
 }
 
-export interface EnvService {
-  testEnv: (args: ToolEnvironment) => Promise<Response<ToolEnvTestResult>>
-}
-
 export interface FileService {
   chooseFilePath: () => Promise<Response<string>>
 }

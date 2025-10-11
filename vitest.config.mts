@@ -28,6 +28,7 @@ export default defineConfig({
         test: {
           include: ["src/renderer/**/*.{test,spec}.ts"],
           name: "unit-web",
+          environment: "jsdom",
           setupFiles: ["vitest-browser-vue"],
           browser: {
             enabled: true,
@@ -41,7 +42,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit-node",
-          environment: "jsdom",
+          environment: "node",
           setupFiles: [resolve(import.meta.dirname, "src/.test/setup.ts")],
           include: ["src/main/**/*.{test,spec}.ts"],
           server: {

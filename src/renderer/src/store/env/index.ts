@@ -11,7 +11,7 @@ export default defineStore("env", () => {
 
   async function checkEnv(cb?: CallBackFn) {
     if (window.api.mcp) {
-      const res = await window.api.env.testEnv(cloneDeep(env))
+      const res = await window.api.mcp.testEnv(cloneDeep(env))
       env.bun.status = res.data.bun.status
       env.bun.version = res.data.bun.msg ?? ""
       env.uv.status = res.data.uv.status
