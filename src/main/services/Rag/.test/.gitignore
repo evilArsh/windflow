@@ -2,3 +2,7 @@ lance
 vector
 logs
 *.xlsx
+*.csv
+*.pdf
+*.docx
+*.doc

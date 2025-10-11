@@ -82,10 +82,10 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
           `[embedding search] will rerank result, topicId: ${params.topicId}, rerank_provider: ${config.rerank.providerName}, rerank_model: ${config.rerank.model}`
         )
         const rerankRes = await axios.request<RerankResponse>({
-          url: config.embedding.api,
-          method: config.embedding.method ?? "post",
+          url: config.rerank.api,
+          method: config.rerank.method ?? "post",
           headers: {
-            Authorization: `Bearer ${config.embedding.apiKey}`,
+            Authorization: `Bearer ${config.rerank.apiKey}`,
           },
           data: {
             model: config.rerank.model,
@@ -111,10 +111,12 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         log.debug("[embedding rerank]", res[maxRanksIndex.index])
         return { code: 200, msg: "", data: [res[maxRanksIndex.index]] }
       } else {
-        const results = res
-          // .filter(r => toNumber(r._distance) >= 0.7)
-          .sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
-        log.debug(`[embedding search finish] total_length: ${res.length}, score_gt_0.7_length: ${results.length}`)
+        const results = res.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
+        log.debug(
+          `[embedding search finish] total_length: ${res.length}, score_gt_0.7_length: ${
+            res.filter(r => toNumber(r._distance) >= 0.7).length
+          }`
+        )
         return { code: 200, msg: "ok", data: results }
       }
     } catch (error) {

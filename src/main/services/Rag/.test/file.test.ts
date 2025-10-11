@@ -27,28 +27,27 @@ describe("main/src/Rag", () => {
     }
   })
 
+  const config: RAGEmbeddingConfig = {
+    id: "embedding-1",
+    name: "test",
+    embedding: {
+      providerName: "SiliconFlow",
+      model: "Qwen/Qwen3-Embedding-8B",
+      api: "https://api.siliconflow.cn/v1/embeddings",
+      apiKey: "",
+    },
+    maxFileChunks: 512,
+    maxInputs: 20,
+    maxTokens: 512,
+    dimensions: 1024,
+  }
+
   it("read xlsx", async () => {
     const topicId = "topic-1"
-
-    const config: RAGEmbeddingConfig = {
-      id: "embedding-1",
-      name: "test",
-      embedding: {
-        providerName: "SiliconFlow",
-        model: "Qwen/Qwen3-Embedding-8B",
-        api: "https://api.siliconflow.cn/v1/embeddings",
-        apiKey: "",
-      },
-      maxFileChunks: 512,
-      maxInputs: 20,
-      maxTokens: 512,
-      dimensions: 1024,
-    }
 
     const meta: RAGLocalFileMeta = {
       id: uniqueId(),
       path: path.join(__dirname, "work.xlsx"),
-      // path: path.join(__dirname, "work2.xlsx"),
       topicId,
     }
     const stat = fs.statSync(meta.path)
@@ -58,6 +57,61 @@ describe("main/src/Rag", () => {
       fileSize: stat.size,
     }
 
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
+
+  it("read csv", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "work.csv"),
+      topicId,
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
+  it("read pdf", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "test2.pdf"),
+      topicId,
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
+  it("read docx", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "test2.doc"),
+      topicId,
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
     const res = await readFile(info, config)
     console.log(res)
     expect(res.data.length).gte(0)

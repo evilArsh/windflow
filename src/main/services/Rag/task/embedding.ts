@@ -77,6 +77,7 @@ export class Embedding implements TaskChain {
             )
           )
         }
+        log.debug(`[embedding process] start request, length: ${asyncReqs.length}`)
         const responses = await Promise.allSettled(asyncReqs)
         responses.forEach(res => {
           if (res.status === "fulfilled") {
@@ -99,10 +100,14 @@ export class Embedding implements TaskChain {
                 `file: ${info.info.path}\n total size: ${info.data.length}, chunk size: ${chunks.length}`
               )
             } else {
-              log.error(`[embedding response format error]`, res.value)
+              const err = `[embedding response format error] ${errorToText(res.value)}`
+              log.error(err)
+              throw new Error(err)
             }
           } else {
-            log.error(`[embedding response error] ${errorToText(res.reason)}`)
+            const err = `[embedding response error] ${errorToText(res.reason)}`
+            log.error(err)
+            throw new Error(err)
           }
         })
         statusResp.code = 200

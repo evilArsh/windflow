@@ -2,7 +2,7 @@ import readline from "node:readline"
 import fs from "node:fs"
 import csv from "csv-parser"
 import log from "electron-log"
-import pdf from "pdf-parse/lib/pdf-parse.js"
+import { PDFParse } from "pdf-parse"
 import mammoth from "mammoth"
 import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValue } from "exceljs"
 import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
@@ -80,7 +80,9 @@ export function useTextTransformer(path: string): DataTransformer<string | symbo
         lineTransformer = useReadLine(stream)
       }
       for await (const line of lineTransformer.next()) {
-        yield line
+        if (line) {
+          yield line
+        }
       }
       yield Flags.Done
     } catch (e) {
@@ -104,10 +106,11 @@ export function useCsvTransformer(path: string): DataTransformer<string | symbol
       if (!stream) {
         stream = fs.createReadStream(path)
       }
-      // for await (const line of streamToAsyncIterator(stream.pipe(csv()))) {
       for await (const line of stream.pipe(csv())) {
         // { NAME: 'Daffy Duck', AGE: '24' }
-        yield JSON.stringify(line)
+        if (line) {
+          yield JSON.stringify(line)
+        }
       }
       yield Flags.Done
     } catch (e) {
@@ -126,8 +129,16 @@ export function usePdfTransformer(path: string): DataTransformer<string | symbol
   async function* next(): AsyncGenerator<any> {
     try {
       const buf = fs.readFileSync(path)
-      const res = await pdf(buf)
-      yield res.text
+      const res = new PDFParse({ data: buf })
+      const text = await res.getText()
+      for (let i = 0; i < text.pages.length; i++) {
+        const textArr = text.pages[i].text.split(/\r?\n/g)
+        for (let j = 0; j < textArr.length; j++) {
+          if (textArr[j]) {
+            yield textArr[j]
+          }
+        }
+      }
       yield Flags.Done
     } catch (e) {
       log.error("[usePdfTransformer error]", e)
@@ -145,7 +156,12 @@ export function useDocxTransformer(path: string): DataTransformer<string | symbo
   async function* next(): AsyncGenerator<any> {
     try {
       const res = await mammoth.extractRawText({ path: path })
-      yield res.value
+      const textArr = res.value.split(/\r?\n/g)
+      for (let j = 0; j < textArr.length; j++) {
+        if (textArr[j]) {
+          yield textArr[j]
+        }
+      }
       yield Flags.Done
     } catch (e) {
       log.error("[usePdfTransformer error]", e)
@@ -227,10 +243,10 @@ export function useXlsxTransformer(path: string): DataTransformer<string | symbo
               result[headerTitle] = row
             }
           }
-          yield JSON.stringify(result)
+          if (Object.keys(result).length) {
+            yield JSON.stringify(result)
+          }
         }
-        // console.log(row.values)
-        // yield JSON.stringify(row.values)
       }
       yield Flags.Done
     } catch (e) {

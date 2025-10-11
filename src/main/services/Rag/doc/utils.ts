@@ -1,7 +1,6 @@
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
-import { isUndefined, toNumber, uniqueId } from "@toolmain/shared"
+import { toNumber, uniqueId } from "@toolmain/shared"
 import { Tiktoken, getEncoding } from "js-tiktoken"
-import { Readable } from "node:stream"
 /**
 https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 
@@ -48,42 +47,4 @@ export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileInfo
     chunkIndex: dst.length,
     tokens: tokenLength(content),
   })
-}
-
-// FIXME: 官方支持？
-export function streamToAsyncIterator<T = any>(stream: Readable): AsyncIterable<T> {
-  return {
-    [Symbol.asyncIterator]() {
-      const maxBufferSize = 512
-      const minBufferSize = 32
-      const values: T[] = []
-      let ended = false
-      stream
-        .on("data", (data: T) => {
-          values.push(data)
-          if (values.length >= maxBufferSize) {
-            stream.pause()
-          }
-        })
-        .on("end", () => {
-          ended = true
-        })
-        .on("error", _ => {
-          ended = true
-        })
-
-      return {
-        next: (): Promise<IteratorResult<T>> => {
-          const data = values.shift()
-          if (ended || isUndefined(data)) {
-            return Promise.resolve({ value: data, done: true })
-          }
-          if (values.length <= minBufferSize) {
-            stream.resume()
-          }
-          return Promise.resolve({ value: data, done: false })
-        },
-      }
-    },
-  }
 }

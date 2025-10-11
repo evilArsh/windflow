@@ -39,6 +39,12 @@ describe("main/src/Rag", () => {
       api: "https://api.siliconflow.cn/v1/embeddings",
       apiKey: "",
     },
+    rerank: {
+      providerName: "SiliconFlow",
+      model: "Qwen/Qwen3-Reranker-8B",
+      api: "https://api.siliconflow.cn/v1/rerank",
+      apiKey: "",
+    },
     maxFileChunks: 512,
     maxInputs: 20,
     maxTokens: 512,
@@ -186,7 +192,7 @@ describe("main/src/Rag", () => {
 
     const sRes = await rag.search(
       {
-        content: "js闭包是什么",
+        content: "吴小龙出勤天数",
         topicId: topicId,
       },
       config
