@@ -2,9 +2,11 @@ import { contextBridge, ipcRenderer } from "electron"
 import { EventBus, IpcChannel } from "@shared/service"
 import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@shared/types/eventbus"
 import EventEmitter from "node:events"
-import log from "electron-log"
+import { useLog } from "@main/hooks/useLog"
 
 const api: Record<string, unknown> = {}
+const log = useLog("Preload")
+
 function setProperty(obj: Record<string, unknown>, property: string): Record<string, unknown> {
   if (!obj[property]) {
     obj[property] = {}
@@ -26,7 +28,6 @@ for (const key of Object.values(IpcChannel)) {
     } else {
       if (prevProp && prevRoot) {
         prevRoot[prevProp] = async (...args: unknown[]) => {
-          // log.debug("[api invoke]", key)
           return ipcRenderer.invoke(key, ...args)
         }
       }

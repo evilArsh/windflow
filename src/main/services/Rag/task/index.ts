@@ -6,7 +6,6 @@ import { cloneDeep, errorToText } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
 
-const log = useLog(RAGServiceId)
 function updateStatus(info: TaskInfo, status: TaskInfoStatus) {
   const index = info.status.findIndex(f => f.taskId === status.taskId)
   if (index < 0) {
@@ -53,6 +52,7 @@ class TaskManagerImpl implements TaskManager {
   #chainLists: TaskChain[]
   #ss: ProcessStatus
   #globalBus: EventBus
+  #log = useLog(RAGServiceId)
   constructor(ss: ProcessStatus, globalBus: EventBus) {
     this.#ss = ss
     this.#globalBus = globalBus
@@ -84,11 +84,11 @@ class TaskManagerImpl implements TaskManager {
       if (!this.#ss.has(task.info.path)) {
         throw new Error(`[TaskManager] task ${task.info.path} not exists`)
       }
-      log.debug(`[TaskManager] current task end: `, status)
+      this.#log.debug(`[TaskManager] current task end: `, status)
       this.#ss.updateStatus(task.info.path, status)
       this.#emitStatus(task.info.path)
       if (this.#ss.getLastStatus(task.info.path)?.status === RAGFileStatus.Failed) {
-        log.debug(`[TaskManager] task ${task.info.path} is failed`)
+        this.#log.debug(`[TaskManager] task ${task.info.path} is failed`)
         this.#ss.updateStatus(task.info.path, { taskId: "", status: RAGFileStatus.Finish })
         this.#emitStatus(task.info.path)
         this.#ss.remove(task.info.path)
@@ -96,7 +96,7 @@ class TaskManagerImpl implements TaskManager {
       }
       const nextChain = this.#getNextChain(task)
       if (!nextChain) {
-        log.debug(`[TaskManager] task ${task.info.path} is done`)
+        this.#log.debug(`[TaskManager] task ${task.info.path} is done`)
         this.#ss.updateStatus(task.info.path, { taskId: "", status: RAGFileStatus.Finish })
         this.#emitStatus(task.info.path)
         this.#ss.remove(task.info.path)
@@ -107,10 +107,10 @@ class TaskManagerImpl implements TaskManager {
         status: RAGFileStatus.Processing,
       })
       this.#emitStatus(task.info.path)
-      log.debug(`[TaskManager] next task start,${nextChain.taskId()}, info: `, task.info, task.config)
+      this.#log.debug(`[TaskManager] next task start,${nextChain.taskId()}, info: `, task.info, task.config)
       nextChain.process(task)
     } catch (error) {
-      log.error("[file process] error", errorToText(error))
+      this.#log.error("[file process] error", errorToText(error))
       this.#ss.updateStatus(task.info.path, { taskId: "", status: RAGFileStatus.Finish })
       this.#emitStatus(task.info.path)
       this.#ss.remove(task.info.path)
@@ -133,7 +133,7 @@ class TaskManagerImpl implements TaskManager {
       status: RAGFileStatus.Processing,
     })
     this.#emitStatus(info.path)
-    log.debug("[process start]", taskInfo)
+    this.#log.debug("[process start]", taskInfo)
     chain.process(taskInfo)
   }
   close() {

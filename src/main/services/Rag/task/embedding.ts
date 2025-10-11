@@ -6,7 +6,6 @@ import { errorToText, isArray, toNumber } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
 
-const log = useLog(RAGServiceId)
 const requestWithChunks = async <T>(
   chunks: RAGFile[],
   request: () => Promise<T>
@@ -28,6 +27,7 @@ export class Embedding implements TaskChain {
     this.#queue.clear()
   }
   async process(info: TaskInfo) {
+    const log = useLog(RAGServiceId)
     this.#queue.add(async () => {
       const statusResp: TaskInfoStatus = {
         taskId: this.taskId(),
@@ -78,34 +78,28 @@ export class Embedding implements TaskChain {
           )
         }
         log.debug(`[embedding process] start request, length: ${asyncReqs.length}`)
-        const responses = await Promise.allSettled(asyncReqs)
+        const responses = await Promise.all(asyncReqs)
         responses.forEach(res => {
-          if (res.status === "fulfilled") {
-            const { chunks, response } = res.value
-            log.debug(`[embedding process] response: `, response.data, response.status, response.statusText)
-            const data = response.data?.data
-            const model = response.data?.model
-            if (isArray(data)) {
-              log.debug(`[embedding response] data_length: ${data.length} model: ${model}`)
-              if (chunks.length !== data.length) {
-                throw new Error(
-                  `[embedding response] length of chunks doesn't match the length of returned data. ids_length: ${chunks.length} data_length: ${data.length}`
-                )
-              }
-              data.forEach((vector, index) => {
-                chunks[index].vector = vector.embedding
-              })
-              log.debug(
-                `[embedding response]`,
-                `file: ${info.info.path}\n total size: ${info.data.length}, chunk size: ${chunks.length}`
+          const { chunks, response } = res
+          log.debug(`[embedding process] response: `, response.data, response.status, response.statusText)
+          const data = response.data?.data
+          const model = response.data?.model
+          if (isArray(data)) {
+            log.debug(`[embedding response] data_length: ${data.length} model: ${model}`)
+            if (chunks.length !== data.length) {
+              throw new Error(
+                `[embedding response] length of chunks doesn't match the length of returned data. ids_length: ${chunks.length} data_length: ${data.length}`
               )
-            } else {
-              const err = `[embedding response format error] ${errorToText(res.value)}`
-              log.error(err)
-              throw new Error(err)
             }
+            data.forEach((vector, index) => {
+              chunks[index].vector = vector.embedding
+            })
+            log.debug(
+              `[embedding response]`,
+              `file: ${info.info.path}\n total size: ${info.data.length}, chunk size: ${chunks.length}`
+            )
           } else {
-            const err = `[embedding response error] ${errorToText(res.reason)}`
+            const err = `[embedding response format error] ${errorToText(res)}`
             log.error(err)
             throw new Error(err)
           }

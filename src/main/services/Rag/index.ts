@@ -18,8 +18,6 @@ import { combineTableName } from "./db/utils"
 
 export const RAGServiceId = "RAGService"
 
-const log = useLog(RAGServiceId)
-
 export type RAGServiceConfig = {
   store?: VectorStoreConfig
 }
@@ -31,6 +29,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   #fileTask: TaskChain
   #embeddingTask: TaskChain
   #dbTask: TaskChain
+  #log = useLog(RAGServiceId)
   constructor(globalBus: EventBus, config?: RAGServiceConfig) {
     this.#globalBus = globalBus
 
@@ -64,7 +63,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!isArray(vectors.data?.data)) {
         throw new Error(`[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
       }
-      log.debug(
+      this.#log.debug(
         `[embedding search] content translated to vectors`,
         `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
       )
@@ -76,9 +75,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         queryVector: vectors.data.data[0].embedding,
       })
       console.timeEnd("[search timeout]")
-      log.debug(`[embedding search] query result, length: ${res.length}, topicId: ${params.topicId}`)
+      this.#log.debug(`[embedding search] query result, length: ${res.length}, topicId: ${params.topicId}`)
       if (config.rerank) {
-        log.debug(
+        this.#log.debug(
           `[embedding search] will rerank result, topicId: ${params.topicId}, rerank_provider: ${config.rerank.providerName}, rerank_model: ${config.rerank.model}`
         )
         const rerankRes = await axios.request<RerankResponse>({
@@ -108,11 +107,11 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         if (!maxRanksIndex) {
           return { code: 200, msg: "", data: [] }
         }
-        log.debug("[embedding rerank]", res[maxRanksIndex.index])
+        this.#log.debug("[embedding rerank]", res[maxRanksIndex.index])
         return { code: 200, msg: "", data: [res[maxRanksIndex.index]] }
       } else {
         const results = res.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
-        log.debug(
+        this.#log.debug(
           `[embedding search finish] total_length: ${res.length}, score_gt_0.7_length: ${
             res.filter(r => toNumber(r._distance) >= 0.7).length
           }`
@@ -120,7 +119,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         return { code: 200, msg: "ok", data: results }
       }
     } catch (error) {
-      log.error("[embedding search error]", error)
+      this.#log.error("[embedding search error]", error)
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
@@ -140,21 +139,21 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         throw new Error("[processLocalFile] file path is empty")
       }
       if (this.#ss.has(meta.path)) {
-        return log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
+        return this.#log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
       }
       const stat = fs.statSync(meta.path)
       if (!stat.isFile) {
-        return log.error(`[processLocalFile] path ${meta.path} is not a file`)
+        return this.#log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
       const metaInfo: RAGLocalFileInfo = {
         ...meta,
         fileName: path.basename(meta.path),
         fileSize: stat.size,
       }
-      log.debug("[processLocalFile] start ", metaInfo)
+      this.#log.debug("[processLocalFile] start ", metaInfo)
       this.#task.process(metaInfo, config)
     } catch (error) {
-      log.debug("[processLocalFile]", errorToText(error))
+      this.#log.debug("[processLocalFile]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
@@ -176,7 +175,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         return this.processLocalFile(file, config)
       })
     } catch (error) {
-      log.error("[RagService registerIpc error]", error)
+      this.#log.error("[RagService registerIpc error]", error)
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,

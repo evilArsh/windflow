@@ -3,7 +3,7 @@ import mime from "mime-types"
 import { isString, isSymbol, Response, responseData } from "@toolmain/shared"
 import { fileTypeFromFile } from "file-type"
 import { detectXml } from "@file-type/xml"
-import path from "path"
+import path from "node:path"
 
 import {
   DataTransformer,
@@ -16,7 +16,6 @@ import {
 import { isMaxTokensReached, addChunk, isMaxFileChunksReached } from "./utils"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
-const log = useLog(RAGServiceId)
 export function detectFileTypeByExtension(filePath: string) {
   const ext = path.extname(filePath).toLowerCase()
   const textExtensions = [".txt", ".md"]
@@ -92,6 +91,7 @@ export function useTextReader(config: RAGEmbeddingConfig) {
 }
 
 export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
+  const log = useLog(RAGServiceId)
   const ft = await fileTypeFromFile(data.path, { customDetectors: [detectXml] })
   if (ft) {
     data.mimeType = ft.mime

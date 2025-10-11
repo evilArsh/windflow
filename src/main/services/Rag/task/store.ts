@@ -7,8 +7,6 @@ import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
 import { combineTableName, createTableSchema } from "../db/utils"
 
-const log = useLog(RAGServiceId)
-
 export class Store implements TaskChain {
   #manager: TaskManager
   #queue: PQueue
@@ -26,6 +24,7 @@ export class Store implements TaskChain {
     this.#db.close()
   }
   async process(info: TaskInfo) {
+    const log = useLog(RAGServiceId)
     this.#queue.add(async () => {
       const statusResp: TaskInfoStatus = {
         taskId: this.taskId(),

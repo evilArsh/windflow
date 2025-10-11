@@ -1,10 +1,12 @@
 import { errorToText, StatusResponse, responseCode } from "@toolmain/shared"
 import { ToolTestParam } from "@shared/types/env"
 import { execa, ExecaError } from "execa"
-import log from "electron-log"
 import path from "node:path"
+import { useLog } from "@main/hooks/useLog"
+import { MCPServiceId } from "."
 
 export async function execCommand(params: ToolTestParam, command: string, ...args: string[]): Promise<StatusResponse> {
+  const log = useLog(MCPServiceId)
   try {
     // const res = await execa({ stdout: ["pipe", "inherit"] })`${command}`
     log.debug(`[exec command] ${command} ${args.join(" ")}`)
