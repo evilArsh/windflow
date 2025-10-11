@@ -30,14 +30,14 @@ importers:
         specifier: ^3.13.0
         version: 3.13.0
       '@toolmain/components':
-        specifier: ^1.2.17
-        version: 1.2.17(@types/three@0.179.0)(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(three@0.179.1)(unocss@66.5.3(postcss@8.5.6)(vite@7.1.9(@types/node@24.7.1)(jiti@2.6.1)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+        specifier: ^1.2.19
+        version: 1.2.19(@types/three@0.179.0)(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(dexie@4.2.1)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(three@0.179.1)(unocss@66.5.3(postcss@8.5.6)(vite@7.1.9(@types/node@24.7.1)(jiti@2.6.1)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       '@toolmain/libs':
-        specifier: ^1.1.9
-        version: 1.1.9(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+        specifier: ^1.1.10
+        version: 1.1.10(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       '@toolmain/shared':
-        specifier: ^1.2.13
-        version: 1.2.13(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+        specifier: ^1.2.14
+        version: 1.2.14(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       '@unocss/reset':
         specifier: 66.5.3
         version: 66.5.3
@@ -1641,32 +1641,33 @@ packages:
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
 
-  '@toolmain/components@1.2.17':
-    resolution: {integrity: sha512-Oq6/wAByEF10FAriXlRgQYIfRNSirC9OsNFoKQAvx4uovrHqyfsOOg/OC6lkvtT14qWR4kzDwxBanosiMQ9DpA==}
+  '@toolmain/components@1.2.19':
+    resolution: {integrity: sha512-/C4lyhtWMm8kcjeetLkVMdqkX+GCNYuqkh+fg8DIdo6HViAMl1s3g8rK3MCeGKeF9XcJW0k9jhZGwN2PFupFrw==}
     peerDependencies:
-      '@types/three': ^0.179.0
+      '@types/three': ^0.180.0
       '@vueuse/core': ^13.9.0
-      element-plus: ^2.11.1
+      dexie: ^4.2.1
+      element-plus: ^2.11.4
       pinia: ^3.0.3
-      three: ^0.179.1
-      unocss: ^66.5.0
-      vue: ^3.5.21
+      three: ^0.180.0
+      unocss: ^66.5.3
+      vue: ^3.5.22
       vue-router: ^4.5.1
 
-  '@toolmain/libs@1.1.9':
-    resolution: {integrity: sha512-UzSxedytmBftINi8XPKihBrjMpvanoaUh9QLux0yeHJTCEu11ty62h1WmEXgrDh8ySSjI1btur/YjZewxgy02A==}
+  '@toolmain/libs@1.1.10':
+    resolution: {integrity: sha512-ovsuXrMnRqh5n09jy+ZciaTn3ZXIa+goC+TwihbhyD3Euk1S79sgLqdG0kfkhyx0MtqwPkupDdamEwu3rXjKmw==}
     peerDependencies:
-      element-plus: ^2.11.1
-      vue: ^3.5.21
+      element-plus: ^2.11.4
+      vue: ^3.5.22
 
-  '@toolmain/shared@1.2.13':
-    resolution: {integrity: sha512-PZ5AvYBpYaLA/Nz8AmCFTZS1GDYTItiEWZOBPhGYIa/21IZTk0m76ODDQRJ9BGY5pKNangP+LCCQ8m4c0xfLiQ==}
+  '@toolmain/shared@1.2.14':
+    resolution: {integrity: sha512-isHlAk9W1Si9S7ZWM7E9ePFJRxmm3UBzbzPYskZrUeXFcMRN9AS+gdlHF6Ww7J9uVwutttaY5tbwHUEEHu7shg==}
     peerDependencies:
       '@vueuse/core': ^13.9.0
-      axios: ^1.11.0
-      element-plus: ^2.11.1
-      vue: ^3.5.21
-      vue-i18n: ^11.1.11
+      axios: ^1.12.2
+      element-plus: ^2.11.4
+      vue: ^3.5.22
+      vue-i18n: ^11.1.12
 
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
@@ -5347,17 +5348,9 @@ packages:
     resolution: {integrity: sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ==}
     engines: {node: '>=10'}
 
-  p-queue@8.1.1:
-    resolution: {integrity: sha512-aNZ+VfjobsWryoiPnEApGGmf5WmNsCo9xu8dfaYamG5qaLP7ClhLN6NgsFe6SwJ2UbLEBK5dv9x8Mn5+RVhMWQ==}
-    engines: {node: '>=18'}
-
   p-queue@9.0.0:
     resolution: {integrity: sha512-KO1RyxstL9g1mK76530TExamZC/S2Glm080Nx8PE5sTd7nlduDQsAfEl4uXX+qZjLiwvDauvzXavufy3+rJ9zQ==}
     engines: {node: '>=20'}
-
-  p-timeout@6.1.4:
-    resolution: {integrity: sha512-MyIV3ZA/PmyBN/ud8vV9XzwTrNtR4jFrObymZYnZqMmW0zA8Z17vnT0rBgFE/TlohB+YCHqXMgZzb3Csp49vqg==}
-    engines: {node: '>=14.16'}
 
   p-timeout@7.0.1:
     resolution: {integrity: sha512-AxTM2wDGORHGEkPCt8yqxOTMgpfbEHqF51f/5fJCmwFC3C/zNcGT63SymH2ttOAaiIws2zVg4+izQCjrakcwHg==}
@@ -7260,7 +7253,7 @@ snapshots:
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/parser': 7.28.4
+      '@babel/parser': 7.27.7
       '@babel/types': 7.28.4
 
   '@babel/traverse@7.27.7':
@@ -8297,10 +8290,10 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
-  '@toolmain/components@1.2.17(@types/three@0.179.0)(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(three@0.179.1)(unocss@66.5.3(postcss@8.5.6)(vite@7.1.9(@types/node@24.7.1)(jiti@2.6.1)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
+  '@toolmain/components@1.2.19(@types/three@0.179.0)(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(dexie@4.2.1)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(pinia@3.0.3(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3)))(three@0.179.1)(unocss@66.5.3(postcss@8.5.6)(vite@7.1.9(@types/node@24.7.1)(jiti@2.6.1)(sass@1.93.2)(terser@5.44.0)(yaml@2.8.1)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
-      '@toolmain/libs': 1.1.9(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
-      '@toolmain/shared': 1.2.13(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+      '@toolmain/libs': 1.1.10(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+      '@toolmain/shared': 1.2.14(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       '@types/three': 0.179.0
       '@vueuse/core': 13.9.0(vue@3.5.22(typescript@5.9.3))
       dexie: 4.2.1
@@ -8315,9 +8308,9 @@ snapshots:
       - axios
       - vue-i18n
 
-  '@toolmain/libs@1.1.9(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
+  '@toolmain/libs@1.1.10(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
-      '@toolmain/shared': 1.2.13(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+      '@toolmain/shared': 1.2.14(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       element-plus: 2.11.4(vue@3.5.22(typescript@5.9.3))
       hash-sum: 2.0.0
       sucrase: 3.35.0
@@ -8327,7 +8320,7 @@ snapshots:
       - axios
       - vue-i18n
 
-  '@toolmain/shared@1.2.13(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
+  '@toolmain/shared@1.2.14(@vueuse/core@13.9.0(vue@3.5.22(typescript@5.9.3)))(axios@1.12.2)(element-plus@2.11.4(vue@3.5.22(typescript@5.9.3)))(vue-i18n@11.1.12(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 13.9.0(vue@3.5.22(typescript@5.9.3))
       axios: 1.12.2
@@ -8336,7 +8329,7 @@ snapshots:
       hotkeys-js: 3.13.15
       lodash.merge: 4.6.2
       nanoid: 5.1.6
-      p-queue: 8.1.1
+      p-queue: 9.0.0
       rfdc: 1.4.1
       serialize-error: 12.0.0
       shiki: 3.13.0
@@ -12945,17 +12938,10 @@ snapshots:
     dependencies:
       aggregate-error: 3.1.0
 
-  p-queue@8.1.1:
-    dependencies:
-      eventemitter3: 5.0.1
-      p-timeout: 6.1.4
-
   p-queue@9.0.0:
     dependencies:
       eventemitter3: 5.0.1
       p-timeout: 7.0.1
-
-  p-timeout@6.1.4: {}
 
   p-timeout@7.0.1: {}
 
