@@ -1,6 +1,6 @@
 import { MCPServerParam, MCPServerParamCore } from "@shared/types/mcp"
 import { defineStore } from "pinia"
-import { useData } from "./data"
+import { useData } from "./api"
 
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
@@ -9,7 +9,7 @@ const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
-  const api = useData(servers)
+  const api = useData()
   /**
    * 去掉多余mcp tool列表
    */
@@ -68,17 +68,24 @@ export default defineStore("mcp", () => {
     }
   }
 
-  window.api.bus.on(EventKey.MCPStatus, async data => {
-    // console.log("[MCPStatus]", data)
-    const server = findServer(data.id)
-    if (!server) return
-    const status = data.status
-    server.status = status
-    server.referTopics = data.refs
-    queue.add(async () => api.update(clonePure(server)))
-    fetchTools(server.id)
-  })
+  async function init() {
+    window.api.bus.on(EventKey.MCPStatus, async data => {
+      // console.log("[MCPStatus]", data)
+      const server = findServer(data.id)
+      if (!server) return
+      const status = data.status
+      server.status = status
+      server.referTopics = data.refs
+      queue.add(async () => api.update(clonePure(server)))
+      fetchTools(server.id)
+    })
+    servers.length = 0
+    const data = await api.fetch()
+    servers.push(...data)
+  }
   return {
+    init,
+
     servers,
     api,
     fetchTools,

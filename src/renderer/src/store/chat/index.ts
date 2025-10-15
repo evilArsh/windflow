@@ -11,11 +11,12 @@ import {
   Provider,
   ProviderMeta,
   Role,
+  SettingKeys,
 } from "@renderer/types"
-// import useProviderStore from "@renderer/store/provider"
+import useSettingsStore from "@renderer/store/settings"
 import useModelsStore from "@renderer/store/model"
 import { useContext } from "./context"
-import { useData } from "./data"
+import { useData } from "./api"
 import { useUtils } from "./utils"
 import { defaultTTIConfig, defaultLLMConfig, defaultMessage } from "./default"
 import { toNumber, isString, uniqueId, isArray } from "@toolmain/shared"
@@ -29,7 +30,8 @@ export default defineStore("chat_topic", () => {
   const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const currentNodeKey = ref<string>("") // 选中的聊天节点key,和数据库绑定
-  const api = useData(topicList, currentNodeKey)
+  const api = useData()
+  const settingsStore = useSettingsStore()
   const utils = useUtils(chatMessage, chatLLMConfig, chatTTIConfig)
 
   const sendMediaMessage = async (
@@ -377,7 +379,17 @@ export default defineStore("chat_topic", () => {
       chatLLMConfig[topic.id] = cnf
     }
   }
+  async function init() {
+    topicList.length = 0
+    const res = await api.fetch()
+    topicList.push(...res)
+    // --- 恢复状态
+    const nodeKeyData = await settingsStore.get<string>(SettingKeys.ChatCurrentNodeKey, "")
+    currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
+  }
   return {
+    init,
+
     topicList,
     chatMessage,
     currentNodeKey,

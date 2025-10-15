@@ -3,7 +3,7 @@ import useProviderStore from "@renderer/store/provider"
 const providerStore = useProviderStore()
 const { t } = useI18n()
 function onReset() {
-  providerStore.api.reset()
+  providerStore.reset()
 }
 </script>
 <template>

@@ -138,6 +138,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!meta.path) {
         throw new Error("[processLocalFile] file path is empty")
       }
+      // FIXME: the same file may exist in multiple topics
       if (this.#ss.has(meta.path)) {
         return this.#log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
       }

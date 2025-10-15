@@ -11,7 +11,7 @@ const chatStore = useChatStore()
 const topic = computed(() => props.topic)
 const sendShortcut = ref("")
 const settingsStore = useSettingsStore()
-settingsStore.api.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
+settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
 async function updateTopic() {
   try {
     await chatStore.api.putChatTopic(topic.value)

@@ -29,7 +29,7 @@ const { getComponent } = useConfigComponent()
 function onCardClick(name: string) {
   currentProvider.value = providerMetas.value[name] ?? undefined
 }
-settingsStore.api.dataWatcher<string | undefined>(
+settingsStore.dataWatcher<string | undefined>(
   SettingKeys.ProviderCurrentSettingActive,
   () => currentProvider.value?.name,
   ""

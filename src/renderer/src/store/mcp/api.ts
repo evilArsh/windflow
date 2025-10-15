@@ -1,10 +1,9 @@
 import { db } from "@renderer/db"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
-import { Reactive } from "vue"
 import { mcpStdioDefault } from "./default"
 import { cloneDeep } from "@toolmain/shared"
 
-export const useData = (servers: Reactive<MCPServerParam[]>) => {
+export const useData = () => {
   async function update(data: MCPServerParam) {
     return db.mcpServer.put(cloneDeep(data))
   }
@@ -18,7 +17,7 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
     return db.mcpServer.toArray()
   }
   async function fetch() {
-    servers.length = 0
+    const servers: MCPServerParam[] = []
     const defaultData = mcpStdioDefault()
     const data = await db.mcpServer.toArray()
     data.forEach(v => {
@@ -35,6 +34,7 @@ export const useData = (servers: Reactive<MCPServerParam[]>) => {
         await db.mcpServer.add(v)
       }
     }
+    return servers
   }
   return {
     add,

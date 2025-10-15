@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import useSettingsStore from "@renderer/store/settings"
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import MessagePanel from "./components/message/index.vue"
@@ -22,6 +23,7 @@ const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, setCurrentT
   useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const msgContext = useMsgContext()
 const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext
+const settingsStore = useSettingsStore()
 async function init() {
   try {
     if (currentNodeKey.value) {
@@ -39,6 +41,8 @@ async function onCreateNewTopic(done: CallBackFn) {
   await createNewTopic()
   done()
 }
+settingsStore.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
+
 onMounted(() => {
   window.addEventListener("resize", dlg.clickMask)
   init()

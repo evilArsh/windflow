@@ -36,8 +36,8 @@ export const useMsgContext = () => {
   }
 
   function init() {
-    settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, showTreeMenu, true)
-    settingsStore.api.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, true)
+    settingsStore.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, showTreeMenu, true)
+    settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, true)
 
     shortcut.listen("ctrl+b", res => {
       res && toggleTreeMenu()
@@ -309,7 +309,7 @@ export const useMenu = (
     () => tree.searchKeyword,
     useThrottleFn(v => treeRef.value?.filter(v), 250, true)
   )
-  settingsStore.api.dataWatcher<string[]>(SettingKeys.ChatDefaultExpandedKeys, toRef(tree, "defaultExpandedKeys"), [])
+  settingsStore.dataWatcher<string[]>(SettingKeys.ChatDefaultExpandedKeys, toRef(tree, "defaultExpandedKeys"), [])
   return {
     menu,
     dlg,

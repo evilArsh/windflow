@@ -9,7 +9,7 @@
     "src/renderer/auto-imports.d.ts",
     "src/renderer/components.d.ts",
     "src/preload/index.d.ts",
-    "src/shared/**/*.ts",
+    "src/shared/**/*.ts", "src/renderer/src/store/provider/data.api",
   ],
   "compilerOptions": {
     "baseUrl": ".",

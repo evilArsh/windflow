@@ -1,24 +1,13 @@
-import {
-  ChatLLMConfig,
-  ChatMessage,
-  ChatTopic,
-  ChatTopicTree,
-  ChatTTIConfig,
-  SettingKeys,
-  Settings,
-} from "@renderer/types"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
 import { db } from "@renderer/db"
 import PQueue from "p-queue"
-import { Reactive } from "vue"
 import { chatTopicDefault } from "./default"
-import useSettingsStore from "@renderer/store/settings"
 import { cloneDeep } from "@toolmain/shared"
 
-export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKey: Ref<string>) => {
+export const useData = () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const mqueue = markRaw(new PQueue({ concurrency: 1 }))
   const cnfQueue = markRaw(new PQueue({ concurrency: 1 }))
-  const settingsStore = useSettingsStore()
 
   async function addChatTopic(data: ChatTopic) {
     return db.chatTopic.add(cloneDeep(data))
@@ -93,7 +82,7 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
     })
   }
   const fetch = async () => {
-    topicList.length = 0
+    const topicList: ChatTopicTree[] = []
     const assembleTopicTree = (data: ChatTopic[], cb: (item: ChatTopicTree) => void): ChatTopicTree[] => {
       const res: ChatTopicTree[] = []
       const maps: Record<string, ChatTopicTree> = {}
@@ -121,16 +110,13 @@ export const useData = (topicList: Reactive<Array<ChatTopicTree>>, currentNodeKe
         await db.chatTopic.add(item)
       }
     }
-    // --- 恢复状态
-    const nodeKeyData = (await db.settings.get(SettingKeys.ChatCurrentNodeKey)) as Settings<string> | undefined
-    currentNodeKey.value = nodeKeyData ? nodeKeyData.value : ""
     topicList.push(
       ...assembleTopicTree(data, item => {
         item.node.requestCount = 0
       })
     )
+    return topicList
   }
-  settingsStore.api.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
   return {
     fetch,
     addChatTopic,

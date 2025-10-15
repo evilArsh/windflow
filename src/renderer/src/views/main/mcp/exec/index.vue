@@ -1,10 +1,23 @@
 <script lang="ts" setup>
+import useSettingsStore from "@renderer/store/settings"
+import { SettingKeys } from "@renderer/types"
+import { defaultEnv } from "@shared/env"
+import { ToolEnvironment } from "@shared/types/env"
 import Npm from "./components/npm.vue"
 import Python from "./components/python.vue"
 import useEnvStore from "@renderer/store/env"
+import { cloneDeep } from "@toolmain/shared"
+import { storeToRefs } from "pinia"
+const settingsStore = useSettingsStore()
 const envStore = useEnvStore()
+const { env } = storeToRefs(envStore)
 
 envStore.checkEnv()
+settingsStore.dataWatcher<ToolEnvironment>(SettingKeys.ToolEnvironment, env, defaultEnv(), data => {
+  if (window.api) {
+    window.api.mcp.updateEnv(cloneDeep(data))
+  }
+})
 </script>
 <template>
   <ContentLayout>

@@ -33,12 +33,12 @@ const event = shallowReactive({
         update()
       } else if (cmd === "restoreGlobal") {
         if (!config.value) return
-        const globalVal = (await settingsStore.api.get(SettingKeys.ChatTextToImageConfig, defaultTTIConfig())).value
+        const globalVal = (await settingsStore.get(SettingKeys.ChatTextToImageConfig, defaultTTIConfig())).value
         Object.assign(config.value, globalVal)
         update()
       } else if (cmd === "coverGlobal") {
         if (!config.value) return
-        const globalVal = await settingsStore.api.get(SettingKeys.ChatTextToImageConfig, defaultTTIConfig())
+        const globalVal = await settingsStore.get(SettingKeys.ChatTextToImageConfig, defaultTTIConfig())
         Object.assign(globalVal.value, config.value)
         delete globalVal.value["id"]
         delete globalVal.value["topicId"]

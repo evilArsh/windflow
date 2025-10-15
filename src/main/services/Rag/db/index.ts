@@ -106,7 +106,8 @@ export class VectorStore {
         "mimeType",
         "tokens",
       ])
-      .where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`)
+      // .where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`)
+      .where(`\`topicId\` = '${topicId}'`)
       .limit(topK)
     const results = (await query.toArray()) as RAGFile[]
     return results

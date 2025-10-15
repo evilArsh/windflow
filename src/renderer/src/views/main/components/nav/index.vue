@@ -57,7 +57,7 @@ useI18nWatch(() => {
     },
   ]
 })
-settingsStore.api.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
+settingsStore.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
 router.afterEach(to => {
   const current = pageNav.value.find(v => to.path.startsWith(v.index))
   defaultRoute.value = current?.index ?? "/main/chat"

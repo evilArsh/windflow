@@ -7,7 +7,7 @@ defineProps<{
 const { t } = useI18n()
 const sendShortcut = ref("")
 const settingsStore = useSettingsStore()
-settingsStore.api.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
+settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
 </script>
 <template>
   <div class="flex flex-col w-full">

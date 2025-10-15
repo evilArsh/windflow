@@ -25,7 +25,7 @@ useI18nWatch(() => {
     //
   ]
 })
-settingsStore.api.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.fullPath, path => {
+settingsStore.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.fullPath, path => {
   router.push(path)
 })
 </script>

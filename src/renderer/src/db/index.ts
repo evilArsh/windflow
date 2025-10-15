@@ -11,6 +11,8 @@ import {
 import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { type EntityTable } from "dexie"
 import { migrateToV2, migrateToV4, migrateToV5 } from "./migrate"
+import { Knowledge } from "@renderer/types/knowledge"
+import { RAGEmbeddingConfig, RAGLocalFileMeta } from "@shared/types/rag"
 
 export const name = "db-windflow"
 
@@ -23,6 +25,9 @@ const db = new Dexie(name) as Dexie & {
   chatTTIConfig: EntityTable<ChatTTIConfig, "id">
   settings: EntityTable<Settings<SettingsValue>, "id">
   mcpServer: EntityTable<MCPServerParam, "id">
+  knowledge: EntityTable<Knowledge, "id">
+  ragFiles: EntityTable<RAGLocalFileMeta, "id">
+  embedding: EntityTable<RAGEmbeddingConfig, "id">
 }
 
 db.version(1).stores({
@@ -77,5 +82,19 @@ db.version(5)
     mcpServer: "id",
   })
   .upgrade(migrateToV5)
+
+db.version(6).stores({
+  providerMeta: "name",
+  model: "id",
+  chatTopic: "id",
+  chatMessage: "id,topicId",
+  chatLLMConfig: "id,topicId",
+  chatTTIConfig: "id,topicId",
+  settings: "id",
+  mcpServer: "id",
+  knowledge: "id",
+  ragFiles: "id,topicId",
+  embedding: "id",
+})
 
 export { db }

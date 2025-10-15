@@ -108,9 +108,10 @@
     "menu": {
       "list": "知识库列表"
     },
+    "newDefault": "新的知识库",
+    "search": "搜索知识库",
     "subTitle": "知识库服务配置",
-    "title": "知识库",
-    "search": "搜索知识库"
+    "title": "知识库"
   },
   "lang": {
     "en": "English",
@@ -270,4 +271,3 @@
     }
   }
 }
-

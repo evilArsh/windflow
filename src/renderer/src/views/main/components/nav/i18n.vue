@@ -26,5 +26,5 @@ const switchLang = (lang: string) => {
 }
 window.defaultLanguage = i18n.t(`lang.${i18n.locale.value}`)
 window.defaultTopicTitle = i18n.t("chat.addChat")
-settingsStore.api.dataWatcher<string>(SettingKeys.Language, i18n.locale, i18n.locale.value, switchLang)
+settingsStore.dataWatcher<string>(SettingKeys.Language, i18n.locale, i18n.locale.value, switchLang)
 </script>

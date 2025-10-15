@@ -103,6 +103,7 @@
     "requiredValue": "This value is required"
   },
   "knowledge": {
+    "newDefault": "New Knowledge Base",
     "search": "search knowledge",
     "subTitle": "Knowledge Service Config",
     "title": "Knowledge"

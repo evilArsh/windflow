@@ -26,7 +26,7 @@ useI18nWatch(() => {
     { icon: IDisplaySettingsOutline, title: t("mcp.menu.env"), path: "/main/mcp/exec" },
   ]
 })
-settingsStore.api.dataWatcher<string>(SettingKeys.MCPSubRoute, currentRoute, route.fullPath, path => {
+settingsStore.dataWatcher<string>(SettingKeys.MCPSubRoute, currentRoute, route.fullPath, path => {
   router.push(path)
 })
 </script>

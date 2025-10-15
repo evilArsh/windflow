@@ -1,13 +1,14 @@
 import { ToolEnvironment } from "@shared/types/env"
 import { defineStore } from "pinia"
 import { CallBackFn } from "@toolmain/shared"
-import { useData } from "./data"
 import { defaultEnv } from "@shared/env"
 import { cloneDeep } from "@toolmain/shared"
+import useSettingsStore from "@renderer/store/settings"
+import { SettingKeys } from "@renderer/types"
 
 export default defineStore("env", () => {
+  const settingsStore = useSettingsStore()
   const env = reactive<ToolEnvironment>(defaultEnv())
-  const api = useData(env)
 
   async function checkEnv(cb?: CallBackFn) {
     if (window.api.mcp) {
@@ -20,9 +21,16 @@ export default defineStore("env", () => {
     cb?.()
   }
 
+  async function init() {
+    const res = await settingsStore.get(SettingKeys.ToolEnvironment, defaultEnv())
+    Object.assign(env, res)
+    window.api.mcp.updateEnv(cloneDeep(env))
+  }
+
   return {
+    init,
+
     env,
     checkEnv,
-    api,
   }
 })

@@ -15,7 +15,7 @@ const settingsStore = useSettingsStore()
 
 const hideSub = computed<CSSProperties>(() => (props.hideSubmenu ? { display: "none" } : {}))
 const handlerStyle = ref<CSSProperties>({})
-settingsStore.api.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle, {
+settingsStore.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle, {
   width: "300px",
 })
 </script>

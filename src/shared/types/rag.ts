@@ -118,6 +118,9 @@ export enum RAGFileStatus {
   Finish = "Finish",
 }
 
+/**
+ * TODO: more file type support: url, text, ect.
+ */
 export interface RAGLocalFileMeta {
   /**
    * file's unique id
@@ -128,7 +131,7 @@ export interface RAGLocalFileMeta {
    */
   path: string
   /**
-   * specify the scope of current file, if not set,the file will be used for all topics
+   * specify the scope of current file
    */
   topicId: string
 }

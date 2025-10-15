@@ -1,30 +1,42 @@
 <script lang="ts" setup>
-import useMcpStore from "@renderer/store/mcp"
-import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
+import useKnowledgeStore from "@renderer/store/knowledge"
+import useRagFilesStore from "@renderer/store/ragFiles"
 import { storeToRefs } from "pinia"
-import { useDialog } from "@toolmain/shared"
+// import { useDialog } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { Spinner } from "@toolmain/components"
-const mcp = useMcpStore()
-const { servers } = storeToRefs(mcp)
+import { Knowledge } from "@renderer/types/knowledge"
+import { CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
+// import { Spinner } from "@toolmain/components"
+const knowledge = useKnowledgeStore()
+const ragFiles = useRagFilesStore()
+const { knowledges } = storeToRefs(knowledge)
 const { t } = useI18n()
-const { props, event, close, open } = useDialog({
-  width: "70vw",
-})
-const current = ref<MCPServerParam>()
+// const { props, event, close, open } = useDialog({
+//   width: "70vw",
+// })
+const current = ref<Knowledge>()
 const search = shallowReactive({
   keyword: "",
 })
-const filterServers = computed(() =>
-  servers.value.filter(
-    v =>
-      (v.name.includes(search.keyword) ||
-        v.params.command.includes(search.keyword) ||
-        v.params.url.includes(search.keyword)) &&
-      !v.modifyTopic
-  )
-)
+const filterKnowledges = computed(() => knowledges.value.filter(v => v.name.includes(search.keyword)))
+const ev = {
+  async onNew(done: CallBackFn) {
+    try {
+      const newData: Knowledge = {
+        id: uniqueId(),
+        name: t("knowledge.newDefault"),
+        type: "rag",
+      }
+      await knowledge.api.add(newData)
+      knowledges.value.push(newData)
+    } catch (error) {
+      msgError(errorToText(error))
+    } finally {
+      done()
+    }
+  },
+}
 </script>
 <template>
   <ContentLayout custom>
@@ -33,24 +45,21 @@ const filterServers = computed(() =>
       <div class="knowledge-list">
         <div class="knowledge-list-header">
           <el-input v-model="search.keyword" :placeholder="t('knowledge.search')" clearable />
-          <el-button type="primary" @click="open">{{ t("btn.new") }}</el-button>
+          <Button type="primary" @click="ev.onNew">{{ t("btn.new") }}</Button>
         </div>
         <div class="knowledge-list-content">
           <el-scrollbar>
             <div class="flex flex-col gap-[var(--ai-gap-base)]">
               <ContentBox
-                v-for="server in filterServers"
-                :key="server.id"
+                v-for="kb in filterKnowledges"
+                :key="kb.id"
                 background
-                :default-lock="current?.id === server.id"
+                :default-lock="current?.id === kb.id"
                 still-lock>
                 <template #icon>
                   <i-material-symbols-light:book-2 class="text-1.4rem" />
                 </template>
-                <McpName :data="server"></McpName>
-                <Spinner
-                  :model-value="server.status === MCPClientStatus.Connecting"
-                  class="flex-shrink-0 text-1.2rem"></Spinner>
+                <el-text>{{ kb.name }}</el-text>
               </ContentBox>
             </div>
           </el-scrollbar>
@@ -60,7 +69,7 @@ const filterServers = computed(() =>
         <el-empty></el-empty>
       </div>
     </div>
-    <el-dialog v-bind="props" v-on="event"> </el-dialog>
+    <!-- <el-dialog v-bind="props" v-on="event"> </el-dialog> -->
   </ContentLayout>
 </template>
 <style lang="scss" scoped>

@@ -5,7 +5,7 @@ import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from ".."
-
+const log = useLog(RAGServiceId)
 export class FileProcess implements TaskChain {
   #manager: TaskManager
   #queue: PQueue
@@ -17,7 +17,6 @@ export class FileProcess implements TaskChain {
     return "task_fileProcess"
   }
   async process(info: TaskInfo) {
-    const log = useLog(RAGServiceId)
     this.#queue.add(async () => {
       const statusResp: TaskInfoStatus = {
         taskId: this.taskId(),
