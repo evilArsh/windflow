@@ -4,7 +4,7 @@ import { EventBus } from "@shared/service"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from ".."
+import { RAGServiceId } from "../vars"
 
 function updateStatus(info: TaskInfo, status: TaskInfoStatus) {
   const index = info.status.findIndex(f => f.taskId === status.taskId)

@@ -4,11 +4,11 @@ import { readFile } from "../doc"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from ".."
-const log = useLog(RAGServiceId)
+import { RAGServiceId } from "../vars"
 export class FileProcess implements TaskChain {
   #manager: TaskManager
   #queue: PQueue
+  #log = useLog(RAGServiceId)
   constructor(manager: TaskManager) {
     this.#manager = manager
     this.#queue = new PQueue({ concurrency: 5 })
@@ -23,9 +23,9 @@ export class FileProcess implements TaskChain {
         status: RAGFileStatus.Processing,
       }
       try {
-        log.debug(`[file process] task start`, info)
+        this.#log.debug(`[file process] task start`, info)
         const chunksData = await readFile(info.info, info.config)
-        log.debug(`[file process] task finish`, chunksData)
+        this.#log.debug(`[file process] task finish`, chunksData)
         if (code4xx(chunksData.code) || code5xx(chunksData.code)) {
           statusResp.status = RAGFileStatus.Failed
           statusResp.msg = chunksData.msg
@@ -37,7 +37,7 @@ export class FileProcess implements TaskChain {
           statusResp.code = 200
         }
       } catch (error) {
-        log.error("[file process] error", errorToText(error))
+        this.#log.error("[file process] error", errorToText(error))
         statusResp.status = RAGFileStatus.Failed
         statusResp.msg = errorToText(error)
         statusResp.code = 500

@@ -15,8 +15,7 @@ import { Embedding } from "./task/embedding"
 import { FileProcess } from "./task/file"
 import { Store } from "./task/store"
 import { combineTableName } from "./db/utils"
-
-export const RAGServiceId = "RAGService"
+import { RAGServiceId } from "./vars"
 
 export type RAGServiceConfig = {
   store?: VectorStoreConfig

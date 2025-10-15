@@ -10,7 +10,7 @@ import { ToolEnvironment } from "@shared/types/env"
 import { EventBus } from "@shared/service"
 import { EventKey } from "@shared/types/eventbus"
 import { useLog } from "@main/hooks/useLog"
-import { MCPServiceId } from "."
+import { MCPServiceId } from "./vars"
 
 export function createClient(name: string, version: string) {
   return new Client({ name, version })

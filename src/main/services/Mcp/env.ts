@@ -2,7 +2,7 @@ import { Response, StatusResponse, errorToText } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { execCommand, resolvePath } from "./exec"
 import { useLog } from "@main/hooks/useLog"
-import { MCPServiceId } from "."
+import { MCPServiceId } from "./vars"
 export const mcpEnv = () => {
   async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
     const data: Response<ToolEnvTestResult> = {

@@ -3,7 +3,7 @@ import { ToolTestParam } from "@shared/types/env"
 import { execa, ExecaError } from "execa"
 import path from "node:path"
 import { useLog } from "@main/hooks/useLog"
-import { MCPServiceId } from "."
+import { MCPServiceId } from "./vars"
 
 export async function execCommand(params: ToolTestParam, command: string, ...args: string[]): Promise<StatusResponse> {
   const log = useLog(MCPServiceId)

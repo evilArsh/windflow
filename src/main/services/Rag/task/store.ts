@@ -4,15 +4,14 @@ import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { errorToText } from "@toolmain/shared"
 import { VectorStore } from "../db"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from ".."
 import { combineTableName, createTableSchema } from "../db/utils"
-
-const log = useLog(RAGServiceId)
+import { RAGServiceId } from "../vars"
 
 export class Store implements TaskChain {
   #manager: TaskManager
   #queue: PQueue
   #db: VectorStore
+  #log = useLog(RAGServiceId)
   constructor(manager: TaskManager, db: VectorStore) {
     this.#manager = manager
     this.#queue = new PQueue({ concurrency: 5 })
@@ -37,7 +36,7 @@ export class Store implements TaskChain {
         }
         await this.#db.open()
         const avaliableData = info.data.filter(d => !!d.vector.length)
-        log.debug(
+        this.#log.debug(
           `[store process] will insert data to database, original_length: ${info.data.length}, avaliable_length: ${avaliableData.length}`
         )
         if (avaliableData.length) {
@@ -46,14 +45,14 @@ export class Store implements TaskChain {
             const schema = createTableSchema(info.config.dimensions)
             await this.#db.createEmptyTable(tableName, schema)
             const res = await this.#db.insert(tableName, avaliableData)
-            log.debug(`[store process] [insert] data to database, table: ${tableName}, result: `, res)
+            this.#log.debug(`[store process] [insert] data to database, table: ${tableName}, result: `, res)
           } else {
             const res = await this.#db.upsert(tableName, avaliableData)
-            log.debug(`[store process] [upsert] data to database, table: ${tableName}, result: `, res)
+            this.#log.debug(`[store process] [upsert] data to database, table: ${tableName}, result: `, res)
           }
           const count = await this.#db.countRows(tableName)
           if (count > 256 && !(await this.#db.hasIndex(tableName, "vector"))) {
-            log.debug(`[store process] create index for table: ${tableName}, count: ${count}`)
+            this.#log.debug(`[store process] create index for table: ${tableName}, count: ${count}`)
             await this.#db.createIndex({
               tableName,
               indexName: "vector",
@@ -68,7 +67,7 @@ export class Store implements TaskChain {
         statusResp.code = 200
         statusResp.msg = "ok"
       } catch (error) {
-        log.error("[store process error]", errorToText(error))
+        this.#log.error("[store process error]", errorToText(error))
         statusResp.status = RAGFileStatus.Failed
         statusResp.msg = errorToText(error)
         statusResp.code = 500

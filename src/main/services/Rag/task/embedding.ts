@@ -4,7 +4,7 @@ import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } f
 import axios, { AxiosResponse } from "axios"
 import { errorToText, isArray, toNumber } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from ".."
+import { RAGServiceId } from "../vars"
 
 const requestWithChunks = async <T>(
   chunks: RAGFile[],

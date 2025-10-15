@@ -37,10 +37,8 @@ import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
 import { mcpEnv } from "./env"
 import { useLog } from "@main/hooks/useLog"
+import { mcpName, MCPServiceId, mcpVersion } from "./vars"
 
-export const MCPServiceId = "MCPService"
-export const mcpName = "windflow-mcp-client"
-export const mcpVersion = "v0.0.1"
 export class MCPServiceImpl implements MCPService, ServiceCore {
   #globalBus: EventBus
   #envParams: ToolEnvironment = defaultEnv()

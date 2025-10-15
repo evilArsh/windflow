@@ -15,7 +15,7 @@ import {
 } from "./transformer"
 import { isMaxTokensReached, addChunk, isMaxFileChunksReached } from "./utils"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from ".."
+import { RAGServiceId } from "../vars"
 export function detectFileTypeByExtension(filePath: string) {
   const ext = path.extname(filePath).toLowerCase()
   const textExtensions = [".txt", ".md"]
