@@ -77,7 +77,7 @@ router.afterEach(to => {
               <ContentBox
                 normal-icon
                 class="flex-1"
-                style="--content-box-padding: var(--ai-gap-base)"
+                style="--content-box-padding: 0 var(--ai-gap-base)"
                 :main-style="{ flexDirection: 'column' }"
                 background
                 still-lock
