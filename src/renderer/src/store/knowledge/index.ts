@@ -10,7 +10,9 @@ export default defineStore("knowledge", () => {
   async function init() {
     knowledges.length = 0
     const data = await api.fetch()
-    knowledges.push(...data)
+    data.forEach(item => {
+      knowledges.push(item)
+    })
   }
   async function remove(id: string) {
     await api.remove(id)

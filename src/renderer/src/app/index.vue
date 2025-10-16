@@ -22,7 +22,6 @@ async function init() {
       useChatTopicStore().init(),
       useMCPStore().init(),
       useEnvStore().init(),
-      useEnvStore().init(),
       useKnowledgeStore().init(),
       useEmbeddingStore().init(),
     ])

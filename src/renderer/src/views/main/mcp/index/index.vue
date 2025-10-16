@@ -30,6 +30,7 @@ const {
 } = useDialog({
   width: "70vw",
 })
+const formRef = useTemplateRef("formRef")
 const current = ref<MCPServerParam>()
 const search = shallowReactive({
   keyword: "",
@@ -54,6 +55,7 @@ const serverHandler = {
     } else {
       mcp.start(MCPRootTopicId, param)
     }
+    formRef.value?.validate()
   },
   onCardDelete: async (done: CallBackFn, param: MCPServerParam) => {
     try {
@@ -159,7 +161,12 @@ const dlg = {
       </div>
       <el-tabs v-if="current" class="mcp-config-tabs" v-model="tabs.active">
         <el-tab-pane :label="t('mcp.service.tabs.config')" name="config">
-          <Form hide-close-btn @change="dlg.onFormChange" :form-props="{ labelPosition: 'top' }" :data="current"></Form>
+          <Form
+            ref="formRef"
+            hide-close-btn
+            @change="dlg.onFormChange"
+            :form-props="{ labelPosition: 'top' }"
+            :data="current"></Form>
         </el-tab-pane>
         <el-tab-pane :label="t('mcp.service.tabs.tool')" name="tool">
           <Loading v-if="current.status === MCPClientStatus.Connecting" :server="current"></Loading>

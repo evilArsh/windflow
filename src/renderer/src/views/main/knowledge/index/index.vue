@@ -1,34 +1,38 @@
 <script lang="ts" setup>
 import useKnowledgeStore from "@renderer/store/knowledge"
 import useRagFilesStore from "@renderer/store/ragFiles"
+import RagFile from "../components/ragFile.vue"
 import { storeToRefs } from "pinia"
 // import { useDialog } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { Knowledge } from "@renderer/types/knowledge"
 import { CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
+import { RAGLocalFileMeta } from "@shared/types/rag"
 // import { Spinner } from "@toolmain/components"
-const knowledge = useKnowledgeStore()
-const ragFiles = useRagFilesStore()
-const { knowledges } = storeToRefs(knowledge)
+const useKnowledge = useKnowledgeStore()
+const useRagFiles = useRagFilesStore()
+const { knowledges } = storeToRefs(useKnowledge)
+const { ragFiles } = storeToRefs(useRagFiles)
 const { t } = useI18n()
 // const { props, event, close, open } = useDialog({
 //   width: "70vw",
 // })
-const current = ref<Knowledge>()
-const search = shallowReactive({
+const cache = reactive({
   keyword: "",
+  current: null as Knowledge | null,
+  currentFiles: [] as RAGLocalFileMeta[],
 })
-const filterKnowledges = computed(() => knowledges.value.filter(v => v.name.includes(search.keyword)))
+const filterKnowledges = computed(() => knowledges.value.filter(v => v.name.includes(cache.keyword)))
 const ev = {
-  async onNew(done: CallBackFn) {
+  async onAddNewKnowledge(done: CallBackFn) {
     try {
       const newData: Knowledge = {
         id: uniqueId(),
         name: t("knowledge.newDefault"),
         type: "rag",
       }
-      await knowledge.api.add(newData)
+      await useKnowledge.api.add(newData)
       knowledges.value.push(newData)
     } catch (error) {
       msgError(errorToText(error))
@@ -36,16 +40,33 @@ const ev = {
       done()
     }
   },
+  async onKnowledgeChoose(kb: Knowledge) {
+    try {
+      cache.current = kb
+      if (Object.hasOwn(ragFiles, kb.id)) {
+        cache.currentFiles = ragFiles[kb.id]
+      } else {
+        cache.currentFiles.length = 0
+      }
+    } catch (error) {
+      msgError(errorToText(error))
+    }
+  },
 }
 </script>
 <template>
   <ContentLayout custom>
-    <!-- <template #header> </template> -->
+    <template #header>
+      <div class="p-1rem flex-1 flex flex-col">
+        <div class="flex items-center">
+          <Button type="primary" size="small" @click="ev.onAddNewKnowledge">{{ t("btn.new") }}</Button>
+        </div>
+      </div>
+    </template>
     <div class="flex flex-1 gap.5rem overflow-hidden">
       <div class="knowledge-list">
         <div class="knowledge-list-header">
-          <el-input v-model="search.keyword" :placeholder="t('knowledge.search')" clearable />
-          <Button type="primary" @click="ev.onNew">{{ t("btn.new") }}</Button>
+          <el-input v-model="cache.keyword" :placeholder="t('knowledge.search')" clearable />
         </div>
         <div class="knowledge-list-content">
           <el-scrollbar>
@@ -54,8 +75,9 @@ const ev = {
                 v-for="kb in filterKnowledges"
                 :key="kb.id"
                 background
-                :default-lock="current?.id === kb.id"
-                still-lock>
+                :default-lock="cache.current?.id === kb.id"
+                still-lock
+                @click="ev.onKnowledgeChoose(kb)">
                 <template #icon>
                   <i-material-symbols-light:book-2 class="text-1.4rem" />
                 </template>
@@ -65,8 +87,8 @@ const ev = {
           </el-scrollbar>
         </div>
       </div>
-      <div class="flex-1">
-        <el-empty></el-empty>
+      <div class="flex-1 flex">
+        <RagFile v-if="cache.current" :file-list="cache.currentFiles"></RagFile>
       </div>
     </div>
     <!-- <el-dialog v-bind="props" v-on="event"> </el-dialog> -->

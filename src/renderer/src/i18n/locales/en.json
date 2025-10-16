@@ -18,7 +18,8 @@
     "retry": "Retry",
     "save": "Save",
     "send": "Send({shortcut})",
-    "sync": "Sync"
+    "sync": "Sync",
+    "upload": "upload"
   },
   "chat": {
     "addChat": "New Chat",
@@ -256,6 +257,9 @@
     "model": "Model",
     "prompt": "Prompt",
     "title": "Title"
+  },
+  "upload": {
+    "text": "Drop file here or click to upload"
   },
   "window": {
     "api": {

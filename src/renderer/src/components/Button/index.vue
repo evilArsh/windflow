@@ -1,5 +1,8 @@
 <template>
   <el-button v-bind="$attrs" :disabled="disabled" aria-label="ep-button" @click.stop="onClick">
+    <template v-if="$slots.icon" #icon>
+      <slot name="icon"></slot>
+    </template>
     <slot v-if="!loading"></slot>
     <el-icon v-else>
       <i class="i-ep:loading loading-icon"></i>

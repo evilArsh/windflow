@@ -18,7 +18,8 @@
     "retry": "重试",
     "save": "保存",
     "send": "发送({shortcut})",
-    "sync": "同步"
+    "sync": "同步",
+    "upload": "上传文件"
   },
   "chat": {
     "addChat": "新的聊天",
@@ -264,6 +265,9 @@
     "model": "模型",
     "prompt": "提示词",
     "title": "标题"
+  },
+  "upload": {
+    "text": "拖放文件到此处，或点击上传"
   },
   "window": {
     "api": {

@@ -70,12 +70,15 @@ const defaultData = (): MCPServerParam => ({
 })
 const clonedData = ref<MCPServerParam>(defaultData())
 const handler = {
+  async validate() {
+    await formRef.value?.validate()
+  },
   async init() {
     clonedData.value = props.data ? mcp.clonePure(props.data) : defaultData()
   },
   save: async (done: CallBackFn) => {
     try {
-      await formRef.value?.validate()
+      await handler.validate()
       emit("change", clonedData.value)
       emit("close")
       done()
@@ -89,6 +92,9 @@ const handler = {
   },
 }
 watch(() => props.data, handler.init, { immediate: true, deep: true })
+defineExpose({
+  validate: handler.validate,
+})
 </script>
 <template>
   <DialogPanel>

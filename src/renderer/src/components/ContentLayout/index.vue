@@ -142,18 +142,17 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 .scroll-content {
+  --scrollbar-thumb-color: transparent;
   width: 100%;
   flex: 1;
   overflow: auto;
   display: flex;
   flex-direction: column-reverse;
   &::-webkit-scrollbar-thumb {
-    background-color: transparent;
+    background-color: var(--scrollbar-thumb-color);
   }
   &:hover {
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--el-fill-color-darker);
-    }
+    --scrollbar-thumb-color: var(--el-fill-color-darker);
   }
 }
 .content-container {
