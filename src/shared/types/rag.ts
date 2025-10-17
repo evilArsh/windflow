@@ -140,4 +140,5 @@ export interface RAGLocalFileInfo extends RAGLocalFileMeta {
   fileName: string
   fileSize: number
   mimeType?: string
+  extenstion?: string
 }

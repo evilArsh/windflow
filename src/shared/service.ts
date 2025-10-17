@@ -16,6 +16,7 @@ import {
 } from "./types/mcp"
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "./types/rag"
 import { Theme } from "./types/theme"
+import { FileInfo } from "./types/files"
 
 export const IpcChannel = {
   McpStartServer: "mcp.startServer",
@@ -34,6 +35,7 @@ export const IpcChannel = {
   McpTestEnv: "mcp.testEnv",
 
   FileChooseFilePath: "file.chooseFilePath",
+  FileGetInfo: "file.getInfo",
 
   ThemeSetTheme: "theme.setTheme",
 
@@ -83,7 +85,8 @@ export interface MCPService {
 }
 
 export interface FileService {
-  chooseFilePath: () => Promise<Response<string>>
+  chooseFilePath: () => Promise<Response<string[]>>
+  getInfo: (absPath: string[]) => Promise<Response<FileInfo[]>>
 }
 
 export interface EventBus {

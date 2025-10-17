@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import useKnowledgeStore from "@renderer/store/knowledge"
 import useRagFilesStore from "@renderer/store/ragFiles"
+import useSettingsStore from "@renderer/store/settings"
 import RagFile from "../components/ragFile.vue"
 import { storeToRefs } from "pinia"
 // import { useDialog } from "@toolmain/shared"
@@ -8,22 +9,27 @@ import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { Knowledge } from "@renderer/types/knowledge"
 import { CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
-import { RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGLocalFileInfo } from "@shared/types/rag"
+import { SettingKeys } from "@renderer/types"
 // import { Spinner } from "@toolmain/components"
-const useKnowledge = useKnowledgeStore()
-const useRagFiles = useRagFilesStore()
-const { knowledges } = storeToRefs(useKnowledge)
-const { ragFiles } = storeToRefs(useRagFiles)
+const knowledgeStore = useKnowledgeStore()
+const ragFilesStore = useRagFilesStore()
+const settingsStore = useSettingsStore()
+const { knowledges } = storeToRefs(knowledgeStore)
+const { ragFiles } = storeToRefs(ragFilesStore)
 const { t } = useI18n()
 // const { props, event, close, open } = useDialog({
 //   width: "70vw",
 // })
 const cache = reactive({
   keyword: "",
+  currentId: "",
   current: null as Knowledge | null,
-  currentFiles: [] as RAGLocalFileMeta[],
+  currentFiles: [] as RAGLocalFileInfo[],
 })
-const filterKnowledges = computed(() => knowledges.value.filter(v => v.name.includes(cache.keyword)))
+const filterKnowledges = computed(() =>
+  knowledges.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
+)
 const ev = {
   async onAddNewKnowledge(done: CallBackFn) {
     try {
@@ -32,7 +38,7 @@ const ev = {
         name: t("knowledge.newDefault"),
         type: "rag",
       }
-      await useKnowledge.api.add(newData)
+      await knowledgeStore.api.add(newData)
       knowledges.value.push(newData)
     } catch (error) {
       msgError(errorToText(error))
@@ -42,17 +48,30 @@ const ev = {
   },
   async onKnowledgeChoose(kb: Knowledge) {
     try {
-      cache.current = kb
+      cache.currentId = kb.id
       if (Object.hasOwn(ragFiles, kb.id)) {
-        cache.currentFiles = ragFiles[kb.id]
+        cache.currentFiles = ragFiles.value[kb.id]
       } else {
-        cache.currentFiles.length = 0
+        const res = await ragFilesStore.api.getAllByTopicId(kb.id)
+        ragFiles.value[kb.id] = res
+        cache.currentFiles = ragFiles.value[kb.id]
       }
     } catch (error) {
       msgError(errorToText(error))
     }
   },
 }
+settingsStore.dataWatcher<string>(
+  SettingKeys.KnowledgeId,
+  () => cache.currentId,
+  cache.currentId,
+  id => {
+    if (!id) return
+    const kb = knowledges.value.find(v => v.id === id)
+    if (!kb) return
+    cache.current = kb
+  }
+)
 </script>
 <template>
   <ContentLayout custom>
@@ -88,7 +107,7 @@ const ev = {
         </div>
       </div>
       <div class="flex-1 flex">
-        <RagFile v-if="cache.current" :file-list="cache.currentFiles"></RagFile>
+        <RagFile v-if="cache.current" :knowledge="cache.current" :file-list="cache.currentFiles"></RagFile>
       </div>
     </div>
     <!-- <el-dialog v-bind="props" v-on="event"> </el-dialog> -->

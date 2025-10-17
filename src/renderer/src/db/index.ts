@@ -12,7 +12,7 @@ import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { type EntityTable } from "dexie"
 import { migrateToV2, migrateToV4, migrateToV5 } from "./migrate"
 import { Knowledge } from "@renderer/types/knowledge"
-import { RAGEmbeddingConfig, RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@shared/types/rag"
 
 export const name = "db-windflow"
 
@@ -26,7 +26,7 @@ const db = new Dexie(name) as Dexie & {
   settings: EntityTable<Settings<SettingsValue>, "id">
   mcpServer: EntityTable<MCPServerParam, "id">
   knowledge: EntityTable<Knowledge, "id">
-  ragFiles: EntityTable<RAGLocalFileMeta, "id">
+  ragFiles: EntityTable<RAGLocalFileInfo, "id">
   embedding: EntityTable<RAGEmbeddingConfig, "id">
 }
 

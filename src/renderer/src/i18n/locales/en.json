@@ -104,10 +104,13 @@
     "requiredValue": "This value is required"
   },
   "knowledge": {
+    "fileList": "file list",
+    "name": "name",
     "newDefault": "New Knowledge Base",
     "search": "search knowledge",
     "subTitle": "Knowledge Service Config",
-    "title": "Knowledge"
+    "title": "Knowledge",
+    "type": "type"
   },
   "lang": {
     "en": "English",

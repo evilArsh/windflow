@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { useData } from "./api"
 import { RAGEmbeddingConfig } from "@shared/types/rag"
-export default defineStore("knowledge", () => {
+export default defineStore("embedding", () => {
   const embeddings = reactive<RAGEmbeddingConfig[]>([])
   const api = useData()
 

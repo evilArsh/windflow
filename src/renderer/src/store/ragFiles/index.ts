@@ -1,8 +1,8 @@
 import { defineStore } from "pinia"
 import { useData } from "./api"
-import { RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGLocalFileInfo } from "@shared/types/rag"
 export default defineStore("ragFiles", () => {
-  const ragFiles = reactive<Record<string, RAGLocalFileMeta[]>>({})
+  const ragFiles = reactive<Record<string, RAGLocalFileInfo[]>>({})
   const api = useData()
   async function remove(id: string) {
     const data = await api.get(id)

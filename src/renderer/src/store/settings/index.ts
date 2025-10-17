@@ -58,14 +58,17 @@ export default defineStore("settings", () => {
     callBack?: (data: T) => void
   ) {
     const configData = ref<Settings<T>>()
+    const execCallback = async (value: Settings<T>) => {
+      await api.update(value)
+      callBack?.(value.value)
+      updateValue(id, value)
+    }
     const watcher = watch(
       wrapData,
       async val => {
         if (configData.value) {
           configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
-          await api.update(configData.value)
-          callBack?.(configData.value.value)
-          updateValue(id, configData.value)
+          await execCallback(configData.value)
         }
       },
       { deep: true, immediate: true }
@@ -76,6 +79,11 @@ export default defineStore("settings", () => {
         wrapData.value = configData.value.value
       } else if (isReactive(wrapData)) {
         Object.assign(wrapData, configData.value.value)
+      } else {
+        /**
+         * cannot set `wrapData`, because it is a function, `watcher` cannot be triggered, just callback
+         */
+        execCallback(configData.value)
       }
     })
     onBeforeUnmount(() => {

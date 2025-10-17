@@ -11,15 +11,21 @@ export enum SettingKeys {
   ChatDefaultExpandedKeys = "chat.defaultExpandedKeys", // 聊天topic树默认展开的节点列表
   ChatTextToImageConfig = "chat.textToImageConfig", // !全局文本转图片配置
   ChatLLMConfig = "chat.llmConfig", // !全局llm请求配置
+  ChatCurrentNodeKey = "chat.currentNodeKey", // 当前聊天节点key
+
   MCPSubNav = "mcp.subNav", // mcp子菜单宽度配置
   MCPSubRoute = "mcp.subRoute", // mcp子菜单路由
+
   ToolEnvironment = "tool.environment", // 全局工具环境配置
+
   ModelSubNav = "model.subNav", // 模型子菜单宽度配置
-  ChatCurrentNodeKey = "chat.currentNodeKey", // 当前聊天节点key
+
   GlobalThemeDark = "global.themeDark", // 全局主题黑色开关
   ProviderCurrentSettingActive = "provider.currentSettingActive", // 选中的提供商
+
   KnowledgeSubNav = "knowledge.subNav", // 知识库子菜单宽度配置
   KnowledgeSubRoute = "knowledge.subRoute", // 知识库子菜单宽度配置
+  KnowledgeId = "knowledge.id", // 知识库选中的id
 }
 export type SettingsValue = Primitive | Array<Primitive> | { [key: string]: SettingsValue }
 export type Settings<T extends SettingsValue> = {

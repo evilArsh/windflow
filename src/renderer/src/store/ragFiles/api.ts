@@ -1,9 +1,9 @@
 import { db } from "@renderer/db"
-import { RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGLocalFileInfo } from "@shared/types/rag"
 import { cloneDeep } from "@toolmain/shared"
 export const useData = () => {
-  const update = async (data: RAGLocalFileMeta) => db.ragFiles.put(cloneDeep(data))
-  const add = async (data: RAGLocalFileMeta) => db.ragFiles.add(cloneDeep(data))
+  const update = async (data: RAGLocalFileInfo) => db.ragFiles.put(cloneDeep(data))
+  const add = async (data: RAGLocalFileInfo) => db.ragFiles.add(cloneDeep(data))
   const remove = async (id: string) => db.ragFiles.delete(id)
   const get = async (id: string) => db.ragFiles.get(id)
   /**

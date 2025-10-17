@@ -1,8 +1,6 @@
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
 import mime from "mime-types"
 import { isString, isSymbol, Response, responseData } from "@toolmain/shared"
-import { fileTypeFromFile } from "file-type"
-import { detectXml } from "@file-type/xml"
 import path from "node:path"
 
 import {
@@ -92,16 +90,11 @@ export function useTextReader(config: RAGEmbeddingConfig) {
 
 export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
   const log = useLog(RAGServiceId)
-  const ft = await fileTypeFromFile(data.path, { customDetectors: [detectXml] })
-  if (ft) {
-    data.mimeType = ft.mime
-  } else {
-    data.mimeType = mime.lookup(data.path) || "application/octet-stream"
-  }
-  const ext = mime.extension(data.mimeType) || "bin"
+  const mimeType = data.mimeType ?? "application/octet-stream"
+  const ext = mime.extension(mimeType) || "bin"
   const reader = useTextReader(config)
   let transformer: DataTransformer<string | symbol> | null = null
-  log.debug(`[start readFile] ext: ${ext}, mimeType: ${data.mimeType}, path: ${data.path}`)
+  log.debug(`[start readFile] ext: ${ext}, mimeType: ${mimeType}, path: ${data.path}`)
   try {
     let resp: Response<RAGFile[]>
     if (ext === "pdf") {
@@ -120,7 +113,7 @@ export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfi
       transformer = useXlsxTransformer(data.path)
       const res = await reader.read(data, useXlsxTransformer(data.path))
       resp = responseData(200, "ok", res)
-    } else if (data.mimeType.startsWith("text/") || ["md", "js", "xml"].includes(ext)) {
+    } else if (mimeType.startsWith("text/") || ["md", "js", "xml"].includes(ext)) {
       transformer = useTextTransformer(data.path)
       const res = await reader.read(data, useTextTransformer(data.path))
       resp = responseData(200, "ok", res)

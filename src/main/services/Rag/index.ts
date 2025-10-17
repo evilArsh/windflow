@@ -2,12 +2,10 @@ import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/service"
 import { VectorStore, VectorStoreConfig } from "./db"
-import fs from "node:fs"
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
 import { errorToText, isArray, Response, responseData, toNumber, uniqueId } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
-import path from "path"
 import { EmbeddingResponse, ProcessStatus, RerankResponse, TaskChain, TaskManager } from "./task/types"
 import axios from "axios"
 import { useLog } from "@main/hooks/useLog"
@@ -16,6 +14,7 @@ import { FileProcess } from "./task/file"
 import { Store } from "./task/store"
 import { combineTableName } from "./db/utils"
 import { RAGServiceId } from "./vars"
+import { getFileInfo } from "@main/misc/file"
 
 export type RAGServiceConfig = {
   store?: VectorStoreConfig
@@ -141,14 +140,15 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (this.#ss.has(meta.path)) {
         return this.#log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
       }
-      const stat = fs.statSync(meta.path)
-      if (!stat.isFile) {
+      const info = await getFileInfo(meta.path)
+      if (!info.isFile) {
         return this.#log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
       const metaInfo: RAGLocalFileInfo = {
         ...meta,
-        fileName: path.basename(meta.path),
-        fileSize: stat.size,
+        ...info,
+        fileName: info.name,
+        fileSize: info.size,
       }
       this.#log.debug("[processLocalFile] start ", metaInfo)
       this.#task.process(metaInfo, config)
