@@ -1,3 +1,4 @@
+// @forward "/node_modules/element-plus/theme-chalk/src/common/var.scss" with (
 @forward "element-plus/theme-chalk/src/common/var.scss" with (
   $colors: (
     "primary": (
@@ -47,4 +48,4 @@
   //   "blank": #f8fafc,
    // )
 );
-@use 'element-plus/theme-chalk/src/dark/css-vars.scss';
+@use "element-plus/theme-chalk/src/dark/css-vars.scss";

@@ -93,20 +93,36 @@
       "seed": "Random Seed"
     }
   },
+  "embedding": {
+    "embedding": "embedding provider",
+    "search": "search"
+  },
   "error": {
     "emptyModels": "no models found",
     "messageNotInTopic": "message not belong to current topic",
     "noMessages": "no messages collection"
   },
   "form": {
-    "emptyValue": "Cannot have empty value",
-    "invalidUrl": "Not a valid URL address",
-    "requiredValue": "This value is required"
+    "emptyValueNotAllowed": "Cannot have empty value",
+    "selectStringFieldNotNull": "field is requred and not null",
+    "stringFieldNotNull": "field is required and not null",
+    "urlInvalid": "Not a valid URL address",
+    "valueRequired": "This value is required"
   },
   "knowledge": {
+    "dimensionsDesc": "dimensions of the embedding vector",
+    "editTitle": "Knowledge Base Information",
+    "embedding": "embedding model",
     "fileList": "file list",
+    "maxFileChunks": "maxFileChunks",
+    "maxFileChunksDesc": "split text into chunks, the chunks of text must less than the value,if exceed,file will be truncated",
+    "maxInputs": "maxInputs",
+    "maxInputsDesc": "max inputs array length when using embedding api",
+    "maxTokensDesc": "max tokens of each chunk",
+    "menu": {
+      "embeddingList": "embedding config"
+    },
     "name": "name",
-    "newDefault": "New Knowledge Base",
     "search": "search knowledge",
     "subTitle": "Knowledge Service Config",
     "title": "Knowledge",

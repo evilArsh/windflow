@@ -95,24 +95,42 @@
       "seed": "随机种子"
     }
   },
+  "embedding": {
+    "editTitle": "嵌入信息",
+    "name": "名字",
+    "provider": "提供商",
+    "search": "搜索"
+  },
   "error": {
     "emptyModels": "请求模型为空",
     "messageNotInTopic": "用户消息不属于当前聊天",
     "noMessages": "找不到消息集合"
   },
   "form": {
-    "emptyValue": "不能存在空值",
-    "invalidUrl": "不是有效的URL地址",
-    "requiredValue": "该值是必选的"
+    "emptyValueNotAllowed": "不能存在空值",
+    "selectStringFieldNotNull": "字段必选",
+    "stringFieldNotNull": "字段必填且不能为空",
+    "urlInvalid": "不是有效的URL地址",
+    "valueRequired": "该值是必选的"
   },
   "knowledge": {
     "detail": "详细信息",
+    "dimensions": "维度",
+    "dimensionsDesc": "将内容嵌入成向量时，向量的维度",
+    "editTitle": "知识库信息",
+    "embedding": "嵌入模型",
     "fileList": "文件列表",
+    "maxFileChunks": "最大文件分割块数",
+    "maxFileChunksDesc": "将文件分割成文件快时，指定最大块数，如果超出值，文件将会被截断",
+    "maxInputs": "最大文本请求个数",
+    "maxInputsDesc": "将一个文件分成多个块请求嵌入时，指定每次调用接口时需要批量请求的块数",
+    "maxTokens": "最大tokens",
+    "maxTokensDesc": "将一个文件分割成多个块进行嵌入时，每个块的最大token数",
     "menu": {
+      "embeddingList": "嵌入模型配置",
       "list": "知识库列表"
     },
     "name": "名字",
-    "newDefault": "新的知识库",
     "search": "搜索知识库",
     "subTitle": "知识库服务配置",
     "title": "知识库",

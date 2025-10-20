@@ -8,6 +8,7 @@ export default defineStore("knowledge", () => {
   const api = useData()
 
   async function remove(id: string) {
+    // FIXME: transaction
     await api.remove(id)
     await ragFilesStore.removeAllByTopicId(id)
     const i = knowledges.findIndex(item => item.id === id)

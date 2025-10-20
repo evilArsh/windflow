@@ -26,6 +26,7 @@ export enum SettingKeys {
   KnowledgeSubNav = "knowledge.subNav", // 知识库子菜单宽度配置
   KnowledgeSubRoute = "knowledge.subRoute", // 知识库子菜单宽度配置
   KnowledgeId = "knowledge.id", // 知识库选中的id
+  EmbeddingId = "embedding.id", // 知识库->嵌入 选中的id
 }
 export type SettingsValue = Primitive | Array<Primitive> | { [key: string]: SettingsValue }
 export type Settings<T extends SettingsValue> = {

@@ -26,35 +26,39 @@ const formRules = ref<FormRules>({
     message: "",
     trigger: "blur",
     validator: (_, v: string, cb) => {
-      cb(v.trim().length > 0 ? undefined : new Error(t("form.requiredValue")))
+      cb(v.trim().length > 0 ? undefined : new Error(t("form.valueRequired")))
     },
   },
   "params.command": {
     required: true,
     trigger: "blur",
     validator: (_, v: string, cb) => {
-      cb(v.trim().length > 0 ? undefined : new Error(t("form.requiredValue")))
+      cb(v.trim().length > 0 ? undefined : new Error(t("form.valueRequired")))
     },
   },
   "params.args": {
     required: true,
     trigger: "blur",
     validator: (_, v: Array<string | number>, cb) => {
-      if (v.length === 0) return cb(new Error(t("form.emptyValue")))
-      cb(v.every(v => isNumber(v) || v) ? undefined : new Error(t("form.emptyValue")))
+      if (v.length === 0) return cb(new Error(t("form.emptyValueNotAllowed")))
+      cb(v.every(v => isNumber(v) || v) ? undefined : new Error(t("form.emptyValueNotAllowed")))
     },
   },
   "params.env": {
     trigger: "blur",
     validator: (_, v: Record<string, unknown>, cb) => {
-      cb(Object.keys(v).every(key => key && (isNumber(v[key]) || v[key])) ? undefined : new Error(t("form.emptyValue")))
+      cb(
+        Object.keys(v).every(key => key && (isNumber(v[key]) || v[key]))
+          ? undefined
+          : new Error(t("form.emptyValueNotAllowed"))
+      )
     },
   },
   "params.url": {
     required: true,
     trigger: "blur",
     validator: (_, value, cb) => {
-      cb(isHTTPUrl(value) ? undefined : new Error(t("form.invalidUrl")))
+      cb(isHTTPUrl(value) ? undefined : new Error(t("form.urlInvalid")))
     },
   },
   type: { required: true, message: "", trigger: "blur" },

@@ -2,63 +2,108 @@
 import useKnowledgeStore from "@renderer/store/knowledge"
 import useRagFilesStore from "@renderer/store/ragFiles"
 import useSettingsStore from "@renderer/store/settings"
+import useEmbeddingStore from "@renderer/store/embedding"
 import RagFile from "../components/ragFile.vue"
 import { storeToRefs } from "pinia"
-// import { useDialog } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { Knowledge } from "@renderer/types/knowledge"
-import { CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
-import { RAGLocalFileInfo } from "@shared/types/rag"
+import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
 import { SettingKeys } from "@renderer/types"
-// import { Spinner } from "@toolmain/components"
+const addFormRef = useTemplateRef("addForm")
+
 const knowledgeStore = useKnowledgeStore()
 const ragFilesStore = useRagFilesStore()
 const settingsStore = useSettingsStore()
+const embeddingStore = useEmbeddingStore()
 const { knowledges } = storeToRefs(knowledgeStore)
 const { ragFiles } = storeToRefs(ragFilesStore)
+const { embeddings } = storeToRefs(embeddingStore)
 const { t } = useI18n()
-// const { props, event, close, open } = useDialog({
-//   width: "70vw",
-// })
+const { props, event, close, open } = useDialog({
+  width: "50rem",
+  showClose: false,
+})
+const util = {
+  getDefaultKbForm(): Knowledge {
+    return {
+      id: "",
+      name: "",
+      embeddingId: "",
+      type: "rag",
+    }
+  },
+}
 const cache = reactive({
+  // add/edit new knowledge base dialog form
+  kbForm: util.getDefaultKbForm(),
+  // list filter keyword
   keyword: "",
   currentId: "",
   current: null as Knowledge | null,
-  currentFiles: [] as RAGLocalFileInfo[],
+  fetchCurrentFiles: markRaw(async (currentId: string) => {
+    try {
+      if (!ragFiles.value[currentId]) {
+        const res = await ragFilesStore.api.getAllByTopicId(currentId)
+        ragFiles.value[currentId] = res
+      }
+    } catch (error) {
+      msgError(errorToText(error))
+    }
+  }),
 })
 const filterKnowledges = computed(() =>
   knowledges.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
 )
 const ev = {
-  async onAddNewKnowledge(done: CallBackFn) {
+  onOpenDlg(done: CallBackFn) {
+    done()
+    open()
+  },
+  onCloseDlg(done: CallBackFn) {
+    addFormRef.value?.resetFields()
+    cache.kbForm = util.getDefaultKbForm()
+    done()
+    close()
+  },
+  async onConfirmEdit(done: CallBackFn) {
     try {
-      const newData: Knowledge = {
-        id: uniqueId(),
-        name: t("knowledge.newDefault"),
-        type: "rag",
+      await addFormRef.value?.validate()
+    } catch (_) {
+      done()
+      return
+    }
+    try {
+      const kb = knowledges.value.find(kb => kb.id === cache.kbForm.id)
+      if (!kb) {
+        cache.kbForm.id = uniqueId()
+        await knowledgeStore.api.add(cache.kbForm)
+        knowledges.value.push(cloneDeep(cache.kbForm))
+        cache.currentId = cache.kbForm.id
+      } else {
+        Object.assign(kb, cache.kbForm)
+        await knowledgeStore.api.update(kb)
       }
-      await knowledgeStore.api.add(newData)
-      knowledges.value.push(newData)
+      ev.onCloseDlg(done)
     } catch (error) {
       msgError(errorToText(error))
-    } finally {
       done()
     }
   },
-  async onKnowledgeChoose(kb: Knowledge) {
+  async onEdit(id: string, done: CallBackFn) {
     try {
-      cache.currentId = kb.id
-      if (Object.hasOwn(ragFiles, kb.id)) {
-        cache.currentFiles = ragFiles.value[kb.id]
-      } else {
-        const res = await ragFilesStore.api.getAllByTopicId(kb.id)
-        ragFiles.value[kb.id] = res
-        cache.currentFiles = ragFiles.value[kb.id]
+      const kb = knowledges.value.find(kb => kb.id === id)
+      if (kb) {
+        cache.kbForm = cloneDeep(kb)
+        ev.onOpenDlg(done)
       }
     } catch (error) {
+      done()
       msgError(errorToText(error))
     }
+  },
+  onKnowledgeChoose(kb: Knowledge) {
+    cache.currentId = kb.id
   },
 }
 settingsStore.dataWatcher<string>(
@@ -70,6 +115,7 @@ settingsStore.dataWatcher<string>(
     const kb = knowledges.value.find(v => v.id === id)
     if (!kb) return
     cache.current = kb
+    cache.fetchCurrentFiles(kb.id)
   }
 )
 </script>
@@ -78,10 +124,43 @@ settingsStore.dataWatcher<string>(
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
         <div class="flex items-center">
-          <Button type="primary" size="small" @click="ev.onAddNewKnowledge">{{ t("btn.new") }}</Button>
+          <Button type="primary" size="small" @click="ev.onOpenDlg">{{ t("btn.new") }}</Button>
         </div>
       </div>
     </template>
+    <el-dialog v-bind="props" v-on="event" :title="t('knowledge.editTitle')">
+      <div class="h-30rem">
+        <el-form ref="addForm" :model="cache.kbForm" label-width="100px">
+          <el-form-item
+            :label="t('knowledge.name')"
+            required
+            prop="name"
+            :rules="[{ type: 'string', whitespace: false, required: true, message: t('form.stringFieldNotNull') }]">
+            <el-input v-model.trim="cache.kbForm.name"></el-input>
+          </el-form-item>
+          <el-form-item
+            prop="embeddingId"
+            :label="t('knowledge.embedding')"
+            required
+            :rules="[
+              { type: 'string', whitespace: false, required: true, message: t('form.selectStringFieldNotNull') },
+            ]">
+            <el-select v-model="cache.kbForm.embeddingId">
+              <el-option v-for="em in embeddings" :key="em.id" :label="em.name" :value="em.id"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="type" :label="t('knowledge.type')">
+            <el-select v-model="cache.kbForm.type">
+              <el-option label="rag" value="rag"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <Button type="primary" @click="ev.onConfirmEdit">{{ t("btn.confirm") }}</Button>
+        <Button @click="ev.onCloseDlg">{{ t("btn.cancel") }}</Button>
+      </template>
+    </el-dialog>
     <div class="flex flex-1 gap.5rem overflow-hidden">
       <div class="knowledge-list">
         <div class="knowledge-list-header">
@@ -107,10 +186,9 @@ settingsStore.dataWatcher<string>(
         </div>
       </div>
       <div class="flex-1 flex">
-        <RagFile v-if="cache.current" :knowledge="cache.current" :file-list="cache.currentFiles"></RagFile>
+        <RagFile v-if="cache.current" :knowledge="cache.current" @edit="ev.onEdit"></RagFile>
       </div>
     </div>
-    <!-- <el-dialog v-bind="props" v-on="event"> </el-dialog> -->
   </ContentLayout>
 </template>
 <style lang="scss" scoped>
