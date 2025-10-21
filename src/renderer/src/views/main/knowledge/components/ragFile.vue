@@ -87,12 +87,19 @@ const { t } = useI18n()
           </el-descriptions-item>
         </el-descriptions>
       </el-card>
-      <el-card class="flex flex-1 flex-col overflow-hidden" shadow="never" style="--el-card-padding: 1rem">
+      <el-card
+        class="flex flex-1 flex-col overflow-hidden"
+        shadow="never"
+        style="--el-card-padding: 1rem; --el-card-bg-color: var(--el-fill-color-light)">
         <template #header>
           <el-text type="primary">{{ t("knowledge.fileList") }}</el-text>
         </template>
         <el-scrollbar>
-          <ContentBox v-for="item in fileList" class="select-unset!" :key="item.id">
+          <ContentBox
+            v-for="item in fileList"
+            class="select-unset! mb-1rem!"
+            style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
+            :key="item.id">
             <i class="i-ic:baseline-insert-drive-file text-3rem"></i>
             <ContentBox class="flex-1 select-unset!" normal>
               <el-space>

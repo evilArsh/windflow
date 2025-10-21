@@ -11,8 +11,6 @@ import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } fro
 import { SettingKeys } from "@renderer/types"
 import EmbeddingForm from "./components/form.vue"
 import { RAGEmbeddingConfig } from "@shared/types/rag"
-import { FormItemRule } from "element-plus"
-import { Arrayable } from "@vueuse/core"
 
 // const knowledgeStore = useKnowledgeStore()
 // const ragFilesStore = useRagFilesStore()
@@ -24,7 +22,7 @@ const { embeddings } = storeToRefs(embeddingStore)
 const formRef = useTemplateRef("form")
 const { t } = useI18n()
 const { props, event, close, open } = useDialog({
-  width: "45vw",
+  width: "50vw",
   showClose: false,
 })
 const util = {
@@ -53,12 +51,12 @@ const util = {
     }
   },
 }
+
+const current = ref<RAGEmbeddingConfig | null>(null)
 const cache = reactive({
   emForm: util.getDefaultKbForm(),
   keyword: "",
   currentId: "",
-  current: null as RAGEmbeddingConfig | null,
-  emFormRules: {} as Partial<Record<string, Arrayable<FormItemRule>>> | undefined,
 })
 const filterEmbeddings = computed(() =>
   embeddings.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
@@ -110,6 +108,7 @@ const ev = {
       msgError(errorToText(error))
     }
   },
+  async onDelete(id: string, done: CallBackFn) {},
   onEmbeddingChoose(em: RAGEmbeddingConfig) {
     cache.currentId = em.id
   },
@@ -122,7 +121,7 @@ settingsStore.dataWatcher<string>(
     if (!id) return
     const em = embeddings.value.find(v => v.id === id)
     if (!em) return
-    cache.current = em
+    current.value = em
   }
 )
 </script>
@@ -136,9 +135,9 @@ settingsStore.dataWatcher<string>(
       </div>
     </template>
     <el-dialog v-bind="props" v-on="event" :title="t('embedding.editTitle')">
-      <div class="h-70vh">
+      <div class="h-50vh">
         <el-scrollbar>
-          <EmbeddingForm ref="form" :form="cache.emForm" :rules="cache.emFormRules"></EmbeddingForm>
+          <EmbeddingForm ref="form" :form="cache.emForm"></EmbeddingForm>
         </el-scrollbar>
       </div>
       <template #footer>
@@ -146,35 +145,55 @@ settingsStore.dataWatcher<string>(
         <Button @click="ev.onCloseDlg">{{ t("btn.cancel") }}</Button>
       </template>
     </el-dialog>
-    <div class="flex flex-1 gap.5rem overflow-hidden">
-      <div class="embedding-list">
-        <div class="embedding-list-header">
+    <ContentLayout style="--ai-header-height: auto" custom>
+      <template #header>
+        <div class="p-1rem w-full">
           <el-input v-model="cache.keyword" :placeholder="t('embedding.search')" clearable />
         </div>
-        <div class="embedding-list-content">
-          <el-scrollbar>
-            <div class="flex flex-col gap-[var(--ai-gap-base)]">
-              <ContentBox
-                v-for="em in filterEmbeddings"
-                :key="em.id"
-                background
-                :default-lock="cache.current?.id === em.id"
-                still-lock
-                @click="ev.onEmbeddingChoose(em)">
-                <template #icon>
-                  <i-material-symbols:bookmark-stacks class="text-1.4rem" />
+      </template>
+      <el-scrollbar style="flex: 1" view-class="bg-[var(--el-fill-color-light)] min-h-full">
+        <div class="flex flex-col w-full p-1rem">
+          <ContentBox
+            v-for="item in filterEmbeddings"
+            style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
+            class="select-unset! mb-1rem!"
+            :key="item.id">
+            <i class="i-material-symbols:bookmark-stacks text-3rem"></i>
+            <ContentBox class="flex-1 select-unset!" normal>
+              <el-space>
+                <el-text type="primary">{{ item.name }}</el-text>
+              </el-space>
+              <template #end> </template>
+              <template #footer>
+                <div class="flex">
+                  <el-text size="small" type="info">{{ item.embedding.providerName }}</el-text>
+                  <el-divider direction="vertical"></el-divider>
+                  <el-text size="small" type="info">{{ item.embedding.model }} </el-text>
+                </div>
+              </template>
+            </ContentBox>
+            <template #footer>
+              <el-popconfirm :title="t('tip.deleteConfirm')">
+                <template #reference>
+                  <el-button size="small" round text type="danger">
+                    <i class="i-ep:delete text-1.4rem"></i>
+                  </el-button>
                 </template>
-                <el-text>{{ em.name }}</el-text>
-              </ContentBox>
-            </div>
-          </el-scrollbar>
+                <template #actions="{ cancel }">
+                  <div class="flex justify-between">
+                    <Button type="danger" size="small" @click="done => ev.onDelete(item.id, done)">
+                      {{ t("tip.yes") }}
+                    </Button>
+                    <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+                  </div>
+                </template>
+              </el-popconfirm>
+              <el-divider direction="vertical"></el-divider>
+            </template>
+          </ContentBox>
         </div>
-      </div>
-      <div class="flex-1 flex">
-        <EmbeddingForm v-if="cache.current" :form="cache.current"></EmbeddingForm>
-        <el-empty v-else></el-empty>
-      </div>
-    </div>
+      </el-scrollbar>
+    </ContentLayout>
   </ContentLayout>
 </template>
 <style lang="scss" scoped>
@@ -185,7 +204,7 @@ settingsStore.dataWatcher<string>(
   flex-direction: column;
   overflow: hidden;
   padding: var(--ai-gap-medium);
-  width: 30rem;
+  width: 100%;
   gap: var(--ai-gap-medium);
   .embedding-list-header {
     flex-shrink: 0;

@@ -24,7 +24,6 @@ const useConfigComponent = () => {
     getComponent,
   }
 }
-const providerMetasList = computed(() => Object.values(providerMetas.value))
 const { getComponent } = useConfigComponent()
 function onCardClick(name: string) {
   currentProvider.value = providerMetas.value[name] ?? undefined
@@ -53,7 +52,7 @@ settingsStore.dataWatcher<string | undefined>(
           </div>
           <div class="flex flex-col gap-1rem">
             <ContentBox
-              v-for="meta in providerMetasList"
+              v-for="meta in providerMetas"
               :key="meta.name"
               :default-lock="currentProvider?.name == meta.name"
               still-lock

@@ -97,8 +97,9 @@
   },
   "embedding": {
     "editTitle": "嵌入信息",
+    "embeddingProvider": "嵌入提供商",
     "name": "名字",
-    "provider": "提供商",
+    "rerankProvider": "重排序提供商",
     "search": "搜索"
   },
   "error": {
@@ -115,7 +116,7 @@
   },
   "knowledge": {
     "detail": "详细信息",
-    "dimensions": "维度",
+    "dimensions": "向量维度",
     "dimensionsDesc": "将内容嵌入成向量时，向量的维度",
     "editTitle": "知识库信息",
     "embedding": "嵌入模型",

@@ -136,7 +136,7 @@ settingsStore.dataWatcher<string>(
             required
             prop="name"
             :rules="[{ type: 'string', whitespace: false, required: true, message: t('form.stringFieldNotNull') }]">
-            <el-input v-model.trim="cache.kbForm.name"></el-input>
+            <el-input v-model.trim="cache.kbForm.name" :maxlength="120"></el-input>
           </el-form-item>
           <el-form-item
             prop="embeddingId"
