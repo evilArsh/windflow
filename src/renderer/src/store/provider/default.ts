@@ -34,6 +34,8 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
         llmChat: { method: "POST", url: "/chat/completions" },
         balance: { method: "GET", url: "/user/info" },
         textToImage: { method: "POST", url: "/images/generations" },
+        embedding: { method: "POST", url: "/embeddings" },
+        rerank: { method: "POST", url: "/rerank" },
         imageToText: { method: "GET", url: "" },
         textToVideo: { method: "GET", url: "" },
         speechToText: { method: "GET", url: "" },

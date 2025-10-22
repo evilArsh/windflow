@@ -84,6 +84,7 @@ async function onRefreshModel(done?: CallBackFn) {
             v.icon = providerStore.getProviderLogo(v.providerName)
           })
           await modelStore.api.refresh(models)
+          await modelStore.init()
         }
       }
     }

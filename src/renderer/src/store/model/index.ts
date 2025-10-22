@@ -18,7 +18,6 @@ export default defineStore("model", () => {
     cache.set(newModel.id, newModel)
     models.push(newModel)
   }
-
   function find(modelId?: string) {
     if (!modelId) return
     if (cache.has(modelId)) {
@@ -30,8 +29,8 @@ export default defineStore("model", () => {
     }
     return model
   }
-  function findByProvider(name: string): ModelMeta[] {
-    return models.filter(v => v.providerName === name)
+  function findByProvider(providerName: string): ModelMeta[] {
+    return models.filter(v => v.providerName === providerName)
   }
   async function init() {
     models.length = 0

@@ -92,7 +92,7 @@ db.version(6).stores({
   chatTTIConfig: "id,topicId",
   settings: "id",
   mcpServer: "id",
-  knowledge: "id",
+  knowledge: "id,embeddingId",
   ragFiles: "id,topicId",
   embedding: "id",
 })

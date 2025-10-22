@@ -1,18 +1,17 @@
 <script lang="ts" setup>
-// import useKnowledgeStore from "@renderer/store/knowledge"
+import useKnowledgeStore from "@renderer/store/knowledge"
 // import useRagFilesStore from "@renderer/store/ragFiles"
 import useSettingsStore from "@renderer/store/settings"
 import useEmbeddingStore from "@renderer/store/embedding"
 import { storeToRefs } from "pinia"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-// import { Knowledge } from "@renderer/types/knowledge"
 import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
 import { SettingKeys } from "@renderer/types"
 import EmbeddingForm from "./components/form.vue"
 import { RAGEmbeddingConfig } from "@shared/types/rag"
 
-// const knowledgeStore = useKnowledgeStore()
+const knowledgeStore = useKnowledgeStore()
 // const ragFilesStore = useRagFilesStore()
 const settingsStore = useSettingsStore()
 const embeddingStore = useEmbeddingStore()
@@ -24,6 +23,7 @@ const { t } = useI18n()
 const { props, event, close, open } = useDialog({
   width: "50vw",
   showClose: false,
+  destroyOnClose: true,
 })
 const util = {
   getDefaultKbForm(): RAGEmbeddingConfig {
@@ -54,23 +54,25 @@ const util = {
 
 const current = ref<RAGEmbeddingConfig | null>(null)
 const cache = reactive({
+  mode: "" as "add" | "edit" | "view",
   emForm: util.getDefaultKbForm(),
   keyword: "",
   currentId: "",
 })
-const filterEmbeddings = computed(() =>
+const filterEmbeddings = computed<RAGEmbeddingConfig[]>(() =>
   embeddings.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
 )
 const ev = {
-  onOpenDlg(done: CallBackFn) {
-    done()
+  onOpenDlg(mode: "add" | "edit" | "view", done?: CallBackFn) {
+    done?.()
+    cache.mode = mode
     open()
   },
-  onCloseDlg(done: CallBackFn) {
+  onCloseDlg(done?: CallBackFn) {
     formRef.value?.form?.resetFields()
     cache.emForm = util.getDefaultKbForm()
-    done()
     close()
+    done?.()
   },
   async onConfirmEdit(done: CallBackFn) {
     try {
@@ -96,19 +98,25 @@ const ev = {
       done()
     }
   },
-  async onEdit(id: string, done: CallBackFn) {
+  async onOpenEdit(node: RAGEmbeddingConfig) {
+    cache.emForm = cloneDeep(node)
+    ev.onOpenDlg("edit")
+  },
+  async onDelete(embeddingId: string, done: CallBackFn) {
     try {
-      const kb = embeddings.value.find(em => em.id === id)
-      if (kb) {
-        cache.emForm = cloneDeep(kb)
-        ev.onOpenDlg(done)
+      const count = await knowledgeStore.api.findByEmbeddingId(embeddingId)
+      if (count.length > 0) {
+        throw new Error(
+          t("embedding.deleteWithKnowledgeBind", { count: count.length, name: count.map(item => item.name).join(",") })
+        )
       }
+      await embeddingStore.remove(embeddingId)
     } catch (error) {
-      done()
       msgError(errorToText(error))
+    } finally {
+      done()
     }
   },
-  async onDelete(id: string, done: CallBackFn) {},
   onEmbeddingChoose(em: RAGEmbeddingConfig) {
     cache.currentId = em.id
   },
@@ -130,14 +138,14 @@ settingsStore.dataWatcher<string>(
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
         <div class="flex items-center">
-          <Button type="primary" size="small" @click="ev.onOpenDlg">{{ t("btn.new") }}</Button>
+          <el-button type="primary" size="small" @click="ev.onOpenDlg('add')">{{ t("btn.new") }}</el-button>
         </div>
       </div>
     </template>
     <el-dialog v-bind="props" v-on="event" :title="t('embedding.editTitle')">
       <div class="h-50vh">
-        <el-scrollbar>
-          <EmbeddingForm ref="form" :form="cache.emForm"></EmbeddingForm>
+        <el-scrollbar view-class="pr-1rem">
+          <EmbeddingForm ref="form" :form="cache.emForm" :mode="cache.mode"></EmbeddingForm>
         </el-scrollbar>
       </div>
       <template #footer>
@@ -165,10 +173,14 @@ settingsStore.dataWatcher<string>(
               </el-space>
               <template #end> </template>
               <template #footer>
-                <div class="flex">
+                <div class="flex flex-wrap">
                   <el-text size="small" type="info">{{ item.embedding.providerName }}</el-text>
                   <el-divider direction="vertical"></el-divider>
+                  <el-text size="small" type="primary">embedding:</el-text>
                   <el-text size="small" type="info">{{ item.embedding.model }} </el-text>
+                  <el-divider direction="vertical"></el-divider>
+                  <el-text size="small" type="primary">rerank:</el-text>
+                  <el-text size="small" type="info">{{ item.rerank?.model }} </el-text>
                 </div>
               </template>
             </ContentBox>
@@ -188,6 +200,9 @@ settingsStore.dataWatcher<string>(
                   </div>
                 </template>
               </el-popconfirm>
+              <el-button size="small" round text type="warning" @click="ev.onOpenEdit(item)">
+                <i class="i-ep:edit text-1.4rem"></i>
+              </el-button>
               <el-divider direction="vertical"></el-divider>
             </template>
           </ContentBox>

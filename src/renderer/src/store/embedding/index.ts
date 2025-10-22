@@ -5,9 +5,9 @@ export default defineStore("embedding", () => {
   const embeddings = reactive<RAGEmbeddingConfig[]>([])
   const api = useData()
 
-  async function remove(id: string) {
-    await api.remove(id)
-    const i = embeddings.findIndex(item => item.id === id)
+  async function remove(embeddingId: string) {
+    await api.remove(embeddingId)
+    const i = embeddings.findIndex(item => item.id === embeddingId)
     if (i < 0) return
     embeddings.splice(i, 1)
   }

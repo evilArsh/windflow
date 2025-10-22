@@ -104,7 +104,7 @@
   },
   "form": {
     "emptyValueNotAllowed": "Cannot have empty value",
-    "selectStringFieldNotNull": "field is requred and not null",
+    "selectFieldNotNull": "field is requred and not null",
     "stringFieldNotNull": "field is required and not null",
     "urlInvalid": "Not a valid URL address",
     "valueRequired": "This value is required"

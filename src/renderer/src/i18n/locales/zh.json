@@ -96,6 +96,7 @@
     }
   },
   "embedding": {
+    "deleteWithKnowledgeBind": "当前嵌入模型已绑定多{count}个知识库，无法删除：{name}",
     "editTitle": "嵌入信息",
     "embeddingProvider": "嵌入提供商",
     "name": "名字",
@@ -109,8 +110,8 @@
   },
   "form": {
     "emptyValueNotAllowed": "不能存在空值",
-    "selectStringFieldNotNull": "字段必选",
-    "stringFieldNotNull": "字段必填且不能为空",
+    "selectFieldNotNull": "该项必选",
+    "stringFieldNotNull": "该项必填且不能为空",
     "urlInvalid": "不是有效的URL地址",
     "valueRequired": "该值是必选的"
   },
@@ -121,6 +122,11 @@
     "editTitle": "知识库信息",
     "embedding": "嵌入模型",
     "fileList": "文件列表",
+    "form": {
+      "needApiKey": "请完善该提供商嵌入模型接口配置",
+      "needEmbeddingModel": "请选择有效的嵌入模型",
+      "needProvider": "请选择正确的模型提供商"
+    },
     "maxFileChunks": "最大文件分割块数",
     "maxFileChunksDesc": "将文件分割成文件快时，指定最大块数，如果超出值，文件将会被截断",
     "maxInputs": "最大文本请求个数",
@@ -298,3 +304,4 @@
     }
   }
 }
+

@@ -143,7 +143,7 @@ settingsStore.dataWatcher<string>(
             :label="t('knowledge.embedding')"
             required
             :rules="[
-              { type: 'string', whitespace: false, required: true, message: t('form.selectStringFieldNotNull') },
+              { type: 'string', whitespace: false, required: true, message: t('form.selectFieldNotNull') },
             ]">
             <el-select v-model="cache.kbForm.embeddingId">
               <el-option v-for="em in embeddings" :key="em.id" :label="em.name" :value="em.id"></el-option>

@@ -6,6 +6,10 @@ export const useData = () => {
   const update = async (data: Knowledge) => db.knowledge.put(cloneDeep(data))
   const add = async (data: Knowledge) => db.knowledge.add(cloneDeep(data))
   const remove = async (id: string) => db.knowledge.delete(id)
+
+  const findByEmbeddingId = async (embeddingId: string): Promise<Knowledge[]> => {
+    return await db.knowledge.where("embeddingId").equals(embeddingId).toArray()
+  }
   const fetch = async () => {
     return await db.knowledge.toArray()
   }
@@ -14,5 +18,6 @@ export const useData = () => {
     update,
     add,
     remove,
+    findByEmbeddingId,
   }
 }

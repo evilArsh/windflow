@@ -9,7 +9,6 @@ export const useData = () => {
   const add = async (data: ModelMeta) => queue.add(async () => db.model.add(cloneDeep(data)))
   async function refresh(newModels: ModelMeta[]) {
     await db.model.bulkPut(newModels)
-    await fetch()
   }
   async function find(modelId?: string) {
     if (!modelId) return

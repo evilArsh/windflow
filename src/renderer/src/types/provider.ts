@@ -88,6 +88,8 @@ export type ProviderMeta = {
     textToVideo?: { method: Method; url: string }
     speechToText?: { method: Method; url: string }
     textToSpeech?: { method: Method; url: string }
+    embedding?: { method: Method; url: string }
+    rerank?: { method: Method; url: string }
     /**
      * @description 账户信息接口
      */
