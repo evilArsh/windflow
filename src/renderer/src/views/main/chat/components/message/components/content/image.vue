@@ -92,9 +92,9 @@ watch(isPending, val => {
   if (!images.value.length) return
   message.value.content.content = Array.from(images.value)
   if (props.parent) {
-    chatstore.api.putChatMessage(props.parent)
+    chatstore.updateChatMessage(props.parent)
   } else {
-    chatstore.api.putChatMessage({
+    chatstore.updateChatMessage({
       ...message.value,
       content: {
         ...message.value.content,

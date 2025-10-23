@@ -83,14 +83,13 @@ const dlg = {
       if (!data.id) {
         data.id = mcp.createNewId()
         const res = mcp.clonePure(data)
-        await mcp.api.add(res)
-        servers.value.push(res)
+        await mcp.add(res)
         current.value = res
         mcp.start(MCPRootTopicId, res)
       } else {
         if (current.value) Object.assign(current.value, data)
         const newData = mcp.clonePure(data)
-        await mcp.api.update(newData)
+        await mcp.update(newData)
         await serverHandler.restart(newData)
       }
       msg({ code: 200, msg: "ok" })

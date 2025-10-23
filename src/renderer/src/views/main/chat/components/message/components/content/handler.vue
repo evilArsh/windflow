@@ -40,7 +40,7 @@ function terminate(done: CallBackFn) {
 async function restart(done: CallBackFn) {
   try {
     await chatStore.restart(topic.value, message.value.id, props.parent?.id)
-    await chatStore.api.putChatTopic(topic.value)
+    await chatStore.updateChatTopic(topic.value)
     done()
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })

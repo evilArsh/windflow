@@ -25,7 +25,7 @@ const handler = {
   async init() {
     await nextTick()
     try {
-      const res = await mcp.api.getAll()
+      const res = await mcp.getAll()
       data.mcpServers = res.reduce<MCPServersConfig["mcpServers"]>((pre, cur) => {
         const name = cur.name
         pre[name] = cur.params
@@ -48,7 +48,7 @@ const handler = {
         const existed: MCPServerParam | undefined = servers.value.find(v => v.name === name)
         if (existed) {
           existed.params = value
-          await mcp.api.update(mcp.clonePure(existed))
+          await mcp.update(mcp.clonePure(existed))
         } else {
           const newValue = mcp.clonePure({
             id: mcp.createNewId(),
@@ -57,8 +57,7 @@ const handler = {
             params: value as any,
             description: "",
           })
-          await mcp.api.add(newValue)
-          servers.value.push(newValue)
+          await mcp.add(newValue)
         }
       }
       msg({ code: 200, msg: t("tip.saveSuccess") })

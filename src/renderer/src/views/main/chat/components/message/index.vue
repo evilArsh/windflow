@@ -33,7 +33,7 @@ const handler = {
   onHandlerHeightChange: (height: number) => {
     if (topic.value) {
       topic.value.inputHeight = height
-      chatStore.api.putChatTopic(topic.value)
+      chatStore.updateChatTopic(topic.value)
     }
   },
 }

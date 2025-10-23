@@ -22,20 +22,14 @@ export default defineStore("mcp", () => {
   function findServer(serverId: string): MCPServerParam | undefined {
     return servers.find(v => v.id === serverId)
   }
-  async function remove(topicId: string, serverId: string) {
-    await api.del(serverId)
-    const index = servers.findIndex(v => v.id === serverId)
-    index >= 0 && servers.splice(index, 1)
-    window.api.mcp.stopServer(topicId, serverId)
-  }
   function restart(topicId: string, serverId: string, params?: MCPServerParamCore) {
-    window.api.mcp.restartServer(topicId, serverId, params ? params : undefined)
+    return window.api.mcp.restartServer(topicId, serverId, params ? params : undefined)
   }
   function start(topicId: string, server: MCPServerParam) {
-    window.api.mcp.startServer(topicId, clonePure(server))
+    return window.api.mcp.startServer(topicId, clonePure(server))
   }
   function stop(topicId: string, serverId: string) {
-    window.api.mcp.stopServer(topicId, serverId)
+    return window.api.mcp.stopServer(topicId, serverId)
   }
   async function fetchTools(serverId: string) {
     const server = findServer(serverId)
@@ -67,7 +61,26 @@ export default defineStore("mcp", () => {
       server.resourceTemplates = resourceTemplates.value.data.resourceTemplates
     }
   }
-
+  async function add(newData: MCPServerParam) {
+    await api.add(newData)
+    servers.push(newData)
+    return newData
+  }
+  /**
+   * 停止并删除 `topicId` 下的 `serverId`
+   */
+  async function remove(topicId: string, serverId: string) {
+    await api.del(serverId)
+    const index = servers.findIndex(v => v.id === serverId)
+    index >= 0 && servers.splice(index, 1)
+    return stop(topicId, serverId)
+  }
+  async function update(data: MCPServerParam) {
+    return api.update(data)
+  }
+  async function getAll() {
+    return api.getAll()
+  }
   async function init() {
     window.api.bus.on(EventKey.MCPStatus, async data => {
       // console.log("[MCPStatus]", data)
@@ -87,7 +100,6 @@ export default defineStore("mcp", () => {
     init,
 
     servers,
-    api,
     fetchTools,
     remove,
     restart,
@@ -96,5 +108,8 @@ export default defineStore("mcp", () => {
     clonePure,
     createNewId,
     findServer,
+    add,
+    getAll,
+    update,
   }
 })

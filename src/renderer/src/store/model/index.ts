@@ -32,6 +32,12 @@ export default defineStore("model", () => {
   function findByProvider(providerName: string): ModelMeta[] {
     return models.filter(v => v.providerName === providerName)
   }
+  async function refresh(data: ModelMeta[]) {
+    return api.refresh(data)
+  }
+  async function update(data: ModelMeta) {
+    return api.update(data)
+  }
   async function init() {
     models.length = 0
     const data = await api.fetch()
@@ -51,13 +57,13 @@ export default defineStore("model", () => {
   }
 
   return {
-    init,
-
     models,
+    utils,
+    init,
     setModel,
     find,
     findByProvider,
-    api,
-    utils,
+    refresh,
+    update,
   }
 })

@@ -14,7 +14,7 @@ const cardRef = useTemplateRef<HTMLElement>("card")
 const chatStore = useChatStore()
 const onTopicUpdate = useThrottleFn(async () => {
   try {
-    await chatStore.api.putChatTopic(form.value)
+    await chatStore.updateChatTopic(form.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

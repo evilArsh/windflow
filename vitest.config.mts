@@ -2,7 +2,7 @@ import { resolve } from "node:path"
 import vue from "@vitejs/plugin-vue"
 import { defineConfig } from "vitest/config"
 import path from "node:path"
-
+// npx vitest --project unit-node -t "xxx"
 export default defineConfig({
   plugins: [vue()],
   resolve: {

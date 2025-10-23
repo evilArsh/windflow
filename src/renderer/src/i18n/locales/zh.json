@@ -96,7 +96,7 @@
     }
   },
   "embedding": {
-    "deleteWithKnowledgeBind": "当前嵌入模型已绑定多{count}个知识库，无法删除：{name}",
+    "deleteWithKnowledgeBind": "当前嵌入模型已绑定{count}个知识库，无法删除，知识库：{name}",
     "editTitle": "嵌入信息",
     "embeddingProvider": "嵌入提供商",
     "name": "名字",
@@ -109,6 +109,7 @@
     "noMessages": "找不到消息集合"
   },
   "form": {
+    "addNewEmbedding": "添加嵌入模型",
     "emptyValueNotAllowed": "不能存在空值",
     "selectFieldNotNull": "该项必选",
     "stringFieldNotNull": "该项必填且不能为空",
@@ -304,4 +305,3 @@
     }
   }
 }
-

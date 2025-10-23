@@ -12,6 +12,9 @@ const props = defineProps<{
   mode: "add" | "edit" | "view"
   form: RAGEmbeddingConfig
 }>()
+const emit = defineEmits<{
+  enter: []
+}>()
 const isAdd = computed(() => props.mode === "add")
 // const isEdit = computed(() => props.mode === "edit")
 const isView = computed(() => props.mode === "view")
@@ -195,7 +198,7 @@ defineExpose({
 <template>
   <el-form ref="formRef" :rules="provider.rules" :model="form" label-width="180px">
     <el-form-item prop="name" :label="t('embedding.name')">
-      <el-input :readonly="isView" v-model.trim="form.name" :maxlength="120"></el-input>
+      <el-input :readonly="isView" v-model.trim="form.name" @keyup.enter="emit('enter')" :maxlength="120"></el-input>
     </el-form-item>
     <el-form-item prop="embedding" :label="t('embedding.embeddingProvider')">
       <el-cascader
@@ -208,7 +211,7 @@ defineExpose({
     </el-form-item>
     <el-form-item prop="rerank" :label="t('embedding.rerankProvider')">
       <el-cascader
-        :disabled="!isAdd"
+        :disabled="isView"
         class="w-full"
         clearable
         v-model="provider.rerank"
@@ -234,7 +237,8 @@ defineExpose({
         :precision="0"
         :min="512"
         :max="9999"
-        v-model="form.dimensions"></el-input-number>
+        v-model="form.dimensions"
+        @keyup.enter="emit('enter')"></el-input-number>
     </el-form-item>
     <el-form-item prop="maxTokens">
       <template #label>
@@ -255,7 +259,8 @@ defineExpose({
         :precision="0"
         :min="128"
         :max="9999"
-        v-model="form.maxTokens"></el-input-number>
+        v-model="form.maxTokens"
+        @keyup.enter="emit('enter')"></el-input-number>
     </el-form-item>
     <el-form-item prop="maxInputs">
       <template #label>
@@ -276,7 +281,8 @@ defineExpose({
         :precision="0"
         :min="10"
         :max="9999"
-        v-model="form.maxInputs"></el-input-number>
+        v-model="form.maxInputs"
+        @keyup.enter="emit('enter')"></el-input-number>
     </el-form-item>
     <el-form-item prop="maxFileChunks">
       <template #label>
@@ -297,7 +303,8 @@ defineExpose({
         :precision="0"
         :min="128"
         :max="9999"
-        v-model="form.maxFileChunks"></el-input-number>
+        v-model="form.maxFileChunks"
+        @keyup.enter="emit('enter')"></el-input-number>
     </el-form-item>
   </el-form>
 </template>

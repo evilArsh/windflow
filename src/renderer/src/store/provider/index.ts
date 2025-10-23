@@ -25,6 +25,9 @@ export default defineStore("provider", () => {
     const provider = metas[providerName]
     return provider?.logo || userLogo
   }
+  async function update(meta: ProviderMeta) {
+    return api.update(meta)
+  }
   async function init() {
     const defaultData = providerDefault(providerSvgIcon as IconifyJSON)
     for (const key in metas) {
@@ -53,12 +56,11 @@ export default defineStore("provider", () => {
   }
   return {
     init,
-
     getProviderLogo,
     providerMetas: metas,
     providerManager: manager,
     currentProvider,
-    api,
     reset,
+    update,
   }
 })

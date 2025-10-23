@@ -7,6 +7,7 @@ import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
 import { RAGEmbeddingConfig, RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
 import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"
+import sql from "sqlstring"
 
 describe("main/src/Rag", () => {
   vi.mock("electron", () => ({
@@ -90,6 +91,61 @@ describe("main/src/Rag", () => {
 
     db.close()
   })
+  it("remove db data by fileId", async () => {
+    const db = new VectorStore({
+      rootDir: path.join(__dirname),
+    })
+    await db.open()
+
+    const topicId = "test_topic_rag_remove"
+    const fileId = "test_file_id"
+    const cond = sql.format(`\`fileId\` = ?`, [fileId])
+
+    const tableName = combineTableName(topicId)
+    if (!(await db.hasTable(tableName))) {
+      await db.createEmptyTable(tableName, createTableSchema(128))
+    }
+    const dataLength = 10
+    await db.clearTable(tableName)
+    expect(await db.countRows(tableName)).equal(0)
+    expect(await db.countRows(tableName, cond)).equal(0)
+
+    const data: RAGFile[] = []
+    for (let i = 0; i < dataLength; i++) {
+      data.push({
+        id: `test_id: ${i}`,
+        topicId,
+        fileId,
+        fileName: `file_name: ${i}`,
+        fileSize: i,
+        chunkIndex: i,
+        content: `content: ${i}`,
+        vector: Array.from({ length: 128 }, () => Math.random()),
+        configId: "do_not_need_config_id",
+      })
+    }
+    await db.insert(tableName, data)
+    await db.insert(tableName, [
+      {
+        id: uniqueId(),
+        topicId,
+        fileId: "file_id",
+        fileName: `file_name`,
+        fileSize: 0,
+        chunkIndex: 0,
+        content: `content`,
+        vector: Array.from({ length: 128 }, () => Math.random()),
+        configId: "do_not_need_config_id",
+      },
+    ] as RAGFile[])
+
+    const res = await db.deleteData(tableName, cond)
+    expect(res).equal(dataLength)
+    expect(await db.countRows(tableName)).equal(1)
+    expect(await db.countRows(tableName, `\`fileId\` = 'file_id'`)).equal(1)
+    expect(await db.countRows(tableName, cond)).equal(0)
+  })
+
   it("insert vector data", async () => {
     const db = new VectorStore({
       rootDir: path.join(__dirname),

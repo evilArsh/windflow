@@ -36,7 +36,7 @@ const handler = {
         }
         await chatStore.send(topic.value)
         topic.value.content = ""
-        await chatStore.api.putChatTopic(toValue(topic))
+        await chatStore.updateChatTopic(toValue(topic))
         await nextTick()
         emit("messageSend")
         isFunction(done) && done()
@@ -47,7 +47,7 @@ const handler = {
   },
   onTopicUpdate: useThrottleFn(async () => {
     try {
-      await chatStore.api.putChatTopic(topic.value)
+      await chatStore.updateChatTopic(topic.value)
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }

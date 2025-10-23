@@ -1,4 +1,4 @@
-import { Response } from "@toolmain/shared"
+import { Response, StatusResponse } from "@toolmain/shared"
 import { ToolEnvironment, ToolEnvTestResult } from "./types/env"
 import { EventKey, EventMap } from "./types/eventbus"
 import {
@@ -41,6 +41,8 @@ export const IpcChannel = {
 
   RagSearch: "rag.search",
   RagProcessLocalFile: "rag.processLocalFile",
+  RagRemoveById: "rag.removeById",
+  RagRemoveByTopicId: "rag.removeByTopicId",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -102,4 +104,12 @@ export interface ThemeService {
 export interface RAGService {
   search: (content: RAGSearchParam, config: RAGEmbeddingConfig) => Promise<Response<RAGFile[]>>
   processLocalFile: (file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => Promise<void>
+  /**
+   * remove rag_file by `topicId` and `fileId`,
+   */
+  removeById: (topicId: string, fileId: string) => Promise<Response<number>>
+  /**
+   * remove all datas which belongs to `topicId`
+   */
+  removeByTopicId: (topicId: string) => Promise<StatusResponse>
 }

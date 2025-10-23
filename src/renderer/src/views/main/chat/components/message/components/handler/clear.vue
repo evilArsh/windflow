@@ -57,8 +57,7 @@ const handler = {
               contextFlag: true,
               content: { role: "", content: "" },
             })
-            await chatStore.api.addChatMessage(newMessage)
-            messages.value.unshift(newMessage)
+            await chatStore.addChatMessage(newMessage, 0)
           }
           emit("contextClean")
         }

@@ -9,7 +9,8 @@ import { CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
 import { Spinner } from "@toolmain/components"
 import { storeToRefs } from "pinia"
 const emit = defineEmits<{
-  (e: "edit", knowledgeId: string, done: CallBackFn): void
+  (e: "edit", knowledgeId: string, fileList: RAGLocalFileInfo[], done: CallBackFn): void
+  (e: "remove", knowledgeId: string, done: CallBackFn): void
 }>()
 const props = defineProps<{
   knowledge: Knowledge
@@ -24,7 +25,7 @@ const fileList = computed<RAGLocalFileInfo[]>(() => {
 })
 const { embeddings } = storeToRefs(embeddingStore)
 const upload = {
-  async chooseFile(done: CallBackFn) {
+  async onChooseFile(done: CallBackFn) {
     try {
       if (window.api) {
         const res = await window.api.file.chooseFilePath()
@@ -41,7 +42,7 @@ const upload = {
               mimeType: info.mimeType,
               extenstion: info.extension,
             }
-            await ragFilesStore.api.add(req)
+            await ragFilesStore.add(req)
             if (!ragFiles.value[props.knowledge.id]) {
               ragFiles.value[props.knowledge.id] = []
             }
@@ -59,13 +60,15 @@ const upload = {
 const { t } = useI18n()
 </script>
 <template>
-  <DialogPanel>
+  <DialogPanel style="--el-card-border-color: transparent">
     <template #header>
-      <Button size="small" type="warning" @click="done => emit('edit', knowledge.id, done)">
+      <Button size="small" type="warning" @click="done => emit('edit', knowledge.id, fileList, done)">
         {{ t("btn.edit") }}
       </Button>
-      <el-button size="small" type="danger">{{ t("btn.delete") }} </el-button>
-      <Button size="small" type="primary" @click="upload.chooseFile">
+      <Button size="small" type="danger" @click="done => emit('remove', knowledge.id, done)">
+        {{ t("btn.delete") }}
+      </Button>
+      <Button size="small" type="primary" @click="upload.onChooseFile">
         <template #icon>
           <el-icon class="text-1.4rem"> <i class="i-ep:upload-filled"></i> </el-icon>
         </template>

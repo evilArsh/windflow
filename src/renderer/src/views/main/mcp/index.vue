@@ -29,6 +29,9 @@ useI18nWatch(() => {
 settingsStore.dataWatcher<string>(SettingKeys.MCPSubRoute, currentRoute, route.fullPath, path => {
   router.push(path)
 })
+router.afterEach(to => {
+  currentRoute.value = to.path
+})
 </script>
 <template>
   <SubNavLayout :id="SettingKeys.MCPSubNav">

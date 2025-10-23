@@ -14,7 +14,7 @@ const settingsStore = useSettingsStore()
 settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
 async function updateTopic() {
   try {
-    await chatStore.api.putChatTopic(topic.value)
+    await chatStore.updateChatTopic(topic.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

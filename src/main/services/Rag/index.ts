@@ -3,7 +3,17 @@ import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/service"
 import { VectorStore, VectorStoreConfig } from "./db"
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
-import { errorToText, isArray, Response, responseData, toNumber, uniqueId } from "@toolmain/shared"
+import sql from "sqlstring"
+import {
+  errorToText,
+  isArray,
+  Response,
+  responseCode,
+  responseData,
+  StatusResponse,
+  toNumber,
+  uniqueId,
+} from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
 import { EmbeddingResponse, ProcessStatus, RerankResponse, TaskChain, TaskManager } from "./task/types"
@@ -166,26 +176,57 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       })
     }
   }
-  async registerIpc() {
+  async removeById(topicId: string, fileId: string): Promise<Response<number>> {
     try {
-      ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
-        return this.search(content, config)
-      })
-      ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
-        return this.processLocalFile(file, config)
-      })
+      const res = await this.#db.deleteData(combineTableName(topicId), sql.format(`\`fileId\` = ?`, [fileId]))
+      return responseData(200, "ok", res)
     } catch (error) {
-      this.#log.error("[RagService registerIpc error]", error)
+      this.#log.debug("[removeById]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
         details: {
-          function: "registerIpc",
+          function: "removeById",
+          args: { topicId, fileId },
         },
         msg: errorToText(error),
         code: 500,
       })
+      return responseData(500, errorToText(error), 0)
     }
+  }
+  async removeByTopicId(topicId: string): Promise<StatusResponse> {
+    try {
+      await this.#db.deleteTable(combineTableName(topicId))
+      return responseCode(200, "success")
+    } catch (error) {
+      this.#log.debug("[removeById]", errorToText(error))
+      this.#globalBus.emit(EventKey.ServiceLog, {
+        id: uniqueId(),
+        service: RAGServiceId,
+        details: {
+          function: "removeByTopicId",
+          args: { topicId },
+        },
+        msg: errorToText(error),
+        code: 500,
+      })
+      return responseCode(500, errorToText(error))
+    }
+  }
+  async registerIpc() {
+    ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
+      return this.search(content, config)
+    })
+    ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
+      return this.processLocalFile(file, config)
+    })
+    ipcMain.handle(IpcChannel.RagRemoveById, async (_, topicId: string, fileId: string) => {
+      return this.removeById(topicId, fileId)
+    })
+    ipcMain.handle(IpcChannel.RagRemoveByTopicId, async (_, topicId: string) => {
+      return this.removeByTopicId(topicId)
+    })
   }
 
   dispose() {

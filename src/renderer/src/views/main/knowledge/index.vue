@@ -3,7 +3,6 @@ import useSettingsStore from "@renderer/store/settings"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import IBook from "~icons/material-symbols/book-4"
 import IBookmark from "~icons/material-symbols/bookmark-stacks"
-
 import { type Component } from "vue"
 import { SettingKeys } from "@renderer/types"
 import { useI18nWatch } from "@toolmain/shared"
@@ -29,6 +28,9 @@ useI18nWatch(() => {
 })
 settingsStore.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.fullPath, path => {
   router.push(path)
+})
+router.afterEach(to => {
+  currentRoute.value = to.path
 })
 </script>
 <template>

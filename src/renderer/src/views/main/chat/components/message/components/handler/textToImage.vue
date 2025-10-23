@@ -42,7 +42,7 @@ const event = shallowReactive({
         Object.assign(globalVal.value, config.value)
         delete globalVal.value["id"]
         delete globalVal.value["topicId"]
-        await settingsStore.api.update(globalVal)
+        await settingsStore.update(globalVal)
       }
       msg({ code: 200, msg: "ok" })
     } catch (error) {
@@ -55,7 +55,7 @@ const event = shallowReactive({
 const update = useThrottleFn(
   async () => {
     if (!config.value) return
-    await chatStore.api.updateChatTTIConfig(config.value)
+    await chatStore.updateChatTTIConfig(config.value)
   },
   250,
   true

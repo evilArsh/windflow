@@ -90,10 +90,14 @@ export default defineStore("settings", () => {
       watcher.stop()
     })
   }
+  async function update(data: Settings<SettingsValue>) {
+    return api.update(data)
+  }
   return {
     dataWatcher,
     get,
     settings,
+    update,
     api,
   }
 })

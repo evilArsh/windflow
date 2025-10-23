@@ -83,7 +83,7 @@ async function onRefreshModel(done?: CallBackFn) {
           models.forEach(v => {
             v.icon = providerStore.getProviderLogo(v.providerName)
           })
-          await modelStore.api.refresh(models)
+          await modelStore.refresh(models)
           await modelStore.init()
         }
       }
@@ -108,7 +108,7 @@ watch(
   () => data.value,
   (val, old) => {
     if (val && val === old) {
-      providerStore.api.update(val)
+      providerStore.update(val)
     }
   },
   { deep: true }

@@ -10,6 +10,7 @@ import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } fro
 import { SettingKeys } from "@renderer/types"
 import EmbeddingForm from "./components/form.vue"
 import { RAGEmbeddingConfig } from "@shared/types/rag"
+const route = useRoute()
 
 const knowledgeStore = useKnowledgeStore()
 // const ragFilesStore = useRagFilesStore()
@@ -19,6 +20,7 @@ const embeddingStore = useEmbeddingStore()
 // const { ragFiles } = storeToRefs(ragFilesStore)
 const { embeddings } = storeToRefs(embeddingStore)
 const formRef = useTemplateRef("form")
+const formConfirmRef = useTemplateRef("formConfirm")
 const { t } = useI18n()
 const { props, event, close, open } = useDialog({
   width: "50vw",
@@ -85,12 +87,11 @@ const ev = {
       const em = embeddings.value.find(kb => kb.id === cache.emForm.id)
       if (!em) {
         cache.emForm.id = uniqueId()
-        await embeddingStore.api.add(cache.emForm)
-        embeddings.value.push(cloneDeep(cache.emForm))
+        await embeddingStore.add(cache.emForm)
         cache.currentId = cache.emForm.id
       } else {
         Object.assign(em, cache.emForm)
-        await embeddingStore.api.update(em)
+        await embeddingStore.update(em)
       }
       ev.onCloseDlg(done)
     } catch (error) {
@@ -104,7 +105,7 @@ const ev = {
   },
   async onDelete(embeddingId: string, done: CallBackFn) {
     try {
-      const count = await knowledgeStore.api.findByEmbeddingId(embeddingId)
+      const count = await knowledgeStore.findByEmbeddingId(embeddingId)
       if (count.length > 0) {
         throw new Error(
           t("embedding.deleteWithKnowledgeBind", { count: count.length, name: count.map(item => item.name).join(",") })
@@ -120,6 +121,9 @@ const ev = {
   onEmbeddingChoose(em: RAGEmbeddingConfig) {
     cache.currentId = em.id
   },
+  onFormEnterConfirm() {
+    formConfirmRef.value?.click()
+  },
 }
 settingsStore.dataWatcher<string>(
   SettingKeys.EmbeddingId,
@@ -132,6 +136,9 @@ settingsStore.dataWatcher<string>(
     current.value = em
   }
 )
+onMounted(() => {
+  route.query.command == "add" && ev.onOpenDlg("add")
+})
 </script>
 <template>
   <ContentLayout custom>
@@ -145,11 +152,15 @@ settingsStore.dataWatcher<string>(
     <el-dialog v-bind="props" v-on="event" :title="t('embedding.editTitle')">
       <div class="h-50vh">
         <el-scrollbar view-class="pr-1rem">
-          <EmbeddingForm ref="form" :form="cache.emForm" :mode="cache.mode"></EmbeddingForm>
+          <EmbeddingForm
+            ref="form"
+            :form="cache.emForm"
+            @enter="ev.onFormEnterConfirm"
+            :mode="cache.mode"></EmbeddingForm>
         </el-scrollbar>
       </div>
       <template #footer>
-        <Button type="primary" @click="ev.onConfirmEdit">{{ t("btn.confirm") }}</Button>
+        <Button ref="formConfirm" type="primary" @click="ev.onConfirmEdit">{{ t("btn.confirm") }}</Button>
         <Button @click="ev.onCloseDlg">{{ t("btn.cancel") }}</Button>
       </template>
     </el-dialog>

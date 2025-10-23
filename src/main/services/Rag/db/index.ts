@@ -10,6 +10,7 @@ import {
   SchemaLike,
   VectorQuery as LanceVectorQuery,
 } from "@lancedb/lancedb"
+import sql from "sqlstring"
 import { useEnv } from "@main/hooks/useEnv"
 import { RAGFile } from "@shared/types/rag"
 import { merge } from "@toolmain/shared"
@@ -107,7 +108,7 @@ export class VectorStore {
         "tokens",
       ])
       // .where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`)
-      .where(`\`topicId\` = '${topicId}'`)
+      .where(sql.format(`\`topicId\` = ?`, [topicId]))
       .limit(topK)
     const results = (await query.toArray()) as RAGFile[]
     return results
@@ -150,12 +151,12 @@ export class VectorStore {
     }
     return (await this.listTables()).includes(tableName)
   }
-  async countRows(tableName: string): Promise<number> {
+  async countRows(tableName: string, filter?: string | undefined): Promise<number> {
     if (!this.#client) {
       throw new Error("[query] VectorDB not initialized")
     }
     const table = await this.#client.openTable(tableName)
-    return table.countRows()
+    return table.countRows(filter)
   }
   async clearTable(tableName: string): Promise<number> {
     if (!this.#client) {
@@ -171,6 +172,15 @@ export class VectorStore {
       throw new Error("[query] VectorDB not initialized")
     }
     return this.#client.dropTable(tableName)
+  }
+  async deleteData(tableName: string, predicate: string): Promise<number> {
+    if (!this.#client) {
+      throw new Error("[query] VectorDB not initialized")
+    }
+    const table = await this.#client.openTable(tableName)
+    const rows = await this.countRows(tableName, predicate)
+    await table.delete(predicate)
+    return rows
   }
   async hasIndex(tableName: string, indexName: string): Promise<boolean> {
     if (!this.#client) {

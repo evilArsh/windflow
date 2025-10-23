@@ -10,6 +10,8 @@ import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { Knowledge } from "@renderer/types/knowledge"
 import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
 import { SettingKeys } from "@renderer/types"
+import { RAGLocalFileInfo } from "@shared/types/rag"
+const router = useRouter()
 const addFormRef = useTemplateRef("addForm")
 
 const knowledgeStore = useKnowledgeStore()
@@ -33,19 +35,27 @@ const util = {
       type: "rag",
     }
   },
+  toEmbeddingPage() {
+    router.replace({
+      path: "/main/knowledge/embedding",
+      query: {
+        command: "add",
+      },
+    })
+  },
 }
 const cache = reactive({
   // add/edit new knowledge base dialog form
   kbForm: util.getDefaultKbForm(),
   // list filter keyword
   keyword: "",
+  currentFileNum: 0,
   currentId: "",
   current: null as Knowledge | null,
   fetchCurrentFiles: markRaw(async (currentId: string) => {
     try {
       if (!ragFiles.value[currentId]) {
-        const res = await ragFilesStore.api.getAllByTopicId(currentId)
-        ragFiles.value[currentId] = res
+        await ragFilesStore.fetchAllByTopicId(currentId)
       }
     } catch (error) {
       msgError(errorToText(error))
@@ -77,12 +87,11 @@ const ev = {
       const kb = knowledges.value.find(kb => kb.id === cache.kbForm.id)
       if (!kb) {
         cache.kbForm.id = uniqueId()
-        await knowledgeStore.api.add(cache.kbForm)
-        knowledges.value.push(cloneDeep(cache.kbForm))
+        await knowledgeStore.add(cache.kbForm)
         cache.currentId = cache.kbForm.id
       } else {
         Object.assign(kb, cache.kbForm)
-        await knowledgeStore.api.update(kb)
+        await knowledgeStore.update(kb)
       }
       ev.onCloseDlg(done)
     } catch (error) {
@@ -90,11 +99,12 @@ const ev = {
       done()
     }
   },
-  async onEdit(id: string, done: CallBackFn) {
+  async onEdit(knowledgeId: string, fileList: RAGLocalFileInfo[], done: CallBackFn) {
     try {
-      const kb = knowledges.value.find(kb => kb.id === id)
+      const kb = knowledges.value.find(kb => kb.id === knowledgeId)
       if (kb) {
         cache.kbForm = cloneDeep(kb)
+        cache.currentFileNum = fileList.length
         ev.onOpenDlg(done)
       }
     } catch (error) {
@@ -102,6 +112,16 @@ const ev = {
       msgError(errorToText(error))
     }
   },
+  async onRemove(knowledgeId: string, done: CallBackFn) {
+    try {
+      await knowledgeStore.remove(knowledgeId)
+    } catch (error) {
+      msgError(errorToText(error))
+    } finally {
+      done()
+    }
+  },
+
   onKnowledgeChoose(kb: Knowledge) {
     cache.currentId = kb.id
   },
@@ -142,12 +162,16 @@ settingsStore.dataWatcher<string>(
             prop="embeddingId"
             :label="t('knowledge.embedding')"
             required
-            :rules="[
-              { type: 'string', whitespace: false, required: true, message: t('form.selectFieldNotNull') },
-            ]">
-            <el-select v-model="cache.kbForm.embeddingId">
+            :rules="[{ type: 'string', whitespace: false, required: true, message: t('form.selectFieldNotNull') }]">
+            <el-select v-model="cache.kbForm.embeddingId" :disabled="!!cache.currentFileNum">
               <el-option v-for="em in embeddings" :key="em.id" :label="em.name" :value="em.id"></el-option>
             </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button link @click="util.toEmbeddingPage" size="small" type="primary">
+              {{ t("form.addNewEmbedding") }}
+              <i class="i-material-symbols:arrow-outward"></i>
+            </el-button>
           </el-form-item>
           <el-form-item prop="type" :label="t('knowledge.type')">
             <el-select v-model="cache.kbForm.type">
@@ -186,7 +210,7 @@ settingsStore.dataWatcher<string>(
         </div>
       </div>
       <div class="flex-1 flex">
-        <RagFile v-if="cache.current" :knowledge="cache.current" @edit="ev.onEdit"></RagFile>
+        <RagFile v-if="cache.current" :knowledge="cache.current" @remove="ev.onRemove" @edit="ev.onEdit"></RagFile>
       </div>
     </div>
   </ContentLayout>

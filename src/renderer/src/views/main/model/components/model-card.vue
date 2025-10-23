@@ -38,7 +38,7 @@ const handledData = computed<Record<string, ModelMeta[]>>(() => {
 
 const onModelChange = async (row: ModelMeta) => {
   try {
-    await modelStore.api.update(row)
+    await modelStore.update(row)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

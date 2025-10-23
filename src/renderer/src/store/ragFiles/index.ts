@@ -4,6 +4,9 @@ import { RAGLocalFileInfo } from "@shared/types/rag"
 export default defineStore("ragFiles", () => {
   const ragFiles = reactive<Record<string, RAGLocalFileInfo[]>>({})
   const api = useData()
+  /**
+   * remove ragFile by `id`
+   */
   async function remove(id: string) {
     const data = await api.get(id)
     if (!data) return
@@ -14,25 +17,31 @@ export default defineStore("ragFiles", () => {
     if (i < 0) return
     kb.splice(i, 1)
   }
-  async function removeAllByTopicId(topicId: string) {
-    // TODO: delete vector database record
-    await api.removeAllByTopicId(topicId)
+  /**
+   * remove `ragFiles` caches by `topicId`
+   */
+  function removeFilesByTopicId(topicId: string) {
     if (Object.hasOwn(ragFiles, topicId)) {
       ragFiles[topicId] = []
     }
   }
+  /**
+   * fetch ragFiles from db by `topicId`
+   */
   async function fetchAllByTopicId(topicId: string) {
     const data = await api.getAllByTopicId(topicId)
     ragFiles[topicId] = data
     return ragFiles[topicId]
   }
+  async function add(data: RAGLocalFileInfo) {
+    return api.add(data)
+  }
 
   return {
-    api,
-
     ragFiles,
-    removeAllByTopicId,
     remove,
+    removeFilesByTopicId,
     fetchAllByTopicId,
+    add,
   }
 })

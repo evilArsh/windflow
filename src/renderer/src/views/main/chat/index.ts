@@ -73,7 +73,7 @@ export const useMenu = (
   const chatStore = useChatStore()
   const { t } = useI18n()
   const settingsStore = useSettingsStore()
-  const { topicList, chatMessage, currentNodeKey } = storeToRefs(chatStore)
+  const { topicList, currentNodeKey } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   const currentTopic = ref<ChatTopicTree>()
   const queue = markRaw(new PQueue({ concurrency: 1 }))
@@ -153,10 +153,10 @@ export const useMenu = (
             // 终止请求
             chatStore.terminateAll(item)
             // 删除消息缓存
-            delete chatMessage.value[item.id]
+            chatStore.cacheRemoveChatMessage(item.id)
           }
           treeRef.value?.remove(selectedTopic.value)
-          await queue.add(async () => chatStore.api.delChatTopic(nodes))
+          await queue.add(async () => chatStore.removeChatTopic(nodes))
           if (selectedTopic.value === currentTopic.value) {
             currentTopic.value = undefined
           }
@@ -222,12 +222,11 @@ export const useMenu = (
           prompt: t("chat.defaultPrompt"),
         })
       }
-      await chatStore.api.addChatTopic(topic)
-      const newNode: ChatTopicTree = chatStore.utils.topicToTree(topic)
+      const newNode = await chatStore.addChatTopic(topic)
       if (parentId) {
         treeRef.value?.append(newNode, parentId)
       } else {
-        topicList.value.push(newNode)
+        chatStore.cachePushChatTopicTree(newNode)
         setTimeout(() => scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight), 0)
       }
       await queue.add(async () => setCurrentTopic(newNode))
@@ -279,15 +278,15 @@ export const useMenu = (
           .reduce<number>((prev: number, item: ChatTopicTree) => {
             if (item.node.index <= prev) {
               item.node.index += 1
-              chatStore.api.putChatTopic(item.node)
+              chatStore.updateChatTopic(item.node)
             }
             return item.node.index
           }, draggingNode.data.node.index)
-        chatStore.api.putChatTopic(draggingNode.data.node)
+        chatStore.updateChatTopic(draggingNode.data.node)
       } else if (dropType === "inner") {
         draggingNode.data.node.parentId = dropNode.data.node.id
         draggingNode.data.node.index = dropNode.data.children.length
-        chatStore.api.putChatTopic(draggingNode.data.node)
+        chatStore.updateChatTopic(draggingNode.data.node)
       }
     },
     filterNode: (value: string, data: TreeNodeData): boolean => {

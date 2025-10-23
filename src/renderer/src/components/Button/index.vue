@@ -12,7 +12,7 @@
 <script lang="ts" setup>
 import { CallBackFn } from "@toolmain/shared"
 import { ElButton } from "element-plus"
-const emit = defineEmits<(event: "click", done: CallBackFn, e: MouseEvent) => void>()
+const emit = defineEmits<(event: "click", done: CallBackFn, e?: MouseEvent) => void>()
 const props = defineProps<{
   normal?: boolean
 }>()
@@ -23,7 +23,7 @@ function done(): void {
   disabled.value = false
   loading.value = false
 }
-function onClick(e: MouseEvent) {
+function onClick(e?: MouseEvent) {
   if (!props.normal) {
     disabled.value = true
     loading.value = true
@@ -32,6 +32,9 @@ function onClick(e: MouseEvent) {
   }
   emit("click", () => {}, e)
 }
+defineExpose({
+  click: onClick,
+})
 </script>
 <style scoped lang="scss">
 .loading-icon {

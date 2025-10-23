@@ -114,7 +114,7 @@ export default defineStore("chat_topic", () => {
           if (message.content.children?.some(child => !!child.reasoning_content)) {
             if (!modelsStore.utils.isChatReasonerType(model)) {
               model.type.push(ModelType.ChatReasoner)
-              modelsStore.api.update(model)
+              modelsStore.update(model)
             }
           }
           if (parentMessageId) return // 多模型请求时不总结标题
@@ -301,6 +301,12 @@ export default defineStore("chat_topic", () => {
     }, [] as string[])
   }
 
+  /**
+   * 向 `topicList` 缓存列表末尾加入一个节点
+   */
+  function cachePushChatTopicTree(treeData: ChatTopicTree, index?: number) {
+    topicList.splice(index ?? topicList.length, 0, treeData)
+  }
   function terminate(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
     const [message, _] = utils.findChatMessageChild(topic.id, messageDataId, parentMessageDataId)
     if (!message) return
@@ -379,6 +385,49 @@ export default defineStore("chat_topic", () => {
       chatLLMConfig[topic.id] = cnf
     }
   }
+  async function updateChatTopic(topic: ChatTopic) {
+    return api.putChatTopic(topic)
+  }
+  async function updateChatMessage(msg: ChatMessage) {
+    return api.putChatMessage(msg)
+  }
+  /**
+   * @param index 插入到缓存中的位置
+   */
+  async function addChatMessage(msg: ChatMessage, index?: number) {
+    await api.addChatMessage(msg)
+    chatMessage[msg.topicId].splice(index ?? chatMessage[msg.topicId].length, 0, msg)
+  }
+  async function updateChatLLMConfig(cnf: ChatLLMConfig) {
+    return api.updateChatLLMConfig(cnf)
+  }
+  async function updateChatTTIConfig(cnf: ChatTTIConfig) {
+    return api.updateChatTTIConfig(cnf)
+  }
+  async function removeChatTopic(nodes: ChatTopic[]) {
+    return api.delChatTopic(nodes)
+  }
+  /**
+   * 数据库中添加一个新的 `topic`
+   * @param append 是否添加到 `topicList` 缓存列表末尾
+   */
+  async function addChatTopic(topic: ChatTopic, append?: boolean): Promise<ChatTopicTree> {
+    await api.addChatTopic(topic)
+    const treeNode = utils.topicToTree(topic)
+    if (append) {
+      topicList.push(treeNode)
+    }
+    return treeNode
+  }
+  /**
+   * 删除 `topicId` 下的消息列表
+   */
+  function cacheRemoveChatMessage(topicId: string) {
+    delete chatMessage.value[topicId]
+  }
+  /**
+   * 程序启动时初始化加载聊天数据
+   */
   async function init() {
     topicList.length = 0
     const res = await api.fetch()
@@ -395,6 +444,7 @@ export default defineStore("chat_topic", () => {
     currentNodeKey,
     chatTTIConfig,
     chatLLMConfig,
+    cachePushChatTopicTree,
     terminate,
     deleteMessage,
     restart,
@@ -402,7 +452,14 @@ export default defineStore("chat_topic", () => {
     refreshChatTopicModelIds,
     terminateAll,
     loadChatTopicData,
-    api,
+    updateChatTopic,
+    updateChatMessage,
+    addChatMessage,
+    updateChatLLMConfig,
+    updateChatTTIConfig,
+    removeChatTopic,
+    addChatTopic,
+    cacheRemoveChatMessage,
     utils,
   }
 })

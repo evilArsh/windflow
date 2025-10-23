@@ -9,14 +9,14 @@ import {
   ChatTTIConfig,
 } from "@renderer/types"
 import { MCPServerParam } from "@shared/types/mcp"
-import Dexie, { type EntityTable } from "dexie"
+import Dexie, { Transaction, type EntityTable } from "dexie"
 import { migrateToV2, migrateToV4, migrateToV5 } from "./migrate"
 import { Knowledge } from "@renderer/types/knowledge"
 import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@shared/types/rag"
 
 export const name = "db-windflow"
 
-const db = new Dexie(name) as Dexie & {
+export type Table = {
   providerMeta: EntityTable<ProviderMeta, "name">
   model: EntityTable<ModelMeta, "id">
   chatTopic: EntityTable<ChatTopic, "id">
@@ -29,6 +29,10 @@ const db = new Dexie(name) as Dexie & {
   ragFiles: EntityTable<RAGLocalFileInfo, "id">
   embedding: EntityTable<RAGEmbeddingConfig, "id">
 }
+export type DexieTransaction = Transaction & Table
+export type DexieTable = Dexie & Table
+
+const db = new Dexie(name) as DexieTable
 
 db.version(1).stores({
   providerMeta: "name",
@@ -96,5 +100,4 @@ db.version(6).stores({
   ragFiles: "id,topicId",
   embedding: "id",
 })
-
 export { db }

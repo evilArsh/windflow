@@ -37,7 +37,7 @@ const isPartial = computed(() => code1xx(message.value.status) || message.value.
 const md = useTemplateRef("md")
 const mdRefs = shallowRef<InstanceType<typeof Markdown>[]>([])
 async function onContentChange() {
-  chatStore.api.putChatMessage(props.parent ?? props.message)
+  chatStore.updateChatMessage(props.parent ?? props.message)
 }
 async function onContentDelete(m: ChatMessage) {
   try {
