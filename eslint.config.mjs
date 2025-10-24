@@ -4,6 +4,7 @@ import path from "node:path"
 import globals from "globals"
 import pluginJs from "@eslint/js"
 import tseslint from "typescript-eslint"
+import { defineConfig } from "eslint/config"
 import typescriptEslint from "@typescript-eslint/eslint-plugin"
 import parserVue from "vue-eslint-parser"
 import pluginVue from "eslint-plugin-vue"
@@ -36,8 +37,7 @@ const __dirname = path.dirname(__filename) // get the name of the directory
     "eslint-config-prettier"
     "vue-eslint-parser"
  */
-// const cnf: Config = tseslint.config(
-export default [
+export default defineConfig([
   {
     files: ["src/**/*.{js,mjs,cjs,ts,vue,jsx,tsx}"],
   },
@@ -63,7 +63,7 @@ export default [
       "yarn.lock",
       "package-lock.json",
       "uno.config.{ts,mts,js,mjs}",
-      "electron.vite.config.{ts,mts,js,mjs}"
+      "electron.vite.config.{ts,mts,js,mjs}",
     ],
   },
   {
@@ -171,6 +171,4 @@ export default [
     },
   },
   configPrettier,
-]
-// )
-// export default cnf
+])
