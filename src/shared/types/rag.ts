@@ -113,10 +113,6 @@ export enum RAGFileStatus {
   Processing = "Processing",
   Success = "Success",
   Failed = "Failed",
-  /**
-   * indicate the whole tasks are finished
-   */
-  Finish = "Finish",
 }
 
 /**
@@ -142,4 +138,7 @@ export interface RAGLocalFileInfo extends RAGLocalFileMeta {
   fileSize: number
   mimeType?: string
   extenstion?: string
+  status?: RAGFileStatus
+  code?: number
+  msg?: string
 }

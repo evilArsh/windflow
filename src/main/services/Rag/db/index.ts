@@ -76,6 +76,12 @@ export class VectorStore {
     this.#client = undefined
     this.#config = config
   }
+  #getClient() {
+    if (!this.#client) {
+      throw new Error("VectorDB not initialized")
+    }
+    return this.#client
+  }
   async open() {
     try {
       if (this.isOpen()) return
@@ -87,10 +93,8 @@ export class VectorStore {
     }
   }
   async query({ tableName, queryVector, topicId, topK = 5 }: VectorQuery): Promise<RAGFile[]> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     const query = (table.search(queryVector, "vector") as LanceVectorQuery)
       .distanceType("cosine")
       .select([
@@ -114,79 +118,57 @@ export class VectorStore {
     return results
   }
   async createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    return this.#client.createTable(tableName, data, options)
+    const client = this.#getClient()
+    return client.createTable(tableName, data, options)
   }
   async createEmptyTable(tableName: string, schema: SchemaLike, options?: Partial<CreateTableOptions>) {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    return this.#client.createEmptyTable(tableName, schema, options)
+    const client = this.#getClient()
+    return client.createEmptyTable(tableName, schema, options)
   }
   async insert(tableName: string, data: Data) {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     return table.add(data)
   }
   async upsert(tableName: string, data: Data) {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     return table.mergeInsert("id").whenMatchedUpdateAll().whenNotMatchedInsertAll().execute(data)
   }
   async listTables(): Promise<string[]> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    return await this.#client.tableNames()
+    const client = this.#getClient()
+    return await client.tableNames()
   }
   async hasTable(tableName: string): Promise<boolean> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
     return (await this.listTables()).includes(tableName)
   }
   async countRows(tableName: string, filter?: string | undefined): Promise<number> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     return table.countRows(filter)
   }
   async clearTable(tableName: string): Promise<number> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     const rows = await table.countRows()
     await table.delete("true")
     return rows - (await table.countRows())
   }
   async deleteTable(tableName: string): Promise<void> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    return this.#client.dropTable(tableName)
+    const client = this.#getClient()
+    if (!(await this.hasTable(tableName))) return
+    return client.dropTable(tableName)
   }
   async deleteData(tableName: string, predicate: string): Promise<number> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     const rows = await this.countRows(tableName, predicate)
     await table.delete(predicate)
     return rows
   }
   async hasIndex(tableName: string, indexName: string): Promise<boolean> {
-    if (!this.#client) {
-      throw new Error("[query] VectorDB not initialized")
-    }
-    const table = await this.#client.openTable(tableName)
+    const client = this.#getClient()
+    const table = await client.openTable(tableName)
     const indices = await table.listIndices()
     return !!indices.find(index => index.name === indexName)
   }
@@ -199,14 +181,12 @@ export class VectorStore {
     ivfFlatConfig,
     ivfPqConfig,
   }: VectorCreateIndex) {
-    if (!this.#client) {
-      throw new Error("[createIndex] VectorDB not initialized")
-    }
+    const client = this.#getClient()
     const tables = await this.listTables()
     if (!tables.includes(tableName)) {
       throw new Error(`[createIndex] Table ${tableName} not found`)
     }
-    const table = await this.#client.openTable(tableName)
+    const table = await client.openTable(tableName)
     if (indexType == "hnswSq") {
       return table.createIndex(indexName, {
         config: Index.hnswSq(

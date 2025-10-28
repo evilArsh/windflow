@@ -114,7 +114,14 @@ const ev = {
   },
   async onRemove(knowledgeId: string, done: CallBackFn) {
     try {
+      const next = knowledgeStore.findNextSibling(knowledgeId)
       await knowledgeStore.remove(knowledgeId)
+      console.log(next)
+      if (next) {
+        ev.onKnowledgeChoose(next)
+      } else {
+        ev.onKnowledgeChoose(undefined)
+      }
     } catch (error) {
       msgError(errorToText(error))
     } finally {
@@ -122,8 +129,8 @@ const ev = {
     }
   },
 
-  onKnowledgeChoose(kb: Knowledge) {
-    cache.currentId = kb.id
+  onKnowledgeChoose(kb?: Knowledge) {
+    cache.currentId = kb?.id ?? ""
   },
 }
 settingsStore.dataWatcher<string>(
@@ -131,9 +138,11 @@ settingsStore.dataWatcher<string>(
   () => cache.currentId,
   cache.currentId,
   id => {
-    if (!id) return
     const kb = knowledges.value.find(v => v.id === id)
-    if (!kb) return
+    if (!id || !kb) {
+      cache.current = null
+      return
+    }
     cache.current = kb
     cache.fetchCurrentFiles(kb.id)
   }

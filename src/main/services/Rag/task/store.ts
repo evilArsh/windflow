@@ -64,6 +64,7 @@ export class Store implements TaskChain {
             })
           }
         }
+        statusResp.status = RAGFileStatus.Success
         statusResp.code = 200
         statusResp.msg = "ok"
       } catch (error) {

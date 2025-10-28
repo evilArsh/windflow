@@ -1,4 +1,4 @@
-import { RAGFileStatus, RAGLocalFileInfo, RAGEmbeddingConfig, RAGFile } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileInfo, RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta } from "@shared/types/rag"
 import { HttpStatusCode } from "@toolmain/shared"
 
 export interface TaskInfoStatus {
@@ -15,12 +15,27 @@ export interface TaskInfo {
 }
 
 export interface ProcessStatus {
-  get: (filePath: string) => TaskInfo | undefined
-  set: (filePath: string, meta: TaskInfo) => void
-  has: (filePath: string) => boolean
-  remove: (filePath: string) => void
-  updateStatus: (filePath: string, status: TaskInfoStatus) => boolean
-  getLastStatus: (filePath: string) => TaskInfoStatus | undefined
+  /**
+   * get `TaskInfo` base on `path` and `topicId`
+   */
+  get: (meta: RAGLocalFileMeta) => TaskInfo | undefined
+  set: (info: TaskInfo) => void
+  /**
+   * if there's already a `path` under `topicId`
+   */
+  has: (meta: RAGLocalFileMeta) => boolean
+  /**
+   * remove  `TaskInfo` base on `path` and `topicId`
+   */
+  remove: (meta: RAGLocalFileMeta) => void
+  /**
+   * updateStatus `status` base on `path` and `topicId`
+   */
+  updateStatus: (meta: RAGLocalFileMeta, status: TaskInfoStatus) => boolean
+  /**
+   * getLastStatus `status` base on `path` and `topicId`
+   */
+  getLastStatus: (info: TaskInfo) => TaskInfoStatus | undefined
 }
 
 export interface TaskChain {

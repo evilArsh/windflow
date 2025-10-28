@@ -224,7 +224,7 @@ describe("main/src/Rag", () => {
     await rag.processLocalFile(meta, config)
     await vi.waitFor(
       () => {
-        expect(res?.status).toBe(RAGFileStatus.Finish)
+        expect(res?.status).toBe(RAGFileStatus.Success)
       },
       {
         timeout: 30000,
@@ -234,7 +234,7 @@ describe("main/src/Rag", () => {
     expect(res).toBeTruthy()
     expect(res?.path).equal(meta.path)
     expect(res?.id).equal(meta.id)
-    expect(res?.status).equal(RAGFileStatus.Finish)
+    expect(res?.status).equal(RAGFileStatus.Success)
   }, 60000)
 
   it("search RAG file", async () => {

@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import useRagFilesStore from "@renderer/store/ragFiles"
 import useEmbeddingStore from "@renderer/store/embedding"
+import useKnowledgeStore from "@renderer/store/knowledge"
 import { Knowledge } from "@renderer/types/knowledge"
-import { RAGLocalFileInfo } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
 import { DialogPanel } from "@toolmain/components"
 import { filesize } from "filesize"
-import { CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
+import { CallBackFn, errorToText, msgError } from "@toolmain/shared"
 import { Spinner } from "@toolmain/components"
 import { storeToRefs } from "pinia"
 const emit = defineEmits<{
@@ -15,8 +16,10 @@ const emit = defineEmits<{
 const props = defineProps<{
   knowledge: Knowledge
 }>()
+const { t } = useI18n()
 const embeddingStore = useEmbeddingStore()
 const ragFilesStore = useRagFilesStore()
+const knowledgeStore = useKnowledgeStore()
 const { ragFiles } = storeToRefs(ragFilesStore)
 const knowledge = computed(() => props.knowledge)
 
@@ -29,26 +32,8 @@ const upload = {
     try {
       if (window.api) {
         const res = await window.api.file.chooseFilePath()
-        const infos = await window.api.file.getInfo(res.data)
-        if (infos.data.length) {
-          for (const info of infos.data) {
-            if (!info.isFile) continue
-            const req: RAGLocalFileInfo = {
-              id: uniqueId(),
-              path: info.path,
-              topicId: props.knowledge.id,
-              fileName: info.name,
-              fileSize: info.size,
-              mimeType: info.mimeType,
-              extenstion: info.extension,
-            }
-            await ragFilesStore.add(req)
-            if (!ragFiles.value[props.knowledge.id]) {
-              ragFiles.value[props.knowledge.id] = []
-            }
-            ragFiles.value[props.knowledge.id].push(req)
-          }
-        }
+        if (!res.data.length) return
+        await knowledgeStore.processFiles(res.data, props.knowledge)
       }
     } catch (error) {
       msgError(errorToText(error))
@@ -57,23 +42,45 @@ const upload = {
     }
   },
 }
-const { t } = useI18n()
+const ev = {
+  async onDelete(item: RAGLocalFileInfo, done: CallBackFn) {
+    try {
+      await ragFilesStore.remove(item.id)
+      confirm()
+    } catch (error) {
+      msgError(errorToText(error))
+    } finally {
+      done()
+    }
+  },
+}
 </script>
 <template>
   <DialogPanel style="--el-card-border-color: transparent">
     <template #header>
-      <Button size="small" type="warning" @click="done => emit('edit', knowledge.id, fileList, done)">
-        {{ t("btn.edit") }}
-      </Button>
-      <Button size="small" type="danger" @click="done => emit('remove', knowledge.id, done)">
-        {{ t("btn.delete") }}
-      </Button>
-      <Button size="small" type="primary" @click="upload.onChooseFile">
-        <template #icon>
-          <el-icon class="text-1.4rem"> <i class="i-ep:upload-filled"></i> </el-icon>
-        </template>
-        {{ t("btn.upload") }}
-      </Button>
+      <div class="flex gap-1rem">
+        <Button size="small" type="warning" @click="done => emit('edit', knowledge.id, fileList, done)">
+          {{ t("btn.edit") }}
+        </Button>
+        <PopConfirm
+          :title="t('tip.deleteConfirm')"
+          :confirm-button-text="t('tip.yes')"
+          confirm-button-type="danger"
+          :cancel-button-text="t('btn.cancel')"
+          cancel-button-type="text"
+          size="small"
+          @confirm="done => emit('remove', knowledge.id, done)">
+          <el-button size="small" type="danger">
+            <i class="i-ep-delete-filled text-1.4rem"></i>
+          </el-button>
+        </PopConfirm>
+        <Button size="small" type="primary" @click="upload.onChooseFile">
+          <template #icon>
+            <el-icon class="text-1.4rem"> <i class="i-ep:upload-filled"></i> </el-icon>
+          </template>
+          {{ t("btn.upload") }}
+        </Button>
+      </div>
     </template>
     <div class="flex w-full h-full overflow-hidden flex-col gap-1rem">
       <el-card class="flex-shrink-0" shadow="never" style="--el-card-padding: 1rem">
@@ -107,7 +114,16 @@ const { t } = useI18n()
             <ContentBox class="flex-1 select-unset!" normal>
               <el-space>
                 <el-text type="primary">{{ item.fileName }}</el-text>
-                <Spinner :model-value="true" class="text-1.4rem"></Spinner>
+                <Spinner
+                  destroy-icon
+                  :model-value="item.status === RAGFileStatus.Processing"
+                  class="text-1.4rem"></Spinner>
+                <i
+                  v-if="item.status === RAGFileStatus.Success"
+                  class="i-ep-success-filled text-2rem c-[var(--el-color-primary)]"></i>
+                <i
+                  v-if="item.status === RAGFileStatus.Failed"
+                  class="i-ep-circle-close-filled text-2rem c-[var(--el-color-danger)]"></i>
               </el-space>
               <template #end> </template>
               <template #footer>
@@ -121,8 +137,22 @@ const { t } = useI18n()
               </template>
             </ContentBox>
             <template #footer>
-              <el-button size="small">button</el-button>
+              <PopConfirm
+                :title="t('tip.deleteConfirm')"
+                :confirm-button-text="t('tip.yes')"
+                confirm-button-type="danger"
+                :cancel-button-text="t('btn.cancel')"
+                cancel-button-type="default"
+                size="small"
+                @confirm="done => ev.onDelete(item, done)">
+                <el-button size="small" type="danger" round text>
+                  <i class="i-ep-delete-filled text-1.4rem"></i>
+                </el-button>
+              </PopConfirm>
               <el-divider direction="vertical"></el-divider>
+              <el-text v-if="item.status === RAGFileStatus.Failed" size="small" type="danger" class="break-all!">
+                {{ item.msg }}
+              </el-text>
             </template>
           </ContentBox>
         </el-scrollbar>

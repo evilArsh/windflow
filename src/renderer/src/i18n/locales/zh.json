@@ -122,6 +122,8 @@
     "dimensionsDesc": "将内容嵌入成向量时，向量的维度",
     "editTitle": "知识库信息",
     "embedding": "嵌入模型",
+    "embeddingNotFound": "嵌入模型无效",
+    "emptyEmbeddingId": "请先选择一个嵌入模型",
     "fileList": "文件列表",
     "form": {
       "needApiKey": "请完善该提供商嵌入模型接口配置",

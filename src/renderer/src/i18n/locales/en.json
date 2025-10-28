@@ -113,6 +113,8 @@
     "dimensionsDesc": "dimensions of the embedding vector",
     "editTitle": "Knowledge Base Information",
     "embedding": "embedding model",
+    "embeddingNotFound": "embedding model not  found",
+    "emptyEmbeddingId": "empty Embedding model, please choose one",
     "fileList": "file list",
     "maxFileChunks": "maxFileChunks",
     "maxFileChunksDesc": "split text into chunks, the chunks of text must less than the value,if exceed,file will be truncated",

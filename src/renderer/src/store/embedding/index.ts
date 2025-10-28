@@ -20,6 +20,8 @@ export default defineStore("embedding", () => {
     embeddings.push(cloneDeep(data))
   }
   async function get(id: string) {
+    const cache = embeddings.find(item => item.id === id)
+    if (cache) return cache
     return api.get(id)
   }
   async function init() {

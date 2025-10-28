@@ -12,6 +12,7 @@ export default defineStore("ragFiles", () => {
     if (!data) return
     const kb = ragFiles[data.topicId]
     if (!kb) return
+    await window.api.rag.removeById(data.topicId, id)
     await api.remove(id)
     const i = kb.findIndex(item => item.id === id)
     if (i < 0) return
@@ -20,7 +21,7 @@ export default defineStore("ragFiles", () => {
   /**
    * remove `ragFiles` caches by `topicId`
    */
-  function removeFilesByTopicId(topicId: string) {
+  function removeCacheFilesByTopicId(topicId: string) {
     if (Object.hasOwn(ragFiles, topicId)) {
       ragFiles[topicId] = []
     }
@@ -33,15 +34,38 @@ export default defineStore("ragFiles", () => {
     ragFiles[topicId] = data
     return ragFiles[topicId]
   }
+  function addToCache(data: RAGLocalFileInfo) {
+    if (!ragFiles[data.topicId]) {
+      ragFiles[data.topicId] = []
+    }
+    ragFiles[data.topicId].push(data)
+  }
   async function add(data: RAGLocalFileInfo) {
-    return api.add(data)
+    await api.add(data)
+    addToCache(data)
+  }
+  async function bulkAdd(datas: RAGLocalFileInfo[]) {
+    await api.bulkAdd(datas)
+    datas.forEach(addToCache)
+  }
+  async function get(topicId: string, id: string) {
+    const files = ragFiles[topicId]
+    if (!files) return
+    return files.find(file => file.id === id)
+  }
+  async function update(info: RAGLocalFileInfo) {
+    return api.update(info)
   }
 
   return {
     ragFiles,
     remove,
-    removeFilesByTopicId,
+    removeCacheFilesByTopicId,
     fetchAllByTopicId,
     add,
+    addToCache,
+    bulkAdd,
+    get,
+    update,
   }
 })

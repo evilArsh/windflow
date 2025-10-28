@@ -2,11 +2,17 @@ import { defineStore } from "pinia"
 import { Knowledge } from "@renderer/types/knowledge"
 import { useData } from "./api"
 import useRagFilesStore from "../ragFiles/index"
+import useEmbeddingStore from "@renderer/store/embedding"
 import { db } from "@renderer/db"
-import { cloneDeep, code5xx } from "@toolmain/shared"
+import { cloneDeep, code5xx, msgError, uniqueId } from "@toolmain/shared"
+import { EventKey } from "@shared/types/eventbus"
+import { RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
 export default defineStore("knowledge", () => {
   const ragFilesStore = useRagFilesStore()
+  const embeddingStore = useEmbeddingStore()
+
   const knowledges = reactive<Knowledge[]>([])
+  const { t } = useI18n()
   const api = useData()
   /**
    * remove knowledge and all contents related to it
@@ -15,17 +21,17 @@ export default defineStore("knowledge", () => {
     return db.transaction("rw", db.knowledge, db.ragFiles, async trans => {
       trans.knowledge.delete(knowledgeId)
       trans.ragFiles.where("topicId").equals(knowledgeId).delete()
-      ragFilesStore.removeFilesByTopicId(knowledgeId)
-      const i = knowledges.findIndex(item => item.id === knowledgeId)
-      if (i >= 0) {
-        knowledges.splice(i, 1)
-      }
       if (window.api) {
         const res = await window.api.rag.removeByTopicId(knowledgeId)
         if (code5xx(res.code)) {
           throw new Error(res.msg)
         }
       }
+      const i = knowledges.findIndex(item => item.id === knowledgeId)
+      if (i >= 0) {
+        knowledges.splice(i, 1)
+      }
+      ragFilesStore.removeCacheFilesByTopicId(knowledgeId)
     })
   }
   async function findByEmbeddingId(embedding: string) {
@@ -38,6 +44,49 @@ export default defineStore("knowledge", () => {
     await api.add(data)
     knowledges.push(cloneDeep(data))
   }
+  async function processFiles(filePaths: string[], knowledge: Knowledge) {
+    if (!knowledge.embeddingId) {
+      msgError(t("knowledge.emptyEmbeddingId"))
+      return
+    }
+    const embd = await embeddingStore.get(knowledge.embeddingId)
+    if (!embd) {
+      msgError(t("knowledge.embeddingNotFound"))
+      return
+    }
+    const infos = await window.api.file.getInfo(filePaths)
+    if (infos.data.length) {
+      const datas: RAGLocalFileInfo[] = []
+      for (const info of infos.data) {
+        if (!info.isFile) continue
+        datas.push({
+          id: uniqueId(),
+          path: info.path,
+          topicId: knowledge.id,
+          fileName: info.name,
+          fileSize: info.size,
+          mimeType: info.mimeType,
+          extenstion: info.extension,
+          status: RAGFileStatus.Processing,
+        } as RAGLocalFileInfo)
+      }
+      await ragFilesStore.bulkAdd(datas)
+      datas.forEach(data => {
+        window.api.rag.processLocalFile(data, cloneDeep(embd))
+      })
+    }
+  }
+  /**
+   * find next knowledge data near `knowledgeId` in cache data
+   */
+  function findNextSibling(knowledgeId: string) {
+    let current = knowledges.findIndex(item => item.id === knowledgeId)
+    current = current < 0 ? 0 : current + 1 >= knowledges.length ? current - 1 : current + 1
+    if (current < 0 || current >= knowledges.length) {
+      return
+    }
+    return knowledges[current]
+  }
   /**
    * initiallly get knowledge data when application started
    */
@@ -47,6 +96,15 @@ export default defineStore("knowledge", () => {
     data.forEach(item => {
       knowledges.push(item)
     })
+    window.api.bus.on(EventKey.RAGFileProcessStatus, async data => {
+      console.log("[RAGFileProcessStatus]", data)
+      const file = await ragFilesStore.get(data.topicId, data.id)
+      if (!file) return
+      file.status = data.status
+      file.code = data.code
+      file.msg = data.msg
+      await ragFilesStore.update(file)
+    })
   }
   return {
     init,
@@ -55,5 +113,7 @@ export default defineStore("knowledge", () => {
     findByEmbeddingId,
     update,
     add,
+    processFiles,
+    findNextSibling,
   }
 })

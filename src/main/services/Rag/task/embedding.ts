@@ -104,6 +104,7 @@ export class Embedding implements TaskChain {
             throw new Error(err)
           }
         })
+        statusResp.status = RAGFileStatus.Success
         statusResp.code = 200
         statusResp.msg = "ok"
       } catch (error) {

@@ -146,9 +146,8 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!meta.path) {
         throw new Error("[processLocalFile] file path is empty")
       }
-      // FIXME: the same file may exist in multiple topics
-      if (this.#ss.has(meta.path)) {
-        return this.#log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta.id)?.status}`)
+      if (this.#ss.has(meta)) {
+        return this.#log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
       }
       const info = await getFileInfo(meta.path)
       if (!info.isFile) {
@@ -178,7 +177,11 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   }
   async removeById(topicId: string, fileId: string): Promise<Response<number>> {
     try {
+      await this.#db.open()
       const res = await this.#db.deleteData(combineTableName(topicId), sql.format(`\`fileId\` = ?`, [fileId]))
+      this.#log.debug(
+        `[removeById] delete ${res} rows, tableName:${combineTableName(topicId)}, topicId:${topicId}, fileId:${fileId}`
+      )
       return responseData(200, "ok", res)
     } catch (error) {
       this.#log.debug("[removeById]", errorToText(error))
@@ -197,7 +200,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   }
   async removeByTopicId(topicId: string): Promise<StatusResponse> {
     try {
+      await this.#db.open()
       await this.#db.deleteTable(combineTableName(topicId))
+      this.#log.debug(`[removeByTopicId] table ${combineTableName(topicId)} deleted`)
       return responseCode(200, "success")
     } catch (error) {
       this.#log.debug("[removeById]", errorToText(error))
