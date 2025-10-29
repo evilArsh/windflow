@@ -2,6 +2,8 @@ import type { Primitive } from "type-fest"
 
 export enum SettingKeys {
   Language = "settings.language", // 全局语言
+  DefaultRoute = "settings.defaultRoute", // 默认路由
+
   ChatSubNav = "chat.subNav", // 聊天子菜单宽度配置
   ChatToggleMenu = "chat.toggleMenu", // 聊天列表显隐
   ChatTogglePanel = "chat.togglePanel", // 聊天右侧显隐
@@ -15,10 +17,12 @@ export enum SettingKeys {
 
   MCPSubNav = "mcp.subNav", // mcp子菜单宽度配置
   MCPSubRoute = "mcp.subRoute", // mcp子菜单路由
+  MCPToggleSubNav = "mcp.toggleSubNav", // mcp子菜单折叠开关
 
   ToolEnvironment = "tool.environment", // 全局工具环境配置
 
   ModelSubNav = "model.subNav", // 模型子菜单宽度配置
+  ModelToggleSubNav = "model.toggleSubNav", // 模型子菜单折叠开关
 
   GlobalThemeDark = "global.themeDark", // 全局主题黑色开关
   ProviderCurrentSettingActive = "provider.currentSettingActive", // 选中的提供商
@@ -26,6 +30,7 @@ export enum SettingKeys {
   KnowledgeSubNav = "knowledge.subNav", // 知识库子菜单宽度配置
   KnowledgeSubRoute = "knowledge.subRoute", // 知识库子菜单宽度配置
   KnowledgeId = "knowledge.id", // 知识库选中的id
+  KnowledgeToggleSubNav = "knowledge.toggleSubNav", // 知识库子菜单折叠开关
   EmbeddingId = "embedding.id", // 知识库->嵌入 选中的id
 }
 export type SettingsValue = Primitive | Array<Primitive> | { [key: string]: SettingsValue }

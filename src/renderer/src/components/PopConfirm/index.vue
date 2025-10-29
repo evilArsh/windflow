@@ -1,34 +1,81 @@
 <script lang="ts" setup>
 import { CallBackFn } from "@toolmain/shared"
-import { PopconfirmProps, ElTooltipProps } from "element-plus"
-import QuestionFilled from "~icons/ep/question-filled"
+import { refDebounced } from "@vueuse/core"
+import { PopoverProps } from "element-plus"
+
+type ButtonType = "" | "text" | "default" | "primary" | "success" | "warning" | "info" | "danger"
+type ConfirmCallback = (done: CallBackFn, e: MouseEvent) => void
+type CancelCallback = (done: CallBackFn, e: MouseEvent) => void
+
 const props = withDefaults(
   defineProps<
-    Partial<PopconfirmProps> & {
+    // eslint-disable-next-line vue/prop-name-casing
+    Partial<PopoverProps> & {
+      title: string
+      confirmButtonText?: string
+      confirmButtonType?: ButtonType
+      cancelButtonText?: string
+      cancelButtonType?: ButtonType
+      confirm?: ConfirmCallback
+      cancel?: CancelCallback
       size?: "default" | "small" | "large"
     }
   >(),
   {
-    effect: "light",
-    "confirm-button-type": "primary",
-    "cancel-button-type": "text",
-    icon: () => h(QuestionFilled),
-    "icon-color": "#f90",
-    "hide-icon": false,
-    "hide-after": 200,
-    teleported: true,
-    persistent: false,
-    width: 150,
+    confirmButtonText: "confirm",
+    confirmButtonType: "danger",
+    cancelButtonText: "cancel",
+    cancelButtonType: "text",
     size: "small",
+    // popover props
+    trigger: "hover",
+    triggerKeys: () => ["Enter", "Space"],
+    effect: "light",
+    content: "",
+    width: "auto",
+    placement: "bottom",
+    disabled: false,
+    visible: null,
+    offset: undefined,
+    transition: "",
+    showArrow: true,
+    popperOptions: () => ({
+      modifiers: [
+        {
+          name: "computeStyles",
+          options: {
+            gpuAcceleration: false,
+          },
+        },
+      ],
+    }),
+    confirm: undefined,
+    cancel: undefined,
+    popperClass: "",
+    popperStyle: "",
+    showAfter: 0,
+    hideAfter: 200,
+    autoClose: 0,
+    tabindex: 0,
+    teleported: true,
+    appendTo: "body",
+    persistent: true,
   }
 )
-const emit = defineEmits<{
-  confirm: [done: CallBackFn, e: MouseEvent]
-  cancel: [e: MouseEvent]
-}>()
+const pop = shallowReactive({
+  visible: false,
+  open() {
+    pop.visible = true
+  },
+  close() {
+    pop.visible = false
+  },
+})
 const useBtn = () => {
   const disabled = ref(false)
   const loading = ref(false)
+  const isConfirmClick = ref(false)
+  const isCancelClick = ref(false)
   function done(): void {
     disabled.value = false
     loading.value = false
@@ -37,71 +84,107 @@ const useBtn = () => {
     disabled.value = true
     loading.value = true
   }
-  return { disabled, loading, done, wait }
+  function clickConfirm() {
+    isConfirmClick.value = true
+    isCancelClick.value = false
+  }
+  function clickCancel() {
+    isCancelClick.value = true
+    isConfirmClick.value = false
+  }
+  return {
+    disabled,
+    loading: refDebounced(loading, 250),
+    done,
+    wait,
+    clickConfirm,
+    clickCancel,
+    isConfirmClick,
+    isCancelClick,
+  }
 }
-const { disabled, loading, done, wait } = useBtn()
-const tooltip = ref<Partial<ElTooltipProps>>({
-  visible: false,
-})
-function evConfirm(e: MouseEvent, confirm: (e: MouseEvent) => void) {
-  wait()
-  emit(
-    "confirm",
-    () => {
-      done()
-      confirm(e)
-    },
-    e
-  )
-}
-function evCancel(e: MouseEvent, cancel: (e: MouseEvent) => void) {
-  wait()
-  emit("cancel", e)
-  cancel(e)
-  done()
-}
-function onConfirm() {
-  console.log("onConfirm")
-}
-function onCancel() {
-  console.log("onCancel")
+const {
+  disabled: btnDisabled,
+  loading: btnLoading,
+  done: btnDone,
+  wait: btnWait,
+  clickConfirm,
+  clickCancel,
+  isConfirmClick,
+  isCancelClick,
+} = useBtn()
+const ev = {
+  onConfirm(e: MouseEvent) {
+    clickConfirm()
+    btnWait()
+    if (props.confirm) {
+      props.confirm(() => {
+        btnDone()
+        pop.close()
+      }, e)
+    } else {
+      btnDone()
+      pop.close()
+    }
+  },
+  onCancel(e: MouseEvent) {
+    clickCancel()
+    btnWait()
+    if (props.cancel) {
+      props.cancel(() => {
+        btnDone()
+        pop.close()
+      }, e)
+    } else {
+      btnDone()
+      pop.close()
+    }
+  },
+  onOpen() {
+    if (toValue(btnDisabled) || toValue(btnLoading)) {
+      return
+    }
+    pop.open()
+  },
 }
 </script>
 <template>
-  <el-popconfirm v-bind="props" :tooltip @confirm="onConfirm" @cancel="onCancel">
+  <el-popover ref="popRef" v-bind="props" :visible="pop.visible" title="">
     <template #reference>
-      <span>
-        <slot></slot>
+      <span @click="ev.onOpen">
+        <slot name="reference" :disabled="btnDisabled" :loading="btnLoading"></slot>
       </span>
     </template>
-    <template #actions="{ cancel, confirm }">
-      <div class="flex justify-between">
-        <el-button :disabled :type="cancelButtonType" :size @click="e => evCancel(e, cancel)">
-          <span :size v-if="!loading">
-            {{ cancelButtonText }}
-          </span>
-          <i v-else class="i-ep:loading loading-icon"></i>
-        </el-button>
-        <el-button :disabled :type="confirmButtonType" :size @click="e => evConfirm(e, confirm)">
-          <span :size v-if="!loading">
-            {{ confirmButtonText }}
-          </span>
-          <i v-else class="i-ep:loading loading-icon"></i>
-        </el-button>
-      </div>
+    <template #default>
+      <slot :wait="btnWait">
+        <div class="fixed left-0 top-0 right-0 bottom-0 z-2999"></div>
+        <ContentBox class="relative z-3000" normal style="--ai-gap-base: 1rem; --content-box-padding: 0">
+          <template #header>
+            <div class="flex gap-1rem items-center">
+              <i class="i-ep-question-filled c-[var(--el-color-warning)] text-1.4rem"></i>
+              <el-text :size> {{ title }}</el-text>
+            </div>
+          </template>
+          <div class="flex items-center justify-end">
+            <el-button
+              :disabled="btnDisabled"
+              :loading="btnLoading && isCancelClick"
+              :type="cancelButtonType"
+              :size
+              @click="ev.onCancel">
+              {{ cancelButtonText }}
+            </el-button>
+            <el-button
+              :disabled="btnDisabled"
+              :loading="btnLoading && isConfirmClick"
+              :type="confirmButtonType"
+              :size
+              @click="ev.onConfirm">
+              {{ confirmButtonText }}
+            </el-button>
+          </div>
+        </ContentBox>
+      </slot>
     </template>
-  </el-popconfirm>
+  </el-popover>
 </template>
-<style lang="scss" scoped>
-.loading-icon {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

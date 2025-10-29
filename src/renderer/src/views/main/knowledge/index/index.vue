@@ -66,7 +66,10 @@ const filterKnowledges = computed(() =>
   knowledges.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
 )
 const ev = {
-  onOpenDlg(done: CallBackFn) {
+  onAddNew(done: CallBackFn) {
+    if (embeddings.value.length == 1) {
+      cache.kbForm.embeddingId = embeddings.value[0].id
+    }
     done()
     open()
   },
@@ -105,7 +108,8 @@ const ev = {
       if (kb) {
         cache.kbForm = cloneDeep(kb)
         cache.currentFileNum = fileList.length
-        ev.onOpenDlg(done)
+        open()
+        done()
       }
     } catch (error) {
       done()
@@ -116,7 +120,6 @@ const ev = {
     try {
       const next = knowledgeStore.findNextSibling(knowledgeId)
       await knowledgeStore.remove(knowledgeId)
-      console.log(next)
       if (next) {
         ev.onKnowledgeChoose(next)
       } else {
@@ -133,27 +136,22 @@ const ev = {
     cache.currentId = kb?.id ?? ""
   },
 }
-settingsStore.dataWatcher<string>(
-  SettingKeys.KnowledgeId,
-  () => cache.currentId,
-  cache.currentId,
-  id => {
-    const kb = knowledges.value.find(v => v.id === id)
-    if (!id || !kb) {
-      cache.current = null
-      return
-    }
-    cache.current = kb
-    cache.fetchCurrentFiles(kb.id)
+settingsStore.dataWatcher<string>(SettingKeys.KnowledgeId, toRef(cache, "currentId"), cache.currentId, id => {
+  const kb = knowledges.value.find(v => v.id === id)
+  if (!id || !kb) {
+    cache.current = null
+    return
   }
-)
+  cache.current = kb
+  cache.fetchCurrentFiles(kb.id)
+})
 </script>
 <template>
   <ContentLayout custom>
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
         <div class="flex items-center">
-          <Button type="primary" size="small" @click="ev.onOpenDlg">{{ t("btn.new") }}</Button>
+          <Button type="primary" size="small" @click="ev.onAddNew">{{ t("btn.new") }}</Button>
         </div>
       </div>
     </template>

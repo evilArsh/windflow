@@ -18,21 +18,21 @@ export default defineStore("knowledge", () => {
    * remove knowledge and all contents related to it
    */
   async function remove(knowledgeId: string) {
-    return db.transaction("rw", db.knowledge, db.ragFiles, async trans => {
-      trans.knowledge.delete(knowledgeId)
-      trans.ragFiles.where("topicId").equals(knowledgeId).delete()
-      if (window.api) {
-        const res = await window.api.rag.removeByTopicId(knowledgeId)
-        if (code5xx(res.code)) {
-          throw new Error(res.msg)
-        }
-      }
-      const i = knowledges.findIndex(item => item.id === knowledgeId)
-      if (i >= 0) {
-        knowledges.splice(i, 1)
-      }
-      ragFilesStore.removeCacheFilesByTopicId(knowledgeId)
+    await db.transaction("rw", db.knowledge, db.ragFiles, async trans => {
+      await trans.knowledge.delete(knowledgeId)
+      await trans.ragFiles.where("topicId").equals(knowledgeId).delete()
     })
+    if (window.api) {
+      const res = await window.api.rag.removeByTopicId(knowledgeId)
+      if (code5xx(res.code)) {
+        throw new Error(res.msg)
+      }
+    }
+    const i = knowledges.findIndex(item => item.id === knowledgeId)
+    if (i >= 0) {
+      knowledges.splice(i, 1)
+    }
+    ragFilesStore.removeCacheFilesByTopicId(knowledgeId)
   }
   async function findByEmbeddingId(embedding: string) {
     return api.findByEmbeddingId(embedding)

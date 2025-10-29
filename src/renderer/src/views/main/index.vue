@@ -10,6 +10,9 @@ onMounted(() => {})
     </div>
     <div class="main-content">
       <div class="main-content-header">
+        <div class="flex items-center gap-1rem justify-start">
+          <div id="mainContentHeaderSlot"></div>
+        </div>
         <Debugger></Debugger>
       </div>
       <div class="main-content-inner">
@@ -40,12 +43,11 @@ onMounted(() => {})
   .main-content-header {
     -webkit-app-region: drag;
     height: var(--ai-header-height);
-    padding-right: 140px;
+    padding: 0 140px 0 var(--ai-gap-base);
     background-color: var(--el-bg-color);
     border-bottom-left-radius: var(--el-border-radius-base);
     display: flex;
     align-items: center;
-    justify-content: flex-end;
   }
   .main-content-inner {
     flex: 1;

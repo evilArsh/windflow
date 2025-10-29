@@ -46,7 +46,6 @@ const ev = {
   async onDelete(item: RAGLocalFileInfo, done: CallBackFn) {
     try {
       await ragFilesStore.remove(item.id)
-      confirm()
     } catch (error) {
       msgError(errorToText(error))
     } finally {
@@ -69,10 +68,12 @@ const ev = {
           :cancel-button-text="t('btn.cancel')"
           cancel-button-type="text"
           size="small"
-          @confirm="done => emit('remove', knowledge.id, done)">
-          <el-button size="small" type="danger">
-            <i class="i-ep-delete-filled text-1.4rem"></i>
-          </el-button>
+          :confirm="done => emit('remove', knowledge.id, done)">
+          <template #reference="{ loading, disabled }">
+            <el-button :loading :disabled size="small" type="danger">
+              {{ t("btn.delete") }}
+            </el-button>
+          </template>
         </PopConfirm>
         <Button size="small" type="primary" @click="upload.onChooseFile">
           <template #icon>
@@ -142,12 +143,14 @@ const ev = {
                 :confirm-button-text="t('tip.yes')"
                 confirm-button-type="danger"
                 :cancel-button-text="t('btn.cancel')"
-                cancel-button-type="default"
+                cancel-button-type="text"
                 size="small"
-                @confirm="done => ev.onDelete(item, done)">
-                <el-button size="small" type="danger" round text>
-                  <i class="i-ep-delete-filled text-1.4rem"></i>
-                </el-button>
+                :confirm="done => ev.onDelete(item, done)">
+                <template #reference="{ loading, disabled }">
+                  <el-button :loading :disabled size="small" type="danger" round text>
+                    <i class="i-ep-delete-filled text-1.4rem"></i>
+                  </el-button>
+                </template>
               </PopConfirm>
               <el-divider direction="vertical"></el-divider>
               <el-text v-if="item.status === RAGFileStatus.Failed" size="small" type="danger" class="break-all!">

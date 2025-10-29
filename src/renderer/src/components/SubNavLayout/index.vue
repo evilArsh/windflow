@@ -45,7 +45,7 @@ settingsStore.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle,
   gap: var(--ai-gap-base);
   .subnav-provider {
     overflow: hidden;
-    min-width: 20rem;
+    min-width: 0;
     background-color: var(--el-bg-color);
     display: flex;
     flex-direction: column;

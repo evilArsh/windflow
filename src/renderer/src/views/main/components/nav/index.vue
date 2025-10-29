@@ -12,31 +12,14 @@ import { Theme } from "@shared/types/theme"
 const { t } = useI18n()
 const router = useRouter()
 const settingsStore = useSettingsStore()
-const menuEv = {
-  onSelect: (key: string) => {
-    defaultRoute.value = key
-  },
-}
-const status = reactive({
-  dark: false,
-  setTheme: () => {
-    if (status.dark) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  },
-  toggleDark: () => {
-    status.dark = !status.dark
-    window.api.theme.setTheme(status.dark ? Theme.dark : Theme.light)
-  },
-})
+const defaultPath = "/main/chat"
+
 const defaultRoute = ref("")
 const pageNav = shallowRef<NavPage[]>([])
 useI18nWatch(() => {
   pageNav.value = [
     {
-      index: "/main/chat",
+      index: defaultPath,
       label: t("nav.chat"),
       icon: h(IMdiChatProcessing),
     },
@@ -57,21 +40,45 @@ useI18nWatch(() => {
     },
   ]
 })
+const menuEv = {
+  onSelect: (path: string) => {
+    if (path.startsWith(defaultRoute.value)) return
+    menuEv.onRouteChange(path)
+  },
+  onRouteChange(path: string) {
+    const current = pageNav.value.find(v => path.startsWith(v.index))
+    defaultRoute.value = current?.index ?? defaultPath
+    router.replace({
+      path: defaultRoute.value,
+    })
+  },
+}
+const status = reactive({
+  dark: false,
+  setTheme: () => {
+    if (status.dark) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  },
+  toggleDark: () => {
+    status.dark = !status.dark
+    window.api.theme.setTheme(status.dark ? Theme.dark : Theme.light)
+  },
+})
+
 settingsStore.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
-router.afterEach(to => {
-  const current = pageNav.value.find(v => to.path.startsWith(v.index))
-  defaultRoute.value = current?.index ?? "/main/chat"
+settingsStore.dataWatcher<string>(SettingKeys.DefaultRoute, defaultRoute, "/main/chat", (path, old) => {
+  if (old && path.startsWith(old)) return
+  menuEv.onRouteChange(path)
 })
 </script>
 <template>
   <el-card class="nav-container" body-class="nav-container-body" shadow="never">
     <div class="nav-menu">
       <el-scrollbar>
-        <el-menu
-          style="--el-menu-bg-color: transparent"
-          :default-active="defaultRoute"
-          @select="menuEv.onSelect"
-          router>
+        <el-menu style="--el-menu-bg-color: transparent" :default-active="defaultRoute" @select="menuEv.onSelect">
           <el-menu-item v-for="item in pageNav" :key="item.index" :index="item.index" :disabled="item.disabled">
             <div class="nav-menu-item">
               <ContentBox
@@ -81,7 +88,7 @@ router.afterEach(to => {
                 :main-style="{ flexDirection: 'column' }"
                 background
                 still-lock
-                :default-lock="defaultRoute == item.index">
+                :default-lock="defaultRoute.startsWith(item.index)">
                 <template #icon>
                   <i class="nav-menu-item-icon"><component :is="item.icon"></component></i>
                 </template>

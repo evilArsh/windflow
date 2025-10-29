@@ -1,5 +1,4 @@
-import { ProviderMeta, SettingKeys } from "@renderer/types"
-import useSettingsStore from "@renderer/store/settings"
+import { ProviderMeta } from "@renderer/types"
 import { defineStore } from "pinia"
 import { ProviderManager } from "@renderer/provider"
 import { useData } from "./api.js"
@@ -12,8 +11,6 @@ export default defineStore("provider", () => {
   const providerSvgIcon = inject(providerSvgIconKey)
   const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
   const userLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
-  const settingsStore = useSettingsStore()
-  const currentProvider = ref<ProviderMeta>() // 模型页选中的提供商
   const metas = reactive<Record<string, ProviderMeta>>({})
   const manager = markRaw<ProviderManager>(new ProviderManager())
 
@@ -27,6 +24,12 @@ export default defineStore("provider", () => {
   }
   async function update(meta: ProviderMeta) {
     return api.update(meta)
+  }
+  /**
+   * find provider meta by providerName in cache
+   */
+  function findProviderMeta(providerName: string) {
+    return metas[providerName]
   }
   async function init() {
     const defaultData = providerDefault(providerSvgIcon as IconifyJSON)
@@ -43,12 +46,6 @@ export default defineStore("provider", () => {
         await api.add(item)
       }
     }
-    const current = await settingsStore.get<string>(SettingKeys.ProviderCurrentSettingActive, "")
-    if (current) {
-      currentProvider.value = metas[current.value]
-    } else if (defaultData.length > 0) {
-      currentProvider.value = metas[defaultData[0].name]
-    }
   }
   async function reset() {
     await api.clear()
@@ -57,9 +54,9 @@ export default defineStore("provider", () => {
   return {
     init,
     getProviderLogo,
+    findProviderMeta,
     providerMetas: metas,
     providerManager: manager,
-    currentProvider,
     reset,
     update,
   }

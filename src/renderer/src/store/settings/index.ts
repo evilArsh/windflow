@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { Settings, SettingsValue } from "@renderer/types"
 import { useData } from "./api"
 import { Reactive } from "vue"
-import { isFunction } from "@toolmain/shared"
+import { cloneDeep, isFunction, isUndefined } from "@toolmain/shared"
 import PQueue from "p-queue"
 
 export default defineStore("settings", () => {
@@ -55,35 +55,44 @@ export default defineStore("settings", () => {
     id: string,
     wrapData: Ref<T> | Reactive<T> | (() => T),
     defaultValue: T,
-    callBack?: (data: T) => void
+    callBack?: (data: T, old?: T) => void
   ) {
+    const queue = markRaw(new PQueue({ concurrency: 1 }))
     const configData = ref<Settings<T>>()
-    const execCallback = async (value: Settings<T>) => {
+    const execCallback = async (value: Settings<T>, old?: T) => {
       await api.update(value)
-      callBack?.(value.value)
+      callBack?.(value.value, old)
       updateValue(id, value)
     }
     const watcher = watch(
       wrapData,
-      async val => {
-        if (configData.value) {
-          configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
-          await execCallback(configData.value)
-        }
+      (val, old) => {
+        queue.add(async () => {
+          if (configData.value) {
+            configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
+            await execCallback(
+              configData.value,
+              isUndefined(old) ? undefined : isRef(old) || isFunction(old) ? toValue(old) : (toRaw(old) as T)
+            )
+          }
+        })
       },
       { deep: true, immediate: true }
     )
     get(id, defaultValue).then(res => {
-      configData.value = res
       if (isRef(wrapData)) {
+        configData.value = res
         wrapData.value = configData.value.value
       } else if (isReactive(wrapData)) {
+        configData.value = res
         Object.assign(wrapData, configData.value.value)
       } else {
+        const old = cloneDeep(configData.value?.value)
+        configData.value = res
         /**
          * cannot set `wrapData`, because it is a function, `watcher` cannot be triggered, just callback
          */
-        execCallback(configData.value)
+        execCallback(configData.value, old)
       }
     })
     onBeforeUnmount(() => {

@@ -125,17 +125,12 @@ const ev = {
     formConfirmRef.value?.click()
   },
 }
-settingsStore.dataWatcher<string>(
-  SettingKeys.EmbeddingId,
-  () => cache.currentId,
-  cache.currentId,
-  id => {
-    if (!id) return
-    const em = embeddings.value.find(v => v.id === id)
-    if (!em) return
-    current.value = em
-  }
-)
+settingsStore.dataWatcher<string>(SettingKeys.EmbeddingId, toRef(cache, "currentId"), "", id => {
+  if (!id) return
+  const em = embeddings.value.find(v => v.id === id)
+  if (!em) return
+  current.value = em
+})
 onMounted(() => {
   route.query.command == "add" && ev.onOpenDlg("add")
 })
