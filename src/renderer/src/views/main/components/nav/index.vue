@@ -9,12 +9,14 @@ import IBook from "~icons/material-symbols/book-4-spark"
 import useSettingsStore from "@renderer/store/settings"
 import { useI18nWatch } from "@toolmain/shared"
 import { Theme } from "@shared/types/theme"
+import { useTask } from "@renderer/hooks/useTask"
 const { t } = useI18n()
 const router = useRouter()
 const settingsStore = useSettingsStore()
 const defaultPath = "/main/chat"
 
 const defaultRoute = ref("")
+const task = useTask()
 const pageNav = shallowRef<NavPage[]>([])
 useI18nWatch(() => {
   pageNav.value = [
@@ -42,8 +44,11 @@ useI18nWatch(() => {
 })
 const menuEv = {
   onSelect: (path: string) => {
-    if (path.startsWith(defaultRoute.value)) return
-    menuEv.onRouteChange(path)
+    if (task.pending()) return
+    task.add(async () => {
+      if (path.startsWith(defaultRoute.value)) return
+      menuEv.onRouteChange(path)
+    })
   },
   onRouteChange(path: string) {
     const current = pageNav.value.find(v => path.startsWith(v.index))
@@ -55,8 +60,8 @@ const menuEv = {
 }
 const status = reactive({
   dark: false,
-  setTheme: () => {
-    if (status.dark) {
+  setTheme: (dark: boolean) => {
+    if (dark) {
       document.documentElement.classList.add("dark")
     } else {
       document.documentElement.classList.remove("dark")

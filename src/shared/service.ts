@@ -36,6 +36,7 @@ export const IpcChannel = {
 
   FileChooseFilePath: "file.chooseFilePath",
   FileGetInfo: "file.getInfo",
+  FileOpen: "file.open",
 
   ThemeSetTheme: "theme.setTheme",
 
@@ -89,6 +90,7 @@ export interface MCPService {
 export interface FileService {
   chooseFilePath: () => Promise<Response<string[]>>
   getInfo: (absPath: string[]) => Promise<Response<FileInfo[]>>
+  open: (absPath: string) => Promise<StatusResponse>
 }
 
 export interface EventBus {

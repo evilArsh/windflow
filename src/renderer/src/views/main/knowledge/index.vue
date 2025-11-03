@@ -18,7 +18,6 @@ const menus = shallowRef<{ icon: Component; title: string; path: string }[]>([])
 const routes = {
   toPath: (path: string) => {
     currentRoute.value = path
-    router.push(path)
   },
 }
 useI18nWatch(() => {
@@ -35,7 +34,7 @@ const ev = {
     cache.showSubNav = !cache.showSubNav
   },
 }
-settingsStore.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.fullPath, path => {
+settingsStore.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.path, path => {
   router.push(path)
 })
 settingsStore.dataWatcher<boolean>(SettingKeys.KnowledgeToggleSubNav, toRef(cache, "showSubNav"), true)

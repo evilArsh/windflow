@@ -35,7 +35,7 @@ const ev = {
     cache.showSubNav = !cache.showSubNav
   },
 }
-settingsStore.dataWatcher<string>(SettingKeys.MCPSubRoute, currentRoute, route.fullPath, path => {
+settingsStore.dataWatcher<string>(SettingKeys.MCPSubRoute, currentRoute, route.path, path => {
   router.push(path)
 })
 settingsStore.dataWatcher<boolean>(SettingKeys.MCPToggleSubNav, toRef(cache, "showSubNav"), true)

@@ -3,7 +3,7 @@ import { useRequest } from "@renderer/provider/http"
 import { ChatMessage } from "@renderer/types"
 import { errorToText, isBase64Image, isString, msg } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
-import PQueue from "p-queue"
+import { useTask } from "@renderer/hooks/useTask"
 
 const props = defineProps<{
   message: ChatMessage
@@ -14,8 +14,7 @@ const message = computed(() => props.message)
 const useImages = () => {
   const images = ref<string[]>([])
   const http = useRequest()
-  const queue = new PQueue()
-  const isPending = ref(false)
+  const task = useTask()
 
   const blobToBase64 = async (blob: Blob) =>
     new Promise<string>((resolve, reject) => {
@@ -26,7 +25,7 @@ const useImages = () => {
     })
   async function download(url: string) {
     try {
-      queue.add(async () => {
+      task.add(async () => {
         const { promise } = http.request({
           url,
           method: "GET",
@@ -41,22 +40,19 @@ const useImages = () => {
       msg({ code: 500, msg: errorToText(error) })
     }
   }
-  queue.addListener("idle", () => (isPending.value = false))
-  queue.addListener("add", () => (isPending.value = true))
-  queue.addListener("active", () => (isPending.value = true))
-  // queue.addListener("next", () => (isPending.value = true))
+
   return {
     images,
-    isPending,
+    isPending: computed(() => task.isPending.value),
     abortAll: () => {
       http.abortAll()
-      queue.clear()
+      task.clear()
     },
     addBase64: (img: string) => images.value.push(img),
     clearImages: () => (images.value.length = 0),
     download,
     dispose: () => {
-      queue.removeAllListeners()
+      task.removeAllListeners()
       abortAll()
     },
   }

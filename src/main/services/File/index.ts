@@ -1,12 +1,14 @@
 import { ServiceCore } from "@main/types"
-import { Response, responseData, errorToText } from "@toolmain/shared"
+import { Response, responseData, errorToText, StatusResponse, responseCode, isString } from "@toolmain/shared"
 import { FileService, IpcChannel } from "@shared/service"
-import { dialog, ipcMain } from "electron"
+import { dialog, ipcMain, shell } from "electron"
 import { useStore } from "@main/hooks/useStore"
 import { useEnv } from "@main/hooks/useEnv"
 import { useLog } from "@main/hooks/useLog"
 import { FileInfo } from "@shared/types/files"
 import { getFileInfo } from "@main/misc/file"
+import path from "node:path"
+import fs from "node:fs"
 
 export const FileServiceId = "FileService"
 export class FileServiceImpl implements FileService, ServiceCore {
@@ -45,12 +47,43 @@ export class FileServiceImpl implements FileService, ServiceCore {
       return responseData(500, errorToText(error), res)
     }
   }
+  async open(absPath: string): Promise<StatusResponse> {
+    try {
+      if (!absPath || !isString(absPath)) {
+        return responseCode(400, "404 Not Found")
+      }
+      const normalizedPath = path.resolve(absPath)
+      try {
+        fs.accessSync(normalizedPath)
+      } catch {
+        return responseCode(400, `permission denied`)
+      }
+      const stats = fs.statSync(normalizedPath)
+      if (stats.isDirectory()) {
+        shell.showItemInFolder(normalizedPath)
+        return responseCode(200, "ok")
+      } else if (stats.isFile()) {
+        const errorMessage = await shell.openPath(normalizedPath)
+        if (errorMessage) {
+          return responseCode(500, errorMessage)
+        }
+        return responseCode(200, "ok")
+      } else {
+        return responseCode(400, `bad request`)
+      }
+    } catch (error) {
+      return responseCode(500, errorToText(error))
+    }
+  }
   registerIpc() {
     ipcMain.handle(IpcChannel.FileChooseFilePath, async (_): Promise<Response<string[]>> => {
       return this.chooseFilePath()
     })
     ipcMain.handle(IpcChannel.FileGetInfo, async (_, p: string[]): Promise<Response<FileInfo[]>> => {
       return this.getInfo(p)
+    })
+    ipcMain.handle(IpcChannel.FileOpen, async (_, p: string): Promise<StatusResponse> => {
+      return this.open(p)
     })
   }
   dispose() {}
