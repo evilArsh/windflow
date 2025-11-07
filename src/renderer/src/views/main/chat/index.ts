@@ -73,7 +73,8 @@ export const useMenu = (
   const chatStore = useChatStore()
   const { t } = useI18n()
   const settingsStore = useSettingsStore()
-  const { topicList, currentNodeKey } = storeToRefs(chatStore)
+  const { topicList } = storeToRefs(chatStore)
+  const currentNodeKey = ref("")
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   const currentTopic = ref<ChatTopicTree>()
   const queue = markRaw(new PQueue({ concurrency: 1 }))
@@ -119,7 +120,6 @@ export const useMenu = (
       if (currentTopic.value && topic.id === currentTopic.value.id) return
       await chatStore.loadChatTopicData(topic.node)
       currentTopic.value = topic
-      currentNodeKey.value = topic.id
       chatStore.refreshChatTopicModelIds(topic.node)
     } catch (error) {
       console.log("[setCurrentTopic] error", error)
@@ -229,7 +229,7 @@ export const useMenu = (
         chatStore.cachePushChatTopicTree(newNode)
         setTimeout(() => scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight), 0)
       }
-      await queue.add(async () => setCurrentTopic(newNode))
+      currentNodeKey.value = newNode.id
     } catch (error) {
       ElMessage.error(errorToText(error))
     }
@@ -249,7 +249,7 @@ export const useMenu = (
         ElMessage.warning(t("chat.topicSwitching"))
         return
       }
-      queue.add(async () => setCurrentTopic(data))
+      currentNodeKey.value = data.id
     }),
     // 鼠标移动过的节点
     currentHover: "",
@@ -309,6 +309,18 @@ export const useMenu = (
     useThrottleFn(v => treeRef.value?.filter(v), 250, true)
   )
   settingsStore.dataWatcher<string[]>(SettingKeys.ChatDefaultExpandedKeys, toRef(tree, "defaultExpandedKeys"), [])
+  settingsStore.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "", key => {
+    if (!key) {
+      return
+    }
+    nextTick(() => {
+      const topicTree = treeRef.value?.getCurrentNode()
+      if (topicTree) {
+        queue.add(async () => setCurrentTopic(topicTree as ChatTopicTree))
+        chatStore.refreshChatTopicModelIds(topicTree.node)
+      }
+    })
+  })
   return {
     menu,
     dlg,

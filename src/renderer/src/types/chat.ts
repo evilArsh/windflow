@@ -104,6 +104,10 @@ export type ChatTopic = {
    */
   modelIds: string[]
   /**
+   * 当前会话选择的知识库
+   */
+  knowledgeId?: string
+  /**
    * @description 会话输入框高度
    */
   inputHeight?: number

@@ -10,13 +10,14 @@ import useSettingsStore from "@renderer/store/settings"
 import { useI18nWatch } from "@toolmain/shared"
 import { Theme } from "@shared/types/theme"
 import { useTask } from "@renderer/hooks/useTask"
+import PQueue from "p-queue"
 const { t } = useI18n()
 const router = useRouter()
 const settingsStore = useSettingsStore()
 const defaultPath = "/main/chat"
 
 const defaultRoute = ref("")
-const task = useTask()
+const task = useTask(new PQueue({ concurrency: 1 }))
 const pageNav = shallowRef<NavPage[]>([])
 useI18nWatch(() => {
   pageNav.value = [
@@ -45,16 +46,16 @@ useI18nWatch(() => {
 const menuEv = {
   onSelect: (path: string) => {
     if (task.pending()) return
-    task.add(async () => {
+    task.getQueue().add(async () => {
       if (path.startsWith(defaultRoute.value)) return
+      const current = pageNav.value.find(v => path.startsWith(v.index))
+      defaultRoute.value = current?.index ?? defaultPath
       menuEv.onRouteChange(path)
     })
   },
   onRouteChange(path: string) {
-    const current = pageNav.value.find(v => path.startsWith(v.index))
-    defaultRoute.value = current?.index ?? defaultPath
     router.replace({
-      path: defaultRoute.value,
+      path,
     })
   },
 }

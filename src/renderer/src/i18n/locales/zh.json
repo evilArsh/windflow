@@ -68,6 +68,8 @@
     },
     "regenerate": "重新生成",
     "right": {
+      "history": "消息",
+      "knowledge": "知识库",
       "prompt": "提示词"
     },
     "search": "搜索",

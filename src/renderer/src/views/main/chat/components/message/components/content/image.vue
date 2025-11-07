@@ -4,6 +4,7 @@ import { ChatMessage } from "@renderer/types"
 import { errorToText, isBase64Image, isString, msg } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
 import { useTask } from "@renderer/hooks/useTask"
+import PQueue from "p-queue"
 
 const props = defineProps<{
   message: ChatMessage
@@ -14,7 +15,7 @@ const message = computed(() => props.message)
 const useImages = () => {
   const images = ref<string[]>([])
   const http = useRequest()
-  const task = useTask()
+  const task = useTask(new PQueue())
 
   const blobToBase64 = async (blob: Blob) =>
     new Promise<string>((resolve, reject) => {
@@ -25,7 +26,7 @@ const useImages = () => {
     })
   async function download(url: string) {
     try {
-      task.add(async () => {
+      task.getQueue().add(async () => {
         const { promise } = http.request({
           url,
           method: "GET",
@@ -52,7 +53,7 @@ const useImages = () => {
     clearImages: () => (images.value.length = 0),
     download,
     dispose: () => {
-      task.removeAllListeners()
+      task.getQueue().removeAllListeners()
       abortAll()
     },
   }

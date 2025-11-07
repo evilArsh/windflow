@@ -7,6 +7,7 @@ import { Spinner } from "@toolmain/components"
 
 defineProps<{
   fileList: RAGLocalFileInfo[]
+  view?: boolean // 预览模式
 }>()
 
 const ragFilesStore = useRagFilesStore()
@@ -54,7 +55,7 @@ const ev = {
             class="i-ep-circle-close-filled text-2rem c-[var(--el-color-danger)]"></i>
         </el-space>
         <template #end> </template>
-        <template #footer>
+        <template v-if="!view" #footer>
           <div class="flex">
             <el-text size="small" type="info">{{ filesize(item.fileSize) }}</el-text>
             <el-divider direction="vertical"></el-divider>
@@ -68,7 +69,7 @@ const ev = {
           </div>
         </template>
       </ContentBox>
-      <template #footer>
+      <template v-if="!view" #footer>
         <PopConfirm
           :title="t('tip.deleteConfirm')"
           :confirm-button-text="t('tip.yes')"

@@ -9,15 +9,14 @@ import {
   ProviderMeta,
 } from "@renderer/types"
 import { cloneDeep, isNumber, merge, uniqueId } from "@toolmain/shared"
-import { Reactive } from "vue"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
 
 export const useUtils = (
-  chatMessage: Reactive<Record<string, ChatMessage[]>>,
-  chatLLMConfig: Reactive<Record<string, ChatLLMConfig>>,
-  chatTTIConfig: Reactive<Record<string, ChatTTIConfig>>
+  chatMessage: Record<string, ChatMessage[]>,
+  chatLLMConfig: Record<string, ChatLLMConfig>,
+  chatTTIConfig: Record<string, ChatTTIConfig>
 ) => {
   const providerStore = useProviderStore()
   const modelsStore = useModelsStore()

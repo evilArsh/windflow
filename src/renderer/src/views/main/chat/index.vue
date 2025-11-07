@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import useSettingsStore from "@renderer/store/settings"
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
 import { ChatTopicTree, SettingKeys } from "@renderer/types"
 import MessagePanel from "./components/message/index.vue"
@@ -9,7 +8,7 @@ import EditTopic from "./components/editTopic/index.vue"
 import MenuHandle from "./components/menuHandle/index.vue"
 import { useMenu, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText, msg, CallBackFn } from "@toolmain/shared"
+import { CallBackFn } from "@toolmain/shared"
 import { ScaleInstance, Spinner, ScalePanel } from "@toolmain/components"
 const { t } = useI18n()
 const chatStore = useChatStore()
@@ -19,33 +18,22 @@ const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, setCurrentTopic, currentTopic, createNewTopic } =
-  useMenu(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
+const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, currentTopic, createNewTopic } = useMenu(
+  scaleRef,
+  scrollRef,
+  editTopicRef,
+  menuRef,
+  treeRef
+)
 const msgContext = useMsgContext()
 const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext
-const settingsStore = useSettingsStore()
-async function init() {
-  try {
-    if (currentNodeKey.value) {
-      const topicTree = treeRef.value?.getCurrentNode()
-      if (topicTree) {
-        await setCurrentTopic(topicTree as ChatTopicTree)
-        chatStore.refreshChatTopicModelIds(topicTree.node)
-      }
-    }
-  } catch (error) {
-    msg({ code: 500, msg: errorToText(error) })
-  }
-}
 async function onCreateNewTopic(done: CallBackFn) {
   await createNewTopic()
   done()
 }
-settingsStore.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "")
 
 onMounted(() => {
   window.addEventListener("resize", dlg.clickMask)
-  init()
 })
 onBeforeUnmount(() => {
   window.removeEventListener("resize", dlg.clickMask)

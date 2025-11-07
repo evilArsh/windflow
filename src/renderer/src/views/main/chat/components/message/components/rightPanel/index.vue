@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ChatTopic } from "@renderer/types"
 import { CSSProperties, px } from "@toolmain/shared"
-import { DialogPanel } from "@toolmain/components"
 import { Resize } from "@toolmain/components"
+import Kb from "./kb.vue"
 import Prompt from "./prompt.vue"
 import { useMsgContext } from "../../../../index"
 const props = defineProps<{
@@ -13,11 +13,11 @@ const emit = defineEmits<{
   resizeChange: []
 }>()
 const { emitToggle } = props.context
-const topic = computed<ChatTopic>(() => props.topic)
-// const { t } = useI18n()
+const { t } = useI18n()
 const resizeStyle = ref<CSSProperties>({
   width: px(300),
 })
+const tab = ref("knowledge")
 </script>
 <template>
   <div :style="resizeStyle" class="right-panel">
@@ -27,10 +27,14 @@ const resizeStyle = ref<CSSProperties>({
       @after-scale="emit('resizeChange')"
       size="8px"
       direction="left" />
-    <div class="flex flex-col flex-1">
+    <div class="flex flex-col flex-1 gap-1rem">
       <Prompt :topic></Prompt>
-      <el-divider class="my1.5rem!"></el-divider>
-      <DialogPanel> </DialogPanel>
+      <el-tabs class="chat-config-tabs" v-model="tab">
+        <el-tab-pane :label="t('chat.right.knowledge')" name="knowledge">
+          <Kb :topic></Kb>
+        </el-tab-pane>
+        <el-tab-pane :label="t('chat.right.history')" name="history"> </el-tab-pane>
+      </el-tabs>
     </div>
   </div>
 </template>
@@ -43,5 +47,16 @@ const resizeStyle = ref<CSSProperties>({
   position: relative;
   min-width: 20rem;
   z-index: 100;
+}
+.chat-config-tabs {
+  flex: 1;
+  :deep(.el-tabs__content) {
+    display: flex;
+  }
+  :deep(.el-tab-pane) {
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+  }
 }
 </style>
