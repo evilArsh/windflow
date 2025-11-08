@@ -20,8 +20,8 @@ const { ragFiles } = storeToRefs(ragFilesStore)
 
 const topic = computed(() => props.topic)
 const fileList = computed<RAGLocalFileInfo[]>(() => {
-  if (!props.topic.knowledgeId) return []
-  return ragFiles.value[props.topic.knowledgeId] ?? []
+  if (!topic.value.knowledgeId) return []
+  return ragFiles.value[topic.value.knowledgeId] ?? []
 })
 
 const status = shallowReactive({
@@ -34,13 +34,15 @@ const ev = {
   fetchRagFiles(kbId: string) {
     ragFilesStore.fetchAllByTopicId(kbId)
   },
-  async onKbChange(kbId: string) {
+  async onKbChange(kbId?: string) {
     try {
       status.load()
-      if (!ragFiles.value[kbId]) {
-        await ragFilesStore.fetchAllByTopicId(kbId)
+      if (kbId) {
+        if (!ragFiles.value[kbId]) {
+          await ragFilesStore.fetchAllByTopicId(kbId)
+        }
+        await chatStore.updateChatTopic(props.topic)
       }
-      await chatStore.updateChatTopic(props.topic)
     } catch (error) {
       msgError(errorToText(error))
     } finally {
@@ -48,6 +50,9 @@ const ev = {
     }
   },
 }
+onMounted(() => {
+  ev.onKbChange(topic.value.knowledgeId)
+})
 </script>
 <template>
   <DialogPanel>

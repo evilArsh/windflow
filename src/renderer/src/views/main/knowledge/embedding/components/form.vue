@@ -37,6 +37,7 @@ const ev = {
       form.value.embedding.model = ""
       form.value.embedding.providerName = ""
     } else {
+      // value: [provider[,?model]]
       const provider: ProviderMeta = value[0]
       const model: ModelMeta | undefined = value.length > 1 ? value[1] : undefined
       form.value.embedding.api = provider.api.embedding?.url
