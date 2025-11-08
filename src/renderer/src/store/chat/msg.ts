@@ -79,15 +79,16 @@ export const useMsg = (
     if (!messages) return
     // 多个模型同时聊天时，父消息的children在请求
     const messageParent = parentMessageId ? utils.findChatMessageChild(topic.id, parentMessageId)[0] : undefined
-    let chatContext = ctx.findContext(topic.id, message.id)
     const messageContextIndex = messages.findIndex(item => item.id === (parentMessageId ? parentMessageId : message.id))
     // 消息上下文
     const messageContext = ctx.getMessageContext(topic, messages.slice(messageContextIndex + 1))
-    // 获取聊天框上下文
-    chatContext = chatContext ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
-    if (!chatContext.provider) chatContext.provider = provider
-    if (chatContext.handler) chatContext.handler.terminate()
     const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
+    // ---context start
+    const chatContext =
+      ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
+    if (!chatContext.provider) chatContext.provider = provider
+    chatContext.handler?.terminate()
+    // ---context end
     topic.requestCount = Math.max(1, topic.requestCount + 1)
     chatContext.handler = await chatContext.provider.chat(
       messageContext,
@@ -176,12 +177,14 @@ export const useMsg = (
       return
     }
     message = m
+    // when click user message's restart button
     if (message.content.role === Role.User) {
       const dstMessage = messages.find(val => val.fromId === message?.id)
       if (dstMessage) {
         terminate(topic, dstMessage.id)
         message = dstMessage
       } else {
+        // already has a user message but the response message is not found
         return send(topic, message, {
           content: message.content.content,
         })
@@ -199,6 +202,10 @@ export const useMsg = (
     }
   }
 
+  /**
+   * @param topic send a message base on topic
+   * @param userMessage if not set, create a new user message and do request, otherwise use the existing message
+   */
   async function send(
     topic: ChatTopic,
     userMessage?: ChatMessage,
@@ -306,10 +313,17 @@ export const useMsg = (
       terminate(topic, messageItem.id)
     })
   }
+  /**
+   * removeContext
+   */
+  function removeContext(topicId: string, messageId?: string) {
+    ctx.removeContext(topicId, messageId)
+  }
   return {
     send,
     terminate,
     restart,
     terminateAll,
+    removeContext,
   }
 }

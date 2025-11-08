@@ -41,7 +41,7 @@ export const useUtils = (
     return chatTTIConfig[topicId]
   }
   /**
-   * @description  当`parentMessageDataId`存在时，返回的index为parentMessageDataId下的子聊天messageDataId的索引
+   * @description  当`parentMessageId`存在时，返回的index为`parentMessageId`下的子聊天sub-messageId的索引
    */
   const findChatMessageChild = (
     topicId: string,

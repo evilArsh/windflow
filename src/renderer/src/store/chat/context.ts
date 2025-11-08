@@ -116,6 +116,15 @@ export const useContext = () => {
       llmChats[topicId] = []
     }
   }
+  function removeContext(topicId: string, messageId?: string) {
+    if (!llmChats[topicId]) return
+    if (messageId) {
+      const index = llmChats[topicId].findIndex(item => item.messageId === messageId)
+      llmChats[topicId].splice(index, 1)
+    } else {
+      delete llmChats[topicId]
+    }
+  }
 
   return {
     fetchTopicContext,
@@ -124,5 +133,6 @@ export const useContext = () => {
     findContext,
     findTopicContext,
     initContext,
+    removeContext,
   }
 }

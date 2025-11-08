@@ -15,7 +15,7 @@ export default defineStore("chat_topic", () => {
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const api = useData()
   const utils = useUtils(chatMessage, chatLLMConfig, chatTTIConfig)
-  const { send, terminate, restart, terminateAll } = useMsg(chatMessage, chatLLMConfig, chatTTIConfig)
+  const msgModule = useMsg(chatMessage, chatLLMConfig, chatTTIConfig)
 
   /**
    * @description 刷新topic的可用models
@@ -45,7 +45,8 @@ export default defineStore("chat_topic", () => {
   async function deleteMessage(topic: ChatTopic, messageId: string, parentMessageId?: string) {
     const messages = utils.findChatMessage(topic.id)
     if (!messages) return
-    terminate(topic, messageId, parentMessageId)
+    msgModule.terminate(topic, messageId, parentMessageId)
+    msgModule.removeContext(topic.id, messageId)
     const [message, index] = utils.findChatMessageChild(topic.id, messageId, parentMessageId)
     if (!message) {
       console.warn(
@@ -152,13 +153,13 @@ export default defineStore("chat_topic", () => {
     chatMessage,
     chatTTIConfig,
     chatLLMConfig,
+    terminate: msgModule.terminate,
+    restart: msgModule.restart,
+    send: msgModule.send,
+    terminateAll: msgModule.terminateAll,
     cachePushChatTopicTree,
-    terminate,
     deleteMessage,
-    restart,
-    send,
     refreshChatTopicModelIds,
-    terminateAll,
     loadChatTopicData,
     updateChatTopic,
     updateChatMessage,

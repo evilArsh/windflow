@@ -53,6 +53,7 @@ const handler = {
     }
   }),
 }
+// FIXME: when using shortcut to send, cannot use `done` callback, which may trigger multiple times
 const { key: sendShortcut, trigger: triggerSend } = shortcut.listen("enter", handler.send)
 watchEffect(() => {
   if (settings.value[SettingKeys.ChatSendShortcut]) {
