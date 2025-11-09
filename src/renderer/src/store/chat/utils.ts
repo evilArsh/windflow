@@ -2,6 +2,7 @@ import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import {
   ChatLLMConfig,
   ChatMessage,
+  ChatMessageTree,
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
@@ -14,7 +15,7 @@ import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
 
 export const useUtils = (
-  chatMessage: Record<string, ChatMessage[]>,
+  chatMessage: Record<string, ChatMessageTree[]>,
   chatLLMConfig: Record<string, ChatLLMConfig>,
   chatTTIConfig: Record<string, ChatTTIConfig>
 ) => {
@@ -25,7 +26,7 @@ export const useUtils = (
   /**
    * @description 根据消息id查找缓存的聊天数据
    */
-  const findChatMessage = (topicId: string): ChatMessage[] | undefined => {
+  const findChatMessage = (topicId: string): ChatMessageTree[] | undefined => {
     return chatMessage[topicId]
   }
   /**
@@ -39,38 +40,6 @@ export const useUtils = (
    */
   const findChatTTIConfig = (topicId: string): ChatTTIConfig | undefined => {
     return chatTTIConfig[topicId]
-  }
-  /**
-   * @description  当`parentMessageId`存在时，返回的index为`parentMessageId`下的子聊天sub-messageId的索引
-   */
-  const findChatMessageChild = (
-    topicId: string,
-    messageId: string,
-    parentMessageId?: string
-  ): [ChatMessage | undefined, number] => {
-    const messages = findChatMessage(topicId)
-    if (!messages) return [undefined, -1]
-    let index = -1
-    if (parentMessageId) {
-      const parent = messages.find(item => item.id === parentMessageId)
-      const child = parent?.children?.find((item, i) => {
-        if (item.id === messageId) {
-          index = i
-          return true
-        }
-        return false
-      })
-      return [child, index]
-    } else {
-      const res = messages.find((item, i) => {
-        if (item.id === messageId) {
-          index = i
-          return true
-        }
-        return false
-      })
-      return [res, index]
-    }
   }
   function newTopic(index: number, initial?: Partial<ChatTopic>): ChatTopic {
     return merge(
@@ -170,24 +139,88 @@ export const useUtils = (
   /**
    * @description 递归重置聊天信息,重置项为响应结果,其他不变
    */
-  function resetChatMessage(message: ChatMessage) {
-    message.finish = true
-    message.status = 200
-    message.createAt = Date.now()
-    message.msg = ""
-    message.completionTokens = 0
-    message.promptTokens = 0
-    if (message.children) {
-      message.children.forEach(child => {
-        resetChatMessage(child)
-      })
+  function resetChatMessage(message: ChatMessageTree) {
+    message.node.finish = true
+    message.node.status = 200
+    message.node.createAt = Date.now()
+    message.node.msg = ""
+    message.node.completionTokens = 0
+    message.node.promptTokens = 0
+    message.children.forEach(resetChatMessage)
+  }
+  /**
+   * find index of `messageId` of messages in `topicId`, if `target` is provided, find it in `target`'s children
+   */
+  function getIndex(topicId: string, messageId: string, target?: ChatMessageTree): number {
+    if (target) {
+      return target.children.findIndex(item => item.id === messageId)
     }
+    return findChatMessage(topicId)?.findIndex(item => item.id === messageId) ?? -1
+  }
+  /**
+   * find non-nested message by `messageId`
+   */
+  function findMessageById(topicId: string, messageId: string): ChatMessageTree | undefined {
+    return findChatMessage(topicId)?.find(item => item.node.id === messageId)
+  }
+  /**
+   * find non-nested message in messages while one's `fromId` field value matches the giving `messageId`
+   */
+  function findMessageByFromIdField(topicId: string, messageId: string): ChatMessageTree | undefined {
+    return findChatMessage(topicId)?.find(item => item.node.fromId === messageId)
+  }
+  /**
+   * find in messages while one's `parentId` field value matches the giving `messageId`
+   */
+  function findMessageByParentIdField(topicId: string, messageId: string): ChatMessageTree | undefined {
+    return findChatMessage(topicId)?.find(item => item.node.parentId === messageId)
+  }
+  function findMaxMessageIndex(messages: ChatMessageTree[]): number {
+    return Math.max(0, ...messages.map(item => item.node.index))
+  }
+  function findMaxTopicIndex(topic: ChatTopicTree[]): number {
+    return Math.max(0, ...topic.map(item => item.node.index))
+  }
+  /**
+   * remove `message` in cache, if `message` has a `parentId`, remove it from parent's children.
+   */
+  function removeMessage(topicId: string, message: ChatMessageTree) {
+    // it's a nested message, delete it from it's parent's children
+    if (message.node.parentId) {
+      const parent = findMessageById(topicId, message.node.parentId)
+      if (parent) {
+        const index = getIndex(topicId, message.node.id, parent)
+        if (index > -1) {
+          parent.children.splice(index, 1)
+        } else {
+          console.warn("[removeMessage] child not found", message.node.id)
+        }
+      } else {
+        console.warn("[removeMessage] parent not found", message.node.parentId)
+      }
+    } else {
+      const index = getIndex(topicId, message.node.id)
+      if (index > -1) {
+        findChatMessage(topicId)?.splice(index, 1)
+      } else {
+        console.warn("[removeMessage] message not found", message.node.id)
+      }
+    }
+  }
+  function wrapMessage(msg: ChatMessage): ChatMessageTree {
+    return {
+      id: msg.id,
+      node: msg,
+      children: [],
+    }
+  }
+  function unwrapMessage(msgTree: ChatMessageTree): ChatMessage {
+    return msgTree.node
   }
   return {
     findChatLLMConfig,
     findChatTTIConfig,
     findChatMessage,
-    findChatMessageChild,
     newTopic,
     newChatMessage,
     cloneTopic,
@@ -196,5 +229,12 @@ export const useUtils = (
     getMessageType,
     getMeta,
     resetChatMessage,
+    findMessageByFromIdField,
+    findMessageByParentIdField,
+    wrapMessage,
+    unwrapMessage,
+    removeMessage,
+    findMaxMessageIndex,
+    findMaxTopicIndex,
   }
 }

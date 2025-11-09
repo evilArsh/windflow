@@ -10,7 +10,7 @@ import {
 } from "@renderer/types"
 import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { Transaction, type EntityTable } from "dexie"
-import { migrateToV2, migrateToV4, migrateToV5 } from "./migrate"
+import { migrateToV2, migrateToV4, migrateToV5, migrateToV7 } from "./migrate"
 import { Knowledge } from "@renderer/types/knowledge"
 import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@shared/types/rag"
 
@@ -100,4 +100,21 @@ db.version(6).stores({
   ragFiles: "id,topicId",
   embedding: "id",
 })
+
+db.version(7)
+  .stores({
+    providerMeta: "name",
+    model: "id",
+    chatTopic: "id",
+    chatMessage: "id,topicId",
+    chatLLMConfig: "id,topicId",
+    chatTTIConfig: "id,topicId",
+    settings: "id",
+    mcpServer: "id",
+    knowledge: "id,embeddingId",
+    ragFiles: "id,topicId",
+    embedding: "id",
+  })
+  .upgrade(migrateToV7)
+
 export { db }

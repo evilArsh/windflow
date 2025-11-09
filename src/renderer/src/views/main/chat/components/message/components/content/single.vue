@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
 import { code1xx, errorToText, isString, msg } from "@toolmain/shared"
 import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
@@ -14,8 +14,8 @@ import useChatStore from "@renderer/store/chat"
 import { Role } from "@renderer/types"
 import { useMsgContext } from "../../../../index"
 const props = defineProps<{
-  message: ChatMessage
-  parent?: ChatMessage
+  message: ChatMessageTree
+  parent?: ChatMessageTree
   topic: ChatTopic
   header?: boolean
   context: ReturnType<typeof useMsgContext>
@@ -29,19 +29,19 @@ const topic = computed(() => props.topic)
 const message = computed(() => props.message)
 
 const id = useId()
-const isUser = computed(() => message.value.content.role === Role.User)
-const isText = computed(() => !message.value.type || message.value.type === "text")
-const isImage = computed(() => message.value.type === "image")
-const isPartial = computed(() => code1xx(message.value.status) || message.value.status == 206)
+const isUser = computed(() => message.value.node.content.role === Role.User)
+const isText = computed(() => !message.value.node.type || message.value.node.type === "text")
+const isImage = computed(() => message.value.node.type === "image")
+const isPartial = computed(() => code1xx(message.value.node.status) || message.value.node.status == 206)
 
 const md = useTemplateRef("md")
 const mdRefs = shallowRef<InstanceType<typeof Markdown>[]>([])
 async function onContentChange() {
-  chatStore.updateChatMessage(props.parent ?? props.message)
+  chatStore.updateChatMessage(props.message.node)
 }
-async function onContentDelete(m: ChatMessage) {
+async function onContentDelete(m: ChatMessageTree) {
   try {
-    await chatStore.deleteMessage(topic.value, m.id, props.parent?.id)
+    await chatStore.deleteMessage(topic.value, m)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }
@@ -74,8 +74,8 @@ defineExpose({
     </template>
     <div v-if="isUser" class="chat-item-content p-1rem reverse">
       <Markdown
-        v-if="isString(message.content.content)"
-        v-model="message.content.content"
+        v-if="isString(message.node.content.content)"
+        v-model="message.node.content.content"
         content-class="flex flex-col items-end"
         ref="md"
         @change="onContentChange"
@@ -84,8 +84,8 @@ defineExpose({
     <div v-else class="chat-item-content p-1rem">
       <Image v-if="isImage" :message :parent></Image>
       <div v-else-if="isText" class="chat-item-content">
-        <div v-for="(child, index) in message.content.children" :key="index" class="chat-item-content">
-          <Thinking :message="child" :finish="!!message.finish"></Thinking>
+        <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
+          <Thinking :message="child" :finish="!!message.node.finish"></Thinking>
           <MCPCall :message="child"></MCPCall>
           <Markdown
             v-if="isString(child.content)"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"
 import Handler from "./handler.vue"
@@ -13,14 +13,14 @@ import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
 import { useMsgContext } from "../../../../index"
 const props = defineProps<{
-  message: ChatMessage
+  message: ChatMessageTree
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
 const id = useId()
 const chatStore = useChatStore()
 const message = computed(() => props.message)
-const messageChildren = computed<ChatMessage[] | undefined>(() => {
+const messageChildren = computed<ChatMessageTree[] | undefined>(() => {
   if (layout.type === types.Tab) {
     return message.value?.children?.filter(item => item.id === layout.currentTabId)
   } else {
@@ -123,7 +123,7 @@ const itemStyle = computed<CSSProperties>(() => {
 })
 async function del() {
   try {
-    await chatStore.deleteMessage(props.topic, message.value.id)
+    await chatStore.deleteMessage(props.topic, message.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

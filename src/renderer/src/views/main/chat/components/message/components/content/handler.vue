@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ChatMessage, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
 import useChatStore from "@renderer/store/chat"
 
-import { errorToText, CallBackFn, code1xx, isArray, msg } from "@toolmain/shared"
+import { errorToText, CallBackFn, code1xx, msg, isArrayLength } from "@toolmain/shared"
 import { Role } from "@renderer/types"
 const props = defineProps<{
-  message: ChatMessage
+  message: ChatMessageTree
   topic: ChatTopic
-  parent?: ChatMessage
+  parent?: ChatMessageTree
 }>()
 defineEmits<{
   edit: []
@@ -18,28 +18,28 @@ const chatStore = useChatStore()
 
 const topic = computed(() => props.topic)
 const message = computed(() => props.message)
-const isUser = computed(() => props.message.content.role === Role.User)
+const isUser = computed(() => props.message.node.content.role === Role.User)
 
 const isProcessing = computed(() => {
-  return isArray(message.value.children) && message.value.children.length > 0
+  return isArrayLength(message.value.children)
     ? message.value.children.some(child => {
-        return code1xx(child.status) || child.status == 206
+        return code1xx(child.node.status) || child.node.status == 206
       })
-    : code1xx(message.value.status) || message.value.status == 206
+    : code1xx(message.value.node.status) || message.value.node.status == 206
 })
 
 const isFinish = computed(() => {
-  return isArray(message.value.children) && message.value.children.length > 0
-    ? message.value.children.every(child => child.finish)
-    : message.value.finish
+  return isArrayLength(message.value.children)
+    ? message.value.children.every(child => child.node.finish)
+    : message.value.node.finish
 })
 function terminate(done: CallBackFn) {
-  chatStore.terminate(topic.value, message.value.id, props.parent?.id)
+  chatStore.terminate(topic.value, message.value)
   done()
 }
 async function restart(done: CallBackFn) {
   try {
-    await chatStore.restart(topic.value, message.value.id, props.parent?.id)
+    await chatStore.restart(topic.value, message.value)
     await chatStore.updateChatTopic(topic.value)
     done()
   } catch (error) {

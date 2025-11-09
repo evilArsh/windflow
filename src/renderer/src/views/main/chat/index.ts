@@ -10,6 +10,7 @@ import { errorToText, isArray, msg, toNumber, useShortcut, z, CallBackFn } from 
 import { useEventBus, useThrottleFn } from "@vueuse/core"
 import PQueue from "p-queue"
 import { ScaleConfig, ScaleInstance } from "@toolmain/components"
+import { useTask } from "@renderer/hooks/useTask"
 
 export const useMsgContext = () => {
   const settingsStore = useSettingsStore()
@@ -77,7 +78,7 @@ export const useMenu = (
   const currentNodeKey = ref("")
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   const currentTopic = ref<ChatTopicTree>()
-  const queue = markRaw(new PQueue({ concurrency: 1 }))
+  const task = useTask(new PQueue({ concurrency: 1 }))
 
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({
@@ -128,18 +129,18 @@ export const useMenu = (
   }
   const menu = {
     // 菜单编辑按钮
-    onEdit: (event: MouseEvent) => {
+    onEdit: (event?: MouseEvent) => {
       if (selectedTopic.value) {
         dlg.is = "editTopic"
         panelConfig.containerStyle!.width = "600px"
-        dlg.move(event.clientX, event.clientY, editTopicRef)
+        dlg.move(toNumber(event?.clientX), toNumber(event?.clientY), editTopicRef)
       }
     },
     // 菜单删除按钮
     onDelete: async (done: CallBackFn) => {
       try {
         if (selectedTopic.value) {
-          if (queue.pending || queue.size) {
+          if (task.pending()) {
             ElMessage.warning(t("chat.topicSwitching"))
             return
           }
@@ -156,7 +157,7 @@ export const useMenu = (
             chatStore.cacheRemoveChatMessage(item.id)
           }
           treeRef.value?.remove(selectedTopic.value)
-          await queue.add(async () => chatStore.removeChatTopic(nodes))
+          await task.getQueue().add(async () => chatStore.removeChatTopic(nodes))
           if (selectedTopic.value === currentTopic.value) {
             currentTopic.value = undefined
           }
@@ -202,7 +203,7 @@ export const useMenu = (
   // 新增聊天
   async function createNewTopic(parentId?: string) {
     try {
-      if (queue.pending || queue.size) {
+      if (task.pending()) {
         ElMessage.warning(t("chat.topicSwitching"))
         return
       }
@@ -212,10 +213,10 @@ export const useMenu = (
         topic = chatStore.utils.cloneTopic(selectedTopic.value.node, {
           parentId,
           label: t("chat.addChat"),
-          index: selectedTopic.value.children.length,
+          index: chatStore.utils.findMaxTopicIndex(selectedTopic.value.children),
         })
       } else {
-        topic = chatStore.utils.newTopic(topicList.value.length, {
+        topic = chatStore.utils.newTopic(chatStore.utils.findMaxTopicIndex(topicList.value), {
           parentId,
           modelIds: [],
           label: t("chat.addChat"),
@@ -245,7 +246,7 @@ export const useMenu = (
     },
     // 节点点击
     onNodeClick: markRaw((data: ChatTopicTree) => {
-      if (queue.pending || queue.size) {
+      if (task.pending()) {
         ElMessage.warning(t("chat.topicSwitching"))
         return
       }
@@ -316,7 +317,7 @@ export const useMenu = (
     nextTick(() => {
       const topicTree = treeRef.value?.getCurrentNode()
       if (topicTree) {
-        queue.add(async () => setCurrentTopic(topicTree as ChatTopicTree))
+        task.getQueue().add(async () => setCurrentTopic(topicTree as ChatTopicTree))
         chatStore.refreshChatTopicModelIds(topicTree.node)
       }
     })
@@ -330,6 +331,6 @@ export const useMenu = (
     currentTopic,
     selectedTopic,
     createNewTopic,
-    setCurrentTopic: (node: ChatTopicTree) => queue.add(async () => setCurrentTopic(node)),
+    setCurrentTopic: (node: ChatTopicTree) => task.getQueue().add(async () => setCurrentTopic(node)),
   }
 }

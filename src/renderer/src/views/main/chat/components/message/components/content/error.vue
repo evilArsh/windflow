@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ChatMessage } from "@renderer/types"
+import { ChatMessageTree } from "@renderer/types"
 const props = defineProps<{
-  message: ChatMessage
+  message: ChatMessageTree
 }>()
-const message = computed(() => props.message)
+const message = computed(() => props.message.node)
 </script>
 <template>
   <el-alert v-if="message.msg" class="alert" type="warning" show-icon :closable="false">

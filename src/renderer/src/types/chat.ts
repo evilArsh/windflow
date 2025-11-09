@@ -46,11 +46,7 @@ export type ChatMessage = {
    */
   msg?: string
   /**
-   * @description 多个模型同时请求
-   */
-  children?: Array<ChatMessage>
-  /**
-   * @description 多模型同时请求时，标识父ChatMessageData的ID
+   * @description 多模型同时请求时，标识父ChatMessage的ID
    */
   parentId?: string
   /**
@@ -66,6 +62,7 @@ export type ChatMessage = {
    */
   promptTokens?: number
 }
+
 export type ChatTopic = {
   /**
    * @description 会话ID
@@ -172,12 +169,23 @@ export type ChatTTIConfig = {
   seed?: number
 }
 
+/**
+ * ChatTopic in topic
+ */
 export type ChatTopicTree = {
+  // FIXME: may be redundant
   id: string
   node: ChatTopic
   children: ChatTopicTree[]
 }
-
+/**
+ * ChatMessage in topic
+ */
+export type ChatMessageTree = {
+  id: string
+  node: ChatMessage
+  children: Array<ChatMessageTree>
+}
 export interface ChatContext {
   modelId: string
   /**

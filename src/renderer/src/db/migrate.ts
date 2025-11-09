@@ -63,7 +63,7 @@ export async function migrateToV5(tx: Transaction) {
   await tx
     .table("chatMessage")
     .toCollection()
-    .modify((msg: ChatMessage) => {
+    .modify(msg => {
       if (msg.content.role === Role.Assistant && !msg.content.children) {
         msg.content.children = [cloneDeep(msg.content)]
       }
@@ -75,4 +75,22 @@ export async function migrateToV5(tx: Transaction) {
         })
       }
     })
+}
+export async function migrateToV7(tx: Transaction) {
+  console.log("[migrateToV7]")
+  const newMessages: Array<ChatMessage> = []
+  await tx
+    .table("chatMessage")
+    .toCollection()
+    .modify(msg => {
+      msg.children?.forEach(child => {
+        child.children = undefined
+        newMessages.push(child)
+      })
+      msg.children = undefined
+      newMessages.push(msg)
+    })
+
+  await tx.table("chatMessage").clear()
+  await tx.table("chatMessage").bulkAdd(newMessages)
 }

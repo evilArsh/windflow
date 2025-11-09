@@ -46,7 +46,7 @@ export interface Message {
    */
   tool_calls_chain?: Array<Message>
   /**
-   * 多轮对话消息
+   * 每个请求可能存在多轮对话消息，包括tool_calls
    */
   children?: Array<Message>
   finish_reason?: string

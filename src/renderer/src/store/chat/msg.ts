@@ -10,15 +10,16 @@ import {
   ModelType,
   Role,
   Content,
+  ChatMessageTree,
 } from "@renderer/types"
 import { useUtils } from "./utils"
 import { useContext } from "./context"
 import { useData } from "./api"
-import { isArray, isString, toNumber } from "@toolmain/shared"
+import { isArrayLength, isString, toNumber } from "@toolmain/shared"
 import { defaultMessage } from "./default"
 
 export const useMsg = (
-  chatMessage: Record<string, ChatMessage[]>,
+  chatMessage: Record<string, ChatMessageTree[]>,
   chatLLMConfig: Record<string, ChatLLMConfig>,
   chatTTIConfig: Record<string, ChatTTIConfig>
 ) => {
@@ -47,7 +48,7 @@ export const useMsg = (
       const askMessage = messages.find(item => item.id === message.fromId)
       const cnf = utils.findChatTTIConfig(topic.id)
       chatContext.handler = await chatContext.provider.textToImage(
-        { ...cnf, prompt: askMessage?.content.content },
+        { ...cnf, prompt: askMessage?.node.content.content },
         model,
         providerMeta,
         res => {
@@ -72,16 +73,15 @@ export const useMsg = (
     model: ModelMeta,
     providerMeta: ProviderMeta,
     provider: Provider,
-    message: ChatMessage,
-    parentMessageId?: string
+    message: ChatMessage
   ) => {
-    const messages = utils.findChatMessage(topic.id)
-    if (!messages) return
-    // 多个模型同时聊天时，父消息的children在请求
-    const messageParent = parentMessageId ? utils.findChatMessageChild(topic.id, parentMessageId)[0] : undefined
-    const messageContextIndex = messages.findIndex(item => item.id === (parentMessageId ? parentMessageId : message.id))
-    // 消息上下文
-    const messageContext = ctx.getMessageContext(topic, messages.slice(messageContextIndex + 1))
+    // message contexts, messages stack was sorted in descending order, the newest message is the first one
+    const messageContext = ctx.getMessageContext(
+      topic,
+      utils.findChatMessage(topic.id)?.map(utils.unwrapMessage).slice(1) ?? []
+    )
+    if (!messageContext.length) return
+    // mcp servers
     const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
     // ---context start
     const chatContext =
@@ -113,7 +113,7 @@ export const useMsg = (
               modelsStore.update(model)
             }
           }
-          if (parentMessageId) return // 多模型请求时不总结标题
+          if (message.parentId) return // 多模型请求时不总结标题
           if (topic.label === window.defaultTopicTitle && chatContext.provider) {
             chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
               if (isString(value.data.content)) {
@@ -128,26 +128,21 @@ export const useMsg = (
           message.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
-        api.putChatMessage(messageParent ?? message)
+        api.putChatMessage(message)
       },
       utils.findChatLLMConfig(topic.id)
     )
   }
 
-  /**
-   * @description 发送消息，当`parentMessageDataId`存在时，`messageData`为其子消息
-   */
-  const sendMessage = async (topic: ChatTopic, message: ChatMessage, parentMessageId?: string) => {
+  const sendMessage = async (topic: ChatTopic, message: ChatMessage) => {
     const meta = utils.getMeta(message.modelId)
     if (!meta) {
       message.content.content = `unknown model id :${message.modelId}`
       return
     }
-    const messages = utils.findChatMessage(topic.id)
-    if (!messages) return
     const { model, providerMeta, provider } = meta
     if (modelsStore.utils.isChatType(model)) {
-      return sendLLMMessage(topic, model, providerMeta, provider, message, parentMessageId)
+      return sendLLMMessage(topic, model, providerMeta, provider, message)
     } else if (
       modelsStore.utils.isImageType(model) ||
       modelsStore.utils.isVideoType(model) ||
@@ -158,47 +153,31 @@ export const useMsg = (
     }
   }
 
-  /**
-   * @description `parentMessageId`存在时，表示restart多模型回答模式下的其中一个子聊天；
-   * 否则表示restart单模型或多模型回答模式下的所有子聊天；
-   * 多模型回答模式下，父message不存在实际的请求
-   */
-  async function restart(topic: ChatTopic, messageId: string, parentMessageId?: string) {
+  async function restart(topic: ChatTopic, message: ChatMessageTree) {
     ctx.initContext(topic.id)
-    const messages = utils.findChatMessage(topic.id)
-    if (!messages) {
-      console.warn(`[restart] message not found.topic id:${topic.id}`)
-      return
-    }
-    let message: ChatMessage | undefined
-    const [m, _] = utils.findChatMessageChild(topic.id, messageId, parentMessageId)
-    if (!m) {
-      console.warn(`[restart] message not found.${messageId}`)
-      return
-    }
-    message = m
+    let messageN: ChatMessageTree = message
     // when click user message's restart button
-    if (message.content.role === Role.User) {
-      const dstMessage = messages.find(val => val.fromId === message?.id)
+    if (messageN.node.content.role === Role.User) {
+      const dstMessage = utils.findMessageByFromIdField(topic.id, messageN.id)
       if (dstMessage) {
-        terminate(topic, dstMessage.id)
-        message = dstMessage
+        terminate(topic, dstMessage)
+        messageN = dstMessage
       } else {
         // already has a user message but the response message is not found
-        return send(topic, message, {
-          content: message.content.content,
+        return send(topic, messageN, {
+          content: messageN.node.content.content,
         })
       }
     } else {
-      terminate(topic, message.id, parentMessageId)
+      terminate(topic, messageN)
     }
-    utils.resetChatMessage(message)
-    if (!parentMessageId && message.children?.length) {
-      for (const child of message.children) {
-        await sendMessage(topic, child, message.id)
+    utils.resetChatMessage(messageN)
+    if (isArrayLength(messageN)) {
+      for (const child of messageN.children) {
+        await sendMessage(topic, child.node)
       }
     } else {
-      return sendMessage(topic, message, parentMessageId)
+      return sendMessage(topic, messageN.node)
     }
   }
 
@@ -208,7 +187,7 @@ export const useMsg = (
    */
   async function send(
     topic: ChatTopic,
-    userMessage?: ChatMessage,
+    userMessage?: ChatMessageTree,
     config?: {
       content?: Content
       modelIds?: string[]
@@ -217,7 +196,7 @@ export const useMsg = (
     const content = config?.content ?? topic.content
     const modelIds = config?.modelIds ?? topic.modelIds
     const withExistUser = !!userMessage
-    if (withExistUser && userMessage.topicId !== topic.id) {
+    if (withExistUser && userMessage.node.topicId !== topic.id) {
       throw new Error(t("error.messageNotInTopic"))
     }
     if (!modelIds.length) {
@@ -227,53 +206,56 @@ export const useMsg = (
     if (!messages) {
       throw new Error(t("error.noMessages"))
     }
-    const userIndex = withExistUser ? userMessage.index : messages.length
-    const userMsg = withExistUser
+    const userIndex = withExistUser ? userMessage.node.index : utils.findMaxMessageIndex(messages) + 1
+    const userMsg: ChatMessageTree = withExistUser
       ? userMessage
       : reactive(
-          utils.newChatMessage(topic.id, userIndex, {
-            content: { role: Role.User, content: content },
-          })
+          utils.wrapMessage(
+            utils.newChatMessage(topic.id, userIndex, {
+              content: { role: Role.User, content: content },
+            })
+          )
         )
-    const newMessage = reactive(
-      utils.newChatMessage(topic.id, userIndex + 1, {
-        content: defaultMessage(),
-        fromId: userMsg.id,
-      })
+    const newMessage: ChatMessageTree = reactive(
+      utils.wrapMessage(
+        utils.newChatMessage(topic.id, userIndex + 1, {
+          content: defaultMessage(),
+          fromId: userMsg.id,
+        })
+      )
     )
     const availableModels = modelIds.filter(modelId => !!utils.getMeta(modelId))
     if (availableModels.length > 1) {
-      userMsg.type = "multi-models"
-      newMessage.type = "multi-models"
+      userMsg.node.type = "multi-models"
+      newMessage.node.type = "multi-models"
       availableModels.forEach(modelId => {
-        if (!newMessage.children) newMessage.children = []
-        const message = utils.newChatMessage(topic.id, newMessage.children.length, {
-          parentId: newMessage.id,
+        const message = utils.newChatMessage(topic.id, utils.findMaxMessageIndex(newMessage.children) + 1, {
+          fromId: userMsg.id,
+          parentId: newMessage.node.id,
           content: defaultMessage(),
           modelId,
-          fromId: userMsg.id,
         })
         const meta = utils.getMeta(modelId)
         if (meta) {
           message.type = utils.getMessageType(meta.model)
         } else {
-          message.content.content = `unknown model id :${newMessage.modelId}`
+          message.content.content = `unknown model id :${newMessage.node.modelId}`
         }
-        newMessage.children.push(message)
+        newMessage.children.push(utils.wrapMessage(message))
       })
+      await api.bulkPutChatMessage([userMsg.node, newMessage.node, ...newMessage.children.map(m => m.node)])
     } else {
-      newMessage.modelId = availableModels[0]
-      const meta = utils.getMeta(newMessage.modelId)
+      newMessage.node.modelId = availableModels[0]
+      const meta = utils.getMeta(newMessage.node.modelId)
       if (!meta) {
-        newMessage.content.content = `unknown model id :${newMessage.modelId}`
+        newMessage.node.content.content = `unknown model id :${newMessage.node.modelId}`
       } else {
-        newMessage.type = utils.getMessageType(meta.model)
-        userMsg.type = newMessage.type
+        newMessage.node.type = utils.getMessageType(meta.model)
+        userMsg.node.type = newMessage.node.type
       }
+      await api.bulkPutChatMessage([userMsg.node, newMessage.node])
     }
-    await api.putChatMessage(toRaw(userMsg))
     !withExistUser && messages.unshift(userMsg)
-    await api.putChatMessage(toRaw(newMessage))
     if (withExistUser) {
       messages.splice(
         messages.findIndex(m => m.id === userMessage.id),
@@ -283,25 +265,21 @@ export const useMsg = (
     } else {
       messages.unshift(newMessage)
     }
-    if (newMessage.children?.length) {
+    if (isArrayLength(newMessage.children)) {
       for (const child of newMessage.children) {
-        await sendMessage(topic, child, newMessage.id)
+        await sendMessage(topic, child.node)
       }
     } else {
-      await sendMessage(topic, newMessage)
+      await sendMessage(topic, newMessage.node)
     }
   }
-  function terminate(topic: ChatTopic, messageDataId: string, parentMessageDataId?: string) {
-    const [message, _] = utils.findChatMessageChild(topic.id, messageDataId, parentMessageDataId)
-    if (!message) return
-    const chatContext = ctx.findContext(topic.id, message.id)
+  function terminate(topic: ChatTopic, message: ChatMessageTree) {
+    const chatContext = ctx.findContext(topic.id, message.node.id)
     chatContext?.handler?.terminate()
-    if (isArray(message.children)) {
-      message.children.forEach(child => {
-        const chatContext = ctx.findContext(topic.id, child.id)
-        chatContext?.handler?.terminate()
-      })
-    }
+    message.children.forEach(child => {
+      const chatContext = ctx.findContext(topic.id, child.id)
+      chatContext?.handler?.terminate()
+    })
   }
   /**
    * @description 终止当前topic中所有聊天块的请求
@@ -310,7 +288,7 @@ export const useMsg = (
     const message = utils.findChatMessage(topic.id)
     if (!message) return
     message.forEach(messageItem => {
-      terminate(topic, messageItem.id)
+      terminate(topic, messageItem)
     })
   }
   /**

@@ -1,16 +1,16 @@
 import { defineStore } from "pinia"
-import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
+import { ChatLLMConfig, ChatMessage, ChatMessageTree, ChatTopic, ChatTopicTree, ChatTTIConfig } from "@renderer/types"
 import useModelsStore from "@renderer/store/model"
 import { useData } from "./api"
 import { useUtils } from "./utils"
 import { defaultTTIConfig, defaultLLMConfig } from "./default"
-import { uniqueId } from "@toolmain/shared"
+import { isArrayLength, uniqueId } from "@toolmain/shared"
 import { useMsg } from "./msg"
 
 export default defineStore("chat_topic", () => {
   const modelsStore = useModelsStore()
   const topicList = reactive<Array<ChatTopicTree>>([]) // 聊天组列表
-  const chatMessage = reactive<Record<string, ChatMessage[]>>({}) // 聊天信息缓存,topicId作为key
+  const chatMessage = reactive<Record<string, ChatMessageTree[]>>({}) // 聊天信息缓存,topicId作为key
   const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const api = useData()
@@ -42,32 +42,35 @@ export default defineStore("chat_topic", () => {
   /**
    * @description 删除一条消息列表的消息
    */
-  async function deleteMessage(topic: ChatTopic, messageId: string, parentMessageId?: string) {
-    const messages = utils.findChatMessage(topic.id)
-    if (!messages) return
-    msgModule.terminate(topic, messageId, parentMessageId)
-    msgModule.removeContext(topic.id, messageId)
-    const [message, index] = utils.findChatMessageChild(topic.id, messageId, parentMessageId)
-    if (!message) {
-      console.warn(
-        "[deleteMessage]",
-        `cannot find child messageDataId: ${messageId} in parent messageDataId: ${parentMessageId}`
-      )
-      return
+  async function deleteMessage(topic: ChatTopic, message: ChatMessageTree) {
+    const all = [message, ...message.children]
+    all.forEach(child => {
+      msgModule.terminate(topic, child)
+      msgModule.removeContext(topic.id, child.node.id)
+    })
+    if (isArrayLength(message.children)) {
+      await api.bulkDeleteChatMessage(message.children.map(m => m.node.id))
     }
-    if (parentMessageId) {
-      const [parentMessage, parentIndex] = utils.findChatMessageChild(topic.id, parentMessageId)
-      if (!parentMessage) return
-      parentMessage.children?.splice(index, 1)
-      if (!parentMessage.children?.length) {
-        messages.splice(parentIndex, 1)
-        await api.deleteChatMessage(parentMessageId)
-      } else {
-        await api.putChatMessage(parentMessage)
-      }
-    } else {
-      messages.splice(index, 1)
-      await api.deleteChatMessage(messageId)
+    await api.deleteChatMessage(message.node.id)
+    utils.removeMessage(topic.id, message)
+  }
+  async function deleteAllMessage(topic: ChatTopic) {
+    const recursiveMove = (node: ChatMessageTree) => {
+      msgModule.terminate(topic, node)
+      msgModule.removeContext(topic.id, node.node.id)
+      node.children.forEach(child => {
+        msgModule.terminate(topic, child)
+        msgModule.removeContext(topic.id, child.node.id)
+        recursiveMove(child)
+      })
+    }
+    utils
+      .findChatMessage(topic.id)
+      ?.filter(m => m.node.topicId === topic.id)
+      .forEach(recursiveMove)
+    await api.deleteAllMessages(topic.id)
+    if (chatMessage[topic.id]) {
+      chatMessage[topic.id].length = 0
     }
   }
   /**
@@ -107,7 +110,7 @@ export default defineStore("chat_topic", () => {
    */
   async function addChatMessage(msg: ChatMessage, index?: number) {
     await api.addChatMessage(msg)
-    chatMessage[msg.topicId].splice(index ?? chatMessage[msg.topicId].length, 0, msg)
+    chatMessage[msg.topicId].splice(index ?? chatMessage[msg.topicId].length, 0, utils.wrapMessage(msg))
   }
   async function updateChatLLMConfig(cnf: ChatLLMConfig) {
     return api.updateChatLLMConfig(cnf)
@@ -159,6 +162,7 @@ export default defineStore("chat_topic", () => {
     terminateAll: msgModule.terminateAll,
     cachePushChatTopicTree,
     deleteMessage,
+    deleteAllMessage,
     refreshChatTopicModelIds,
     loadChatTopicData,
     updateChatTopic,

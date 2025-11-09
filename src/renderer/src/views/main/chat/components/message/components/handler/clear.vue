@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatMessageTree, ChatTopic } from "@renderer/types"
 import { errorToText, msg, useShortcut } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 const chatStore = useChatStore()
 const { chatMessage } = storeToRefs(chatStore)
 const topic = computed(() => props.topic)
-const messages = computed<ChatMessage[] | undefined>(() => chatMessage.value[props.topic.id])
+const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
 
 const shortcut = useShortcut()
 const { t } = useI18n()
@@ -37,9 +37,7 @@ const handler = {
       if (active) {
         const confirm = await handler.openTip(`${t("tip.deleteConfirm", { message: t("chat.messageRecord") })}`)
         if (confirm && messages.value) {
-          for await (const messageId of messages.value.map(v => v.id)) {
-            await chatStore.deleteMessage(topic.value, messageId)
-          }
+          await chatStore.deleteAllMessage(topic.value)
         }
       }
     } catch (error) {
@@ -50,13 +48,17 @@ const handler = {
     try {
       if (active) {
         if (messages.value && messages.value.length) {
-          if (messages.value[0].contextFlag) {
-            await chatStore.deleteMessage(topic.value, messages.value[0].id)
+          if (messages.value[0].node.contextFlag) {
+            await chatStore.deleteMessage(topic.value, messages.value[0])
           } else {
-            const newMessage = chatStore.utils.newChatMessage(props.topic.id, messages.value.length, {
-              contextFlag: true,
-              content: { role: "", content: "" },
-            })
+            const newMessage = chatStore.utils.newChatMessage(
+              props.topic.id,
+              chatStore.utils.findMaxMessageIndex(messages.value),
+              {
+                contextFlag: true,
+                content: { role: "", content: "" },
+              }
+            )
             await chatStore.addChatMessage(newMessage, 0)
           }
           emit("contextClean")

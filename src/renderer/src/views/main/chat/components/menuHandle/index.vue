@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { type CallBackFn } from "@toolmain/shared"
 const emit = defineEmits<{
-  (e: "edit", event: MouseEvent): void
-  (e: "delete", done: CallBackFn, event: MouseEvent): void
-  (e: "add", done: CallBackFn, event: MouseEvent): void
+  (e: "edit", event?: MouseEvent): void
+  (e: "delete", done: CallBackFn, event?: MouseEvent): void
+  (e: "add", done: CallBackFn, event?: MouseEvent): void
 }>()
 const props = defineProps<{
   /**
@@ -27,7 +27,7 @@ watch(
 const onEdit = (event: MouseEvent) => {
   emit("edit", event)
 }
-const onDelete = (done: CallBackFn, event: MouseEvent) => {
+const onDelete = (done: CallBackFn, event?: MouseEvent) => {
   emit(
     "delete",
     () => {
@@ -37,7 +37,7 @@ const onDelete = (done: CallBackFn, event: MouseEvent) => {
     event
   )
 }
-const onAdd = (done: CallBackFn, event: MouseEvent) => {
+const onAdd = (done: CallBackFn, event?: MouseEvent) => {
   emit("add", done, event)
 }
 defineExpose({

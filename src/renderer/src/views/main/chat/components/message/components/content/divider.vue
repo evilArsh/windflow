@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import { ChatMessage, ChatTopic } from "@renderer/types"
+import { ChatMessageTree, ChatTopic } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
 import { CallBackFn, errorToText, msg } from "@toolmain/shared"
 const props = defineProps<{
-  message: ChatMessage
+  message: ChatMessageTree
   topic: ChatTopic
 }>()
 const chatStore = useChatStore()
 const { t } = useI18n()
 async function undoContext(done: CallBackFn) {
   try {
-    await chatStore.deleteMessage(props.topic, props.message.id)
+    await chatStore.deleteMessage(props.topic, props.message)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   } finally {

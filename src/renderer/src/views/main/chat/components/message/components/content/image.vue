@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { useRequest } from "@renderer/provider/http"
-import { ChatMessage } from "@renderer/types"
+import { ChatMessageTree } from "@renderer/types"
 import { errorToText, isBase64Image, isString, msg } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
 
 const props = defineProps<{
-  message: ChatMessage
-  parent?: ChatMessage
+  message: ChatMessageTree
+  parent?: ChatMessageTree
 }>()
 const chatstore = useChatStore()
-const message = computed(() => props.message)
+const message = computed(() => props.message.node)
 const useImages = () => {
   const images = ref<string[]>([])
   const http = useRequest()
@@ -84,12 +84,13 @@ watch(
   },
   { immediate: true }
 )
+// FIXME: remove async function updateChatMessage out of watch
 watch(isPending, val => {
   if (val) return
   if (!images.value.length) return
   message.value.content.content = Array.from(images.value)
   if (props.parent) {
-    chatstore.updateChatMessage(props.parent)
+    chatstore.updateChatMessage(props.parent.node)
   } else {
     chatstore.updateChatMessage({
       ...message.value,

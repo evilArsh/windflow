@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ChatMessage } from "@renderer/types/chat"
+import { ChatMessageTree } from "@renderer/types/chat"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { formatSecond, toNumber } from "@toolmain/shared"
 import { Role } from "@renderer/types"
 const props = defineProps<{
-  message: ChatMessage
+  message: ChatMessageTree
   hideToken?: boolean
   hideLogo?: boolean
   hideTime?: boolean
@@ -14,8 +14,8 @@ const props = defineProps<{
 }>()
 const modelsStore = useModelsStore()
 const providerStore = useProviderStore()
-const message = computed(() => props.message)
-const isUser = computed(() => props.message.content.role === Role.User)
+const message = computed(() => props.message.node)
+const isUser = computed(() => message.value.content.role === Role.User)
 const svgSrc = computed(() =>
   providerStore.getProviderLogo(message.value.modelId ? modelsStore.find(message.value.modelId)?.providerName : "user")
 )
