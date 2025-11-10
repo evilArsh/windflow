@@ -34,6 +34,9 @@ export default defineStore("knowledge", () => {
     }
     ragFilesStore.removeCacheFilesByTopicId(knowledgeId)
   }
+  /**
+   * find all knowledges which using `embedding`
+   */
   async function findByEmbeddingId(embedding: string) {
     return api.findByEmbeddingId(embedding)
   }
@@ -43,6 +46,20 @@ export default defineStore("knowledge", () => {
   async function add(data: Knowledge) {
     await api.add(data)
     knowledges.push(cloneDeep(data))
+  }
+  async function get(knowledgeId: string) {
+    const knowledge = knowledges.find(item => item.id === knowledgeId)
+    return knowledge ?? (await api.get(knowledgeId))
+  }
+  /**
+   * find embedding config which was binded by `knowledgeId`
+   */
+  async function getEmbeddingConfigById(knowledgeId: string) {
+    const kb = await get(knowledgeId)
+    if (kb?.embeddingId) {
+      return embeddingStore.get(kb.embeddingId)
+    }
+    return
   }
   async function processFiles(filePaths: string[], knowledge: Knowledge) {
     if (!knowledge.embeddingId) {
@@ -111,8 +128,10 @@ export default defineStore("knowledge", () => {
     knowledges,
     remove,
     findByEmbeddingId,
+    getEmbeddingConfigById,
     update,
     add,
+    get,
     processFiles,
     findNextSibling,
   }

@@ -45,6 +45,7 @@ const filter = reactive({
   }),
 })
 
+// TODO: refactor
 const check = reactive({
   allModelTypes: false,
   isIndeterminateModelTypes: true,

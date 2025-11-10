@@ -5,6 +5,7 @@ import { cloneDeep } from "@toolmain/shared"
 export const useData = () => {
   const update = async (data: Knowledge) => db.knowledge.put(cloneDeep(data))
   const add = async (data: Knowledge) => db.knowledge.add(cloneDeep(data))
+  const get = async (id: string) => db.knowledge.get(id)
   const findByEmbeddingId = async (embeddingId: string): Promise<Knowledge[]> => {
     return await db.knowledge.where("embeddingId").equals(embeddingId).toArray()
   }
@@ -15,6 +16,7 @@ export const useData = () => {
     fetch,
     update,
     add,
+    get,
     findByEmbeddingId,
   }
 }

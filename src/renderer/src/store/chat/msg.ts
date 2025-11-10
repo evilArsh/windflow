@@ -1,4 +1,5 @@
 import useModelsStore from "@renderer/store/model"
+import useKnowledgeStore from "@renderer/store/knowledge"
 import {
   ChatTopic,
   ModelMeta,
@@ -17,6 +18,7 @@ import { useContext } from "./context"
 import { useData } from "./api"
 import { isArrayLength, isString, toNumber } from "@toolmain/shared"
 import { defaultMessage } from "./default"
+import { useRag } from "./rag"
 
 export const useMsg = (
   chatMessage: Record<string, ChatMessageTree[]>,
@@ -25,9 +27,11 @@ export const useMsg = (
 ) => {
   const ctx = useContext()
   const modelsStore = useModelsStore()
+  const knowledgeStore = useKnowledgeStore()
   const api = useData()
   const { t } = useI18n()
   const utils = useUtils(chatMessage, chatLLMConfig, chatTTIConfig)
+  const rag = useRag()
 
   const sendMediaMessage = async (
     topic: ChatTopic,
@@ -76,19 +80,24 @@ export const useMsg = (
     message: ChatMessage
   ) => {
     // message contexts, messages stack was sorted in descending order, the newest message is the first one
-    const messageContext = ctx.getMessageContext(
+    let messageContext = ctx.getMessageContext(
       topic,
       utils.findChatMessage(topic.id)?.map(utils.unwrapMessage).slice(1) ?? []
     )
     if (!messageContext.length) return
-    // mcp servers
+    // rag service
+    if (topic.knowledgeId) {
+      const em = await knowledgeStore.getEmbeddingConfigById(topic.knowledgeId)
+      if (em) {
+        messageContext = await rag.patch(topic.knowledgeId, em, messageContext)
+      }
+    }
+    // mcp service
     const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
-    // ---context start
     const chatContext =
       ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
     if (!chatContext.provider) chatContext.provider = provider
     chatContext.handler?.terminate()
-    // ---context end
     topic.requestCount = Math.max(1, topic.requestCount + 1)
     chatContext.handler = await chatContext.provider.chat(
       messageContext,

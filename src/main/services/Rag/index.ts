@@ -5,6 +5,7 @@ import { VectorStore, VectorStoreConfig } from "./db"
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
 import sql from "sqlstring"
 import {
+  cloneDeep,
   errorToText,
   isArray,
   Response,
@@ -116,7 +117,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
           return { code: 200, msg: "", data: [] }
         }
         this.#log.debug("[embedding rerank]", res[maxRanksIndex.index])
-        return { code: 200, msg: "", data: [res[maxRanksIndex.index]] }
+        return { code: 200, msg: "", data: cloneDeep([res[maxRanksIndex.index]]) }
       } else {
         const results = res.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
         this.#log.debug(
