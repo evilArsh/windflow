@@ -24,22 +24,24 @@ const filterList = computed(() => {
   }
   return iconList.value
 })
-const query = reactive({
-  from: 0,
-  length: 0,
-  reset: markRaw(() => {
-    query.from = 0
-    query.length = 150
+const useQuery = () => {
+  const params = reactive({
+    from: 0,
+    length: 0,
+  })
+  function reset() {
+    params.from = 0
+    params.length = 150
     iconList.value = []
-    query.onQuery()
-  }),
-  onQuery: markRaw(() => {
-    const subIconSet = getSubIconSet(props.iconMap, props.iconsKeys, query.from, query.length)
+    onQuery()
+  }
+  function onQuery() {
+    const subIconSet = getSubIconSet(props.iconMap, props.iconsKeys, params.from, params.length)
     if (subIconSet) {
       iconList.value = iconList.value.concat(Object.keys(subIconSet.icons).map(set => getIconHTML(props.iconMap, set)))
     }
-  }),
-  onSearch: markRaw(
+  }
+  function onSearch() {
     useThrottleFn(
       () => {
         searchList.value = searchIcon(props.iconMap, props.iconsKeys, props.keyword)
@@ -47,15 +49,17 @@ const query = reactive({
       1000,
       true
     )
-  ),
-  onList: markRaw(() => {
-    query.from += query.length
-    query.onQuery()
-  }),
-  init: markRaw(() => {
-    query.reset()
-  }),
-})
+  }
+  function onList() {
+    params.from += params.length
+    onQuery()
+  }
+  function init() {
+    reset()
+  }
+  return { params, init, reset, onQuery, onSearch, onList }
+}
+const query = useQuery()
 
 watch(
   () => props.iconMap,

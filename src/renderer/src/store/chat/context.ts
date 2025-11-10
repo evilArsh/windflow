@@ -10,20 +10,12 @@ export const useContext = () => {
   const fetchTopicContext = (topicId: string, modelId: string, messageId: string, provider: Provider) => {
     if (!llmChats[topicId]) {
       llmChats[topicId] = []
-      llmChats[topicId].push({
-        modelId: modelId,
-        provider: markRaw(provider),
-        messageId: messageId,
-      })
+      llmChats[topicId].push({ modelId, provider, messageId })
       return llmChats[topicId][0]
     }
     const res = llmChats[topicId].find(item => item.messageId === messageId)
     if (!res) {
-      llmChats[topicId].push({
-        modelId: modelId,
-        provider: markRaw(provider),
-        messageId: messageId,
-      })
+      llmChats[topicId].push({ modelId, provider, messageId })
       return llmChats[topicId].slice(-1)[0]
     } else {
       if (!res.provider) {

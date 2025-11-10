@@ -8,6 +8,7 @@ import useMCPStore from "@renderer/store/mcp"
 import useEnvStore from "@renderer/store/env"
 import useKnowledgeStore from "@renderer/store/knowledge"
 import useEmbeddingStore from "@renderer/store/embedding"
+import useSettingsStore from "@renderer/store/settings"
 import { ElNotification } from "element-plus"
 import { errorToText } from "@toolmain/shared"
 const ready = ref(false)
@@ -17,12 +18,14 @@ const epLocale = computed(() => (locale.value === "zh" ? zhCn : enUs))
 async function init() {
   try {
     const res = await Promise.allSettled([
+      useSettingsStore().init(),
       useProviderStore().init(),
       useModelsStore().init(),
       useChatTopicStore().init(),
       useMCPStore().init(),
       useEnvStore().init(),
       useKnowledgeStore().init(),
+      useEmbeddingStore().init(),
       useEmbeddingStore().init(),
     ])
     res.forEach(r => {

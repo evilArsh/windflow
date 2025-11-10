@@ -22,14 +22,22 @@ export default defineStore("env", () => {
   }
 
   async function init() {
-    const res = await settingsStore.get(SettingKeys.ToolEnvironment, defaultEnv())
-    env.value = res.value
+    const res = await settingsStore.get<ToolEnvironment>(SettingKeys.ToolEnvironment)
+    if (!res) {
+      env.value = defaultEnv()
+      await settingsStore.add({
+        id: SettingKeys.ToolEnvironment,
+        value: env.value,
+      })
+    }
+    if (res) {
+      env.value = res.value
+    }
     window.api.mcp.updateEnv(cloneDeep(env.value))
   }
 
   return {
     init,
-
     env,
     checkEnv,
   }

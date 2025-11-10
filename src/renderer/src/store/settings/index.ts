@@ -1,45 +1,15 @@
 import { defineStore } from "pinia"
-import { Settings, SettingsValue } from "@renderer/types"
+import { SettingKeys, Settings, SettingsValue } from "@renderer/types"
 import { useData } from "./api"
 import { Reactive } from "vue"
-import { cloneDeep, isFunction, isUndefined } from "@toolmain/shared"
-import PQueue from "p-queue"
+import { isFunction, isUndefined } from "@toolmain/shared"
+
+import { db } from "@renderer/db"
 
 export default defineStore("settings", () => {
   const settings = reactive<Record<string, Settings<SettingsValue>>>({})
   const api = useData()
-  const queue = markRaw(new PQueue({ concurrency: 1 }))
 
-  /**
-   * Get a setting value
-   * @param id - The name of the setting
-   * @param defaultValue - The default value of the setting
-   * @returns The setting value
-   */
-  const get = async <T extends SettingsValue>(id: string, defaultValue: T): Promise<Settings<T>> => {
-    return queue.add(
-      async () => {
-        if (settings[id]) {
-          return settings[id] as Settings<T>
-        } else {
-          // 数据库查询
-          const data = (await api.get(id)) as Settings<T> | undefined
-          if (data) {
-            settings[id] = data
-            return data
-          } else {
-            const val: Settings<T> = { id, value: defaultValue }
-            settings[id] = val
-            await api.add(val)
-            return settings[id] as Settings<T>
-          }
-        }
-      },
-      {
-        timeout: 30000,
-      }
-    )
-  }
   const updateValue = (id: string, val: Settings<SettingsValue>) => {
     const data = settings[id]
     if (data) {
@@ -49,7 +19,32 @@ export default defineStore("settings", () => {
     }
   }
   /**
-   * 配置数据监听，实时更新到数据库
+   * get a setting value
+   * @param id - The name of the setting
+   * @returns The setting value
+   */
+  async function get<T extends SettingsValue>(id: SettingKeys): Promise<Settings<T> | undefined> {
+    if (settings[id]) {
+      return settings[id] as Settings<T>
+    } else {
+      const data = (await api.get(id)) as Settings<T> | undefined
+      if (data) {
+        settings[id] = data
+        return settings[id] as Settings<T>
+      }
+    }
+    return
+  }
+  async function update(data: Settings<SettingsValue>) {
+    await api.update(data)
+    updateValue(data.id, data)
+  }
+  async function add(data: Settings<SettingsValue>) {
+    await api.add(data)
+    updateValue(data.id, data)
+  }
+  /**
+   * monitoring settings change and update to database
    */
   function dataWatcher<T extends SettingsValue>(
     id: string,
@@ -57,56 +52,52 @@ export default defineStore("settings", () => {
     defaultValue: T,
     callBack?: (data: T, old?: T) => void
   ) {
-    const queue = markRaw(new PQueue({ concurrency: 1 }))
-    const configData = ref<Settings<T>>()
-    const execCallback = async (value: Settings<T>, old?: T) => {
-      await api.update(value)
-      callBack?.(value.value, old)
-      updateValue(id, value)
+    const unwrap = (data: Ref<T> | Reactive<T> | (() => T)): T => {
+      return isRef(data) || isFunction(data) ? toValue(data) : (toRaw(data) as T)
+    }
+    if (!settings[id]) {
+      settings[id] = { id, value: defaultValue } as Settings<T>
+    } else {
+      const cacheValue = settings[id] as Settings<T>
+      if (isRef(wrapData)) {
+        wrapData.value = cacheValue.value
+      } else if (isReactive(wrapData)) {
+        Object.assign(wrapData, cacheValue.value)
+      } else {
+        /**
+         * cannot set `wrapData`, because it is a function, just callback
+         */
+        callBack?.(cacheValue.value)
+      }
     }
     const watcher = watch(
       wrapData,
       (val, old) => {
-        queue.add(async () => {
-          if (configData.value) {
-            configData.value.value = isRef(val) || isFunction(val) ? toValue(val) : (toRaw(val) as T)
-            await execCallback(
-              configData.value,
-              isUndefined(old) ? undefined : isRef(old) || isFunction(old) ? toValue(old) : (toRaw(old) as T)
-            )
-          }
-        })
+        settings[id].value = unwrap(val)
+        update(settings[id])
+        updateValue(id, settings[id])
+        callBack?.((settings[id] as Settings<T>).value, isUndefined(old) ? undefined : unwrap(old))
       },
       { deep: true, immediate: true }
     )
-    get(id, defaultValue).then(res => {
-      if (isRef(wrapData)) {
-        configData.value = res
-        wrapData.value = configData.value.value
-      } else if (isReactive(wrapData)) {
-        configData.value = res
-        Object.assign(wrapData, configData.value.value)
-      } else {
-        const old = cloneDeep(configData.value?.value)
-        configData.value = res
-        /**
-         * cannot set `wrapData`, because it is a function, `watcher` cannot be triggered, just callback
-         */
-        execCallback(configData.value, old)
-      }
-    })
     onBeforeUnmount(() => {
       watcher.stop()
     })
   }
-  async function update(data: Settings<SettingsValue>) {
-    return api.update(data)
+  async function init() {
+    // need pre-load data rather than loading when using, because of possibly UI rendering lag
+    const data = await db.settings.toCollection().toArray()
+    data.forEach(item => {
+      settings[item.id] = item
+    })
   }
+
   return {
+    init,
     dataWatcher,
     get,
     settings,
     update,
-    api,
+    add,
   }
 })

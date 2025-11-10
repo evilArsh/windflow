@@ -1,8 +1,8 @@
-import { ChatTopic, ChatLLMConfig, ChatTTIConfig, Message, Role } from "@renderer/types"
+import { ChatTopic, Message, Role, LLMConfig, TTIConfig } from "@renderer/types"
 import { merge } from "@toolmain/shared"
 import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []
-export function defaultTTIConfig(): Omit<ChatTTIConfig, "id" | "topicId"> {
+export function defaultTTIConfig(): TTIConfig {
   return {
     n: 1,
     size: "",
@@ -12,7 +12,7 @@ export function defaultTTIConfig(): Omit<ChatTTIConfig, "id" | "topicId"> {
     negative_prompt: "",
   }
 }
-export function defaultLLMConfig(): Omit<ChatLLMConfig, "id" | "topicId"> {
+export function defaultLLMConfig(): LLMConfig {
   return {
     temperature: 1,
     top_p: 1,

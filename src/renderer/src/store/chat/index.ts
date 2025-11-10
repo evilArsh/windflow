@@ -113,10 +113,12 @@ export default defineStore("chat_topic", () => {
     chatMessage[msg.topicId].splice(index ?? chatMessage[msg.topicId].length, 0, utils.wrapMessage(msg))
   }
   async function updateChatLLMConfig(cnf: ChatLLMConfig) {
-    return api.updateChatLLMConfig(cnf)
+    await api.updateChatLLMConfig(cnf)
+    chatLLMConfig[cnf.topicId] = cnf
   }
   async function updateChatTTIConfig(cnf: ChatTTIConfig) {
-    return api.updateChatTTIConfig(cnf)
+    await api.updateChatTTIConfig(cnf)
+    chatTTIConfig[cnf.topicId] = cnf
   }
   async function removeChatTopic(nodes: ChatTopic[]) {
     return api.delChatTopic(nodes)

@@ -6,7 +6,7 @@ import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import EditTopic from "./components/editTopic/index.vue"
 import MenuHandle from "./components/menuHandle/index.vue"
-import { useMenu, useMsgContext } from "./index"
+import { useMenuContext, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { CallBackFn } from "@toolmain/shared"
 import { ScaleInstance, Spinner, ScalePanel } from "@toolmain/components"
@@ -18,17 +18,24 @@ const scrollRef = useTemplateRef("scroll")
 const treeRef = useTemplateRef("treeRef")
 const menuRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("menuRef")
 const editTopicRef = useTemplateRef<{ bounding: () => DOMRect | undefined }>("editTopicRef")
-const { menu, dlg, panelConfig, tree, selectedTopic, currentNodeKey, currentTopic, createNewTopic } = useMenu(
-  scaleRef,
-  scrollRef,
-  editTopicRef,
-  menuRef,
-  treeRef
-)
+const {
+  menu,
+  dlg,
+  panelConfig,
+  searchKeyword,
+  defaultExpandedKeys,
+  treeProps,
+  tree,
+  selectedTopic,
+  currentNodeKey,
+  is,
+  currentTopic,
+  currentHover,
+} = useMenuContext(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const msgContext = useMsgContext()
 const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext
 async function onCreateNewTopic(done: CallBackFn) {
-  await createNewTopic()
+  await tree.createNewTopic()
   done()
 }
 
@@ -45,7 +52,11 @@ onBeforeUnmount(() => {
       <div class="flex flex-col gap.5rem overflow-hidden">
         <div class="chat-provider-header">
           <div class="flex items-center gap-0.5rem">
-            <el-input v-model="tree.searchKeyword" :placeholder="t('chat.search')" clearable />
+            <el-input
+              :model-value="searchKeyword"
+              @update:model-value="tree.onSearchKeywordChange"
+              :placeholder="t('chat.search')"
+              clearable />
             <div id="toggleMenu"></div>
           </div>
           <Button @click="onCreateNewTopic">
@@ -58,7 +69,7 @@ onBeforeUnmount(() => {
             <el-tree
               ref="treeRef"
               :filter-node-method="tree.filterNode"
-              :default-expanded-keys="tree.defaultExpandedKeys"
+              :default-expanded-keys="defaultExpandedKeys"
               :current-node-key="currentNodeKey"
               :expand-on-click-node="false"
               :indent="18"
@@ -66,7 +77,7 @@ onBeforeUnmount(() => {
               :data="topicList"
               node-key="id"
               draggable
-              :props="tree.props"
+              :props="treeProps"
               @node-drop="tree.onNodeDrop"
               @node-click="tree.onNodeClick"
               @node-expand="tree.onNodeExpand"
@@ -85,7 +96,7 @@ onBeforeUnmount(() => {
                       <el-text line-clamp="1">{{ data.node.label }}</el-text>
                     </div>
                   </ContentBox>
-                  <div v-show="tree.currentHover === data.id" class="chat-tree-handle">
+                  <div v-show="currentHover === data.id" class="chat-tree-handle">
                     <el-button @click.stop="menu.open($event, data)" circle size="small">
                       <i-ep:more-filled></i-ep:more-filled>
                     </el-button>
@@ -98,7 +109,7 @@ onBeforeUnmount(() => {
       </div>
       <ScalePanel v-model="panelConfig" ref="scale" @mask-click="dlg.clickMask">
         <MenuHandle
-          v-if="dlg.is === 'menu'"
+          v-if="is === 'menu'"
           ref="menuRef"
           :focus="!!panelConfig.mask"
           @edit="menu.onEdit"
@@ -106,7 +117,7 @@ onBeforeUnmount(() => {
           @add="menu.onAdd"></MenuHandle>
         <EditTopic
           ref="editTopicRef"
-          v-else-if="dlg.is === 'editTopic' && selectedTopic"
+          v-else-if="is === 'editTopic' && selectedTopic"
           :topic="selectedTopic.node"></EditTopic>
       </ScalePanel>
     </template>

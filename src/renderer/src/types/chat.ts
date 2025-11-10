@@ -118,9 +118,7 @@ export type ChatTopic = {
   maxContextLength?: number
 }
 
-export type ChatLLMConfig = {
-  id: string
-  topicId: string
+export type LLMConfig = {
   /**
    * @description 模型温度
    */
@@ -134,10 +132,7 @@ export type ChatLLMConfig = {
   presence_penalty: number
   max_tokens: number
 }
-
-export type ChatTTIConfig = {
-  id: string
-  topicId: string
+export type TTIConfig = {
   /**
    * @description 生成图片的大小。
    * 1.siliconflow: batch_size === n
@@ -167,6 +162,15 @@ export type ChatTTIConfig = {
    * @description 随机种子
    */
   seed?: number
+}
+export type ChatLLMConfig = LLMConfig & {
+  id: string
+  topicId: string
+}
+
+export type ChatTTIConfig = TTIConfig & {
+  id: string
+  topicId: string
 }
 
 /**

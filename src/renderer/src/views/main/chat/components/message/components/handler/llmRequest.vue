@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { ChatLLMConfig, ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatLLMConfig, ChatTopic, LLMConfig, SettingKeys } from "@renderer/types"
 import useChatStore from "@renderer/store/chat"
 import useSettings from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
 import { defaultLLMConfig } from "@renderer/store/chat/default"
-import { errorToText, msg } from "@toolmain/shared"
+import { cloneDeep, errorToText, msg } from "@toolmain/shared"
 import { DialogPanel, Spinner } from "@toolmain/components"
 const props = defineProps<{
   topic: ChatTopic
@@ -27,20 +27,37 @@ const event = shallowReactive({
       event.loading = true
       if (cmd === "reset") {
         if (!config.value) return
-        Object.assign(config.value, defaultLLMConfig())
-        update()
+        await chatStore.updateChatLLMConfig({
+          id: config.value.id,
+          topicId: props.topic.id,
+          ...defaultLLMConfig(),
+        })
       } else if (cmd === "restoreGlobal") {
+        // use global config
         if (!config.value) return
-        const globalVal = (await settingsStore.get(SettingKeys.ChatLLMConfig, defaultLLMConfig())).value
-        Object.assign(config.value, globalVal)
-        update()
+        let globalVal = await settingsStore.get<LLMConfig>(SettingKeys.ChatLLMConfig)
+        if (!globalVal) {
+          globalVal = {
+            id: SettingKeys.ChatLLMConfig,
+            value: defaultLLMConfig(),
+          }
+          await settingsStore.add(globalVal)
+        }
+        await chatStore.updateChatLLMConfig({
+          id: config.value.id,
+          topicId: props.topic.id,
+          ...globalVal.value,
+        })
       } else if (cmd === "coverGlobal") {
+        // cover global config
         if (!config.value) return
-        const globalVal = await settingsStore.get(SettingKeys.ChatLLMConfig, defaultLLMConfig())
-        Object.assign(globalVal.value, config.value)
-        delete globalVal.value["id"]
-        delete globalVal.value["topicId"]
-        await settingsStore.update(globalVal)
+        const copyData = cloneDeep(config.value) as LLMConfig
+        delete copyData["id"]
+        delete copyData["topicId"]
+        await settingsStore.update({
+          id: SettingKeys.ChatLLMConfig,
+          value: copyData,
+        })
       }
       msg({ code: 200, msg: "ok" })
     } catch (error) {
