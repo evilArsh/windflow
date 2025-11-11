@@ -17,6 +17,7 @@ import {
 } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
+import { SearchManager } from "./search/index"
 import { EmbeddingResponse, ProcessStatus, RerankResponse, TaskChain, TaskManager } from "./task/types"
 import axios from "axios"
 import { useLog } from "@main/hooks/useLog"
@@ -33,6 +34,7 @@ export type RAGServiceConfig = {
 export class RAGServiceImpl implements RAGService, ServiceCore {
   #globalBus: EventBus
   #ss: ProcessStatus = createProcessStatus()
+  #search: SearchManager
   #task: TaskManager
   #db: VectorStore
   #fileTask: TaskChain
@@ -41,6 +43,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   #log = useLog(RAGServiceId)
   constructor(globalBus: EventBus, config?: RAGServiceConfig) {
     this.#globalBus = globalBus
+    this.#search = new SearchManager()
 
     this.#task = createTaskManager(this.#ss, this.#globalBus)
     this.#db = new VectorStore(config?.store)

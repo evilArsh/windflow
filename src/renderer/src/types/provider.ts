@@ -109,6 +109,18 @@ export type ProviderMeta = {
   activeStatus?: ModelActiveStatus
 }
 
+export type BeforeRequestParams = {
+  messages: Message[]
+  model: ModelMeta
+  provider: ProviderMeta
+  reqConfig?: LLMRequest
+  mcpServersIds: Array<string>
+}
+export type BeforeRequestCallback = (
+  messages: Message[],
+  model: ModelMeta,
+  provider: ProviderMeta
+) => Promise<BeforeRequestParams>
 /**
  * Large language model provider
  *
@@ -118,9 +130,8 @@ export interface LLMProvider {
     messages: Message[],
     model: ModelMeta,
     provider: ProviderMeta,
-    mcpServersIds: Array<string>,
     callback: (message: LLMResponse) => void,
-    reqConfig?: LLMRequest
+    beforeRequest?: BeforeRequestCallback
   ): Promise<RequestHandler>
   summarize(
     context: string,
@@ -130,7 +141,6 @@ export interface LLMProvider {
     reqConfig?: LLMRequest
   ): Promise<RequestHandler>
 }
-
 /**
  * @description media provider
  * Image,Video,Audio

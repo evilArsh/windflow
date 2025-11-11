@@ -9,6 +9,7 @@ import {
   Provider,
   ImageResponse,
   MediaRequest,
+  BeforeRequestCallback,
 } from "@renderer/types"
 import { createInstance } from "../http"
 import { useSingleLLMChat, makeRequest } from "./request"
@@ -30,12 +31,11 @@ export abstract class Compatible implements Provider {
     messages: Message[],
     modelMeta: ModelMeta,
     providerMeta: ProviderMeta,
-    mcpServersIds: string[],
     callback: (message: LLMResponse) => void,
-    reqConfig?: LLMRequest
+    beforeRequest?: BeforeRequestCallback
   ): Promise<RequestHandler> {
     const requestHandler = useSingleLLMChat()
-    makeRequest(messages, providerMeta, modelMeta, requestHandler, mcpServersIds, callback, reqConfig)
+    makeRequest(messages, providerMeta, modelMeta, requestHandler, callback, beforeRequest)
     return requestHandler
   }
 

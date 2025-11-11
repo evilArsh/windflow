@@ -7,6 +7,7 @@ import {
   LLMRequestHandler,
   ModelMeta,
   ProviderMeta,
+  BeforeRequestCallback,
 } from "@renderer/types"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
@@ -87,14 +88,28 @@ export async function makeRequest(
   providerMeta: ProviderMeta,
   modelMeta: ModelMeta,
   requestHandler: LLMRequestHandler,
-  mcpServersIds: string[],
   callback: (message: LLMResponse) => void,
-  requestBody?: LLMRequest
+  beforeRequest?: BeforeRequestCallback
 ) {
   const partial = usePartialData()
   const ctx = cloneDeep(context)
   try {
     callback({ status: 100, data: { content: "", role: Role.Assistant } })
+    let contextCopy = cloneDeep(context)
+    let providerMetaCopy = cloneDeep(providerMeta)
+    let modelMetaCopy = cloneDeep(modelMeta)
+    let mcpServersIds: string[] = []
+    let requestBody: LLMRequest | undefined
+    // hooks start
+    if (beforeRequest) {
+      const resp = await beforeRequest(contextCopy, modelMetaCopy, providerMetaCopy)
+      contextCopy = resp.messages
+      modelMetaCopy = resp.model
+      providerMetaCopy = resp.provider
+      mcpServersIds = resp.mcpServersIds
+      requestBody = resp.reqConfig
+    }
+    // hooks end
     const toolList = await loadMCPTools(mcpServersIds)
     partial.updateToolLists(toolList)
     const appendTools = (req: LLMRequest, toolist: unknown) => {

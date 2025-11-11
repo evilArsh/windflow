@@ -97,7 +97,15 @@ export type RAGFile = {
 
 export type RAGSearchParam = {
   content: string
+  /**
+   * specify the scope of current search, generally, it's the knowledge base id
+   */
   topicId: string
+  /**
+   * `sessionId` marks current searching, genereally, it's the chat-message id.
+   * it is used to stop/identify the searching,
+   */
+  sessionId: string
 }
 
 export type RAGSearchResult = {
@@ -128,7 +136,7 @@ export interface RAGLocalFileMeta {
    */
   path: string
   /**
-   * specify the scope of current file
+   * specify the scope of current file, generally, it's the knowledge base id
    */
   topicId: string
 }

@@ -12,6 +12,9 @@ import {
   Role,
   Content,
   ChatMessageTree,
+  BeforeRequestCallback,
+  BeforeRequestParams,
+  Message,
 } from "@renderer/types"
 import { useUtils } from "./utils"
 import { useContext } from "./context"
@@ -33,6 +36,26 @@ export const useMsg = (
   const utils = useUtils(chatMessage, chatLLMConfig, chatTTIConfig)
   const rag = useRag()
 
+  const llmHooks = (topic: ChatTopic, message: ChatMessage): BeforeRequestCallback => {
+    return async (messages: Message[], model: ModelMeta, provider: ProviderMeta): Promise<BeforeRequestParams> => {
+      let m = messages
+      // rag service
+      if (topic.knowledgeId) {
+        const em = await knowledgeStore.getEmbeddingConfigById(topic.knowledgeId)
+        if (em) {
+          m = await rag.patch(topic.knowledgeId, message.id, em, messages)
+        }
+      }
+      // mcp service
+      const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
+      return {
+        messages: m,
+        model,
+        provider,
+        mcpServersIds,
+      }
+    }
+  }
   const sendMediaMessage = async (
     topic: ChatTopic,
     model: ModelMeta,
@@ -80,20 +103,10 @@ export const useMsg = (
     message: ChatMessage
   ) => {
     // message contexts, messages stack was sorted in descending order, the newest message is the first one
-    let messageContext = ctx.getMessageContext(
+    const messageContext = ctx.getMessageContext(
       topic,
       utils.findChatMessage(topic.id)?.map(utils.unwrapMessage).slice(1) ?? []
     )
-    if (!messageContext.length) return
-    // rag service
-    if (topic.knowledgeId) {
-      const em = await knowledgeStore.getEmbeddingConfigById(topic.knowledgeId)
-      if (em) {
-        messageContext = await rag.patch(topic.knowledgeId, em, messageContext)
-      }
-    }
-    // mcp service
-    const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data
     const chatContext =
       ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
     if (!chatContext.provider) chatContext.provider = provider
@@ -103,7 +116,6 @@ export const useMsg = (
       messageContext,
       model,
       providerMeta,
-      mcpServersIds,
       value => {
         const { data, status, msg } = value
         message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
@@ -139,7 +151,7 @@ export const useMsg = (
         }
         api.putChatMessage(message)
       },
-      utils.findChatLLMConfig(topic.id)
+      llmHooks(topic, message)
     )
   }
 
@@ -285,10 +297,8 @@ export const useMsg = (
   function terminate(topic: ChatTopic, message: ChatMessageTree) {
     const chatContext = ctx.findContext(topic.id, message.node.id)
     chatContext?.handler?.terminate()
-    message.children.forEach(child => {
-      const chatContext = ctx.findContext(topic.id, child.id)
-      chatContext?.handler?.terminate()
-    })
+    // TODO: stop rag searching
+    message.children.forEach(child => terminate(topic, child))
   }
   /**
    * @description 终止当前topic中所有聊天块的请求

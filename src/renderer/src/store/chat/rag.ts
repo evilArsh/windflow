@@ -3,7 +3,12 @@ import { RAGEmbeddingConfig } from "@shared/types/rag"
 import { cloneDeep, code2xx, isString } from "@toolmain/shared"
 
 export const useRag = () => {
-  async function patch(knowledgeId: string, emConfig: RAGEmbeddingConfig, messages: Message[]): Promise<Message[]> {
+  async function patch(
+    knowledgeId: string,
+    messageId: string,
+    emConfig: RAGEmbeddingConfig,
+    messages: Message[]
+  ): Promise<Message[]> {
     try {
       if (!messages.length) return messages
       const userMsg = messages[messages.length - 1]
@@ -14,6 +19,7 @@ export const useRag = () => {
         {
           content,
           topicId: knowledgeId,
+          sessionId: messageId,
         },
         cloneDeep(emConfig)
       )
@@ -34,16 +40,9 @@ export const useRag = () => {
         userMsg.content = getPrompt(content, "")
       } else {
         const kb = res.data.map(item => {
-          return {
-            fileName: item.content,
-            fileSize: item.fileSize,
-            chunkIndex: item.chunkIndex,
-            mimeType: item.mimeType,
-            content: item.content,
-            _distance: item._distance,
-          }
+          return `{fileName:${item.fileName},content:${item.content}}`
         })
-        userMsg.content = getPrompt(content, JSON.stringify(kb))
+        userMsg.content = getPrompt(content, kb.join("\n"))
       }
       return messages
     } catch (error) {
