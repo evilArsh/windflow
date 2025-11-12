@@ -17,15 +17,14 @@ import {
 } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
-import { SearchManager } from "./search/index"
+import { useSearchManager } from "./search/index"
 import { EmbeddingResponse, ProcessStatus, RerankResponse, TaskChain, TaskManager } from "./task/types"
 import axios from "axios"
-import { useLog } from "@main/hooks/useLog"
 import { Embedding } from "./task/embedding"
 import { FileProcess } from "./task/file"
 import { Store } from "./task/store"
 import { combineTableName } from "./db/utils"
-import { RAGServiceId } from "./vars"
+import { log, RAGServiceId } from "./vars"
 import { getFileInfo } from "@main/misc/file"
 
 export type RAGServiceConfig = {
@@ -33,17 +32,16 @@ export type RAGServiceConfig = {
 }
 export class RAGServiceImpl implements RAGService, ServiceCore {
   #globalBus: EventBus
-  #ss: ProcessStatus = createProcessStatus()
-  #search: SearchManager
+  #ss: ProcessStatus
+  #search: ReturnType<typeof useSearchManager>
   #task: TaskManager
   #db: VectorStore
   #fileTask: TaskChain
   #embeddingTask: TaskChain
   #dbTask: TaskChain
-  #log = useLog(RAGServiceId)
   constructor(globalBus: EventBus, config?: RAGServiceConfig) {
     this.#globalBus = globalBus
-    this.#search = new SearchManager()
+    this.#ss = createProcessStatus()
 
     this.#task = createTaskManager(this.#ss, this.#globalBus)
     this.#db = new VectorStore(config?.store)
@@ -55,6 +53,8 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     this.#task.addTaskChain(this.#fileTask)
     this.#task.addTaskChain(this.#embeddingTask)
     this.#task.addTaskChain(this.#dbTask)
+
+    this.#search = useSearchManager(this.#db)
   }
   async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
     try {
@@ -75,7 +75,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!isArray(vectors.data?.data)) {
         throw new Error(`[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
       }
-      this.#log.debug(
+      log.debug(
         `[embedding search] content translated to vectors`,
         `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
       )
@@ -87,9 +87,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         queryVector: vectors.data.data[0].embedding,
       })
       console.timeEnd("[search timeout]")
-      this.#log.debug(`[embedding search] query result, length: ${res.length}, topicId: ${params.topicId}`)
+      log.debug(`[embedding search] query result, length: ${res.length}, topicId: ${params.topicId}`)
       if (config.rerank) {
-        this.#log.debug(
+        log.debug(
           `[embedding search] will rerank result, topicId: ${params.topicId}, rerank_provider: ${config.rerank.providerName}, rerank_model: ${config.rerank.model}`
         )
         const rerankRes = await axios.request<RerankResponse>({
@@ -119,11 +119,11 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         if (!maxRanksIndex) {
           return { code: 200, msg: "", data: [] }
         }
-        this.#log.debug("[embedding rerank]", res[maxRanksIndex.index])
+        log.debug("[embedding rerank]", res[maxRanksIndex.index])
         return { code: 200, msg: "", data: cloneDeep([res[maxRanksIndex.index]]) }
       } else {
         const results = res.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
-        this.#log.debug(
+        log.debug(
           `[embedding search finish] total_length: ${res.length}, score_gt_0.7_length: ${
             res.filter(r => toNumber(r._distance) >= 0.7).length
           }`
@@ -131,7 +131,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         return { code: 200, msg: "ok", data: results }
       }
     } catch (error) {
-      this.#log.error("[embedding search error]", error)
+      log.error("[embedding search error]", error)
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
@@ -151,22 +151,23 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         throw new Error("[processLocalFile] file path is empty")
       }
       if (this.#ss.has(meta)) {
-        return this.#log.debug(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
+        return log.info(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
       }
       const info = await getFileInfo(meta.path)
       if (!info.isFile) {
-        return this.#log.error(`[processLocalFile] path ${meta.path} is not a file`)
+        return log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
-      const metaInfo: RAGLocalFileInfo = {
-        ...meta,
-        ...info,
-        fileName: info.name,
-        fileSize: info.size,
-      }
-      this.#log.debug("[processLocalFile] start ", metaInfo)
-      this.#task.process(metaInfo, config)
+      this.#task.process(
+        {
+          ...meta,
+          ...info,
+          fileName: info.name,
+          fileSize: info.size,
+        },
+        config
+      )
     } catch (error) {
-      this.#log.debug("[processLocalFile]", errorToText(error))
+      log.debug("[processLocalFile]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
@@ -183,12 +184,12 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     try {
       await this.#db.open()
       const res = await this.#db.deleteData(combineTableName(topicId), sql.format(`\`fileId\` = ?`, [fileId]))
-      this.#log.debug(
+      log.debug(
         `[removeById] delete ${res} rows, tableName:${combineTableName(topicId)}, topicId:${topicId}, fileId:${fileId}`
       )
       return responseData(200, "ok", res)
     } catch (error) {
-      this.#log.debug("[removeById]", errorToText(error))
+      log.debug("[removeById]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
@@ -206,10 +207,10 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     try {
       await this.#db.open()
       await this.#db.deleteTable(combineTableName(topicId))
-      this.#log.debug(`[removeByTopicId] table ${combineTableName(topicId)} deleted`)
+      log.debug(`[removeByTopicId] table ${combineTableName(topicId)} deleted`)
       return responseCode(200, "success")
     } catch (error) {
-      this.#log.debug("[removeById]", errorToText(error))
+      log.debug("[removeById]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
