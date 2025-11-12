@@ -2,24 +2,21 @@ import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/service"
 import { VectorStore, VectorStoreConfig } from "./db"
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
 import sql from "sqlstring"
 import {
   cloneDeep,
   errorToText,
-  isArray,
   Response,
   responseCode,
   responseData,
   StatusResponse,
-  toNumber,
   uniqueId,
 } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
-import { useSearchManager } from "./search/index"
-import { EmbeddingResponse, ProcessStatus, RerankResponse, TaskChain, TaskManager } from "./task/types"
-import axios from "axios"
+import { SearchTaskStatus, useSearchManager } from "./search/index"
+import { ProcessStatus, TaskChain, TaskManager } from "./task/types"
 import { Embedding } from "./task/embedding"
 import { FileProcess } from "./task/file"
 import { Store } from "./task/store"
@@ -58,78 +55,12 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   }
   async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
     try {
-      console.time("[embedding timeout]")
-      const vectors = await axios.request<EmbeddingResponse>({
-        url: config.embedding.api,
-        method: config.embedding.method ?? "post",
-        headers: {
-          Authorization: `Bearer ${config.embedding.apiKey}`,
-        },
-        data: {
-          model: config.embedding.model,
-          input: params.content,
-          dimensions: config.dimensions,
-        },
-      })
-      console.timeEnd("[embedding timeout]")
-      if (!isArray(vectors.data?.data)) {
-        throw new Error(`[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
+      this.#search.addSearchTask(params, config)
+      const res = await this.#search.getSearchResult(params.sessionId)
+      if (res.status === SearchTaskStatus.Success) {
+        return responseData(200, "ok", cloneDeep(res.result ?? []))
       }
-      log.debug(
-        `[embedding search] content translated to vectors`,
-        `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
-      )
-      await this.#db.open()
-      console.time("[search timeout]")
-      const res = await this.#db.query({
-        tableName: combineTableName(params.topicId),
-        topicId: params.topicId,
-        queryVector: vectors.data.data[0].embedding,
-      })
-      console.timeEnd("[search timeout]")
-      log.debug(`[embedding search] query result, length: ${res.length}, topicId: ${params.topicId}`)
-      if (config.rerank) {
-        log.debug(
-          `[embedding search] will rerank result, topicId: ${params.topicId}, rerank_provider: ${config.rerank.providerName}, rerank_model: ${config.rerank.model}`
-        )
-        const rerankRes = await axios.request<RerankResponse>({
-          url: config.rerank.api,
-          method: config.rerank.method ?? "post",
-          headers: {
-            Authorization: `Bearer ${config.rerank.apiKey}`,
-          },
-          data: {
-            model: config.rerank.model,
-            query: params.content,
-            documents: res.map(item => item.content),
-          },
-        })
-        const maxRanksIndex = rerankRes.data.results.reduce(
-          (prev, curr) => {
-            if (!prev) {
-              return curr
-            }
-            if (curr.relevance_score > prev.relevance_score) {
-              return curr
-            }
-            return prev
-          },
-          null as RerankResponse["results"][number] | null
-        )
-        if (!maxRanksIndex) {
-          return { code: 200, msg: "", data: [] }
-        }
-        log.debug("[embedding rerank]", res[maxRanksIndex.index])
-        return { code: 200, msg: "", data: cloneDeep([res[maxRanksIndex.index]]) }
-      } else {
-        const results = res.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
-        log.debug(
-          `[embedding search finish] total_length: ${res.length}, score_gt_0.7_length: ${
-            res.filter(r => toNumber(r._distance) >= 0.7).length
-          }`
-        )
-        return { code: 200, msg: "ok", data: results }
-      }
+      return responseData(res.code ?? 500, res.msg ?? "search error", [])
     } catch (error) {
       log.error("[embedding search error]", error)
       this.#globalBus.emit(EventKey.ServiceLog, {

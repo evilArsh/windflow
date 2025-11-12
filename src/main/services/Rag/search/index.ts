@@ -1,6 +1,5 @@
-import PQueue from "p-queue"
 import { RAGEmbeddingConfig, RAGFile, RAGSearchParam } from "@shared/types/rag"
-import { cloneDeep, errorToText, isArray, toNumber } from "@toolmain/shared"
+import { errorToText, HttpStatusCode, isArray, isNull, toNumber } from "@toolmain/shared"
 import { EmbeddingResponse, RerankResponse } from "../task/types"
 import { log } from "../vars"
 import { VectorStore } from "../db"
@@ -16,13 +15,15 @@ export enum SearchTaskStatus {
 }
 export type SearchTask = RAGSearchParam & {
   status: SearchTaskStatus
+  msg?: string
+  code?: HttpStatusCode
+  controler?: AbortController
   result?: RAGFile[]
 }
 export function useSearchManager(db: VectorStore) {
-  const queue = new PQueue()
   const http = useRequest()
   const ev = new EventEmitter()
-  const taskStatus: Record<string, SearchTask> = {}
+  const taskStatus = new Map<string, SearchTask>()
   const transformEmbedding = (params: RAGSearchParam, config: RAGEmbeddingConfig, signal?: AbortSignal) => {
     const { abort, pending } = http.request<EmbeddingResponse>({
       url: config.embedding.api,
@@ -64,81 +65,131 @@ export function useSearchManager(db: VectorStore) {
     })
     return { abort, pending }
   }
-
-  async function addSearchTask(params: RAGSearchParam, config: RAGEmbeddingConfig) {
-    taskStatus[params.sessionId] = {
+  const emitStatus = (
+    sessionId: string,
+    status: SearchTaskStatus,
+    code: HttpStatusCode,
+    msg: string,
+    result: RAGFile[]
+  ) => {
+    const task = taskStatus.get(sessionId)
+    if (!task) return
+    task.status = status
+    task.code = code
+    task.msg = msg
+    task.result = result
+    ev.emit(sessionId, task)
+  }
+  const startTask = async (params: RAGSearchParam, config: RAGEmbeddingConfig) => {
+    console.time("[vector search]")
+    const abortController = new AbortController()
+    taskStatus.set(params.sessionId, {
       ...params,
       status: SearchTaskStatus.Pending,
+      controler: abortController,
       result: [],
-    }
-    queue.add(
-      async ({ signal }) => {
-        try {
-          const embeddingReq = transformEmbedding(params, config, signal)
-          console.time("[embedding transform]")
-          const vectors = await embeddingReq.pending
-          console.timeEnd("[embedding transform]")
-          if (!isArray(vectors.data?.data)) {
-            throw new Error(`[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
-          }
-          log.debug(
-            `[embedding search] content translated to vectors`,
-            `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
-          )
-          await db.open()
-          console.time("[vector search]")
-          const vectorSearchRes = await db.query({
-            tableName: combineTableName(params.topicId),
-            topicId: params.topicId,
-            queryVector: vectors.data.data[0].embedding,
-          })
-          console.timeEnd("[vector search]")
-          log.debug(`[embedding search] query result, length: ${vectorSearchRes.length}, topicId: ${params.topicId}`)
-          const rerankReq = transformRerank(
-            params,
-            config,
-            vectorSearchRes.map(i => i.content),
-            signal
-          )
-          if (rerankReq) {
-            console.time("[rerank transform]")
-            const rerankRes = await rerankReq.pending
-            console.timeEnd("[rerank transform]")
-            const maxRanksIndex = rerankRes.data.results.reduce(
-              (prev, cur) => {
-                if (!prev) return cur
-                if (cur.relevance_score > prev.relevance_score) return cur
-                return prev
-              },
-              null as RerankResponse["results"][number] | null
-            )
-            if (!maxRanksIndex) return { code: 200, msg: "", data: [] }
-            log.debug("[embedding rerank]", vectorSearchRes[maxRanksIndex.index])
-            return { code: 200, msg: "", data: cloneDeep([vectorSearchRes[maxRanksIndex.index]]) }
-          } else {
-            const results = vectorSearchRes.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
-            log.debug(
-              `[embedding search finish] total_length: ${vectorSearchRes.length}, score_gt_0.7_length: ${
-                vectorSearchRes.filter(r => toNumber(r._distance) >= 0.7).length
-              }`
-            )
-            return { code: 200, msg: "ok", data: results }
-          }
-        } catch (error) {
-          log.error(
-            `[embedding search task error] sessionId: ${params.sessionId}, content: ${params.content}, topicId: ${params.topicId}`,
-            error
-          )
-          return { code: 500, msg: errorToText(error), data: [] }
-        }
-      },
-      {
-        id: params.sessionId,
+    })
+    try {
+      const embeddingReq = transformEmbedding(params, config, abortController.signal)
+      const vectors = await embeddingReq.pending
+      if (!isArray(vectors.data?.data)) {
+        throw new Error(`[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.data)}`)
       }
-    )
+      log.debug(
+        `[embedding search] content translated to vectors`,
+        `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
+      )
+      await db.open()
+      const vectorSearchRes = await db.query({
+        tableName: combineTableName(params.topicId),
+        topicId: params.topicId,
+        queryVector: vectors.data.data[0].embedding,
+      })
+      log.debug(`[embedding search] query result, length: ${vectorSearchRes.length}, topicId: ${params.topicId}`)
+      const rerankReq = transformRerank(
+        params,
+        config,
+        vectorSearchRes.map(i => i.content),
+        abortController.signal
+      )
+      if (rerankReq) {
+        const rerankRes = await rerankReq.pending
+        const maxRanksIndex = rerankRes.data.results.reduce(
+          (prev, cur) => {
+            if (!prev) return cur
+            if (cur.relevance_score > prev.relevance_score) return cur
+            return prev
+          },
+          null as RerankResponse["results"][number] | null
+        )
+        const result = isNull(maxRanksIndex) ? [] : [vectorSearchRes[maxRanksIndex.index]]
+        log.debug("[embedding rerank result]", result)
+        emitStatus(params.sessionId, SearchTaskStatus.Success, 200, "ok", result)
+      } else {
+        const results = vectorSearchRes.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
+        log.debug(
+          `[embedding search finish] total_length: ${vectorSearchRes.length}, score_gt_0.7_length: ${
+            vectorSearchRes.filter(r => toNumber(r._distance) >= 0.7).length
+          }`
+        )
+        emitStatus(params.sessionId, SearchTaskStatus.Success, 200, "ok", results)
+      }
+    } catch (error) {
+      log.error(
+        `[embedding search task error] sessionId: ${params.sessionId}, content: ${params.content}, topicId: ${params.topicId}`,
+        error
+      )
+      const errorText = errorToText(error)
+      if (abortController.signal.aborted) {
+        emitStatus(params.sessionId, SearchTaskStatus.Aborted, 500, errorText, [])
+      } else {
+        emitStatus(params.sessionId, SearchTaskStatus.Failed, 500, errorText, [])
+      }
+    } finally {
+      console.timeEnd("[vector search]")
+    }
+  }
+  function addSearchTask(params: RAGSearchParam, config: RAGEmbeddingConfig) {
+    const oldTask = taskStatus.get(params.sessionId)
+    if (oldTask && oldTask.status === SearchTaskStatus.Pending) {
+      if (oldTask.controler && !oldTask.controler.signal.aborted) {
+        oldTask.controler.signal.addEventListener("abort", () => {
+          taskStatus.delete(params.sessionId)
+          startTask(params, config)
+        })
+        oldTask.controler.abort()
+      } else {
+        startTask(params, config)
+      }
+    } else {
+      startTask(params, config)
+    }
+  }
+  async function getSearchResult(sessionId: string): Promise<SearchTask> {
+    return new Promise((resolve, reject) => {
+      const task = taskStatus.get(sessionId)
+      if (!task) {
+        reject(new Error(`[embedding search] task not found, sessionId: ${sessionId}`))
+        return
+      }
+      if (task.status !== SearchTaskStatus.Pending) {
+        resolve(task)
+        taskStatus.delete(sessionId)
+        return
+      }
+      ev.once(sessionId, (task: SearchTask) => {
+        resolve(task)
+        taskStatus.delete(sessionId)
+      })
+    })
+  }
+  function stopSearchTask(sessionId: string) {
+    taskStatus.get(sessionId)?.controler?.abort()
   }
 
   return {
     addSearchTask,
+    getSearchResult,
+    stopSearchTask,
   }
 }
