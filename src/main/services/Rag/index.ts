@@ -2,7 +2,14 @@ import { ServiceCore } from "@main/types"
 import { EventKey } from "@shared/types/eventbus"
 import { EventBus, IpcChannel, RAGService } from "@shared/service"
 import { VectorStore, VectorStoreConfig } from "./db"
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "@shared/types/rag"
+import {
+  RAGEmbeddingConfig,
+  RAGFile,
+  RAGLocalFileMeta,
+  RAGSearchParam,
+  RagSearchStatus,
+  RAGSearchTask,
+} from "@shared/types/rag"
 import sql from "sqlstring"
 import {
   cloneDeep,
@@ -15,7 +22,7 @@ import {
 } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
-import { SearchTaskStatus, useSearchManager } from "./search/index"
+import { useSearchManager } from "./search/index"
 import { ProcessStatus, TaskChain, TaskManager } from "./task/types"
 import { Embedding } from "./task/embedding"
 import { FileProcess } from "./task/file"
@@ -57,7 +64,7 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     try {
       this.#search.addSearchTask(params, config)
       const res = await this.#search.getSearchResult(params.sessionId)
-      if (res.status === SearchTaskStatus.Success) {
+      if (res.status === RagSearchStatus.Success) {
         return responseData(200, "ok", cloneDeep(res.result ?? []))
       }
       return responseData(res.code ?? 500, res.msg ?? "search error", [])
@@ -74,6 +81,21 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         code: 500,
       })
       return responseData(500, errorToText(error), [])
+    }
+  }
+  async searchTerminate(sessionId: string): Promise<Response<RAGSearchTask | undefined>> {
+    const task = this.#search.getTask(sessionId)
+    try {
+      if (!task) {
+        return responseData(404, "task not found", task)
+      }
+      if (task.status === RagSearchStatus.Pending) {
+        await this.#search.stopSearchTask(sessionId)
+        return responseData(200, "task terminated", task)
+      }
+      return responseData(204, "task is not pending", task)
+    } catch (error) {
+      return responseData(500, errorToText(error), task)
     }
   }
   async processLocalFile(meta: RAGLocalFileMeta, config: RAGEmbeddingConfig): Promise<void> {
@@ -158,6 +180,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
   async registerIpc() {
     ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
       return this.search(content, config)
+    })
+    ipcMain.handle(IpcChannel.RagSearchTerminate, async (_, sessionId: string) => {
+      return this.searchTerminate(sessionId)
     })
     ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
       return this.processLocalFile(file, config)

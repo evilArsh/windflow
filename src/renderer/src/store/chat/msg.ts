@@ -296,6 +296,9 @@ export const useMsg = (
   }
   function terminate(topic: ChatTopic, message: ChatMessageTree) {
     const chatContext = ctx.findContext(topic.id, message.node.id)
+    if (window.api) {
+      window.api.rag.searchTerminate(message.id)
+    }
     chatContext?.handler?.terminate()
     // TODO: stop rag searching
     message.children.forEach(child => terminate(topic, child))

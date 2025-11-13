@@ -1,4 +1,4 @@
-import { Method } from "@toolmain/shared"
+import { HttpStatusCode, Method } from "@toolmain/shared"
 export type RAGEmbeddingConfig = {
   /**
    * unique id
@@ -116,7 +116,19 @@ export type RAGSearchResult = {
   filename: string
   mimeType: string
 }
-
+export enum RagSearchStatus {
+  Pending = "pending",
+  Success = "success",
+  Failed = "failed",
+  Aborted = "aborted",
+}
+export type RAGSearchTask = RAGSearchParam & {
+  status: RagSearchStatus
+  msg?: string
+  code?: HttpStatusCode
+  controler?: AbortController
+  result?: RAGFile[]
+}
 export enum RAGFileStatus {
   Processing = "Processing",
   Success = "Success",

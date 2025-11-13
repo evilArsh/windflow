@@ -1,4 +1,4 @@
-import { RAGEmbeddingConfig, RAGFile, RAGSearchParam } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGSearchParam, RagSearchStatus, RAGSearchTask } from "@shared/types/rag"
 import { errorToText, HttpStatusCode, isArray, isNull, toNumber } from "@toolmain/shared"
 import { EmbeddingResponse, RerankResponse } from "../task/types"
 import { log } from "../vars"
@@ -7,23 +7,23 @@ import { combineTableName } from "../db/utils"
 import EventEmitter from "node:events"
 import { useRequest } from "./request"
 
-export enum SearchTaskStatus {
-  Pending = "pending",
-  Success = "success",
-  Failed = "failed",
-  Aborted = "aborted",
-}
-export type SearchTask = RAGSearchParam & {
-  status: SearchTaskStatus
-  msg?: string
-  code?: HttpStatusCode
-  controler?: AbortController
-  result?: RAGFile[]
-}
+// export enum RagSearchStatus {
+//   Pending = "pending",
+//   Success = "success",
+//   Failed = "failed",
+//   Aborted = "aborted",
+// }
+// export type RAGSearchTask = RAGSearchParam & {
+//   status: RagSearchStatus
+//   msg?: string
+//   code?: HttpStatusCode
+//   controler?: AbortController
+//   result?: RAGFile[]
+// }
 export function useSearchManager(db: VectorStore) {
   const http = useRequest()
   const ev = new EventEmitter()
-  const taskStatus = new Map<string, SearchTask>()
+  const taskStatus = new Map<string, RAGSearchTask>()
   const transformEmbedding = (params: RAGSearchParam, config: RAGEmbeddingConfig, signal?: AbortSignal) => {
     const { abort, pending } = http.request<EmbeddingResponse>({
       url: config.embedding.api,
@@ -67,7 +67,7 @@ export function useSearchManager(db: VectorStore) {
   }
   const emitStatus = (
     sessionId: string,
-    status: SearchTaskStatus,
+    status: RagSearchStatus,
     code: HttpStatusCode,
     msg: string,
     result: RAGFile[]
@@ -78,6 +78,7 @@ export function useSearchManager(db: VectorStore) {
     task.code = code
     task.msg = msg
     task.result = result
+    task.controler = undefined
     ev.emit(sessionId, task)
   }
   const startTask = async (params: RAGSearchParam, config: RAGEmbeddingConfig) => {
@@ -85,7 +86,7 @@ export function useSearchManager(db: VectorStore) {
     const abortController = new AbortController()
     taskStatus.set(params.sessionId, {
       ...params,
-      status: SearchTaskStatus.Pending,
+      status: RagSearchStatus.Pending,
       controler: abortController,
       result: [],
     })
@@ -124,7 +125,7 @@ export function useSearchManager(db: VectorStore) {
         )
         const result = isNull(maxRanksIndex) ? [] : [vectorSearchRes[maxRanksIndex.index]]
         log.debug("[embedding rerank result]", result)
-        emitStatus(params.sessionId, SearchTaskStatus.Success, 200, "ok", result)
+        emitStatus(params.sessionId, RagSearchStatus.Success, 200, "ok", result)
       } else {
         const results = vectorSearchRes.sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
         log.debug(
@@ -132,7 +133,7 @@ export function useSearchManager(db: VectorStore) {
             vectorSearchRes.filter(r => toNumber(r._distance) >= 0.7).length
           }`
         )
-        emitStatus(params.sessionId, SearchTaskStatus.Success, 200, "ok", results)
+        emitStatus(params.sessionId, RagSearchStatus.Success, 200, "ok", results)
       }
     } catch (error) {
       log.error(
@@ -141,9 +142,9 @@ export function useSearchManager(db: VectorStore) {
       )
       const errorText = errorToText(error)
       if (abortController.signal.aborted) {
-        emitStatus(params.sessionId, SearchTaskStatus.Aborted, 500, errorText, [])
+        emitStatus(params.sessionId, RagSearchStatus.Aborted, 500, errorText, [])
       } else {
-        emitStatus(params.sessionId, SearchTaskStatus.Failed, 500, errorText, [])
+        emitStatus(params.sessionId, RagSearchStatus.Failed, 500, errorText, [])
       }
     } finally {
       console.timeEnd("[vector search]")
@@ -151,7 +152,7 @@ export function useSearchManager(db: VectorStore) {
   }
   function addSearchTask(params: RAGSearchParam, config: RAGEmbeddingConfig) {
     const oldTask = taskStatus.get(params.sessionId)
-    if (oldTask && oldTask.status === SearchTaskStatus.Pending) {
+    if (oldTask && oldTask.status === RagSearchStatus.Pending) {
       if (oldTask.controler && !oldTask.controler.signal.aborted) {
         oldTask.controler.signal.addEventListener("abort", () => {
           taskStatus.delete(params.sessionId)
@@ -165,31 +166,41 @@ export function useSearchManager(db: VectorStore) {
       startTask(params, config)
     }
   }
-  async function getSearchResult(sessionId: string): Promise<SearchTask> {
+  async function getSearchResult(sessionId: string): Promise<RAGSearchTask> {
     return new Promise((resolve, reject) => {
       const task = taskStatus.get(sessionId)
       if (!task) {
         reject(new Error(`[embedding search] task not found, sessionId: ${sessionId}`))
         return
       }
-      if (task.status !== SearchTaskStatus.Pending) {
+      if (task.status !== RagSearchStatus.Pending) {
         resolve(task)
         taskStatus.delete(sessionId)
         return
       }
-      ev.once(sessionId, (task: SearchTask) => {
+      ev.once(sessionId, (task: RAGSearchTask) => {
         resolve(task)
         taskStatus.delete(sessionId)
       })
     })
   }
-  function stopSearchTask(sessionId: string) {
-    taskStatus.get(sessionId)?.controler?.abort()
+  async function stopSearchTask(sessionId: string) {
+    const controller = taskStatus.get(sessionId)?.controler
+    if (controller && !controller.signal.aborted) {
+      return new Promise<void>(resolve => {
+        controller.signal.addEventListener("abort", _ => resolve())
+        controller.abort()
+      })
+    }
+  }
+  function getTask(sessionId: string) {
+    return taskStatus.get(sessionId)
   }
 
   return {
     addSearchTask,
     getSearchResult,
     stopSearchTask,
+    getTask,
   }
 }

@@ -14,7 +14,7 @@ import {
   MCPRequestParams,
   MCPServerParamCore,
 } from "./types/mcp"
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam } from "./types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta, RAGSearchParam, RAGSearchTask } from "./types/rag"
 import { Theme } from "./types/theme"
 import { FileInfo } from "./types/files"
 
@@ -41,6 +41,7 @@ export const IpcChannel = {
   ThemeSetTheme: "theme.setTheme",
 
   RagSearch: "rag.search",
+  RagSearchTerminate: "rag.searchTerminate",
   RagProcessLocalFile: "rag.processLocalFile",
   RagRemoveById: "rag.removeById",
   RagRemoveByTopicId: "rag.removeByTopicId",
@@ -105,6 +106,7 @@ export interface ThemeService {
 
 export interface RAGService {
   search: (content: RAGSearchParam, config: RAGEmbeddingConfig) => Promise<Response<RAGFile[]>>
+  searchTerminate(sessionId: string): Promise<Response<RAGSearchTask | undefined>>
   processLocalFile: (file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => Promise<void>
   /**
    * remove rag_file by `topicId` and `fileId`,
