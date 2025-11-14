@@ -24,7 +24,7 @@ export const useUtils = (
   const { providerMetas } = storeToRefs(providerStore)
 
   /**
-   * @description 根据消息id查找缓存的聊天数据
+   * @description 根据消息`topicId`查找缓存的聊天数据
    */
   const findChatMessage = (topicId: string): ChatMessageTree[] | undefined => {
     return chatMessage[topicId]

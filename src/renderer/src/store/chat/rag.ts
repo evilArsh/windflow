@@ -25,10 +25,11 @@ export const useRag = () => {
       )
       console.log("[rag search result]", res)
       const getPrompt = (content: string, extra: string) => {
-        return `You are given the following extracted parts of a long document(in the <Extracted> block) and a question(in the <Question> block also known as knowledge base), Provide a conversational answer.
-      If you don't know the answer, You must indicate that you did not find the answer in the Extracted knowledge base. Don't try to make up an answer.
+        return `You are given the following extracted parts of a long document(in the <Extracted> block,also known as knowledge base) and a question(in the <Question> block).
+      Provide a conversational answer base on <Extracted> block.
+      If you don't know the answer, You MUST indicate that you did not find the answer base on the Extracted parts. Don't and MUST NOT try to make up an answer.
       If the contents in the extracted parts are empty, politely inform them that you are unable to answer the question based on the provided context.
-      If the question is not about the document, politely inform them that you are tuned to only answer questions that are related to the document.
+      If an answer is found, a note specifying the file name must be added below each answer.
       <Question>
       ${content}
       </Question>

@@ -92,9 +92,8 @@ export async function makeRequest(
   beforeRequest?: BeforeRequestCallback
 ) {
   const partial = usePartialData()
-  const ctx = cloneDeep(context)
+  callback({ status: 100, data: { content: "", role: Role.Assistant } })
   try {
-    callback({ status: 100, data: { content: "", role: Role.Assistant } })
     let contextCopy = cloneDeep(context)
     let providerMetaCopy = cloneDeep(providerMeta)
     let modelMetaCopy = cloneDeep(modelMeta)
@@ -119,7 +118,7 @@ export async function makeRequest(
     let callToolResults: Message[] = []
     while (true) {
       for await (const content of requestHandler.chat(
-        appendTools(mergeRequestConfig(ctx, modelMeta, requestBody), toolList),
+        appendTools(mergeRequestConfig(contextCopy, modelMeta, requestBody), toolList),
         providerMeta
       )) {
         partial.add(content)
@@ -133,8 +132,8 @@ export async function makeRequest(
           partial.addToolCallResults(callResult)
           const neededCalltool = neededCallTools.find(tool => tool.id === callResult.tool_call_id)
           if (neededCalltool) {
-            ctx.push({ role: Role.Assistant, tool_calls: [neededCalltool], content: "" })
-            ctx.push(callResult)
+            contextCopy.push({ role: Role.Assistant, tool_calls: [neededCalltool], content: "" })
+            contextCopy.push(callResult)
           }
           callback(partial.getResponse())
         })
