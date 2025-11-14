@@ -26,7 +26,6 @@ async function init() {
       useEnvStore().init(),
       useKnowledgeStore().init(),
       useEmbeddingStore().init(),
-      useEmbeddingStore().init(),
     ])
     res.forEach(r => {
       if (r.status === "rejected") {

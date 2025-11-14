@@ -6,20 +6,6 @@ import { VectorStore } from "../db"
 import { combineTableName } from "../db/utils"
 import EventEmitter from "node:events"
 import { useRequest } from "./request"
-
-// export enum RagSearchStatus {
-//   Pending = "pending",
-//   Success = "success",
-//   Failed = "failed",
-//   Aborted = "aborted",
-// }
-// export type RAGSearchTask = RAGSearchParam & {
-//   status: RagSearchStatus
-//   msg?: string
-//   code?: HttpStatusCode
-//   controler?: AbortController
-//   result?: RAGFile[]
-// }
 export function useSearchManager(db: VectorStore) {
   const http = useRequest()
   const ev = new EventEmitter()
@@ -47,9 +33,7 @@ export function useSearchManager(db: VectorStore) {
     signal?: AbortSignal
   ) => {
     if (!config.rerank) return
-    log.debug(
-      `[embedding search] will rerank result, topicId: ${params.topicId}, rerank_provider: ${config.rerank.providerName}, rerank_model: ${config.rerank.model}`
-    )
+    log.debug(`[embedding search] will rerank result.`, params, config)
     const { abort, pending } = http.request<RerankResponse>({
       url: config.rerank.api,
       method: config.rerank.method ?? "post",
@@ -82,6 +66,7 @@ export function useSearchManager(db: VectorStore) {
     ev.emit(sessionId, task)
   }
   const startTask = async (params: RAGSearchParam, config: RAGEmbeddingConfig) => {
+    log.debug("[vector search start]", params, config)
     console.time("[vector search]")
     const abortController = new AbortController()
     taskStatus.set(params.sessionId, {
@@ -106,7 +91,10 @@ export function useSearchManager(db: VectorStore) {
         topicId: params.topicId,
         queryVector: vectors.data.data[0].embedding,
       })
-      log.debug(`[embedding search] query result, length: ${vectorSearchRes.length}, topicId: ${params.topicId}`)
+      log.debug(
+        `[embedding search] query result, length: ${vectorSearchRes.length}, topicId: ${params.topicId} \n`,
+        vectorSearchRes
+      )
       const rerankReq = transformRerank(
         params,
         config,

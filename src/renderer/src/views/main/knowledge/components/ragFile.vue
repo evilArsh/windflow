@@ -88,6 +88,7 @@ const upload = {
       </el-card>
       <el-card
         class="flex flex-1 flex-col overflow-hidden"
+        body-class="overflow-hidden"
         shadow="never"
         style="--el-card-padding: 1rem; --el-card-bg-color: var(--el-fill-color-light)">
         <template #header>

@@ -51,21 +51,18 @@ const ev = {
     }
   },
   onRerankChange(value: CascaderValue | null | undefined) {
-    if (!form.value.rerank) {
-      form.value.rerank = {
-        providerName: "",
-        model: "",
-        api: "",
-        apiKey: "",
-        method: "POST",
-      }
-    }
     if (!isArrayLength(value)) {
-      form.value.rerank.api = ""
-      form.value.rerank.apiKey = ""
-      form.value.rerank.model = ""
-      form.value.rerank.providerName = ""
+      form.value.rerank = undefined
     } else {
+      if (!form.value.rerank) {
+        form.value.rerank = {
+          providerName: "",
+          model: "",
+          api: "",
+          apiKey: "",
+          method: "POST",
+        }
+      }
       const provider: ProviderMeta = value[0]
       const model: ModelMeta | undefined = value.length > 1 ? value[1] : undefined
       form.value.rerank.api = provider.api.rerank?.url ? resolvePath([provider.api.url, provider.api.rerank.url]) : ""

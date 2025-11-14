@@ -55,7 +55,9 @@ const {
   trigger: triggerSend,
   taskPending,
 } = shortcut.listen("enter", handler.onSend, {
-  beforeTrigger: () => !taskPending.value,
+  beforeTrigger: e => {
+    return !taskPending.value && (e.target as HTMLElement).tagName.toLowerCase() === "textarea"
+  },
 })
 settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
 </script>

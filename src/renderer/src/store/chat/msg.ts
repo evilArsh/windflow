@@ -105,7 +105,10 @@ export const useMsg = (
     // message contexts, messages stack was sorted in descending order, the newest message is the first one
     const messageContext = ctx.getMessageContext(
       topic,
-      utils.findChatMessage(topic.id)?.map(utils.unwrapMessage).slice(1) ?? []
+      utils
+        .findChatMessage(topic.id)
+        ?.map(utils.unwrapMessage)
+        .slice(utils.getIndex(topic.id, message.id) + 1) ?? []
     )
     const chatContext =
       ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)

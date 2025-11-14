@@ -236,5 +236,6 @@ export const useUtils = (
     removeMessage,
     findMaxMessageIndex,
     findMaxTopicIndex,
+    getIndex,
   }
 }
