@@ -6,7 +6,6 @@ import Mcp from "./mcp.vue"
 import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
 import useChatStore from "@renderer/store/chat"
-import { storeToRefs } from "pinia"
 import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@renderer/types"
 import Clear from "./clear.vue"
@@ -20,14 +19,12 @@ const props = defineProps<{
   topic: ChatTopic
 }>()
 const topic = computed(() => props.topic)
-
 const settingsStore = useSettingsStore()
-const { settings } = storeToRefs(settingsStore)
 const { t } = useI18n()
 const shortcut = useShortcut()
 const chatStore = useChatStore()
 const handler = {
-  send: async (active: boolean, _key: string, done?: unknown) => {
+  onSend: async (active: boolean, _key: string, done?: unknown) => {
     try {
       if (active) {
         if (!topic.value.content) {
@@ -53,13 +50,14 @@ const handler = {
     }
   }),
 }
-// FIXME: when using shortcut to send, cannot use `done` callback, which may trigger multiple times
-const { key: sendShortcut, trigger: triggerSend } = shortcut.listen("enter", handler.send)
-watchEffect(() => {
-  if (settings.value[SettingKeys.ChatSendShortcut]) {
-    sendShortcut.value = settings.value[SettingKeys.ChatSendShortcut].value as string
-  }
+const {
+  key: sendShortcut,
+  trigger: triggerSend,
+  taskPending,
+} = shortcut.listen("enter", handler.onSend, {
+  beforeTrigger: () => !taskPending.value,
 })
+settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
 </script>
 <template>
   <div class="chat-input-container">

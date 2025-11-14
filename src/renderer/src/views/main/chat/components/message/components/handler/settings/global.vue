@@ -5,8 +5,9 @@ defineProps<{
   topic: ChatTopic
 }>()
 const { t } = useI18n()
-const sendShortcut = ref("")
 const settingsStore = useSettingsStore()
+
+const sendShortcut = ref("")
 settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
 </script>
 <template>

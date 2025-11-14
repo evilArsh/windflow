@@ -44,10 +44,10 @@ export default defineStore("settings", () => {
     updateValue(data.id, data)
   }
   /**
-   * monitoring settings change and update to database
+   * monitoring `wrapData` value, and update new value database which is related to `id`
    */
   function dataWatcher<T extends SettingsValue>(
-    id: string,
+    id: SettingKeys,
     wrapData: Ref<T> | Reactive<T> | (() => T),
     defaultValue: T,
     callBack?: (data: T, old?: T) => void
@@ -84,6 +84,26 @@ export default defineStore("settings", () => {
       watcher.stop()
     })
   }
+
+  /**
+   * sync settings data to `target`
+   */
+  function dataBind<T extends SettingsValue>(id: SettingKeys, target: Ref<T> | Reactive<T>) {
+    const watcher = watch(
+      () => settings[id],
+      val => {
+        if (isRef(target)) {
+          target.value = val.value as T
+        } else {
+          Object.assign(target, val.value)
+        }
+      },
+      { deep: true, immediate: true }
+    )
+    onBeforeUnmount(() => {
+      watcher.stop()
+    })
+  }
   async function init() {
     // need pre-load data rather than loading when using, because of possibly UI rendering lag
     const data = await db.settings.toCollection().toArray()
@@ -95,6 +115,7 @@ export default defineStore("settings", () => {
   return {
     init,
     dataWatcher,
+    dataBind,
     get,
     settings,
     update,
