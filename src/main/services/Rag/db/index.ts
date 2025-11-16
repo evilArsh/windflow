@@ -137,10 +137,18 @@ export class VectorStore {
   }
   async listTables(): Promise<string[]> {
     const client = this.#getClient()
+    // FIXME: `tableNames` will return table name but when open it, will throw error like: Error: Table 'xxxxx' was not found
     return await client.tableNames()
   }
   async hasTable(tableName: string): Promise<boolean> {
-    return (await this.listTables()).includes(tableName)
+    try {
+      const client = this.#getClient()
+      const t = await client.openTable(tableName)
+      t.close()
+      return true
+    } catch (_) {
+      return false
+    }
   }
   async countRows(tableName: string, filter?: string | undefined): Promise<number> {
     const client = this.#getClient()
@@ -182,8 +190,7 @@ export class VectorStore {
     ivfPqConfig,
   }: VectorCreateIndex) {
     const client = this.#getClient()
-    const tables = await this.listTables()
-    if (!tables.includes(tableName)) {
+    if (!(await this.hasTable(tableName))) {
       throw new Error(`[createIndex] Table ${tableName} not found`)
     }
     const table = await client.openTable(tableName)
