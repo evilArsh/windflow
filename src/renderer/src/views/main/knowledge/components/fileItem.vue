@@ -39,19 +39,28 @@ const ev = {
   <el-scrollbar>
     <ContentBox
       v-for="item in fileList"
-      class="select-unset! mb-1rem!"
+      class="select-unset!"
+      :class="[view ? '' : 'mb-1rem!']"
       style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
       :key="item.id">
-      <i class="i-ic:baseline-insert-drive-file text-3rem"></i>
+      <i v-if="!view" class="i-ic:baseline-insert-drive-file text-3rem"></i>
       <ContentBox class="flex-1 select-unset!" normal>
         <el-space>
-          <el-text type="primary">{{ item.fileName }}</el-text>
+          <el-link
+            v-if="view"
+            @click="ev.onOpenPath(item.path)"
+            style="--el-link-font-size: var(--el-font-size-small)"
+            underline="hover"
+            type="primary">
+            {{ item.fileName }}
+          </el-link>
+          <el-text v-else type="primary">{{ item.fileName }}</el-text>
           <Spinner destroy-icon :model-value="item.status === RAGFileStatus.Processing" class="text-1.4rem"></Spinner>
           <i
-            v-if="item.status === RAGFileStatus.Success"
+            v-if="!view && item.status === RAGFileStatus.Success"
             class="i-ep-success-filled text-2rem c-[var(--el-color-primary)]"></i>
           <i
-            v-if="item.status === RAGFileStatus.Failed"
+            v-if="!view && item.status === RAGFileStatus.Failed"
             class="i-ep-circle-close-filled text-2rem c-[var(--el-color-danger)]"></i>
         </el-space>
         <template #end> </template>

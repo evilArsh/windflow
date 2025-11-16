@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
-import { code1xx, errorToText, isString, msg } from "@toolmain/shared"
+import { CallBackFn, code1xx, errorToText, isString, msg } from "@toolmain/shared"
 import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
@@ -39,11 +39,13 @@ const mdRefs = shallowRef<InstanceType<typeof Markdown>[]>([])
 async function onContentChange() {
   chatStore.updateChatMessage(props.message.node)
 }
-async function onContentDelete(m: ChatMessageTree) {
+async function onContentDelete(m: ChatMessageTree, done: CallBackFn) {
   try {
     await chatStore.deleteMessage(topic.value, m)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
+  } finally {
+    done()
   }
 }
 async function onEdit() {
@@ -68,7 +70,7 @@ defineExpose({
     <template v-if="header" #header>
       <Affix ref="affix" :offset="88" :target="`#${id}`">
         <Title :message>
-          <Handler :topic :parent :message @delete="onContentDelete(message)" @edit="onEdit"> </Handler>
+          <Handler :topic :parent :message @delete="done => onContentDelete(message, done)" @edit="onEdit"> </Handler>
         </Title>
       </Affix>
     </template>

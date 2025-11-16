@@ -76,7 +76,9 @@ export function useTextTransformer(path: string): DataTransformer<string | symbo
   async function* next(): AsyncGenerator<string | symbol> {
     try {
       if (!stream) {
-        stream = fs.createReadStream(path)
+        stream = fs.createReadStream(path, {
+          encoding: "utf8",
+        })
       }
       if (!lineTransformer) {
         lineTransformer = useReadLine(stream)
@@ -107,7 +109,9 @@ export function useCsvTransformer(path: string): DataTransformer<string | symbol
   async function* next(): AsyncGenerator<any> {
     try {
       if (!stream) {
-        stream = fs.createReadStream(path)
+        stream = fs.createReadStream(path, {
+          encoding: "utf8",
+        })
       }
       for await (const line of stream.pipe(csv())) {
         // { NAME: 'Daffy Duck', AGE: '24' }
@@ -132,7 +136,9 @@ export function usePdfTransformer(path: string): DataTransformer<string | symbol
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
-      const buf = fs.readFileSync(path)
+      const buf = fs.readFileSync(path, {
+        encoding: "utf8",
+      })
       const res = new PDFParse({ data: buf })
       const text = await res.getText()
       for (let i = 0; i < text.pages.length; i++) {

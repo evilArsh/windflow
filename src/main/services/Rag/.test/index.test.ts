@@ -4,10 +4,12 @@ import { RAGServiceImpl } from ".."
 import { uniqueId } from "@toolmain/shared"
 import { EventBusImpl } from "@main/services/EventBus"
 import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
-import { RAGEmbeddingConfig, RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFile, RAGFileStatus, RAGLocalFileInfo, RAGLocalFileMeta } from "@shared/types/rag"
+import fs from "node:fs"
 import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"
 import sql from "sqlstring"
+import { readFile } from "../doc"
 
 describe("main/src/Rag", () => {
   vi.mock("electron", () => ({
@@ -30,7 +32,6 @@ describe("main/src/Rag", () => {
       default: { ...lgMock, scope: (_: string) => lgMock },
     }
   })
-
   const config: RAGEmbeddingConfig = {
     id: "embedding-1",
     name: "test",
@@ -51,6 +52,97 @@ describe("main/src/Rag", () => {
     maxTokens: 512,
     dimensions: 1024,
   }
+
+  it("read xlsx", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "work.xlsx"),
+      topicId,
+    }
+    if (!fs.existsSync(meta.path)) {
+      console.warn("path not exists: " + meta.path)
+      return
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
+
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
+
+  it("read csv", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "work.csv"),
+      topicId,
+    }
+    if (!fs.existsSync(meta.path)) {
+      console.warn("path not exists: " + meta.path)
+      return
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
+  it("read pdf", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "test2.pdf"),
+      topicId,
+    }
+    if (!fs.existsSync(meta.path)) {
+      console.warn("path not exists: " + meta.path)
+      return
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
+  it("read docx", async () => {
+    const topicId = "topic-1"
+
+    const meta: RAGLocalFileMeta = {
+      id: uniqueId(),
+      path: path.join(__dirname, "test2.doc"),
+      topicId,
+    }
+    if (!fs.existsSync(meta.path)) {
+      console.warn("path not exists: " + meta.path)
+      return
+    }
+    const stat = fs.statSync(meta.path)
+    const info: RAGLocalFileInfo = {
+      ...meta,
+      fileName: path.basename(meta.path),
+      fileSize: stat.size,
+    }
+    const res = await readFile(info, config)
+    console.log(res)
+    expect(res.data.length).gte(0)
+  })
 
   it("clear table data", async () => {
     const db = new VectorStore({
@@ -221,6 +313,11 @@ describe("main/src/Rag", () => {
       topicId: topicId,
     }
 
+    const { model, api, apiKey } = config.embedding
+    if (!(model && api && apiKey)) {
+      console.warn("need complete embedding config")
+      return
+    }
     await rag.processLocalFile(meta, config)
     await vi.waitFor(
       () => {
@@ -239,17 +336,27 @@ describe("main/src/Rag", () => {
 
   it("search RAG file", async () => {
     const topicId = "test_topic_rag"
+    const sessionId = "test_session_id"
     const bus = new EventBusImpl()
     const rag = new RAGServiceImpl(bus, {
       store: {
         rootDir: path.join(__dirname),
       },
     })
-
+    if (!config.rerank) {
+      console.warn("need set rerank config")
+      return
+    }
+    const { model, api, apiKey } = config.rerank
+    if (!(model && api && apiKey)) {
+      console.warn("need complete rerank config")
+      return
+    }
     const sRes = await rag.search(
       {
-        content: "吴小龙出勤天数",
+        content: "总结这里面都有什么",
         topicId: topicId,
+        sessionId,
       },
       config
     )
