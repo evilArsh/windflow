@@ -196,7 +196,7 @@ export const useMsg = (
       terminate(topic, messageN)
     }
     utils.resetChatMessage(messageN)
-    if (isArrayLength(messageN)) {
+    if (messageN.children.length) {
       for (const child of messageN.children) {
         await sendMessage(topic, child.node)
       }
