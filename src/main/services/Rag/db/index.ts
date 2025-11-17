@@ -8,7 +8,7 @@ import {
   IvfFlatOptions,
   IvfPqOptions,
   SchemaLike,
-  VectorQuery as LanceVectorQuery,
+  Table,
 } from "@lancedb/lancedb"
 import sql from "sqlstring"
 import { useEnv } from "@main/hooks/useEnv"
@@ -92,30 +92,39 @@ export class VectorStore {
       console.error("[store open error]", error)
     }
   }
-  async query({ tableName, queryVector, topicId, topK = 5 }: VectorQuery): Promise<RAGFile[]> {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    const query = (table.search(queryVector, "vector") as LanceVectorQuery)
-      .distanceType("cosine")
-      .select([
-        "_distance",
-        "id",
-        // "vector",
-        "fileId",
-        "configId",
-        "topicId",
-        "content",
-        "fileName",
-        "fileSize",
-        "chunkIndex",
-        "mimeType",
-        "tokens",
-      ])
-      // .where(`\`topicId\` = '${topicId}' OR \`topicId\` = ''`)
-      .where(sql.format(`\`topicId\` = ?`, [topicId]))
-      .limit(topK)
-    const results = (await query.toArray()) as RAGFile[]
-    return results
+  /**
+   * vector similarity search
+   */
+  async search({ tableName, queryVector, topicId, topK = 5 }: VectorQuery): Promise<RAGFile[]> {
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const query = table
+        .vectorSearch(queryVector)
+        .distanceType("cosine")
+        .select([
+          "_distance",
+          "id",
+          "fileId",
+          "configId",
+          "topicId",
+          "content",
+          "fileName",
+          "filePath",
+          "fileSize",
+          "chunkIndex",
+          "mimeType",
+          "tokens",
+        ])
+        .where(sql.format("`topicId` = ?", [topicId]))
+        .limit(topK)
+      const results = (await query.toArray()) as RAGFile[]
+      table.close()
+      return results
+    } finally {
+      table?.close()
+    }
   }
   async createTable(tableName: string, data: Data, options?: Partial<CreateTableOptions>) {
     const client = this.#getClient()
@@ -126,41 +135,73 @@ export class VectorStore {
     return client.createEmptyTable(tableName, schema, options)
   }
   async insert(tableName: string, data: Data) {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    return table.add(data)
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const res = await table.add(data)
+      table.close()
+      return res
+    } finally {
+      table?.close()
+    }
   }
   async upsert(tableName: string, data: Data) {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    return table.mergeInsert("id").whenMatchedUpdateAll().whenNotMatchedInsertAll().execute(data)
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const res = await table.mergeInsert("id").whenMatchedUpdateAll().whenNotMatchedInsertAll().execute(data)
+      table.close()
+      return res
+    } finally {
+      table?.close()
+    }
   }
   async listTables(): Promise<string[]> {
     const client = this.#getClient()
-    // FIXME: `tableNames` will return table name but when open it, will throw error like: Error: Table 'xxxxx' was not found
     return await client.tableNames()
   }
   async hasTable(tableName: string): Promise<boolean> {
+    // FIXME: `tableNames` will return all table names.
+    // if some tables' directory exist but with empty file, when open it, will throw error like: Error: Table 'xxxxx' was not found
+    let table: Table | undefined
     try {
       const client = this.#getClient()
-      const t = await client.openTable(tableName)
-      t.close()
+      table = await client.openTable(tableName)
+      table.close()
       return true
     } catch (_) {
       return false
+    } finally {
+      table?.close()
     }
   }
   async countRows(tableName: string, filter?: string | undefined): Promise<number> {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    return table.countRows(filter)
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const res = await table.countRows(filter)
+      table.close()
+      return res
+    } finally {
+      table?.close()
+    }
   }
   async clearTable(tableName: string): Promise<number> {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    const rows = await table.countRows()
-    await table.delete("true")
-    return rows - (await table.countRows())
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const rows = await table.countRows()
+      await table.delete("true")
+      const res = rows - (await table.countRows())
+      table.close()
+      return res
+    } finally {
+      table?.close()
+    }
   }
   async deleteTable(tableName: string): Promise<void> {
     const client = this.#getClient()
@@ -168,17 +209,29 @@ export class VectorStore {
     return client.dropTable(tableName)
   }
   async deleteData(tableName: string, predicate: string): Promise<number> {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    const rows = await this.countRows(tableName, predicate)
-    await table.delete(predicate)
-    return rows
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const rows = await this.countRows(tableName, predicate)
+      await table.delete(predicate)
+      table.close()
+      return rows
+    } finally {
+      table?.close()
+    }
   }
   async hasIndex(tableName: string, indexName: string): Promise<boolean> {
-    const client = this.#getClient()
-    const table = await client.openTable(tableName)
-    const indices = await table.listIndices()
-    return !!indices.find(index => index.name === indexName)
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const indices = await table.listIndices()
+      table.close()
+      return !!indices.find(index => index.name === indexName)
+    } finally {
+      table?.close()
+    }
   }
   async createIndex({
     tableName,
@@ -189,55 +242,66 @@ export class VectorStore {
     ivfFlatConfig,
     ivfPqConfig,
   }: VectorCreateIndex) {
-    const client = this.#getClient()
-    if (!(await this.hasTable(tableName))) {
-      throw new Error(`[createIndex] Table ${tableName} not found`)
-    }
-    const table = await client.openTable(tableName)
-    if (indexType == "hnswSq") {
-      return table.createIndex(indexName, {
-        config: Index.hnswSq(
-          merge(
-            {
-              numPartitions: 128,
-              numSubVectors: 16,
-            },
-            hnswSqConfig,
-            {
-              distanceType,
-            }
-          )
-        ),
-      })
-    } else if (indexType == "ivfPq") {
-      return table.createIndex(indexName, {
-        config: Index.ivfPq(
-          merge(
-            {
-              numPartitions: 128,
-              numSubVectors: 16,
-            },
-            ivfPqConfig,
-            {
-              distanceType,
-            }
-          )
-        ),
-      })
-    } else {
-      return table.createIndex(indexName, {
-        config: Index.ivfFlat(
-          merge(
-            {
-              numPartitions: 128,
-            },
-            ivfFlatConfig,
-            {
-              distanceType,
-            }
-          )
-        ),
-      })
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      if (!(await this.hasTable(tableName))) {
+        throw new Error(`[createIndex] Table ${tableName} not found`)
+      }
+      table = await client.openTable(tableName)
+      if (indexType == "hnswSq") {
+        await table.createIndex(indexName, {
+          config: Index.hnswSq(
+            merge(
+              {
+                numPartitions: 128,
+                numSubVectors: 16,
+              },
+              hnswSqConfig,
+              {
+                distanceType,
+              }
+            )
+          ),
+        })
+        table.close()
+        return
+      } else if (indexType == "ivfPq") {
+        await table.createIndex(indexName, {
+          config: Index.ivfPq(
+            merge(
+              {
+                numPartitions: 128,
+                numSubVectors: 16,
+              },
+              ivfPqConfig,
+              {
+                distanceType,
+              }
+            )
+          ),
+        })
+        table.close()
+        return
+      } else {
+        await table.createIndex(indexName, {
+          config: Index.ivfFlat(
+            merge(
+              {
+                numPartitions: 128,
+              },
+              ivfFlatConfig,
+              {
+                distanceType,
+              }
+            )
+          ),
+        })
+        table.close()
+        return
+      }
+    } finally {
+      table?.close()
     }
   }
   close() {

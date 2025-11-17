@@ -52,7 +52,9 @@ const cache = reactive({
   currentFileNum: 0,
   currentId: "",
   current: null as Knowledge | null,
-  fetchCurrentFiles: markRaw(async (currentId: string) => {
+})
+const cacheEv = {
+  fetchCurrentFiles: async (currentId: string) => {
     try {
       if (!ragFiles.value[currentId]) {
         await ragFilesStore.fetchAllByTopicId(currentId)
@@ -60,8 +62,8 @@ const cache = reactive({
     } catch (error) {
       msgError(errorToText(error))
     }
-  }),
-})
+  },
+}
 const filterKnowledges = computed(() =>
   knowledges.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
 )
@@ -143,7 +145,7 @@ settingsStore.dataWatcher<string>(SettingKeys.KnowledgeId, toRef(cache, "current
     return
   }
   cache.current = kb
-  cache.fetchCurrentFiles(kb.id)
+  cacheEv.fetchCurrentFiles(kb.id)
 })
 </script>
 <template>

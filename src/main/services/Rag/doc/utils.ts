@@ -42,6 +42,7 @@ export function addChunk(dst: RAGFile[], content: string, meta: RAGLocalFileInfo
     topicId: meta.topicId,
     content,
     fileName: meta.fileName,
+    filePath: meta.path,
     fileSize: meta.fileSize,
     mimeType: meta.mimeType,
     chunkIndex: dst.length,

@@ -76,7 +76,8 @@ export default defineStore("knowledge", () => {
       const datas: RAGLocalFileInfo[] = []
       for (const info of infos.data) {
         if (!info.isFile) continue
-        datas.push({
+        if (await ragFilesStore.fileExist(knowledge.id, info.path)) continue
+        const item: RAGLocalFileInfo = {
           id: uniqueId(),
           path: info.path,
           topicId: knowledge.id,
@@ -85,7 +86,8 @@ export default defineStore("knowledge", () => {
           mimeType: info.mimeType,
           extenstion: info.extension,
           status: RAGFileStatus.Processing,
-        } as RAGLocalFileInfo)
+        }
+        datas.push(item)
       }
       await ragFilesStore.bulkAdd(datas)
       datas.forEach(data => {
@@ -114,12 +116,11 @@ export default defineStore("knowledge", () => {
       knowledges.push(item)
     })
     window.api.bus.on(EventKey.RAGFileProcessStatus, async data => {
-      console.log("[RAGFileProcessStatus]", data)
       const file = await ragFilesStore.get(data.topicId, data.id)
       if (!file) return
       file.status = data.status
       file.code = data.code
-      file.msg = data.msg
+      file.msg = file.status === RAGFileStatus.Success ? "" : data.msg
       await ragFilesStore.update(file)
     })
   }

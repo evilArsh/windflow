@@ -84,6 +84,7 @@ export type RAGFile = {
   fileName: string
   fileSize: number
   chunkIndex: number
+  filePath: string
   mimeType?: string
   /**
    * tokens was calcalated for this string content

@@ -51,9 +51,7 @@ const ev = {
     }
   },
   onRerankChange(value: CascaderValue | null | undefined) {
-    if (!isArrayLength(value)) {
-      form.value.rerank = undefined
-    } else {
+    if (isArrayLength(value) && value.length == 2) {
       if (!form.value.rerank) {
         form.value.rerank = {
           providerName: "",
@@ -71,6 +69,8 @@ const ev = {
         form.value.rerank.model = model.modelName
         form.value.rerank.providerName = model.providerName
       }
+    } else {
+      form.value.rerank = undefined
     }
   },
   onLazyLoad(node: CascaderNode, resolve: Resolve, rerank?: boolean) {

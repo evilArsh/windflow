@@ -56,7 +56,6 @@ async function restart(done: CallBackFn) {
       :confirm-button-text="t('tip.yes')"
       confirm-button-type="danger"
       :cancel-button-text="t('btn.cancel')"
-      cancel-button-type="text"
       :disabled="!isProcessing"
       size="small"
       :confirm="terminate">
@@ -73,7 +72,6 @@ async function restart(done: CallBackFn) {
       :confirm-button-text="t('tip.yes')"
       confirm-button-type="danger"
       :cancel-button-text="t('btn.cancel')"
-      cancel-button-type="text"
       :disabled="!isFinish"
       size="small"
       :confirm="restart">
@@ -95,7 +93,6 @@ async function restart(done: CallBackFn) {
       :confirm-button-text="t('tip.yes')"
       confirm-button-type="danger"
       :cancel-button-text="t('btn.cancel')"
-      cancel-button-type="text"
       :disabled="!isFinish"
       size="small"
       :confirm="done => $emit('delete', done)">

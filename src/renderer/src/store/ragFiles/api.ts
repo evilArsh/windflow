@@ -8,7 +8,23 @@ export const useData = () => {
 
   const remove = async (id: string) => db.ragFiles.delete(id)
   const get = async (id: string) => db.ragFiles.get(id)
-  const getAllByTopicId = async (topicId: string) => db.ragFiles.where("topicId").equals(topicId).toArray()
+  const getAllByTopicId = async (topicId: string) => {
+    return db.ragFiles
+      .where({
+        topicId,
+      })
+      .toArray()
+  }
+  const fileExist = async (topicId: string, filePath: string) => {
+    return (
+      (await db.ragFiles
+        .where({
+          topicId,
+          path: filePath,
+        })
+        .count()) > 0
+    )
+  }
 
   return {
     update,
@@ -16,6 +32,7 @@ export const useData = () => {
     get,
     remove,
     getAllByTopicId,
+    fileExist,
     bulkAdd,
   }
 }

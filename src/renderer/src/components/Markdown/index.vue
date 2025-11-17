@@ -21,28 +21,31 @@ const content = computed({
 const { html, parse, destroy, init } = useParser({
   code: CodeBlock,
 })
-
-const edit = shallowReactive({
-  show: false,
-  open: () => {
+const useEdit = () => {
+  const show = ref(false)
+  function open() {
     if (content.value) {
-      edit.show = true
+      show.value = true
     }
-  },
-  close: () => (edit.show = false),
-  toggle: () => {
-    if (!edit.show) {
-      edit.open()
+  }
+  function close() {
+    show.value = false
+  }
+  function toggle() {
+    if (!show.value) {
+      open()
     } else {
-      edit.close()
+      close()
     }
-  },
-  onConfirm(value: string) {
+  }
+  function onConfirm(value: string) {
     content.value = value
     emit("change", value)
-    edit.close()
-  },
-})
+    close()
+  }
+  return { show: readonly(show), open, close, toggle, onConfirm }
+}
+const edit = useEdit()
 
 function handleContent(content: string) {
   if (!content) {
@@ -64,7 +67,7 @@ defineExpose({
 <template>
   <div class="markdown-container">
     <Handler v-show="editable && content && showHandler" @toggle-edit="edit.toggle"></Handler>
-    <Input v-if="edit.show" :content="content" @confirm="edit.onConfirm" @cancel="edit.close"></Input>
+    <Input v-if="toValue(edit.show)" :content="content" @confirm="edit.onConfirm" @cancel="edit.close"></Input>
     <div v-else class="w-full" :class="[contentClass]">
       <component :is="html"></component>
     </div>

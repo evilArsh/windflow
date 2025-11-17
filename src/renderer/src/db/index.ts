@@ -10,7 +10,6 @@ import {
 } from "@renderer/types"
 import { MCPServerParam } from "@shared/types/mcp"
 import Dexie, { Transaction, type EntityTable } from "dexie"
-import { migrateToV2, migrateToV4, migrateToV5, migrateToV7 } from "./migrate"
 import { Knowledge } from "@renderer/types/knowledge"
 import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@shared/types/rag"
 
@@ -36,59 +35,6 @@ const db = new Dexie(name) as DexieTable
 
 db.version(1).stores({
   providerMeta: "name",
-  model: "id,providerName,type,active",
-  chatTopic: "id,chatMessageId,parentId,createAt",
-  chatMessage: "id",
-  settings: "id",
-  mcpServer: "id",
-})
-db.version(2)
-  .stores({
-    providerMeta: "name",
-    model: "id,providerName,type,active",
-    chatTopic: "id,chatMessageId,parentId,createAt",
-    chatMessage: "id",
-    settings: "id",
-    mcpServer: "id",
-  })
-  .upgrade(migrateToV2)
-db.version(3).stores({
-  providerMeta: "name",
-  model: "id,providerName,type,active",
-  chatTopic: "id,chatMessageId,parentId,createAt",
-  chatMessage: "id",
-  chatLLMConfig: "id,topicId",
-  chatTTIConfig: "id,topicId",
-  settings: "id",
-  mcpServer: "id",
-})
-db.version(4)
-  .stores({
-    providerMeta: "name",
-    model: "id",
-    chatTopic: "id",
-    chatMessage: "id,topicId",
-    chatLLMConfig: "id,topicId",
-    chatTTIConfig: "id,topicId",
-    settings: "id",
-    mcpServer: "id",
-  })
-  .upgrade(migrateToV4)
-db.version(5)
-  .stores({
-    providerMeta: "name",
-    model: "id",
-    chatTopic: "id",
-    chatMessage: "id,topicId",
-    chatLLMConfig: "id,topicId",
-    chatTTIConfig: "id,topicId",
-    settings: "id",
-    mcpServer: "id",
-  })
-  .upgrade(migrateToV5)
-
-db.version(6).stores({
-  providerMeta: "name",
   model: "id",
   chatTopic: "id",
   chatMessage: "id,topicId",
@@ -97,24 +43,7 @@ db.version(6).stores({
   settings: "id",
   mcpServer: "id",
   knowledge: "id,embeddingId",
-  ragFiles: "id,topicId",
+  ragFiles: "id,topicId,[topicId+path]",
   embedding: "id",
 })
-
-db.version(7)
-  .stores({
-    providerMeta: "name",
-    model: "id",
-    chatTopic: "id",
-    chatMessage: "id,topicId",
-    chatLLMConfig: "id,topicId",
-    chatTTIConfig: "id,topicId",
-    settings: "id",
-    mcpServer: "id",
-    knowledge: "id,embeddingId",
-    ragFiles: "id,topicId",
-    embedding: "id",
-  })
-  .upgrade(migrateToV7)
-
 export { db }

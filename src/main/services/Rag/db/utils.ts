@@ -20,6 +20,7 @@ export function createTableSchema(dimensions: number) {
     new arrow.Field("topicId", new arrow.Utf8(), true),
     new arrow.Field("content", new arrow.Utf8(), false),
     new arrow.Field("fileName", new arrow.Utf8(), false),
+    new arrow.Field("filePath", new arrow.Utf8(), false),
     new arrow.Field("fileSize", new arrow.Uint32(), false),
     new arrow.Field("mimeType", new arrow.Utf8(), true),
     new arrow.Field("chunkIndex", new arrow.Int32(), false),

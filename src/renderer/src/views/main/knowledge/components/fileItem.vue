@@ -5,13 +5,16 @@ import { CallBackFn, msgError, errorToText } from "@toolmain/shared"
 import { filesize } from "filesize"
 import { Spinner } from "@toolmain/components"
 
-defineProps<{
+const props = defineProps<{
   fileList: RAGLocalFileInfo[]
   view?: boolean // 预览模式
 }>()
 
 const ragFilesStore = useRagFilesStore()
 
+const filtedFilieList = computed(() => {
+  return props.view ? props.fileList.filter(item => item.status === RAGFileStatus.Success) : props.fileList
+})
 const { t } = useI18n()
 
 const ev = {
@@ -38,7 +41,7 @@ const ev = {
 <template>
   <el-scrollbar>
     <ContentBox
-      v-for="item in fileList"
+      v-for="item in filtedFilieList"
       class="select-unset!"
       :class="[view ? '' : 'mb-1rem!']"
       style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
@@ -84,7 +87,6 @@ const ev = {
           :confirm-button-text="t('tip.yes')"
           confirm-button-type="danger"
           :cancel-button-text="t('btn.cancel')"
-          cancel-button-type="text"
           size="small"
           :confirm="done => ev.onDelete(item, done)">
           <template #reference="{ loading, disabled }">

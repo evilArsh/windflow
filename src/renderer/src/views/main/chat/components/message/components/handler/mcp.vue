@@ -21,20 +21,17 @@ const filterServers = computed(() => {
   return servers.value.filter(v => !v.modifyTopic || v.modifyTopic === topic.value.id)
 })
 const currentLength = computed(() => filterServers.value.filter(s => isCurrentActive.value(s)).length)
-const popover = shallowReactive({
-  visible: false,
-  server: undefined as MCPServerParam | undefined,
-  onClick: (server: MCPServerParam) => {
-    popover.server = mcp.clonePure(server)
-    popover.visible = true
-  },
-  onHide: () => {
-    popover.visible = false
-  },
-})
-
-const formHandler = {
-  onServerChange: async (data: MCPServerParam) => {
+const usePopover = () => {
+  const visible = ref(false)
+  const currentServer = shallowRef<MCPServerParam>()
+  function onClick(newServer: MCPServerParam) {
+    currentServer.value = mcp.clonePure(newServer)
+    visible.value = true
+  }
+  function onHide() {
+    visible.value = false
+  }
+  async function onServerChange(data: MCPServerParam) {
     try {
       const newCopy = mcp.clonePure(data)
       newCopy.status = MCPClientStatus.Disconnected
@@ -47,11 +44,10 @@ const formHandler = {
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     }
-  },
-  onClose: () => {
-    popover.visible = false
-  },
+  }
+  return { visible, currentServer, onClick, onHide, onServerChange }
 }
+const { visible, currentServer, onClick, onHide, onServerChange } = usePopover()
 const serverHandler = {
   onServerToggle: async (server: MCPServerParam): Promise<void> => {
     try {
@@ -100,7 +96,7 @@ const serverHandler = {
         <el-text>{{ t("chat.mcp.label") }}</el-text>
       </template>
       <div class="w-full h-40rem flex">
-        <el-scrollbar v-if="!popover.visible" class="w-full">
+        <el-scrollbar v-if="!visible" class="w-full">
           <div>
             <div v-for="server in filterServers" :key="server.id">
               <ContentBox background>
@@ -118,7 +114,7 @@ const serverHandler = {
                 <template #end>
                   <div class="flex items-center">
                     <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.mcp.clone')">
-                      <ContentBox class="flex-grow-0!" @click.stop="popover.onClick(server)">
+                      <ContentBox class="flex-grow-0!" @click.stop="onClick(server)">
                         <i class="i-ep:copy-document"></i>
                       </ContentBox>
                     </el-tooltip>
@@ -172,10 +168,10 @@ const serverHandler = {
         <MCPForm
           v-else
           shadow="always"
-          @change="formHandler.onServerChange"
+          @change="onServerChange"
           :form-props="{ labelPosition: 'top' }"
-          @close="formHandler.onClose"
-          :data="popover.server">
+          @close="onHide"
+          :data="currentServer">
         </MCPForm>
       </div>
     </el-card>

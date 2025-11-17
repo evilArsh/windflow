@@ -9,21 +9,23 @@ const props = defineProps<{
 const { t } = useI18n()
 const modelStore = useModelStore()
 const svgRef = useTemplateRef("svg")
-const icon = reactive({
-  current: "",
-  row: null as ModelMeta | null,
-  onClick: markRaw((e: MouseEvent, row: ModelMeta) => {
-    icon.row = row
+const useIcon = () => {
+  const current = ref("")
+  const iconRow = ref<ModelMeta | null>(null)
+  function onClick(e: MouseEvent, newRow: ModelMeta) {
+    iconRow.value = newRow
     svgRef.value?.open(e.clientX, e.clientY)
-  }),
-  onModelIconChange: markRaw((iconStr: string) => {
-    icon.current = iconStr
-    if (icon.row) {
-      icon.row.icon = iconStr
-      onModelChange(icon.row)
+  }
+  function onModelIconChange(iconStr: string) {
+    current.value = iconStr
+    if (iconRow.value) {
+      iconRow.value.icon = iconStr
+      onModelChange(iconRow.value)
     }
-  }),
-})
+  }
+  return { current, onClick, onModelIconChange }
+}
+const { current, onClick, onModelIconChange } = useIcon()
 
 const handledData = computed<Record<string, ModelMeta[]>>(() => {
   return props.data.reduce((acc, cur) => {
@@ -45,7 +47,7 @@ const onModelChange = async (row: ModelMeta) => {
 }
 </script>
 <template>
-  <SvgPicker invoke-mode ref="svg" :model-value="icon.current" @update:model-value="icon.onModelIconChange"></SvgPicker>
+  <SvgPicker invoke-mode ref="svg" :model-value="current" @update:model-value="onModelIconChange"></SvgPicker>
   <el-timeline>
     <el-timeline-item v-for="(item, key) in handledData" :key="key" hide-timestamp>
       <el-card style="--el-card-padding: 0.7rem" shadow="hover">
@@ -55,7 +57,7 @@ const onModelChange = async (row: ModelMeta) => {
         <el-table :data="item" border stripe row-key="id" default-expand-all table-layout="auto">
           <el-table-column prop="icon" width="80" :label="t('provider.model.icon')">
             <template #default="{ row }: { row: ModelMeta }">
-              <el-button @click="icon.onClick($event, row)">
+              <el-button @click="onClick($event, row)">
                 <Svg class="text-2.5rem" :src="row.icon"></Svg>
               </el-button>
             </template>

@@ -9,6 +9,7 @@ import {
   MediaRequest,
   RequestHandler,
   ImageResponse,
+  BeforeRequestCallback,
 } from "@renderer/types"
 import { useSingleLLMChat } from "./compatible/request"
 // import OpenAi from "openai"
@@ -26,9 +27,8 @@ export class OpenAI implements Provider {
     _messages: Message[],
     _modelMeta: ModelMeta,
     _providerMeta: ProviderMeta,
-    _mcpServersIds: string[],
     _callback: (message: LLMResponse) => void,
-    _reqConfig?: LLMRequest
+    _beforeRequest?: BeforeRequestCallback
   ): Promise<LLMRequestHandler> {
     throw new Error("Method not implemented.")
   }

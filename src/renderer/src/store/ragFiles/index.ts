@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { useData } from "./api"
 import { RAGLocalFileInfo } from "@shared/types/rag"
 export default defineStore("ragFiles", () => {
-  const ragFiles = reactive<Record<string, RAGLocalFileInfo[]>>({})
+  const ragFiles = reactive<Record<string, RAGLocalFileInfo[]>>({}) // knowledge_base as key
   const api = useData()
   /**
    * remove ragFile by `id`
@@ -56,6 +56,9 @@ export default defineStore("ragFiles", () => {
   async function update(info: RAGLocalFileInfo) {
     return api.update(info)
   }
+  async function fileExist(topicId: string, filePath: string): Promise<boolean> {
+    return api.fileExist(topicId, filePath)
+  }
 
   return {
     ragFiles,
@@ -63,6 +66,7 @@ export default defineStore("ragFiles", () => {
     removeCacheFilesByTopicId,
     fetchAllByTopicId,
     add,
+    fileExist,
     addToCache,
     bulkAdd,
     get,

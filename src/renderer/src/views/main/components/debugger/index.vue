@@ -29,7 +29,7 @@ const panelConfig = reactive<ScaleConfig>({
   movable: true,
   scalable: true,
 })
-const db = shallowReactive({
+const db = {
   toggle() {
     if (scaleRef.value?.getStatus() === "NORMAL") {
       scaleRef.value?.hideTo("self", false)
@@ -39,7 +39,7 @@ const db = shallowReactive({
       scaleRef.value?.show(false, "center")
     }
   },
-})
+}
 
 shortcut.listen("ctrl+d", res => {
   res && db.toggle()

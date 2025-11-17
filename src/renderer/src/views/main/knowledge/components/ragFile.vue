@@ -54,7 +54,6 @@ const upload = {
           :confirm-button-text="t('tip.yes')"
           confirm-button-type="danger"
           :cancel-button-text="t('btn.cancel')"
-          cancel-button-type="text"
           size="small"
           :confirm="done => emit('remove', knowledge.id, done)">
           <template #reference="{ loading, disabled }">

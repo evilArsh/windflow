@@ -10,6 +10,7 @@ import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"
 import sql from "sqlstring"
 import { readFile } from "../doc"
+import { createProcessStatus } from "../task"
 
 describe("main/src/Rag", () => {
   vi.mock("electron", () => ({
@@ -53,95 +54,35 @@ describe("main/src/Rag", () => {
     dimensions: 1024,
   }
 
-  it("read xlsx", async () => {
+  it("read file", async () => {
     const topicId = "topic-1"
-
-    const meta: RAGLocalFileMeta = {
-      id: uniqueId(),
-      path: path.join(__dirname, "work.xlsx"),
-      topicId,
+    const files: string[] = [
+      path.join(__dirname, ".gitignore"),
+      path.join(__dirname, "work.xlsx"),
+      path.join(__dirname, "work.csv"),
+      path.join(__dirname, "test2.pdf"),
+      path.join(__dirname, "test2.doc"),
+    ]
+    for await (const file of files) {
+      const meta: RAGLocalFileMeta = {
+        id: uniqueId(),
+        path: file,
+        topicId,
+      }
+      if (!fs.existsSync(meta.path)) {
+        console.warn("path not exists: " + meta.path)
+        continue
+      }
+      const stat = fs.statSync(meta.path)
+      const info: RAGLocalFileInfo = {
+        ...meta,
+        fileName: path.basename(meta.path),
+        fileSize: stat.size,
+      }
+      const res = await readFile(info, config)
+      console.log(res)
+      expect(res.data.length).gte(0)
     }
-    if (!fs.existsSync(meta.path)) {
-      console.warn("path not exists: " + meta.path)
-      return
-    }
-    const stat = fs.statSync(meta.path)
-    const info: RAGLocalFileInfo = {
-      ...meta,
-      fileName: path.basename(meta.path),
-      fileSize: stat.size,
-    }
-
-    const res = await readFile(info, config)
-    console.log(res)
-    expect(res.data.length).gte(0)
-  })
-
-  it("read csv", async () => {
-    const topicId = "topic-1"
-
-    const meta: RAGLocalFileMeta = {
-      id: uniqueId(),
-      path: path.join(__dirname, "work.csv"),
-      topicId,
-    }
-    if (!fs.existsSync(meta.path)) {
-      console.warn("path not exists: " + meta.path)
-      return
-    }
-    const stat = fs.statSync(meta.path)
-    const info: RAGLocalFileInfo = {
-      ...meta,
-      fileName: path.basename(meta.path),
-      fileSize: stat.size,
-    }
-    const res = await readFile(info, config)
-    console.log(res)
-    expect(res.data.length).gte(0)
-  })
-  it("read pdf", async () => {
-    const topicId = "topic-1"
-
-    const meta: RAGLocalFileMeta = {
-      id: uniqueId(),
-      path: path.join(__dirname, "test2.pdf"),
-      topicId,
-    }
-    if (!fs.existsSync(meta.path)) {
-      console.warn("path not exists: " + meta.path)
-      return
-    }
-    const stat = fs.statSync(meta.path)
-    const info: RAGLocalFileInfo = {
-      ...meta,
-      fileName: path.basename(meta.path),
-      fileSize: stat.size,
-    }
-    const res = await readFile(info, config)
-    console.log(res)
-    expect(res.data.length).gte(0)
-  })
-  it("read docx", async () => {
-    const topicId = "topic-1"
-
-    const meta: RAGLocalFileMeta = {
-      id: uniqueId(),
-      path: path.join(__dirname, "test2.doc"),
-      topicId,
-    }
-    if (!fs.existsSync(meta.path)) {
-      console.warn("path not exists: " + meta.path)
-      return
-    }
-    const stat = fs.statSync(meta.path)
-    const info: RAGLocalFileInfo = {
-      ...meta,
-      fileName: path.basename(meta.path),
-      fileSize: stat.size,
-    }
-    const res = await readFile(info, config)
-    console.log(res)
-    expect(res.data.length).gte(0)
   })
 
   it("clear table data", async () => {
@@ -168,6 +109,7 @@ describe("main/src/Rag", () => {
         fileId: `file_id: ${i}`,
         fileName: `file_name: ${i}`,
         fileSize: i,
+        filePath: `file_path: ${i}`,
         chunkIndex: i,
         content: `content: ${i}`,
         vector: Array.from({ length: 128 }, () => Math.random()),
@@ -191,7 +133,7 @@ describe("main/src/Rag", () => {
 
     const topicId = "test_topic_rag_remove"
     const fileId = "test_file_id"
-    const cond = sql.format(`\`fileId\` = ?`, [fileId])
+    const cond = sql.format("`fileId` = ?", [fileId])
 
     const tableName = combineTableName(topicId)
     if (!(await db.hasTable(tableName))) {
@@ -209,6 +151,7 @@ describe("main/src/Rag", () => {
         topicId,
         fileId,
         fileName: `file_name: ${i}`,
+        filePath: `file_path: ${i}`,
         fileSize: i,
         chunkIndex: i,
         content: `content: ${i}`,
@@ -217,24 +160,26 @@ describe("main/src/Rag", () => {
       })
     }
     await db.insert(tableName, data)
-    await db.insert(tableName, [
+    const data2: RAGFile[] = [
       {
         id: uniqueId(),
         topicId,
         fileId: "file_id",
         fileName: `file_name`,
+        filePath: `file_path`,
         fileSize: 0,
         chunkIndex: 0,
         content: `content`,
         vector: Array.from({ length: 128 }, () => Math.random()),
         configId: "do_not_need_config_id",
       },
-    ] as RAGFile[])
+    ]
+    await db.insert(tableName, data2)
 
     const res = await db.deleteData(tableName, cond)
     expect(res).equal(dataLength)
     expect(await db.countRows(tableName)).equal(1)
-    expect(await db.countRows(tableName, `\`fileId\` = 'file_id'`)).equal(1)
+    expect(await db.countRows(tableName, sql.format("`fileId` = ?", ["file_id"]))).equal(1)
     expect(await db.countRows(tableName, cond)).equal(0)
   })
 
@@ -260,6 +205,7 @@ describe("main/src/Rag", () => {
         topicId: topicId,
         fileId: `file_id: ${i}`,
         fileName: `file_name: ${i}`,
+        filePath: `file_path: ${i}`,
         fileSize: i,
         chunkIndex: i,
         content: `content: ${i}`,
@@ -279,6 +225,7 @@ describe("main/src/Rag", () => {
         topicId: topicId,
         fileId: `file_id: ${i}`,
         fileName: `file_name: ${i}`,
+        filePath: `file_path: ${i}`,
         fileSize: i,
         chunkIndex: i,
         content: `content: ${i}`,
@@ -364,4 +311,26 @@ describe("main/src/Rag", () => {
     expect(sRes.data.length).gt(0)
     expect(sRes.code).equal(200)
   }, 20000)
+
+  it("ProcessStatus text", () => {
+    const s = createProcessStatus()
+    const data: RAGLocalFileInfo = {
+      id: uniqueId(),
+      path: "/src/main/services/Rag/.test/test1.docx",
+      topicId: "ProcessStatus",
+      fileName: "test1.docx",
+      fileSize: 27204,
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      extenstion: "docx",
+      status: RAGFileStatus.Processing,
+    }
+    expect(s.has(data)).equal(false)
+    s.set({
+      info: data,
+      config,
+      data: [],
+      status: [],
+    })
+    expect(s.has(data)).equal(true)
+  })
 })

@@ -35,11 +35,14 @@ const ev = {
   },
 }
 settingsStore.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.path, path => {
-  router.push(path)
+  path && router.push(path)
 })
 settingsStore.dataWatcher<boolean>(SettingKeys.KnowledgeToggleSubNav, toRef(cache, "showSubNav"), true)
 shortcut.listen("ctrl+b", res => {
   res && ev.toggleNav()
+})
+router.afterEach(to => {
+  menus.value.find(m => m.path == to.path) && routes.toPath(to.path)
 })
 </script>
 <template>

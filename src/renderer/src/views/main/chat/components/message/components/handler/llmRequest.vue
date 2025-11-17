@@ -15,16 +15,16 @@ const chatStore = useChatStore()
 const settingsStore = useSettings()
 const { chatLLMConfig } = storeToRefs(chatStore)
 const config = computed<ChatLLMConfig | undefined>(() => chatLLMConfig.value[props.topic.id])
-const event = shallowReactive({
-  loading: false,
-  dropList: [
+const useEvent = () => {
+  const loading = ref(false)
+  const dropList = shallowRef([
     { label: "chat.llm.btnReset", value: "reset" },
     { label: "chat.llm.btnRestoreGlobal", value: "restoreGlobal" },
     { label: "chat.llm.btnCoverGlobal", value: "coverGlobal" },
-  ],
-  async onCommand(cmd: string) {
+  ])
+  async function onCommand(cmd: string) {
     try {
-      event.loading = true
+      loading.value = true
       if (cmd === "reset") {
         if (!config.value) return
         await chatStore.updateChatLLMConfig({
@@ -63,20 +63,22 @@ const event = shallowReactive({
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {
-      event.loading = false
+      loading.value = false
     }
-  },
-})
-const update = useThrottleFn(
-  async () => {
-    if (!config.value) return
-    event.loading = true
-    await chatStore.updateChatLLMConfig(config.value)
-    event.loading = false
-  },
-  250,
-  true
-)
+  }
+  const update = useThrottleFn(
+    async () => {
+      if (!config.value) return
+      loading.value = true
+      await chatStore.updateChatLLMConfig(config.value)
+      loading.value = false
+    },
+    250,
+    true
+  )
+  return { loading, dropList, onCommand, update }
+}
+const { loading, dropList, onCommand, update } = useEvent()
 </script>
 <template>
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
@@ -90,16 +92,16 @@ const update = useThrottleFn(
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-.5rem">
             <el-text>{{ t("chat.llm.label") }}</el-text>
-            <Spinner class="text-1.2rem" v-model="event.loading"></Spinner>
+            <Spinner class="text-1.2rem" v-model="loading"></Spinner>
           </div>
-          <el-dropdown :teleported="false" @command="event.onCommand">
+          <el-dropdown :teleported="false" @command="onCommand">
             <el-button plain text size="small" type="info">
               {{ t("chat.llm.btnMore") }}
               <i-ep:arrow-down class="ml-.5rem text-1.2rem"></i-ep:arrow-down>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="item in event.dropList" :key="item.value" :command="item.value">
+                <el-dropdown-item v-for="item in dropList" :key="item.value" :command="item.value">
                   {{ t(item.label) }}
                 </el-dropdown-item>
               </el-dropdown-menu>

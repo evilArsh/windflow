@@ -34,6 +34,8 @@ export function useSearchManager(db: VectorStore) {
   ) => {
     if (!config.rerank) return
     log.debug(`[embedding search] will rerank result.`, params, config)
+    const { api, apiKey, model } = config.rerank
+    if (!(api && apiKey && model)) return
     const { abort, pending } = http.request<RerankResponse>({
       url: config.rerank.api,
       method: config.rerank.method ?? "post",
@@ -86,7 +88,7 @@ export function useSearchManager(db: VectorStore) {
         `content: [${params.content}], token_usage: ${vectors.data.usage?.total_tokens}, vectors-length: ${vectors.data.data.length}, model: ${config.embedding.model}`
       )
       await db.open()
-      const vectorSearchRes = await db.query({
+      const vectorSearchRes = await db.search({
         tableName: combineTableName(params.topicId),
         topicId: params.topicId,
         queryVector: vectors.data.data[0].embedding,

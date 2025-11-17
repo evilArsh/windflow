@@ -92,6 +92,7 @@ export default defineStore("settings", () => {
     const watcher = watch(
       () => settings[id],
       val => {
+        if (!val) return
         if (isRef(target)) {
           target.value = val.value as T
         } else {

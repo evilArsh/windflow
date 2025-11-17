@@ -17,61 +17,63 @@ const props = defineProps<{
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
-const id = useId()
-const chatStore = useChatStore()
-const message = computed(() => props.message)
-const messageChildren = computed<ChatMessageTree[] | undefined>(() => {
-  if (layout.type === types.Tab) {
-    return message.value?.children?.filter(item => item.id === layout.currentTabId)
-  } else {
-    return message.value.children
-  }
-})
-const childLength = computed(() => message.value.children?.length ?? 0)
-const affixRefs = ref<InstanceType<typeof Single>[]>([])
 const types = {
   Grid: "grid",
   L2R: "l2r",
   Tab: "tab",
 }
-const layout = shallowReactive({
-  type: types.Grid,
-  currentTabId: "",
-  sliderStep: 1,
-  sliderValue: 1,
-  sliderMin: 1,
-  sliderMax: 1,
-  typeList: [
+
+const id = useId()
+const chatStore = useChatStore()
+const message = computed(() => props.message)
+
+const childLength = computed(() => message.value.children?.length ?? 0)
+const useLayout = () => {
+  const affixRefs = ref<InstanceType<typeof Single>[]>([])
+  const type = ref(types.Grid)
+  const currentTabId = ref("")
+  const sliderStep = ref(1)
+  const sliderValue = ref(1)
+  const sliderMin = ref(1)
+  const sliderMax = ref(1)
+  const typeList = shallowRef([
     { label: h(IconGrid), value: types.Grid },
     { label: h(IconLeftToRight, { class: "rotate-z-90" }), value: types.L2R },
     { label: h(Tab), value: types.Tab },
-  ],
-  onTypeChange: (type: Primitive) => {
+  ])
+  const messageChildren = computed<ChatMessageTree[] | undefined>(() => {
+    if (type.value === types.Tab) {
+      return message.value?.children?.filter(item => item.id === currentTabId.value)
+    } else {
+      return message.value.children
+    }
+  })
+  function onTypeChange(type: Primitive) {
     if (!isString(type)) return
     if (type === types.Grid) {
-      layout.sliderStep = 1
-      layout.sliderValue = Math.max(1, Math.ceil(childLength.value / 2))
-      layout.sliderMin = 1
-      layout.sliderMax = Math.max(1, childLength.value)
+      sliderStep.value = 1
+      sliderValue.value = Math.max(1, Math.ceil(childLength.value / 2))
+      sliderMin.value = 1
+      sliderMax.value = Math.max(1, childLength.value)
     } else if (type === types.L2R) {
       const defaultValue = Math.trunc((1 / childLength.value) * 100)
-      layout.sliderStep = 10
-      layout.sliderValue = defaultValue
-      layout.sliderMin = defaultValue
-      layout.sliderMax = 100
+      sliderStep.value = 10
+      sliderValue.value = defaultValue
+      sliderMin.value = defaultValue
+      sliderMax.value = 100
     } else if (type === types.Tab) {
-      if (!layout.currentTabId) {
+      if (!currentTabId.value) {
         if (message.value.children?.length) {
-          layout.currentTabId = message.value.children[0].id
+          currentTabId.value = message.value.children[0].id
         }
       }
     }
-  },
-  onTabChange: (childId: Primitive) => {
+  }
+  function onTabChange(childId: Primitive) {
     if (!isString(childId)) return
-    layout.currentTabId = childId
-  },
-  onItemContentScroll: useThrottleFn(
+    currentTabId.value = childId
+  }
+  const onItemContentScroll = useThrottleFn(
     () => {
       if (affixRefs.value.length <= 1) return
       affixRefs.value.forEach(refs => {
@@ -80,15 +82,44 @@ const layout = shallowReactive({
     },
     250,
     true
-  ),
-})
+  )
+  return {
+    type,
+    affixRefs,
+    currentTabId,
+    sliderStep,
+    sliderValue,
+    sliderMin,
+    sliderMax,
+    typeList,
+    messageChildren,
+    onTypeChange,
+    onItemContentScroll,
+    onTabChange,
+  }
+}
+const {
+  type,
+  affixRefs,
+  currentTabId,
+  sliderStep,
+  sliderValue,
+  sliderMin,
+  sliderMax,
+  typeList,
+  messageChildren,
+  onTypeChange,
+  onItemContentScroll,
+  onTabChange,
+} = useLayout()
+
 const containerStyle = computed<CSSProperties>(() => {
-  switch (layout.type) {
+  switch (type.value) {
     case types.Grid:
       return {
         flex: 1,
         display: "grid",
-        gridTemplateColumns: `repeat(${layout.sliderValue}, 1fr)`,
+        gridTemplateColumns: `repeat(${sliderValue.value}, 1fr)`,
         gridTemplateRows: "1fr",
         gap: "var(--ai-gap-medium)",
         flexDirection: "row",
@@ -108,12 +139,12 @@ const containerStyle = computed<CSSProperties>(() => {
   return {}
 })
 const itemStyle = computed<CSSProperties>(() => {
-  switch (layout.type) {
+  switch (type.value) {
     case types.Grid:
       return {}
     case types.L2R:
       return {
-        width: `${layout.sliderValue}%`,
+        width: `${sliderValue.value}%`,
         flexShrink: 0,
       }
     case types.Tab:
@@ -129,7 +160,7 @@ async function del() {
   }
 }
 onMounted(() => {
-  layout.onTypeChange(layout.type)
+  onTypeChange(type.value)
 })
 </script>
 <template>
@@ -138,17 +169,17 @@ onMounted(() => {
       <div class="flex-1 flex items-center px-1rem py-.5rem flex-wrap overflow-hidden">
         <Handler hide-edit :topic :message @delete="del"></Handler>
         <ContentBox background class="m0! flex-shrink-0">
-          <el-radio-group v-model="layout.type" size="small" fill="#6cf" @change="layout.onTypeChange">
-            <el-radio-button v-for="item in layout.typeList" :label="item.value" :value="item.value" :key="item.value">
+          <el-radio-group v-model="type" size="small" fill="#6cf" @change="onTypeChange">
+            <el-radio-button v-for="item in typeList" :label="item.value" :value="item.value" :key="item.value">
               <component :is="item.label"></component>
             </el-radio-button>
           </el-radio-group>
         </ContentBox>
         <el-tabs
-          v-model="layout.currentTabId"
-          v-if="layout.type === types.Tab"
+          v-model="currentTabId"
+          v-if="type === types.Tab"
           class="w100%"
-          @tab-change="layout.onTabChange"
+          @tab-change="onTabChange"
           style="--el-tabs-header-height: auto; --el-border-color-light: transparent">
           <el-tab-pane v-for="item in message.children" :key="item.id" :name="item.id">
             <template #label>
@@ -159,16 +190,11 @@ onMounted(() => {
           </el-tab-pane>
         </el-tabs>
         <div v-else class="w100% flex px-1.5rem">
-          <el-slider
-            v-model="layout.sliderValue"
-            :min="layout.sliderMin"
-            :max="layout.sliderMax"
-            :step="layout.sliderStep"
-            show-stops />
+          <el-slider v-model="sliderValue" :min="sliderMin" :max="sliderMax" :step="sliderStep" show-stops />
         </div>
       </div>
     </template>
-    <div class="chat-item-content" @scroll="layout.onItemContentScroll" :style="containerStyle">
+    <div class="chat-item-content" @scroll="onItemContentScroll" :style="containerStyle">
       <Single
         v-for="(item, index) in messageChildren"
         :ref="ref => (affixRefs[index] = ref as InstanceType<typeof Single>)"

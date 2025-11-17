@@ -106,6 +106,13 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (this.#ss.has(meta)) {
         return log.info(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
       }
+      const pathRows = await this.#db.countRows(
+        combineTableName(meta.topicId),
+        sql.format("`filePath` = ?", [meta.path])
+      )
+      if (pathRows) {
+        return log.info(`[processLocalFile] file already exists in db`)
+      }
       const info = await getFileInfo(meta.path)
       if (!info.isFile) {
         return log.error(`[processLocalFile] path ${meta.path} is not a file`)

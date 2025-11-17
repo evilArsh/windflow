@@ -47,7 +47,7 @@ const menuEv = {
   onSelect: (path: string) => {
     if (task.pending()) return
     task.getQueue().add(async () => {
-      if (path.startsWith(defaultRoute.value)) return
+      if (path.startsWith(defaultRoute.value) && defaultRoute.value) return
       const current = pageNav.value.find(v => path.startsWith(v.index))
       defaultRoute.value = current?.index ?? defaultPath
       menuEv.onRouteChange(path)
@@ -59,20 +59,22 @@ const menuEv = {
     })
   },
 }
-const status = reactive({
-  dark: false,
-  setTheme: (dark: boolean) => {
+const useStatus = () => {
+  const dark = ref(false)
+  function setTheme(dark: boolean) {
     if (dark) {
       document.documentElement.classList.add("dark")
     } else {
       document.documentElement.classList.remove("dark")
     }
-  },
-  toggleDark: () => {
-    status.dark = !status.dark
-    window.api.theme.setTheme(status.dark ? Theme.dark : Theme.light)
-  },
-})
+  }
+  function toggleDark() {
+    dark.value = !dark.value
+    window.api.theme.setTheme(dark.value ? Theme.dark : Theme.light)
+  }
+  return { dark, setTheme, toggleDark }
+}
+const status = useStatus()
 
 settingsStore.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
 settingsStore.dataWatcher<string>(SettingKeys.DefaultRoute, defaultRoute, "/main/chat", (path, old) => {
@@ -108,7 +110,7 @@ settingsStore.dataWatcher<string>(SettingKeys.DefaultRoute, defaultRoute, "/main
     <div class="nav-bottom">
       <ContentBox background @click="status.toggleDark">
         <div class="nav-bottom-item">
-          <i-ic:baseline-mode-night v-if="status.dark" class="text-1.4rem"></i-ic:baseline-mode-night>
+          <i-ic:baseline-mode-night v-if="toValue(status.dark)" class="text-1.4rem"></i-ic:baseline-mode-night>
           <i-ic:twotone-light-mode v-else class="text-1.4rem"></i-ic:twotone-light-mode>
         </div>
       </ContentBox>

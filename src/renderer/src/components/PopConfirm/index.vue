@@ -3,7 +3,7 @@ import { CallBackFn } from "@toolmain/shared"
 import { refDebounced } from "@vueuse/core"
 import { PopoverProps } from "element-plus"
 
-type ButtonType = "" | "text" | "default" | "primary" | "success" | "warning" | "info" | "danger"
+type ButtonType = "" | "default" | "primary" | "success" | "warning" | "info" | "danger"
 type ConfirmCallback = (done: CallBackFn, e: MouseEvent) => void
 type CancelCallback = (done: CallBackFn, e: MouseEvent) => void
 
@@ -25,7 +25,7 @@ const props = withDefaults(
     confirmButtonText: "confirm",
     confirmButtonType: "danger",
     cancelButtonText: "cancel",
-    cancelButtonType: "text",
+    cancelButtonType: "default",
     size: "small",
     // popover props
     trigger: "hover",
@@ -62,15 +62,17 @@ const props = withDefaults(
     persistent: true,
   }
 )
-const pop = shallowReactive({
-  visible: false,
-  open() {
-    pop.visible = true
-  },
-  close() {
-    pop.visible = false
-  },
-})
+const usePop = () => {
+  const visible = ref(false)
+  function open() {
+    visible.value = true
+  }
+  function close() {
+    visible.value = false
+  }
+  return { visible: readonly(visible), open, close }
+}
+const pop = usePop()
 const useBtn = () => {
   const disabled = ref(false)
   const loading = ref(false)
@@ -149,7 +151,7 @@ const ev = {
 }
 </script>
 <template>
-  <el-popover ref="popRef" v-bind="props" :visible="pop.visible" title="">
+  <el-popover ref="popRef" v-bind="props" :visible="toValue(pop.visible)" title="">
     <template #reference>
       <span @click="ev.onOpen">
         <slot name="reference" :disabled="btnDisabled" :loading="btnLoading"></slot>

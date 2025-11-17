@@ -24,11 +24,17 @@ const fileList = computed<RAGLocalFileInfo[]>(() => {
   return ragFiles.value[topic.value.knowledgeId] ?? []
 })
 
-const status = shallowReactive({
-  loading: false,
-  load: () => (status.loading = true),
-  done: () => (status.loading = false),
-})
+const useStatus = () => {
+  const loading = ref(false)
+  function load() {
+    loading.value = true
+  }
+  function done() {
+    loading.value = false
+  }
+  return { loading, load, done }
+}
+const status = useStatus()
 
 const ev = {
   fetchRagFiles(kbId: string) {
@@ -58,8 +64,8 @@ onMounted(() => {
   <DialogPanel>
     <template #header>
       <div class="flex-center gap-1rem">
-        <Spinner v-model="status.loading" destroy-icon class="text-1.2rem font-bold"></Spinner>
-        <el-select :disabled="status.loading" v-model="topic.knowledgeId" @change="ev.onKbChange" clearable>
+        <Spinner v-model="status.loading.value" destroy-icon class="text-1.2rem font-bold"></Spinner>
+        <el-select :disabled="status.loading.value" v-model="topic.knowledgeId" @change="ev.onKbChange" clearable>
           <el-option v-for="item in knowledges" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </div>
