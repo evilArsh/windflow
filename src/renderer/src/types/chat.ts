@@ -1,5 +1,37 @@
 import { HttpStatusCode } from "@toolmain/shared"
 import { Message, Provider, RequestHandler } from "."
+export enum ChatMessageType {
+  /**
+   * @description 文本消息
+   */
+  TEXT = "text",
+  /**
+   * @description 图片消息
+   */
+  IMAGE = "image",
+  /**
+   * @description 音频消息
+   */
+  AUDIO = "audio",
+  /**
+   * @description 视频消息
+   */
+  VIDEO = "video",
+  /**
+   * @description 多模型请求消息
+   */
+  MULTIMODELS = "multi-models",
+}
+export enum ChatMessageContextFlag {
+  /**
+   * 消息边界线，当前消息以及之前的消息不会放入上下文中
+   */
+  BOUNDARY = "boundary",
+  /**
+   * 消息上下文的一部分
+   */
+  PART = "part",
+}
 export type ChatMessage = {
   /**
    * @description 消息ID
@@ -28,11 +60,11 @@ export type ChatMessage = {
   /**
    * @description 消息类型，默认为'text'消息
    */
-  type?: "text" | "image" | "audio" | "video" | "multi-models"
+  type: ChatMessageType
   /**
-   * @description 当前消息为上下文分界点
+   * @description 当前设置为消息上下文时的标志
    */
-  contextFlag?: boolean
+  contextFlag?: ChatMessageContextFlag
   /**
    * @description 请求是否完成，不管是否成功
    */

@@ -3,6 +3,7 @@ import {
   ChatLLMConfig,
   ChatMessage,
   ChatMessageTree,
+  ChatMessageType,
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
@@ -13,6 +14,7 @@ import { cloneDeep, isNumber, merge, uniqueId } from "@toolmain/shared"
 import useModelsStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
+import { defaultMessage } from "./default"
 
 export const useUtils = (
   chatMessage: Record<string, ChatMessageTree[]>,
@@ -42,39 +44,30 @@ export const useUtils = (
     return chatTTIConfig[topicId]
   }
   function newTopic(index: number, initial?: Partial<ChatTopic>): ChatTopic {
-    return merge(
-      {
-        id: uniqueId(),
-        index,
-        label: "",
-        parentId: "",
-        icon: getDefaultIcon(),
-        content: "",
-        modelIds: [],
-        prompt: "you are a helpful assistant",
-        createAt: Date.now(),
-        requestCount: 0,
-        maxContextLength: 7,
-      } as ChatTopic,
-      initial
-    )
+    const dst: ChatTopic = {
+      id: uniqueId(),
+      index,
+      label: "",
+      parentId: "",
+      icon: getDefaultIcon(),
+      content: "",
+      modelIds: [],
+      prompt: "you are a helpful assistant",
+      createAt: Date.now(),
+      requestCount: 0,
+      maxContextLength: 7,
+    }
+    return merge(dst, initial)
   }
   function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
-    return cloneDeep(
-      merge(
-        {},
-        topic,
-        {
-          id: uniqueId(),
-          label: "",
-          parentId: "",
-          chatMessageId: "",
-          requestCount: 0,
-          maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
-        },
-        initial
-      )
-    )
+    const part: Partial<ChatTopic> = {
+      id: uniqueId(),
+      label: "",
+      parentId: "",
+      requestCount: 0,
+      maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
+    }
+    return cloneDeep(merge({}, topic, part, initial))
   }
   function topicToTree(topic: ChatTopic): ChatTopicTree {
     return {
@@ -93,21 +86,19 @@ export const useUtils = (
     return res
   }
   function newChatMessage(topicId: string, index: number, initial?: Partial<ChatMessage>): ChatMessage {
-    return merge(
-      {
-        id: uniqueId(),
-        status: 200,
-        createAt: Date.now(),
-        finish: true,
-        content: "",
-        index: 0,
-        topicId: "",
-        modelId: "",
-        parentId: "",
-      },
-      { index, topicId },
-      initial
-    )
+    const dst: ChatMessage = {
+      id: uniqueId(),
+      status: 200,
+      createAt: Date.now(),
+      finish: true,
+      content: defaultMessage(),
+      type: ChatMessageType.TEXT,
+      index: 0,
+      topicId: "",
+      modelId: "",
+      parentId: "",
+    }
+    return merge(dst, { index, topicId }, initial)
   }
   function getMeta(modelId: string) {
     if (!modelId) {
@@ -127,14 +118,14 @@ export const useUtils = (
     }
     return { model, providerMeta, provider }
   }
-  function getMessageType(meta: ModelMeta) {
+  function getMessageType(meta: ModelMeta): ChatMessageType {
     return modelsStore.utils.isImageType(meta)
-      ? "image"
+      ? ChatMessageType.IMAGE
       : modelsStore.utils.isVideoType(meta)
-        ? "video"
+        ? ChatMessageType.VIDEO
         : modelsStore.utils.isTTSType(meta) || modelsStore.utils.isASRType(meta)
-          ? "audio"
-          : "text"
+          ? ChatMessageType.AUDIO
+          : ChatMessageType.TEXT
   }
   /**
    * @description 递归重置聊天信息,重置项为响应结果,其他不变

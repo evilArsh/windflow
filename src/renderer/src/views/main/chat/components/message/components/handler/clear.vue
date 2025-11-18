@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatMessageTree, ChatTopic } from "@renderer/types"
+import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@renderer/types"
 import { errorToText, msg, useShortcut } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
@@ -55,7 +55,7 @@ const handler = {
               props.topic.id,
               chatStore.utils.findMaxMessageIndex(messages.value),
               {
-                contextFlag: true,
+                contextFlag: ChatMessageContextFlag.BOUNDARY,
                 content: { role: "", content: "" },
               }
             )

@@ -15,6 +15,8 @@ import {
   BeforeRequestCallback,
   BeforeRequestParams,
   Message,
+  ChatMessageType,
+  ChatMessageContextFlag,
 } from "@renderer/types"
 import { useUtils } from "./utils"
 import { useContext } from "./context"
@@ -108,7 +110,7 @@ export const useMsg = (
       utils
         .findChatMessage(topic.id)
         ?.map(utils.unwrapMessage)
-        .slice(utils.getIndex(topic.id, message.id) + 1) ?? []
+        .slice(utils.getIndex(topic.id, message.parentId ?? message.id) + 1) ?? []
     )
     const chatContext =
       ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
@@ -161,7 +163,7 @@ export const useMsg = (
   const sendMessage = async (topic: ChatTopic, message: ChatMessage) => {
     const meta = utils.getMeta(message.modelId)
     if (!meta) {
-      message.content.content = `unknown model id :${message.modelId}`
+      message.content.content = `[error when send message] unknown model id :${message.modelId}`
       return
     }
     const { model, providerMeta, provider } = meta
@@ -196,7 +198,7 @@ export const useMsg = (
       terminate(topic, messageN)
     }
     utils.resetChatMessage(messageN)
-    if (messageN.children.length) {
+    if (messageN.node.type === ChatMessageType.MULTIMODELS) {
       for (const child of messageN.children) {
         await sendMessage(topic, child.node)
       }
@@ -237,6 +239,8 @@ export const useMsg = (
           utils.wrapMessage(
             utils.newChatMessage(topic.id, userIndex, {
               content: { role: Role.User, content: content },
+              type: ChatMessageType.TEXT,
+              contextFlag: ChatMessageContextFlag.PART,
             })
           )
         )
@@ -245,19 +249,23 @@ export const useMsg = (
         utils.newChatMessage(topic.id, userIndex + 1, {
           content: defaultMessage(),
           fromId: userMsg.id,
+          type: ChatMessageType.TEXT,
+          contextFlag: ChatMessageContextFlag.PART,
         })
       )
     )
     const availableModels = modelIds.filter(modelId => !!utils.getMeta(modelId))
     if (availableModels.length > 1) {
-      userMsg.node.type = "multi-models"
-      newMessage.node.type = "multi-models"
-      availableModels.forEach(modelId => {
+      userMsg.node.type = ChatMessageType.MULTIMODELS
+      newMessage.node.type = ChatMessageType.MULTIMODELS
+      availableModels.forEach((modelId, index) => {
         const message = utils.newChatMessage(topic.id, utils.findMaxMessageIndex(newMessage.children) + 1, {
           fromId: userMsg.id,
           parentId: newMessage.node.id,
           content: defaultMessage(),
           modelId,
+          // first child message as the default context
+          contextFlag: index == 0 ? ChatMessageContextFlag.PART : undefined,
         })
         const meta = utils.getMeta(modelId)
         if (meta) {
