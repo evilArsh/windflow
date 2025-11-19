@@ -105,13 +105,9 @@ export const useMsg = (
     message: ChatMessage
   ) => {
     // message contexts, messages stack was sorted in descending order, the newest message is the first one
-    const messageContext = ctx.getMessageContext(
-      topic,
-      utils
-        .findChatMessage(topic.id)
-        ?.map(utils.unwrapMessage)
-        .slice(utils.getIndex(topic.id, message.parentId ?? message.id) + 1) ?? []
-    )
+    const messageIndex = utils.getIndex(topic.id, message.parentId || message.id)
+    const partialContexts = utils.findChatMessage(topic.id)?.slice(messageIndex + 1) ?? []
+    const messageContext = ctx.getMessageContext(topic, partialContexts)
     const chatContext =
       ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
     if (!chatContext.provider) chatContext.provider = provider
@@ -186,6 +182,7 @@ export const useMsg = (
     if (messageN.node.content.role === Role.User) {
       const dstMessage = utils.findMessageByFromIdField(topic.id, messageN.id)
       if (dstMessage) {
+        // message pair may be seperated by a message, whose contextFlag is `ChatMessageContextFlag.boundary`
         terminate(topic, dstMessage)
         messageN = dstMessage
       } else {
@@ -219,8 +216,8 @@ export const useMsg = (
       modelIds?: string[]
     }
   ) {
-    const content = config?.content ?? topic.content
-    const modelIds = config?.modelIds ?? topic.modelIds
+    const content = config?.content || topic.content
+    const modelIds = config?.modelIds || topic.modelIds
     const withExistUser = !!userMessage
     if (withExistUser && userMessage.node.topicId !== topic.id) {
       throw new Error(t("error.messageNotInTopic"))
