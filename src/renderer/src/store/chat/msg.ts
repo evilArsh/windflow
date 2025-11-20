@@ -180,10 +180,11 @@ export const useMsg = (
     let messageN: ChatMessageTree = message
     // when click user message's restart button
     if (messageN.node.content.role === Role.User) {
-      const dstMessage = utils.findMessageByFromIdField(topic.id, messageN.id)
+      const oldMessage = utils.findMessageByFromIdField(topic.id, messageN.id)
+      oldMessage && terminate(topic, oldMessage)
+      // message pair may be seperated by a message, whose contextFlag is `ChatMessageContextFlag.boundary`
+      const dstMessage = utils.findMessageByFromIdField(topic.id, messageN.id, true)
       if (dstMessage) {
-        // message pair may be seperated by a message, whose contextFlag is `ChatMessageContextFlag.boundary`
-        terminate(topic, dstMessage)
         messageN = dstMessage
       } else {
         // already has a user message but the response message is not found
@@ -308,7 +309,6 @@ export const useMsg = (
       window.api.rag.searchTerminate(message.id)
     }
     chatContext?.handler?.terminate()
-    // TODO: stop rag searching
     message.children.forEach(child => terminate(topic, child))
   }
   /**

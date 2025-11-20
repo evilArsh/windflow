@@ -3,7 +3,8 @@
     "src/main/**/*",
     "src/preload/**/*",
     "src/shared/**/*.ts",
-    "**/.test/*"
+    "src/main/**/.test/*",
+    "src/.test/setup-node.ts"
   ],
   "compilerOptions": {
     "composite": true,

@@ -2,6 +2,7 @@ import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import {
   ChatLLMConfig,
   ChatMessage,
+  ChatMessageContextFlag,
   ChatMessageTree,
   ChatMessageType,
   ChatTopic,
@@ -25,6 +26,32 @@ export const useUtils = (
   const modelsStore = useModelsStore()
   const { providerMetas } = storeToRefs(providerStore)
 
+  /**
+   * find the closest sub-messages between `messageId` where the `contextFlag` field value is "ChatMessageContextFlag.BOUNDARY"
+   */
+  const getIsolatedMessages = (messages: ChatMessageTree[], messageId: string): ChatMessageTree[] => {
+    const index = messages.findIndex(item => item.id === messageId)
+    if (index === -1) return []
+    let start = index - 1
+    let end = index + 1
+    while (true) {
+      if (start >= 0 && messages[start].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) {
+        start--
+      }
+      if (end < messages.length && messages[end].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) {
+        end++
+      }
+      if (
+        start < 0 ||
+        end >= messages.length ||
+        (messages[start].node.contextFlag === ChatMessageContextFlag.BOUNDARY &&
+          messages[end].node.contextFlag === ChatMessageContextFlag.BOUNDARY)
+      ) {
+        break
+      }
+    }
+    return messages.slice(start + 1, end)
+  }
   /**
    * @description 根据消息`topicId`查找缓存的聊天数据
    */
@@ -150,21 +177,45 @@ export const useUtils = (
   }
   /**
    * find non-nested message by `messageId`
+   *
+   * @param isolated limit the search scope between `messageId` according to the field `contextFlag` with value `ChatMessageContextFlag.BOUNDARY`
    */
-  function findMessageById(topicId: string, messageId: string): ChatMessageTree | undefined {
-    return findChatMessage(topicId)?.find(item => item.node.id === messageId)
+  function findMessageById(topicId: string, messageId: string, isolated?: boolean): ChatMessageTree | undefined {
+    const rawMessages = findChatMessage(topicId)
+    if (!rawMessages) return
+    return (isolated ? getIsolatedMessages(rawMessages, messageId) : rawMessages).find(
+      item => item.node.id === messageId
+    )
   }
   /**
    * find non-nested message in messages while one's `fromId` field value matches the giving `messageId`
+   * @param isolated limit the search scope between `messageId` according to the field `contextFlag` with value `ChatMessageContextFlag.BOUNDARY`
    */
-  function findMessageByFromIdField(topicId: string, messageId: string): ChatMessageTree | undefined {
-    return findChatMessage(topicId)?.find(item => item.node.fromId === messageId)
+  function findMessageByFromIdField(
+    topicId: string,
+    messageId: string,
+    isolated?: boolean
+  ): ChatMessageTree | undefined {
+    const rawMessages = findChatMessage(topicId)
+    if (!rawMessages) return
+    return (isolated ? getIsolatedMessages(rawMessages, messageId) : rawMessages).find(
+      item => item.node.fromId === messageId
+    )
   }
   /**
    * find in messages while one's `parentId` field value matches the giving `messageId`
+   * @param isolated limit the search scope between `messageId` according to the field `contextFlag` with value `ChatMessageContextFlag.BOUNDARY`
    */
-  function findMessageByParentIdField(topicId: string, messageId: string): ChatMessageTree | undefined {
-    return findChatMessage(topicId)?.find(item => item.node.parentId === messageId)
+  function findMessageByParentIdField(
+    topicId: string,
+    messageId: string,
+    isolated?: boolean
+  ): ChatMessageTree | undefined {
+    const rawMessages = findChatMessage(topicId)
+    if (!rawMessages) return
+    return (isolated ? getIsolatedMessages(rawMessages, messageId) : rawMessages).find(
+      item => item.node.parentId === messageId
+    )
   }
   function findMaxMessageIndex(messages: ChatMessageTree[]): number {
     return Math.max(0, ...messages.map(item => item.node.index))
@@ -228,5 +279,6 @@ export const useUtils = (
     findMaxMessageIndex,
     findMaxTopicIndex,
     getIndex,
+    getIsolatedMessages,
   }
 }

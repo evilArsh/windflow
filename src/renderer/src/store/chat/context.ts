@@ -80,7 +80,7 @@ export const useContext = () => {
     return newContexts
   }
   /**
-   * @description 获取上下文，如果不存在则创建一个，messageDataId可能是子对话id
+   * @description 获取上下文，如果不存在则创建一个
    */
   const fetchTopicContext = (topicId: string, modelId: string, messageId: string, provider: Provider) => {
     if (!llmChats[topicId]) {
