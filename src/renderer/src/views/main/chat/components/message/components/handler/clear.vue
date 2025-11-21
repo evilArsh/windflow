@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@renderer/types"
-import { errorToText, msg, useShortcut } from "@toolmain/shared"
+import { errorToText, isArrayLength, msg, useShortcut } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
@@ -47,8 +47,8 @@ const handler = {
   cleanContext: async (active: boolean) => {
     try {
       if (active) {
-        if (messages.value && messages.value.length) {
-          if (messages.value[0].node.contextFlag) {
+        if (isArrayLength(messages.value)) {
+          if (messages.value[0].node.contextFlag === ChatMessageContextFlag.BOUNDARY) {
             await chatStore.deleteMessage(topic.value, messages.value[0])
           } else {
             const newMessage = chatStore.utils.newChatMessage(

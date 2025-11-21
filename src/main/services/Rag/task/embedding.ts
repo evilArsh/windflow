@@ -1,4 +1,4 @@
-import { RAGFile, RAGFileStatus } from "@shared/types/rag"
+import { RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
 import PQueue from "p-queue"
 import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import axios, { AxiosResponse } from "axios"
@@ -13,20 +13,18 @@ const requestWithChunks = async <T>(
   const response = await request()
   return { chunks, response }
 }
-export class Embedding implements TaskChain {
-  #manager: TaskManager
+export class EmbeddingTaskImpl implements TaskChain {
   #queue: PQueue
-  constructor(manager: TaskManager) {
-    this.#manager = manager
+  constructor() {
     this.#queue = new PQueue({ concurrency: 5 })
   }
   taskId() {
     return "task_embedding"
   }
-  close() {
+  stop(meta?: RAGLocalFileMeta) {
     this.#queue.clear()
   }
-  async process(info: TaskInfo) {
+  async process(info: TaskInfo, manager: TaskManager) {
     const log = useLog(RAGServiceId)
     this.#queue.add(async () => {
       const statusResp: TaskInfoStatus = {
@@ -113,7 +111,7 @@ export class Embedding implements TaskChain {
         statusResp.msg = errorToText(error)
         statusResp.code = 500
       } finally {
-        this.#manager.next(info, statusResp)
+        await manager.next(info, statusResp)
       }
     })
   }

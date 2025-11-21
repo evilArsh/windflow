@@ -104,7 +104,8 @@ export type RAGSearchParam = {
   topicId: string
   /**
    * `sessionId` marks current searching, genereally, it's the chat-message id.
-   * it is used to stop/identify the searching,
+   * it is used to stop/identify the searching, user must specify a `sessionId` when searching.
+   * this `sessionId` will be used to stop the searching
    */
   sessionId: string
 }
@@ -160,6 +161,6 @@ export interface RAGLocalFileInfo extends RAGLocalFileMeta {
   mimeType?: string
   extenstion?: string
   status?: RAGFileStatus
-  code?: number
+  code?: HttpStatusCode
   msg?: string
 }

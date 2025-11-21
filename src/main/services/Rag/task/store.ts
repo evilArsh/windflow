@@ -1,4 +1,4 @@
-import { RAGFileStatus } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { errorToText } from "@toolmain/shared"
@@ -6,50 +6,56 @@ import { VectorStore } from "../db"
 import { useLog } from "@main/hooks/useLog"
 import { combineTableName, createTableSchema } from "../db/utils"
 import { RAGServiceId } from "../vars"
+import sql from "sqlstring"
 
-export class Store implements TaskChain {
-  #manager: TaskManager
+export class StoreTaskImpl implements TaskChain {
   #queue: PQueue
   #db: VectorStore
   #log = useLog(RAGServiceId)
-  constructor(manager: TaskManager, db: VectorStore) {
-    this.#manager = manager
+  constructor(db: VectorStore) {
     this.#queue = new PQueue({ concurrency: 5 })
     this.#db = db
   }
   taskId() {
     return "task_storage"
   }
-  close() {
+  stop(meta?: RAGLocalFileMeta) {
     this.#queue.clear()
     this.#db.close()
   }
-  async process(info: TaskInfo) {
+  async process(taskInfo: TaskInfo, manager: TaskManager) {
     this.#queue.add(async () => {
       const statusResp: TaskInfoStatus = {
         taskId: this.taskId(),
         status: RAGFileStatus.Processing,
       }
       try {
-        if (!info.data.length) {
+        if (!taskInfo.data.length) {
           throw new Error("[store process], no data to process")
         }
         await this.#db.open()
-        const avaliableData = info.data.filter(d => !!d.vector.length)
+        const avaliableData = taskInfo.data.filter(d => !!d.vector.length)
         this.#log.debug(
-          `[store process] will insert data to database, original_length: ${info.data.length}, avaliable_length: ${avaliableData.length}`
+          `[store process] will insert data to database, original_length: ${taskInfo.data.length}, avaliable_length: ${avaliableData.length}`
         )
         if (avaliableData.length) {
-          const tableName = combineTableName(info.info.topicId)
+          const tableName = combineTableName(taskInfo.info.topicId)
           if (!(await this.#db.hasTable(tableName))) {
-            const schema = createTableSchema(info.config.dimensions)
+            this.#log.debug(`[store process] [insert] table not exists, will create new one, table name: ${tableName}`)
+            const schema = createTableSchema(taskInfo.config.dimensions)
             await this.#db.createEmptyTable(tableName, schema)
-            const res = await this.#db.insert(tableName, avaliableData)
-            this.#log.debug(`[store process] [insert] data to database, table: ${tableName}, result: `, res)
           } else {
-            const res = await this.#db.upsert(tableName, avaliableData)
-            this.#log.debug(`[store process] [upsert] data to database, table: ${tableName}, result: `, res)
+            // cond1: different task with same file
+            // cond2: different task with same id (also same file path)
+            const cond = sql.format("`filePath` = ? OR `id` = ?", [taskInfo.info.path, taskInfo.info.id])
+            const pathRows = await this.#db.countRows(tableName, cond)
+            if (pathRows) {
+              this.#log.debug(`[store process] [insert] will clean old data, counts: ${pathRows}`)
+              await this.#db.deleteData(tableName, cond)
+            }
           }
+          this.#log.debug(`[store process] [insert] data to database, table: ${tableName}`)
+          await this.#db.insert(tableName, avaliableData)
           const count = await this.#db.countRows(tableName)
           if (count > 256 && !(await this.#db.hasIndex(tableName, "vector"))) {
             this.#log.debug(`[store process] create index for table: ${tableName}, count: ${count}`)
@@ -73,7 +79,7 @@ export class Store implements TaskChain {
         statusResp.msg = errorToText(error)
         statusResp.code = 500
       } finally {
-        this.#manager.next(info, statusResp)
+        await manager.next(taskInfo, statusResp)
       }
     })
   }

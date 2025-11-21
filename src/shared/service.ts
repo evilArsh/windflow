@@ -43,6 +43,7 @@ export const IpcChannel = {
   RagSearch: "rag.search",
   RagSearchTerminate: "rag.searchTerminate",
   RagProcessLocalFile: "rag.processLocalFile",
+  RagRestart: "rag.restart",
   RagRemoveById: "rag.removeById",
   RagRemoveByTopicId: "rag.removeByTopicId",
 }
@@ -108,6 +109,10 @@ export interface RAGService {
   search: (content: RAGSearchParam, config: RAGEmbeddingConfig) => Promise<Response<RAGFile[]>>
   searchTerminate(sessionId: string): Promise<Response<RAGSearchTask | undefined>>
   processLocalFile: (file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => Promise<void>
+  /**
+   * re-processLocalFile. stopping previous task and remove database records before it starts
+   */
+  restart: (file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => Promise<void>
   /**
    * remove rag_file by `topicId` and `fileId`,
    */

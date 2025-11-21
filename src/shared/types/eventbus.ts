@@ -32,10 +32,7 @@ export type RAGStatusEvent = {
   code?: HttpStatusCode
 }
 
-export interface RAGFileProcessStatusEvent extends RAGLocalFileInfo {
-  msg?: string
-  code?: HttpStatusCode
-}
+export type RAGFileProcessStatusEvent = RAGLocalFileInfo
 
 export type ServiceLogEvent = {
   id: string

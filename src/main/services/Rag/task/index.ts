@@ -44,10 +44,12 @@ class ProcessStatusImpl implements ProcessStatus {
 class TaskManagerImpl implements TaskManager {
   #chainLists: TaskChain[]
   #ss: ProcessStatus
+  #tmp: ProcessStatus
   #globalBus: EventBus
   #log = useLog(RAGServiceId)
   constructor(ss: ProcessStatus, globalBus: EventBus) {
     this.#ss = ss
+    this.#tmp = createProcessStatus()
     this.#globalBus = globalBus
     this.#chainLists = []
   }
@@ -70,6 +72,11 @@ class TaskManagerImpl implements TaskManager {
     if (current + 1 >= this.#chainLists.length) return
     return this.#chainLists[current + 1]
   }
+  #cleanStatus(task: TaskInfo) {
+    this.#emitStatus(task)
+    this.#ss.remove(task.info)
+    // recycle task handling
+  }
   addTaskChain(taskChain: TaskChain): void {
     this.#chainLists.push(taskChain)
   }
@@ -80,18 +87,16 @@ class TaskManagerImpl implements TaskManager {
       }
       this.#log.debug(`[TaskManager] current task end: `, status)
       this.#ss.updateStatus(task.info, status)
-      this.#emitStatus(task)
+      // this.#emitStatus(task)
       if (this.#ss.getLastStatus(task)?.status === RAGFileStatus.Failed) {
         this.#log.debug(`[TaskManager] task ${task.info.path} is failed`)
-        this.#emitStatus(task)
-        this.#ss.remove(task.info)
+        this.#cleanStatus(task)
         return
       }
       const nextChain = this.#getNextChain(task)
       if (!nextChain) {
         this.#log.debug(`[TaskManager] task ${task.info.path} is done`)
-        this.#emitStatus(task)
-        this.#ss.remove(task.info)
+        this.#cleanStatus(task)
         return
       }
       this.#ss.updateStatus(task.info, {
@@ -99,12 +104,11 @@ class TaskManagerImpl implements TaskManager {
         status: RAGFileStatus.Processing,
       })
       this.#emitStatus(task)
-      this.#log.debug(`[TaskManager] next task start,${nextChain.taskId()}, info: `, task.info, task.config)
-      nextChain.process(task)
+      this.#log.debug(`[TaskManager] next task start, ${nextChain.taskId()}, info: `, task.info, task.config)
+      nextChain.process(task, this)
     } catch (error) {
       this.#log.error("[file process] error", errorToText(error))
-      this.#emitStatus(task)
-      this.#ss.remove(task.info)
+      this.#cleanStatus(task)
     }
   }
   async process(info: RAGLocalFileInfo, config: RAGEmbeddingConfig) {
@@ -113,6 +117,17 @@ class TaskManagerImpl implements TaskManager {
       config,
       data: [],
       status: [],
+    }
+    if (this.#ss.has(taskInfo.info)) {
+      this.#log.debug(
+        `[process] taskinfo is processing, save it in waiting lists. status: ${this.#ss.get(taskInfo.info)?.status}`
+      )
+      if (this.#tmp.has(taskInfo.info)) {
+        this.#log.debug("[process] current taskinfo is already in waiting lists, skip")
+      } else {
+        this.#tmp.set(taskInfo)
+      }
+      return
     }
     const chain = this.#getNextChain(taskInfo)
     if (!chain) {
@@ -125,11 +140,11 @@ class TaskManagerImpl implements TaskManager {
     })
     this.#emitStatus(taskInfo)
     this.#log.debug("[process start]", taskInfo)
-    chain.process(taskInfo)
+    chain.process(taskInfo, this)
   }
-  close() {
+  stop(meta?: RAGLocalFileMeta) {
     this.#chainLists.forEach(chain => {
-      chain.close()
+      chain.stop(meta)
     })
   }
 }

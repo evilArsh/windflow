@@ -40,8 +40,11 @@ export interface ProcessStatus {
 
 export interface TaskChain {
   taskId(): string
-  process(data: TaskInfo): Promise<void>
-  close: () => void
+  process(data: TaskInfo, manager: TaskManager): Promise<void>
+  /**
+   * stop the task, if meta is provided, only stop the task with the same meta, otherwise stop all tasks
+   */
+  stop: (meta?: RAGLocalFileMeta) => void
 }
 
 export interface TaskManager {
@@ -55,9 +58,9 @@ export interface TaskManager {
    */
   process: (info: RAGLocalFileInfo, config: RAGEmbeddingConfig) => Promise<void>
   /**
-   * close all tasks
+   * stop the task, if meta is provided, only stop the task with the same meta, otherwise stop all tasks
    */
-  close: () => void
+  stop: (meta?: RAGLocalFileMeta) => void
 }
 
 export type EmbeddingResponse = {

@@ -17,8 +17,7 @@ export const useContext = () => {
    */
   const getMessageContext = (topic: ChatTopic, rawMessages: ChatMessageTree[]): Message[] => {
     const maxContextLength = Math.max(1, toNumber(topic.maxContextLength))
-    const boundaryIndex = rawMessages.findIndex(item => item.node.contextFlag === ChatMessageContextFlag.BOUNDARY)
-    const messages = rawMessages.slice(0, Math.max(0, boundaryIndex))
+    const messages = Array.from(rawMessages)
     const contexts: ChatMessageTree[] = []
     let current: ChatMessageTree | undefined
     let firstCtx: ChatMessageTree | undefined
@@ -70,9 +69,13 @@ export const useContext = () => {
     if (firstCtx?.node.content.role === Role.Assistant) {
       contexts.shift()
     }
-    const newContexts = contexts
-      .slice(Math.max(0, contexts.length - maxContextLength))
-      .map(ctx => ({ role: ctx.node.content.role, content: ctx.node.content.content }))
+    const newContexts = contexts.slice(Math.max(0, contexts.length - maxContextLength)).map(ctx => ({
+      role: ctx.node.content.role,
+      content:
+        ctx.node.content.role === Role.User
+          ? ctx.node.content.content
+          : (ctx.node.content.children?.map(item => item.content as string).join("\n") ?? ""),
+    }))
     newContexts.unshift({
       role: Role.System,
       content: topic.prompt,

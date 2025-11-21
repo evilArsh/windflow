@@ -1,22 +1,24 @@
-import { RAGFileStatus } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
 import { code4xx, code5xx, errorToText } from "@toolmain/shared"
 import { readFile } from "../doc"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from "../vars"
-export class FileProcess implements TaskChain {
-  #manager: TaskManager
+export class FileProcessTaskImpl implements TaskChain {
   #queue: PQueue
   #log = useLog(RAGServiceId)
-  constructor(manager: TaskManager) {
-    this.#manager = manager
+  constructor() {
     this.#queue = new PQueue({ concurrency: 5 })
   }
   taskId() {
     return "task_fileProcess"
   }
-  async process(info: TaskInfo) {
+  stop(meta?: RAGLocalFileMeta) {
+    // FIXME: need add signal, when quene clear, also break the async task or stop async result from going on exec
+    this.#queue.clear()
+  }
+  async process(info: TaskInfo, manager: TaskManager) {
     this.#queue.add(async () => {
       const statusResp: TaskInfoStatus = {
         taskId: this.taskId(),
@@ -42,12 +44,8 @@ export class FileProcess implements TaskChain {
         statusResp.msg = errorToText(error)
         statusResp.code = 500
       } finally {
-        this.#manager.next(info, statusResp)
+        await manager.next(info, statusResp)
       }
     })
-  }
-  close() {
-    // FIXME: need add signal, when quene clear, also break the async task or stop async result from going on exec
-    this.#queue.clear()
   }
 }

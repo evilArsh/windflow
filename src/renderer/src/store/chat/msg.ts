@@ -25,11 +25,11 @@ import { isArrayLength, isString, toNumber } from "@toolmain/shared"
 import { defaultMessage } from "./default"
 import { useRag } from "./rag"
 
-export const useMsg = (
+export function useMsg(
   chatMessage: Record<string, ChatMessageTree[]>,
   chatLLMConfig: Record<string, ChatLLMConfig>,
   chatTTIConfig: Record<string, ChatTTIConfig>
-) => {
+) {
   const ctx = useContext()
   const modelsStore = useModelsStore()
   const knowledgeStore = useKnowledgeStore()
@@ -104,10 +104,12 @@ export const useMsg = (
     provider: Provider,
     message: ChatMessage
   ) => {
-    // message contexts, messages stack was sorted in descending order, the newest message is the first one
-    const messageIndex = utils.getIndex(topic.id, message.parentId || message.id)
-    const partialContexts = utils.findChatMessage(topic.id)?.slice(messageIndex + 1) ?? []
-    const messageContext = ctx.getMessageContext(topic, partialContexts)
+    const messages = utils.findChatMessage(topic.id)
+    if (!messages) return
+    const partialContexts = utils.getIsolatedMessages(messages, message.parentId || message.id)
+    const messageIndex = partialContexts.findIndex(p => p.node.id === (message.parentId || message.id))
+    if (messageIndex > partialContexts.length - 1) return
+    const messageContext = ctx.getMessageContext(topic, partialContexts.slice(messageIndex + 1))
     const chatContext =
       ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
     if (!chatContext.provider) chatContext.provider = provider
@@ -185,6 +187,7 @@ export const useMsg = (
       // message pair may be seperated by a message, whose contextFlag is `ChatMessageContextFlag.boundary`
       const dstMessage = utils.findMessageByFromIdField(topic.id, messageN.id, true)
       if (dstMessage) {
+        terminate(topic, dstMessage)
         messageN = dstMessage
       } else {
         // already has a user message but the response message is not found
@@ -206,6 +209,7 @@ export const useMsg = (
   }
 
   /**
+   * send a new message base on user input or existed user message
    * @param topic send a message base on topic
    * @param userMessage if not set, create a new user message and do request, otherwise use the existing message
    */

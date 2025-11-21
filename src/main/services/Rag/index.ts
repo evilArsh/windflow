@@ -5,6 +5,7 @@ import { VectorStore, VectorStoreConfig } from "./db"
 import {
   RAGEmbeddingConfig,
   RAGFile,
+  RAGFileStatus,
   RAGLocalFileMeta,
   RAGSearchParam,
   RagSearchStatus,
@@ -18,18 +19,20 @@ import {
   responseCode,
   responseData,
   StatusResponse,
+  toNumber,
   uniqueId,
 } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { createProcessStatus, createTaskManager } from "./task"
 import { useSearchManager } from "./search/index"
 import { ProcessStatus, TaskChain, TaskManager } from "./task/types"
-import { Embedding } from "./task/embedding"
-import { FileProcess } from "./task/file"
-import { Store } from "./task/store"
+import { EmbeddingTaskImpl } from "./task/embedding"
+import { FileProcessTaskImpl } from "./task/file"
+import { StoreTaskImpl } from "./task/store"
 import { combineTableName } from "./db/utils"
 import { log, RAGServiceId } from "./vars"
 import { getFileInfo } from "@main/misc/file"
+import { FileInfo } from "@shared/types/files"
 
 export type RAGServiceConfig = {
   store?: VectorStoreConfig
@@ -50,9 +53,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     this.#task = createTaskManager(this.#ss, this.#globalBus)
     this.#db = new VectorStore(config?.store)
 
-    this.#fileTask = new FileProcess(this.#task)
-    this.#embeddingTask = new Embedding(this.#task)
-    this.#dbTask = new Store(this.#task, this.#db)
+    this.#fileTask = new FileProcessTaskImpl()
+    this.#embeddingTask = new EmbeddingTaskImpl()
+    this.#dbTask = new StoreTaskImpl(this.#db)
 
     this.#task.addTaskChain(this.#fileTask)
     this.#task.addTaskChain(this.#embeddingTask)
@@ -99,21 +102,26 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     }
   }
   async processLocalFile(meta: RAGLocalFileMeta, config: RAGEmbeddingConfig): Promise<void> {
+    let info: FileInfo | undefined
     try {
       if (!meta.path) {
         throw new Error("[processLocalFile] file path is empty")
       }
-      if (this.#ss.has(meta)) {
-        return log.info(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
-      }
-      const pathRows = await this.#db.countRows(
-        combineTableName(meta.topicId),
-        sql.format("`filePath` = ?", [meta.path])
-      )
-      if (pathRows) {
-        return log.info(`[processLocalFile] file already exists in db`)
-      }
-      const info = await getFileInfo(meta.path)
+      // TODO:等待ss完成后处理相同的下一个ss
+      // if (this.#ss.has(meta)) {
+      //   return log.info(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
+      // }
+
+      // if (await this.#db.hasTable(combineTableName(meta.topicId))) {
+      //   const pathRows = await this.#db.countRows(
+      //     combineTableName(meta.topicId),
+      //     sql.format("`filePath` = ?", [meta.path])
+      //   )
+      //   if (pathRows) {
+      //     return log.info(`[processLocalFile] file already exists in db`)
+      //   }
+      // }
+      info = await getFileInfo(meta.path)
       if (!info.isFile) {
         return log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
@@ -127,13 +135,38 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
         config
       )
     } catch (error) {
-      log.debug("[processLocalFile]", errorToText(error))
+      log.debug("[processLocalFile error]", errorToText(error))
       this.#globalBus.emit(EventKey.ServiceLog, {
         id: uniqueId(),
         service: RAGServiceId,
         details: {
           function: "processLocalFile",
           args: meta,
+        },
+        msg: errorToText(error),
+        code: 500,
+      })
+      this.#globalBus.emit(EventKey.RAGFileProcessStatus, {
+        ...meta,
+        status: RAGFileStatus.Failed,
+        code: 500,
+        msg: errorToText(error),
+        fileName: info?.name ?? "",
+        fileSize: toNumber(info?.size),
+      })
+    }
+  }
+  async restart(meta: RAGLocalFileMeta, config: RAGEmbeddingConfig): Promise<void> {
+    try {
+      this.#task.stop(meta)
+      return this.processLocalFile(meta, config)
+    } catch (error) {
+      this.#globalBus.emit(EventKey.ServiceLog, {
+        id: uniqueId(),
+        service: RAGServiceId,
+        details: {
+          function: "restart",
+          args: { meta },
         },
         msg: errorToText(error),
         code: 500,
@@ -194,6 +227,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     ipcMain.handle(IpcChannel.RagProcessLocalFile, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
       return this.processLocalFile(file, config)
     })
+    ipcMain.handle(IpcChannel.RagRestart, async (_, file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => {
+      return this.restart(file, config)
+    })
     ipcMain.handle(IpcChannel.RagRemoveById, async (_, topicId: string, fileId: string) => {
       return this.removeById(topicId, fileId)
     })
@@ -204,6 +240,6 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
 
   dispose() {
     this.#db.close()
-    this.#task.close()
+    this.#task.stop()
   }
 }

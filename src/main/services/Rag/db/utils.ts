@@ -12,7 +12,7 @@ export function createTableSchema(dimensions: number) {
     new arrow.Field("id", new arrow.Utf8(), false),
     new arrow.Field(
       "vector",
-      new arrow.FixedSizeList(dimensions, new arrow.Field("item", new arrow.Float32(), false)),
+      new arrow.FixedSizeList(dimensions, new arrow.Field("item", new arrow.Float64(), false)),
       false
     ),
     new arrow.Field("fileId", new arrow.Utf8(), false),
