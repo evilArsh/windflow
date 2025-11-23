@@ -107,25 +107,11 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       if (!meta.path) {
         throw new Error("[processLocalFile] file path is empty")
       }
-      // TODO:等待ss完成后处理相同的下一个ss
-      // if (this.#ss.has(meta)) {
-      //   return log.info(`[processLocalFile] file already exists,status: ${this.#ss.get(meta)?.status}`)
-      // }
-
-      // if (await this.#db.hasTable(combineTableName(meta.topicId))) {
-      //   const pathRows = await this.#db.countRows(
-      //     combineTableName(meta.topicId),
-      //     sql.format("`filePath` = ?", [meta.path])
-      //   )
-      //   if (pathRows) {
-      //     return log.info(`[processLocalFile] file already exists in db`)
-      //   }
-      // }
       info = await getFileInfo(meta.path)
       if (!info.isFile) {
         return log.error(`[processLocalFile] path ${meta.path} is not a file`)
       }
-      this.#task.process(
+      await this.#task.process(
         {
           ...meta,
           ...info,

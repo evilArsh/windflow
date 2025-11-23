@@ -5,23 +5,21 @@ import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from 
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
 import { RAGServiceId } from "../vars"
+import { combineUniqueId } from "./utils"
 
 class ProcessStatusImpl implements ProcessStatus {
   #fileStatus: Map<string, TaskInfo> = new Map()
-  #conbineUniqueId(meta: RAGLocalFileMeta) {
-    return `$_${meta.topicId}_${meta.path}`
-  }
   get(meta: RAGLocalFileMeta) {
-    return this.#fileStatus.get(this.#conbineUniqueId(meta))
+    return this.#fileStatus.get(combineUniqueId(meta))
   }
   set(info: TaskInfo) {
-    this.#fileStatus.set(this.#conbineUniqueId(info.info), info)
+    this.#fileStatus.set(combineUniqueId(info.info), info)
   }
   has(meta: RAGLocalFileMeta) {
-    return this.#fileStatus.has(this.#conbineUniqueId(meta))
+    return this.#fileStatus.has(combineUniqueId(meta))
   }
   remove(meta: RAGLocalFileMeta) {
-    this.#fileStatus.delete(this.#conbineUniqueId(meta))
+    this.#fileStatus.delete(combineUniqueId(meta))
   }
   updateStatus(meta: RAGLocalFileMeta, status: TaskInfoStatus): boolean {
     const info = this.get(meta)
@@ -75,7 +73,13 @@ class TaskManagerImpl implements TaskManager {
   #cleanStatus(task: TaskInfo) {
     this.#emitStatus(task)
     this.#ss.remove(task.info)
-    // recycle task handling
+    // recycling task handle
+    const tmpInfo = this.#tmp.get(task.info)
+    if (tmpInfo) {
+      this.#log.debug(`[TaskManager] task is done, find same task, start processing again.`, task.info)
+      this.#tmp.remove(tmpInfo.info)
+      this.process(tmpInfo.info, tmpInfo.config)
+    }
   }
   addTaskChain(taskChain: TaskChain): void {
     this.#chainLists.push(taskChain)
@@ -119,12 +123,12 @@ class TaskManagerImpl implements TaskManager {
       status: [],
     }
     if (this.#ss.has(taskInfo.info)) {
-      this.#log.debug(
-        `[process] taskinfo is processing, save it in waiting lists. status: ${this.#ss.get(taskInfo.info)?.status}`
-      )
       if (this.#tmp.has(taskInfo.info)) {
         this.#log.debug("[process] current taskinfo is already in waiting lists, skip")
       } else {
+        this.#log.debug(
+          `[process] taskinfo is processing, save it in waiting lists. status: ${this.#ss.get(taskInfo.info)?.status}`
+        )
         this.#tmp.set(taskInfo)
       }
       return

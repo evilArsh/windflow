@@ -3,49 +3,71 @@ import { code4xx, code5xx, errorToText } from "@toolmain/shared"
 import { readFile } from "../doc"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
-import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from "../vars"
+import { combineUniqueId } from "./utils"
+import { log } from "../vars"
 export class FileProcessTaskImpl implements TaskChain {
   #queue: PQueue
-  #log = useLog(RAGServiceId)
+  #meta: Map<string, AbortController>
   constructor() {
     this.#queue = new PQueue({ concurrency: 5 })
+    this.#meta = new Map()
   }
   taskId() {
     return "task_fileProcess"
   }
   stop(meta?: RAGLocalFileMeta) {
-    // FIXME: need add signal, when quene clear, also break the async task or stop async result from going on exec
-    this.#queue.clear()
+    if (!meta) {
+      this.#meta.forEach(controller => controller.abort())
+      this.#meta.clear()
+    } else {
+      const id = combineUniqueId(meta)
+      const data = this.#meta.get(id)
+      if (data) {
+        data.abort()
+        this.#meta.delete(id)
+      }
+    }
   }
   async process(info: TaskInfo, manager: TaskManager) {
-    this.#queue.add(async () => {
-      const statusResp: TaskInfoStatus = {
-        taskId: this.taskId(),
-        status: RAGFileStatus.Processing,
-      }
-      try {
-        this.#log.debug(`[file process] task start`, info)
-        const chunksData = await readFile(info.info, info.config)
-        this.#log.debug(`[file process] task finish`, chunksData)
-        if (code4xx(chunksData.code) || code5xx(chunksData.code)) {
-          statusResp.status = RAGFileStatus.Failed
-          statusResp.msg = chunksData.msg
-          statusResp.code = chunksData.code
-        } else {
-          info.data = chunksData.data
-          statusResp.status = RAGFileStatus.Success
-          statusResp.msg = "ok"
-          statusResp.code = 200
+    const id = combineUniqueId(info.info)
+    const abortController = new AbortController()
+    this.#meta.set(id, abortController)
+    this.#queue.add(
+      async ({ signal }) => {
+        const statusResp: TaskInfoStatus = {
+          taskId: this.taskId(),
+          status: RAGFileStatus.Processing,
         }
-      } catch (error) {
-        this.#log.error("[file process] error", errorToText(error))
-        statusResp.status = RAGFileStatus.Failed
-        statusResp.msg = errorToText(error)
-        statusResp.code = 500
-      } finally {
-        await manager.next(info, statusResp)
+        try {
+          log.debug(`[file process] task start`, info)
+          const chunksData = await readFile(info.info, info.config)
+          if (signal?.aborted) {
+            throw new Error("task aborted")
+          }
+          log.debug(`[file process] task finish`, chunksData)
+          if (code4xx(chunksData.code) || code5xx(chunksData.code)) {
+            statusResp.status = RAGFileStatus.Failed
+            statusResp.msg = chunksData.msg
+            statusResp.code = chunksData.code
+          } else {
+            info.data = chunksData.data
+            statusResp.status = RAGFileStatus.Success
+            statusResp.msg = "ok"
+            statusResp.code = 200
+          }
+        } catch (error) {
+          log.error("[file process] error", errorToText(error))
+          statusResp.status = RAGFileStatus.Failed
+          statusResp.msg = errorToText(error)
+          statusResp.code = 500
+        } finally {
+          await manager.next(info, statusResp)
+        }
+      },
+      {
+        id,
+        signal: abortController.signal,
       }
-    })
+    )
   }
 }
