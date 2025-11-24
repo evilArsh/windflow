@@ -30,7 +30,7 @@ import { EmbeddingTaskImpl } from "./task/embedding"
 import { FileProcessTaskImpl } from "./task/file"
 import { StoreTaskImpl } from "./task/store"
 import { combineTableName } from "./db/utils"
-import { log, RAGServiceId } from "./vars"
+import { log, RAGServiceId } from "./utils"
 import { getFileInfo } from "@main/misc/file"
 import { FileInfo } from "@shared/types/files"
 

@@ -4,7 +4,7 @@ import { EventBus } from "@shared/service"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from "../vars"
+import { encapEmbeddinConfig, RAGServiceId } from "../utils"
 import { combineUniqueId } from "./utils"
 
 class ProcessStatusImpl implements ProcessStatus {
@@ -108,7 +108,11 @@ class TaskManagerImpl implements TaskManager {
         status: RAGFileStatus.Processing,
       })
       this.#emitStatus(task)
-      this.#log.debug(`[TaskManager] next task start, ${nextChain.taskId()}, info: `, task.info, task.config)
+      this.#log.debug(
+        `[TaskManager] next task start, ${nextChain.taskId()}, info: `,
+        task.info,
+        encapEmbeddinConfig(task.config)
+      )
       nextChain.process(task, this)
     } catch (error) {
       this.#log.error("[file process] error", errorToText(error))
@@ -143,7 +147,7 @@ class TaskManagerImpl implements TaskManager {
       status: RAGFileStatus.Processing,
     })
     this.#emitStatus(taskInfo)
-    this.#log.debug("[process start]", taskInfo)
+    this.#log.debug("[process start]", taskInfo.info, encapEmbeddinConfig(taskInfo.config))
     chain.process(taskInfo, this)
   }
   stop(meta?: RAGLocalFileMeta) {

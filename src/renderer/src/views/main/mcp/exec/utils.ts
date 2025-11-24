@@ -1,10 +1,10 @@
-import { code2xx, errorToText, msg, CallBackFn } from "@toolmain/shared"
+import { code2xx, errorToText, msg, CallBackFn, isArrayLength } from "@toolmain/shared"
 
 export async function chooseFile(): Promise<string> {
   if (window.api) {
     const res = await window.api.file.chooseFilePath()
-    if (code2xx(res.code)) {
-      return res.data
+    if (code2xx(res.code) && isArrayLength(res.data)) {
+      return res.data[0]
     }
     throw new Error(res.msg)
   }

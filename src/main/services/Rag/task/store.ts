@@ -6,7 +6,7 @@ import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"
 import sql from "sqlstring"
 import { combineUniqueId } from "./utils"
-import { log } from "../vars"
+import { log } from "../utils"
 
 export class StoreTaskImpl implements TaskChain {
   #queue: PQueue
@@ -88,6 +88,11 @@ export class StoreTaskImpl implements TaskChain {
           statusResp.status = RAGFileStatus.Success
           statusResp.code = 200
           statusResp.msg = "ok"
+          if (signal?.aborted) {
+            statusResp.msg = "aborted"
+            statusResp.status = RAGFileStatus.Failed
+            statusResp.code = 499
+          }
         } catch (error) {
           log.error("[store process error]", errorToText(error))
           statusResp.status = RAGFileStatus.Failed

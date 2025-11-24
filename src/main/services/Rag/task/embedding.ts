@@ -3,7 +3,7 @@ import PQueue from "p-queue"
 import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import axios, { AxiosResponse } from "axios"
 import { errorToText, isArray, toNumber } from "@toolmain/shared"
-import { log } from "../vars"
+import { encapEmbeddinConfig, log } from "../utils"
 import { combineUniqueId } from "./utils"
 
 const requestWithChunks = async <T>(
@@ -61,7 +61,7 @@ export class EmbeddingTaskImpl implements TaskChain {
           log.debug(
             `[embedding process] start process chunk, data_length: ${info.data.length}, info: `,
             info.info,
-            info.config
+            encapEmbeddinConfig(info.config)
           )
           for (let i = 0; i < info.data.length; i += maxinput) {
             const chunk = info.data.slice(i, i + maxinput)
@@ -121,6 +121,11 @@ export class EmbeddingTaskImpl implements TaskChain {
           statusResp.status = RAGFileStatus.Success
           statusResp.code = 200
           statusResp.msg = "ok"
+          if (signal?.aborted) {
+            statusResp.msg = "aborted"
+            statusResp.status = RAGFileStatus.Failed
+            statusResp.code = 499
+          }
         } catch (error) {
           log.error("[embedding process error]", errorToText(error))
           statusResp.status = RAGFileStatus.Failed

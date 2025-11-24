@@ -4,7 +4,7 @@ import { readFile } from "../doc"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { combineUniqueId } from "./utils"
-import { log } from "../vars"
+import { log } from "../utils"
 export class FileProcessTaskImpl implements TaskChain {
   #queue: PQueue
   #meta: Map<string, AbortController>

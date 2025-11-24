@@ -7,7 +7,7 @@ import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValu
 import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
 import { Primitive } from "type-fest"
 import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from "../vars"
+import { RAGServiceId } from "../utils"
 
 export const Flags = {
   Error: Symbol("[ERROR]"),

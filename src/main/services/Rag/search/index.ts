@@ -1,7 +1,7 @@
 import { RAGEmbeddingConfig, RAGFile, RAGSearchParam, RagSearchStatus, RAGSearchTask } from "@shared/types/rag"
 import { errorToText, HttpStatusCode, isArray, isNull, toNumber } from "@toolmain/shared"
 import { EmbeddingResponse, RerankResponse } from "../task/types"
-import { log } from "../vars"
+import { encapEmbeddinConfig, log } from "../utils"
 import { VectorStore } from "../db"
 import { combineTableName } from "../db/utils"
 import EventEmitter from "node:events"
@@ -33,7 +33,7 @@ export function useSearchManager(db: VectorStore) {
     signal?: AbortSignal
   ) => {
     if (!config.rerank) return
-    log.debug(`[embedding search] will rerank result.`, params, config)
+    log.debug(`[embedding search] will rerank result.`, params, encapEmbeddinConfig(config))
     const { api, apiKey, model } = config.rerank
     if (!(api && apiKey && model)) return
     const { abort, pending } = http.request<RerankResponse>({
@@ -68,7 +68,7 @@ export function useSearchManager(db: VectorStore) {
     ev.emit(sessionId, task)
   }
   const startTask = async (params: RAGSearchParam, config: RAGEmbeddingConfig) => {
-    log.debug("[vector search start]", params, config)
+    log.debug("[vector search start]", params, encapEmbeddinConfig(config))
     console.time("[vector search]")
     const abortController = new AbortController()
     taskStatus.set(params.sessionId, {
