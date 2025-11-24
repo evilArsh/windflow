@@ -5,7 +5,7 @@
     </template>
     <slot v-if="!loading"></slot>
     <el-icon v-else>
-      <i class="i-ep:loading loading-icon"></i>
+      <i class="i-ep-loading loading-icon"></i>
     </el-icon>
   </el-button>
 </template>

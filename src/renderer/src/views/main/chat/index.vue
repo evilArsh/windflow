@@ -60,7 +60,7 @@ onBeforeUnmount(() => {
             <div id="toggleMenu"></div>
           </div>
           <Button @click="onCreateNewTopic">
-            <i class="text-1.4rem i-ep:plus"></i>
+            <i class="text-1.4rem i-ep-plus"></i>
             <el-text>{{ t("chat.addChat") }}</el-text>
           </Button>
         </div>
@@ -98,7 +98,7 @@ onBeforeUnmount(() => {
                   </ContentBox>
                   <div v-show="currentHover === data.id" class="chat-tree-handle">
                     <el-button @click.stop="menu.open($event, data)" circle size="small">
-                      <i-ep:more-filled></i-ep:more-filled>
+                      <i-ep-more-filled></i-ep-more-filled>
                     </el-button>
                   </div>
                 </div>
@@ -126,9 +126,9 @@ onBeforeUnmount(() => {
         <template #leftHandler>
           <teleport to="#toggleMenu" defer :disabled="!showTreeMenu">
             <ContentBox @click="_ => toggleTreeMenu()" background>
-              <i-material-symbols:right-panel-close-outline
-                v-if="!showTreeMenu"></i-material-symbols:right-panel-close-outline>
-              <i-material-symbols:left-panel-close-outline v-else></i-material-symbols:left-panel-close-outline>
+              <i-material-symbols-right-panel-close-outline
+                v-if="!showTreeMenu"></i-material-symbols-right-panel-close-outline>
+              <i-material-symbols-left-panel-close-outline v-else></i-material-symbols-left-panel-close-outline>
             </ContentBox>
           </teleport>
         </template>

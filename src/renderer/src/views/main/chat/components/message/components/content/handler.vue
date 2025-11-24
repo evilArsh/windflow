@@ -62,7 +62,7 @@ async function restart(done: CallBackFn) {
       <template #reference="{ loading, disabled }">
         <ContentBox class="m0!" background>
           <el-button :loading :disabled="!isProcessing || disabled" text size="small" circle plain type="primary">
-            <i-solar:stop-circle-bold class="text-1.4rem"></i-solar:stop-circle-bold>
+            <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
           </el-button>
         </ContentBox>
       </template>
@@ -78,14 +78,14 @@ async function restart(done: CallBackFn) {
       <template #reference="{ loading, disabled }">
         <ContentBox class="m0!" background>
           <el-button size="small" :loading :disabled="!isFinish || disabled" circle plain text type="primary">
-            <i-solar:refresh-bold class="text-1.4rem"></i-solar:refresh-bold>
+            <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
           </el-button>
         </ContentBox>
       </template>
     </PopConfirm>
     <ContentBox class="m0!" background>
       <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
-        <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
+        <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
       </el-button>
     </ContentBox>
     <PopConfirm
@@ -99,7 +99,7 @@ async function restart(done: CallBackFn) {
       <template #reference="{ loading, disabled }">
         <ContentBox class="m0!" background>
           <el-button size="small" :loading :disabled="!isFinish || disabled" circle plain text type="danger">
-            <i-solar:trash-bin-trash-outline class="text-1.4rem"></i-solar:trash-bin-trash-outline>
+            <i-solar-trash-bin-trash-outline class="text-1.4rem"></i-solar-trash-bin-trash-outline>
           </el-button>
         </ContentBox>
       </template>

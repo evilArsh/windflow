@@ -55,6 +55,8 @@ export default defineConfig([
       "**/h5/",
       "**/.vscode/",
       "**/assets/",
+      "**/*/components.d.ts",
+      "**/*/auto-imports.d.ts",
       "eslint.config.{mjs,cjs,js}",
       "vitest.config.{ts,mts,js,mjs}",
       "vite.config.{ts,mts,js,mjs}",

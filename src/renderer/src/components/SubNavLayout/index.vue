@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { SettingsValue } from "@renderer/types"
+import { SettingKeys, SettingsValue } from "@renderer/types"
 import { CSSProperties } from "@toolmain/shared"
 import { Resize } from "@toolmain/components"
 const emit = defineEmits<{
@@ -8,7 +8,7 @@ const emit = defineEmits<{
   (e: "scaling"): void
 }>()
 const props = defineProps<{
-  id: string
+  id: SettingKeys
   hideSubmenu?: boolean
 }>()
 const settingsStore = useSettingsStore()

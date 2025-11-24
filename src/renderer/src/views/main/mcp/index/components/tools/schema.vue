@@ -20,7 +20,7 @@ const properties = computed(() => {
   <el-card style="--el-card-padding: 1rem" shadow="never">
     <ContentBox class="select-unset!">
       <template #icon>
-        <i-fluent-emoji-flat:hammer-and-wrench></i-fluent-emoji-flat:hammer-and-wrench>
+        <i-fluent-emoji-flat-hammer-and-wrench></i-fluent-emoji-flat-hammer-and-wrench>
       </template>
       <el-text type="primary">{{ data.name }}</el-text>
       <template #footer>

@@ -172,7 +172,7 @@ onMounted(() => {
             style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
             class="select-unset! mb-1rem!"
             :key="item.id">
-            <i class="i-material-symbols:bookmark-stacks text-3rem"></i>
+            <i class="i-material-symbols-bookmark-stacks text-3rem"></i>
             <ContentBox class="flex-1 select-unset!" normal>
               <el-space>
                 <el-text type="primary">{{ item.name }}</el-text>
@@ -194,7 +194,7 @@ onMounted(() => {
               <el-popconfirm :title="t('tip.deleteConfirm')">
                 <template #reference>
                   <el-button size="small" round text type="danger">
-                    <i class="i-ep:delete text-1.4rem"></i>
+                    <i class="i-ep-delete text-1.4rem"></i>
                   </el-button>
                 </template>
                 <template #actions="{ cancel }">
@@ -207,7 +207,7 @@ onMounted(() => {
                 </template>
               </el-popconfirm>
               <el-button size="small" round text type="warning" @click="ev.onOpenEdit(item)">
-                <i class="i-ep:edit text-1.4rem"></i>
+                <i class="i-ep-edit text-1.4rem"></i>
               </el-button>
               <el-divider direction="vertical"></el-divider>
             </template>

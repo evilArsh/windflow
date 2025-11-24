@@ -38,7 +38,7 @@ function onChange() {
       <div class="flex flex-col gap-.5rem">
         <el-card shadow="never" style="--el-card--padding: 0.5rem">
           <el-button v-if="dataset.length == 0" size="small" type="primary" @click="onAdd(-1)">
-            <i-ep:plus></i-ep:plus>
+            <i-ep-plus></i-ep-plus>
           </el-button>
           <div v-else class="flex flex-col gap-.5rem">
             <ContentBox v-for="(item, index) in dataset" :key="item.key">
@@ -63,10 +63,10 @@ function onChange() {
               <template #end>
                 <div class="flex gap-.25rem">
                   <el-button size="small" type="primary" @click="onAdd(index)">
-                    <i-ep:plus></i-ep:plus>
+                    <i-ep-plus></i-ep-plus>
                   </el-button>
                   <el-button size="small" type="danger" @click="onDel(index)">
-                    <i-ep:delete></i-ep:delete>
+                    <i-ep-delete></i-ep-delete>
                   </el-button>
                 </div>
               </template>

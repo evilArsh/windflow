@@ -7,7 +7,7 @@ defineProps<{ data: MCPResourceTemplatesItem }>()
   <el-card style="--el-card-padding: 1rem" shadow="never">
     <ContentBox class="select-unset!">
       <template #icon>
-        <i-fluent-emoji-flat:open-file-folder></i-fluent-emoji-flat:open-file-folder>
+        <i-fluent-emoji-flat-open-file-folder></i-fluent-emoji-flat-open-file-folder>
       </template>
       <el-text type="primary">{{ data.name }}</el-text>
     </ContentBox>

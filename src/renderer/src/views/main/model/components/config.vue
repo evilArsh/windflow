@@ -195,7 +195,7 @@ watch(
                 </el-form-item>
                 <el-form-item>
                   <Button size="small" type="primary" plain @click="onRefreshModel">
-                    <i-ep:refresh></i-ep:refresh>
+                    <i-ep-refresh></i-ep-refresh>
                   </Button>
                 </el-form-item>
                 <ModelCard :data="filteredModels" :provider-name="data.name" />

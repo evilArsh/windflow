@@ -167,7 +167,7 @@ const ev = {
               <el-text :size> {{ title }}</el-text>
             </div>
           </template>
-          <div class="flex items-center justify-end">
+          <div class="flex items-center justify-end flex-1">
             <el-button
               :disabled="btnDisabled"
               :loading="btnLoading && isCancelClick"

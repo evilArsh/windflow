@@ -99,7 +99,7 @@ function onRandSeed() {
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
-        <i-fluent-emoji-flat:framed-picture class="text-1.6rem"></i-fluent-emoji-flat:framed-picture>
+        <i-fluent-emoji-flat-framed-picture class="text-1.6rem"></i-fluent-emoji-flat-framed-picture>
       </ContentBox>
     </template>
     <DialogPanel>
@@ -112,7 +112,7 @@ function onRandSeed() {
           <el-dropdown :teleported="false" @command="onCommand">
             <el-button plain text size="small" type="info">
               {{ t("chat.llm.btnMore") }}
-              <i-ep:arrow-down class="ml-.5rem text-1.2rem"></i-ep:arrow-down>
+              <i-ep-arrow-down class="ml-.5rem text-1.2rem"></i-ep-arrow-down>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
@@ -143,7 +143,7 @@ function onRandSeed() {
           <template #footer>
             <el-input size="small" readonly v-model="config.seed">
               <template #append>
-                <i-ep:refresh @click="onRandSeed" class="text-1.2rem"></i-ep:refresh>
+                <i-ep-refresh @click="onRandSeed" class="text-1.2rem"></i-ep-refresh>
               </template>
             </el-input>
           </template>
@@ -166,7 +166,7 @@ function onRandSeed() {
               :teleported="false"
               :content="t('chat.tti.inferenceStepsExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>
@@ -190,7 +190,7 @@ function onRandSeed() {
               :teleported="false"
               :content="t('chat.tti.guidanceScaleExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>

@@ -223,7 +223,7 @@ defineExpose({
           <template #end>
             <div class="flex items-center justify-center">
               <el-tooltip :content="t('knowledge.dimensionsDesc')" placement="top">
-                <i-material-symbols:help-outline></i-material-symbols:help-outline>
+                <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </div>
           </template>
@@ -245,7 +245,7 @@ defineExpose({
           <template #end>
             <div class="flex items-center justify-center">
               <el-tooltip :content="t('knowledge.maxTokensDesc')" placement="top">
-                <i-material-symbols:help-outline></i-material-symbols:help-outline>
+                <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </div>
           </template>
@@ -267,7 +267,7 @@ defineExpose({
           <template #end>
             <div class="flex items-center justify-center">
               <el-tooltip :content="t('knowledge.maxInputsDesc')" placement="top">
-                <i-material-symbols:help-outline></i-material-symbols:help-outline>
+                <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </div>
           </template>
@@ -289,7 +289,7 @@ defineExpose({
           <template #end>
             <div class="flex items-center justify-center">
               <el-tooltip :content="t('knowledge.maxFileChunksDesc')" placement="top">
-                <i-material-symbols:help-outline></i-material-symbols:help-outline>
+                <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </div>
           </template>

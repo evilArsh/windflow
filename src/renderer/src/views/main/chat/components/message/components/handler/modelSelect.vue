@@ -35,7 +35,7 @@ watchEffect(() => {
     <template #reference>
       <el-badge :value="data.modelIds.length" type="primary">
         <ContentBox background>
-          <i-fluent-emoji-flat:wrapped-gift class="text-1.6rem"></i-fluent-emoji-flat:wrapped-gift>
+          <i-fluent-emoji-flat-wrapped-gift class="text-1.6rem"></i-fluent-emoji-flat-wrapped-gift>
         </ContentBox>
       </el-badge>
     </template>

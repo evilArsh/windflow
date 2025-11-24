@@ -98,7 +98,7 @@ defineExpose({
         </div>
         <Error :message></Error>
       </div>
-      <i-svg-spinners:pulse-3 v-if="isPartial" class="text-1.4rem m3px"></i-svg-spinners:pulse-3>
+      <i-svg-spinners-pulse-3 v-if="isPartial" class="text-1.4rem m3px"></i-svg-spinners-pulse-3>
     </div>
   </MsgBubble>
 </template>

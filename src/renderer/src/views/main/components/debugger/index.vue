@@ -48,7 +48,7 @@ shortcut.listen("ctrl+d", res => {
 <template>
   <div class="handler flex-y-center">
     <!-- <ContentBox @click="db.toggle">
-      <i-ic:round-terminal class="text-1.8rem"></i-ic:round-terminal>
+      <i-ic-round-terminal class="text-1.8rem"></i-ic-round-terminal>
     </ContentBox> -->
     <ScalePanel v-model="panelConfig" ref="scale" :drag-target="headerRef">
       <DialogPanel>

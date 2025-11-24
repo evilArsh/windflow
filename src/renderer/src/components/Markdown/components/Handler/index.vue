@@ -8,7 +8,7 @@ defineEmits<{
     <ContentBox>
       <div class="flex items-center">
         <el-button size="small" circle plain text type="primary" @click="$emit('toggleEdit')">
-          <i-solar:clapperboard-edit-broken class="text-1.4rem"></i-solar:clapperboard-edit-broken>
+          <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
         </el-button>
       </div>
     </ContentBox>

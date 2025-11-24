@@ -18,7 +18,7 @@ const id = useId()
           <div class="flex items-center">
             <Copy :text="code"></Copy>
             <el-button type="primary" @click="downloadCode(code, lang, `index_${id}`)" size="small" round plain circle>
-              <i-ic:baseline-download></i-ic:baseline-download>
+              <i-ic-baseline-download></i-ic-baseline-download>
             </el-button>
           </div>
         </div>

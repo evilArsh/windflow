@@ -39,11 +39,11 @@ const svgSrc = computed(() =>
       <ContentBox>
         <el-text type="info" size="small">token:</el-text>
         <ContentBox wrap-class="m0! p0!" normal>
-          <i-material-symbols:arrow-upward-alt class="text-1.2rem"></i-material-symbols:arrow-upward-alt>
+          <i-material-symbols-arrow-upward-alt class="text-1.2rem"></i-material-symbols-arrow-upward-alt>
           <el-text type="info" size="small"> {{ toNumber(message.promptTokens) }}</el-text>
         </ContentBox>
         <ContentBox wrap-class="m0! p0!" normal>
-          <i-material-symbols:arrow-downward-alt class="text-1.2rem"></i-material-symbols:arrow-downward-alt>
+          <i-material-symbols-arrow-downward-alt class="text-1.2rem"></i-material-symbols-arrow-downward-alt>
           <el-text type="info" size="small">{{ toNumber(message.completionTokens) }}</el-text>
         </ContentBox>
       </ContentBox>

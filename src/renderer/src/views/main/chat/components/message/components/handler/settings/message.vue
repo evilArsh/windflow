@@ -31,7 +31,7 @@ async function updateTopic() {
           popper-class="max-w-25rem"
           :content="t('chat.settings.maxContextLengthExp')"
           placement="top">
-          <i-material-symbols:help-outline></i-material-symbols:help-outline>
+          <i-material-symbols-help-outline></i-material-symbols-help-outline>
         </el-tooltip>
       </template>
       <template #footer>

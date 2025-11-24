@@ -54,12 +54,12 @@ shortcut.listen("ctrl+b", res => {
               <template #end>
                 <teleport to="#mainContentHeaderSlot" defer :disabled="cache.showSubNav">
                   <ContentBox @click="ev.toggleNav" background>
-                    <i-material-symbols:right-panel-close-outline
+                    <i-material-symbols-right-panel-close-outline
                       class="text-1.6rem"
-                      v-if="!cache.showSubNav"></i-material-symbols:right-panel-close-outline>
-                    <i-material-symbols:left-panel-close-outline
+                      v-if="!cache.showSubNav"></i-material-symbols-right-panel-close-outline>
+                    <i-material-symbols-left-panel-close-outline
                       class="text-1.6rem"
-                      v-else></i-material-symbols:left-panel-close-outline>
+                      v-else></i-material-symbols-left-panel-close-outline>
                   </ContentBox>
                 </teleport>
               </template>

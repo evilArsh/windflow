@@ -22,7 +22,7 @@ const onPromptChange = useThrottleFn(async () => {
   <div class="flex flex-col gap.5rem">
     <ContentBox>
       <template #icon>
-        <i class="i-fluent-emoji-flat:flashlight"></i>
+        <i class="i-fluent-emoji-flat-flashlight"></i>
       </template>
       <el-text type="info">{{ t("chat.right.prompt") }}</el-text>
     </ContentBox>

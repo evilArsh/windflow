@@ -84,7 +84,7 @@ const { loading, dropList, onCommand, update } = useEvent()
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
-        <i-ic:baseline-list-alt class="text-1.6rem"></i-ic:baseline-list-alt>
+        <i-ic-baseline-list-alt class="text-1.6rem"></i-ic-baseline-list-alt>
       </ContentBox>
     </template>
     <DialogPanel>
@@ -97,7 +97,7 @@ const { loading, dropList, onCommand, update } = useEvent()
           <el-dropdown :teleported="false" @command="onCommand">
             <el-button plain text size="small" type="info">
               {{ t("chat.llm.btnMore") }}
-              <i-ep:arrow-down class="ml-.5rem text-1.2rem"></i-ep:arrow-down>
+              <i-ep-arrow-down class="ml-.5rem text-1.2rem"></i-ep-arrow-down>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
@@ -125,7 +125,7 @@ const { loading, dropList, onCommand, update } = useEvent()
               popper-class="max-w-25rem"
               :content="t('chat.llm.streamExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>
@@ -146,7 +146,7 @@ const { loading, dropList, onCommand, update } = useEvent()
               popper-class="max-w-25rem"
               :content="t('chat.llm.maxTokensExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>
@@ -174,7 +174,7 @@ const { loading, dropList, onCommand, update } = useEvent()
               popper-class="max-w-25rem"
               :content="t('chat.llm.temperatureExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>
@@ -198,7 +198,7 @@ const { loading, dropList, onCommand, update } = useEvent()
           </div>
           <template #end>
             <el-tooltip :teleported="false" popper-class="max-w-25rem" :content="t('chat.llm.topPExp')" placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>
@@ -219,7 +219,7 @@ const { loading, dropList, onCommand, update } = useEvent()
               popper-class="max-w-25rem"
               :content="t('chat.llm.frequencyPenaltyExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>
@@ -247,7 +247,7 @@ const { loading, dropList, onCommand, update } = useEvent()
               popper-class="max-w-25rem"
               :content="t('chat.llm.presencePenaltyExp')"
               placement="top">
-              <i-material-symbols:help-outline></i-material-symbols:help-outline>
+              <i-material-symbols-help-outline></i-material-symbols-help-outline>
             </el-tooltip>
           </template>
           <template #footer>

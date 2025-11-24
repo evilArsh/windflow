@@ -70,7 +70,7 @@ onMounted(() => {
         </el-select>
       </div>
     </template>
-    <FileItem :file-list view></FileItem>
+    <FileItem :file-list view :knowledge-id="topic.knowledgeId"></FileItem>
   </DialogPanel>
 </template>
 <style lang="scss" scoped></style>

@@ -1,15 +1,18 @@
 <script lang="ts" setup>
 import useRagFilesStore from "@renderer/store/ragFiles"
+import useKnowledgeStore from "@renderer/store/knowledge"
 import { RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
-import { CallBackFn, msgError, errorToText } from "@toolmain/shared"
+import { CallBackFn, msgError, errorToText, cloneDeep } from "@toolmain/shared"
 import { filesize } from "filesize"
 import { Spinner } from "@toolmain/components"
 
 const props = defineProps<{
   fileList: RAGLocalFileInfo[]
+  knowledgeId?: string
   view?: boolean // 预览模式
 }>()
 
+const knowledgeStore = useKnowledgeStore()
 const ragFilesStore = useRagFilesStore()
 
 const filtedFilieList = computed(() => {
@@ -21,6 +24,21 @@ const ev = {
   async onDelete(item: RAGLocalFileInfo, done: CallBackFn) {
     try {
       await ragFilesStore.remove(item.id)
+    } catch (error) {
+      msgError(errorToText(error))
+    } finally {
+      done()
+    }
+  },
+  async onRestart(item: RAGLocalFileInfo, done: CallBackFn) {
+    try {
+      if (!window.api) {
+        return
+      }
+      if (!props.knowledgeId) throw new Error(t("knowledge.knowledgeIdNotFound"))
+      const config = await knowledgeStore.getEmbeddingConfigById(props.knowledgeId)
+      if (!config) throw new Error(t("knowledge.embeddingConfigNotFound"))
+      await window.api.rag.restart(cloneDeep(item), cloneDeep(config))
     } catch (error) {
       msgError(errorToText(error))
     } finally {
@@ -46,7 +64,7 @@ const ev = {
       :class="[view ? '' : 'mb-1rem!']"
       style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
       :key="item.id">
-      <i v-if="!view" class="i-ic:baseline-insert-drive-file text-3rem"></i>
+      <i v-if="!view" class="i-ic-baseline-insert-drive-file text-3rem"></i>
       <ContentBox class="flex-1 select-unset!" normal>
         <el-space>
           <el-link
@@ -87,11 +105,24 @@ const ev = {
           :confirm-button-text="t('tip.yes')"
           confirm-button-type="danger"
           :cancel-button-text="t('btn.cancel')"
-          size="small"
+          size="default"
           :confirm="done => ev.onDelete(item, done)">
           <template #reference="{ loading, disabled }">
             <el-button :loading :disabled size="small" type="danger" round text>
               <i class="i-ep-delete-filled text-1.4rem"></i>
+            </el-button>
+          </template>
+        </PopConfirm>
+        <PopConfirm
+          :title="t('knowledge.restartRagEmbedding')"
+          :confirm-button-text="t('tip.yes')"
+          confirm-button-type="danger"
+          :cancel-button-text="t('btn.cancel')"
+          size="default"
+          :confirm="done => ev.onRestart(item, done)">
+          <template #reference="{ loading, disabled }">
+            <el-button :loading :disabled size="small" type="warning" round text>
+              <i class="i-ep-refresh text-1.4rem"></i>
             </el-button>
           </template>
         </PopConfirm>

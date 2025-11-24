@@ -179,7 +179,7 @@ settingsStore.dataWatcher<string>(SettingKeys.KnowledgeId, toRef(cache, "current
           <el-form-item>
             <el-button link @click="util.toEmbeddingPage" size="small" type="primary">
               {{ t("form.addNewEmbedding") }}
-              <i class="i-material-symbols:arrow-outward"></i>
+              <i class="i-material-symbols-arrow-outward"></i>
             </el-button>
           </el-form-item>
           <el-form-item prop="type" :label="t('knowledge.type')">
@@ -210,7 +210,7 @@ settingsStore.dataWatcher<string>(SettingKeys.KnowledgeId, toRef(cache, "current
                 still-lock
                 @click="ev.onKnowledgeChoose(kb)">
                 <template #icon>
-                  <i-material-symbols-light:book-2 class="text-1.4rem" />
+                  <i-material-symbols-light-book-2 class="text-1.4rem" />
                 </template>
                 <el-text>{{ kb.name }}</el-text>
               </ContentBox>

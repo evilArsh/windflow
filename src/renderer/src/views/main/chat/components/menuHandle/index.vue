@@ -52,19 +52,19 @@ defineExpose({
       <div class="menu-handle">
         <el-button text @click.stop="onEdit">
           <div class="handle-item">
-            <i-ep:edit></i-ep:edit>
+            <i-ep-edit></i-ep-edit>
             <span>{{ t("btn.edit") }}</span>
           </div>
         </el-button>
         <Button text @click="(done, e) => onAdd(done, e)">
           <div class="handle-item">
-            <i-ep:plus></i-ep:plus>
+            <i-ep-plus></i-ep-plus>
             <span>{{ t("btn.add") }}</span>
           </div>
         </Button>
         <el-button v-if="!deleteConfirm" @click.stop="deleteConfirm = true" text type="default">
           <div class="handle-item">
-            <i-ep:delete></i-ep:delete>
+            <i-ep-delete></i-ep-delete>
             <span>{{ t("btn.delete") }}</span>
           </div>
         </el-button>

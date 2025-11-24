@@ -5,7 +5,7 @@ defineProps<{
 </script>
 <template>
   <i class="svg-box" v-if="src" v-html="src"></i>
-  <i-twemoji:exclamation-question-mark class="svg-box" v-else></i-twemoji:exclamation-question-mark>
+  <i-twemoji-exclamation-question-mark class="svg-box" v-else></i-twemoji-exclamation-question-mark>
 </template>
 <style lang="scss">
 .svg-box {

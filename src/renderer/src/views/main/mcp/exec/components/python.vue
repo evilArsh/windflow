@@ -67,7 +67,7 @@ function chooseFile(done: CallBackFn) {
           <el-text type="primary">{{ t("mcp.settings.python.uv.title") }}</el-text>
           <el-tooltip :content="t(`mcp.settings.python.uv.test`)" placement="top">
             <Button class="m0!" size="small" text @click="done => envStore.checkEnv(done)">
-              <i-ic:baseline-terminal class="text-1.4rem"></i-ic:baseline-terminal>
+              <i-ic-baseline-terminal class="text-1.4rem"></i-ic-baseline-terminal>
             </Button>
           </el-tooltip>
         </div>

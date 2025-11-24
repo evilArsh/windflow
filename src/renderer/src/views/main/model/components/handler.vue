@@ -11,7 +11,7 @@ function onReset() {
     <el-popconfirm :title="t('tip.reset')" @confirm="onReset">
       <template #reference>
         <el-button size="small" type="primary" plain>
-          <i-ep:refresh></i-ep:refresh>
+          <i-ep-refresh></i-ep-refresh>
         </el-button>
       </template>
       <template #actions="{ confirm, cancel }">

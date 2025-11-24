@@ -110,14 +110,14 @@ settingsStore.dataWatcher<string>(SettingKeys.DefaultRoute, defaultRoute, "/main
     <div class="nav-bottom">
       <ContentBox background @click="status.toggleDark">
         <div class="nav-bottom-item">
-          <i-ic:baseline-mode-night v-if="toValue(status.dark)" class="text-1.4rem"></i-ic:baseline-mode-night>
-          <i-ic:twotone-light-mode v-else class="text-1.4rem"></i-ic:twotone-light-mode>
+          <i-ic-baseline-mode-night v-if="toValue(status.dark)" class="text-1.4rem"></i-ic-baseline-mode-night>
+          <i-ic-twotone-light-mode v-else class="text-1.4rem"></i-ic-twotone-light-mode>
         </div>
       </ContentBox>
       <I18n></I18n>
       <ContentBox background>
         <div class="nav-bottom-item">
-          <i-mdi:settings class="text-1.4rem"></i-mdi:settings>
+          <i-mdi-settings class="text-1.4rem"></i-mdi-settings>
         </div>
       </ContentBox>
     </div>

@@ -86,7 +86,7 @@ const tool = {
                 destroy-icon
                 :model-value="call.status === Status.InProgress"
                 class="flex-shrink-0 text-1.2rem font-bold"></Spinner>
-              <i-twemoji:hammer-and-wrench class="text-1.2rem" />
+              <i-twemoji-hammer-and-wrench class="text-1.2rem" />
               <el-text size="small" type="primary">{{ serverName(call.serverId) }}</el-text>
               <el-text size="small" type="danger">|</el-text>
               <el-text size="small" type="info">{{ call.function.name }}</el-text>

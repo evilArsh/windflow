@@ -129,7 +129,7 @@ const dlg = {
                   still-lock
                   @click.stop="serverHandler.onCardClick(server)">
                   <template #icon>
-                    <i-twemoji:hammer-and-wrench class="text-1.4rem" />
+                    <i-twemoji-hammer-and-wrench class="text-1.4rem" />
                   </template>
                   <McpName :data="server"></McpName>
                   <Spinner

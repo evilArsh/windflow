@@ -86,7 +86,7 @@ const serverHandler = {
     <template #reference>
       <el-badge :value="currentLength" type="primary" :show-zero="false">
         <ContentBox background>
-          <i-twemoji:hammer-and-wrench class="text-1.6rem" />
+          <i-twemoji-hammer-and-wrench class="text-1.6rem" />
         </ContentBox>
       </el-badge>
     </template>
@@ -115,7 +115,7 @@ const serverHandler = {
                   <div class="flex items-center">
                     <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.mcp.clone')">
                       <ContentBox class="flex-grow-0!" @click.stop="onClick(server)">
-                        <i class="i-ep:copy-document"></i>
+                        <i class="i-ep-copy-document"></i>
                       </ContentBox>
                     </el-tooltip>
                     <el-popconfirm
@@ -125,7 +125,7 @@ const serverHandler = {
                       <template #reference>
                         <ContentBox class="flex-grow-0!">
                           <el-button text link type="warning">
-                            <i class="i-ep:refresh text-1.4rem"></i>
+                            <i class="i-ep-refresh text-1.4rem"></i>
                           </el-button>
                         </ContentBox>
                       </template>
@@ -145,7 +145,7 @@ const serverHandler = {
                       <template #reference>
                         <ContentBox class="flex-grow-0!">
                           <el-button text link type="danger">
-                            <i class="i-ep:delete text-1.4rem"></i>
+                            <i class="i-ep-delete text-1.4rem"></i>
                           </el-button>
                         </ContentBox>
                       </template>

@@ -11,7 +11,7 @@ const params = computed(() => {
   <el-card style="--el-card-padding: 1rem" shadow="never">
     <ContentBox class="select-unset!">
       <template #icon>
-        <i-fluent-emoji-flat:left-speech-bubble></i-fluent-emoji-flat:left-speech-bubble>
+        <i-fluent-emoji-flat-left-speech-bubble></i-fluent-emoji-flat-left-speech-bubble>
       </template>
       <el-text type="primary">{{ data.name }}</el-text>
       <template #footer>

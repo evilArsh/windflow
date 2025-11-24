@@ -17,7 +17,7 @@ function onDel(index: number) {
         <el-input :model-value="data.join(' ')" autosize readonly type="textarea"></el-input>
         <el-card shadow="never" style="--el-card--padding: 0.5rem">
           <el-button v-if="data.length == 0" size="small" type="primary" @click="onAdd(-1)">
-            <i-ep:plus></i-ep:plus>
+            <i-ep-plus></i-ep-plus>
           </el-button>
           <div v-else class="flex flex-col gap-.5rem">
             <ContentBox v-for="(_, index) in data" :key="index">
@@ -25,10 +25,10 @@ function onDel(index: number) {
               <template #end>
                 <div class="flex gap-.25rem">
                   <el-button size="small" type="primary" @click="onAdd(index)">
-                    <i-ep:plus></i-ep:plus>
+                    <i-ep-plus></i-ep-plus>
                   </el-button>
                   <el-button size="small" type="danger" @click="onDel(index)">
-                    <i-ep:delete></i-ep:delete>
+                    <i-ep-delete></i-ep-delete>
                   </el-button>
                 </div>
               </template>

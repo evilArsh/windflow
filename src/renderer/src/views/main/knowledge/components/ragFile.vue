@@ -64,7 +64,7 @@ const upload = {
         </PopConfirm>
         <Button size="small" type="primary" @click="upload.onChooseFile">
           <template #icon>
-            <el-icon class="text-1.4rem"> <i class="i-ep:upload-filled"></i> </el-icon>
+            <el-icon class="text-1.4rem"> <i class="i-ep-upload-filled"></i> </el-icon>
           </template>
           {{ t("btn.upload") }}
         </Button>
@@ -93,7 +93,7 @@ const upload = {
         <template #header>
           <el-text type="primary">{{ t("knowledge.fileList") }}</el-text>
         </template>
-        <FileItem :file-list></FileItem>
+        <FileItem :file-list :knowledge-id="knowledge.id"></FileItem>
       </el-card>
     </div>
   </DialogPanel>

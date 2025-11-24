@@ -124,6 +124,7 @@
     "dimensionsDesc": "将内容嵌入成向量时，向量的维度",
     "editTitle": "知识库信息",
     "embedding": "嵌入模型",
+    "embeddingConfigNotFound": "embedding配置未找到",
     "embeddingNotFound": "嵌入模型无效",
     "emptyEmbeddingId": "请先选择一个嵌入模型",
     "fileList": "文件列表",
@@ -132,6 +133,7 @@
       "needEmbeddingModel": "请选择有效的嵌入模型",
       "needProvider": "请选择正确的模型提供商"
     },
+    "knowledgeIdNotFound": "未找到知识库id",
     "maxFileChunks": "最大文件分割块数",
     "maxFileChunksDesc": "将文件分割成文件快时，指定最大块数，如果超出值，文件将会被截断",
     "maxInputs": "最大文本请求个数",
@@ -143,6 +145,7 @@
       "list": "知识库列表"
     },
     "name": "名字",
+    "restartRagEmbedding": "重新处理会重新读取文件，并覆盖旧的数据",
     "search": "搜索知识库",
     "subTitle": "知识库服务配置",
     "title": "知识库",

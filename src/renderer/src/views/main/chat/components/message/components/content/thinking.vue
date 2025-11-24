@@ -46,7 +46,7 @@ watch(
         <template #title>
           <div class="flex items-center gap-0.5rem px-1.5rem">
             <Spinner v-if="thinking" :model-value="true" class="text-1.4rem font-bold"></Spinner>
-            <i-fluent-emoji-flat:glowing-star v-else class="text-1.4rem"></i-fluent-emoji-flat:glowing-star>
+            <i-fluent-emoji-flat-glowing-star v-else class="text-1.4rem"></i-fluent-emoji-flat-glowing-star>
             <el-text type="primary" loading>
               {{ thinking ? t("chat.thinking") : t("chat.thinkingComplete") }}
             </el-text>
