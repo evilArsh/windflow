@@ -1,5 +1,4 @@
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
-import mime from "mime-types"
 import { isString, isSymbol, Response, responseData } from "@toolmain/shared"
 import path from "node:path"
 
@@ -12,8 +11,7 @@ import {
   useXlsxTransformer,
 } from "./transformer"
 import { isMaxTokensReached, addChunk, isMaxFileChunksReached } from "./utils"
-import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from "../utils"
+import { log } from "../utils"
 export function detectFileTypeByExtension(filePath: string) {
   const ext = path.extname(filePath).toLowerCase()
   const textExtensions = [".txt", ".md"]
@@ -51,29 +49,29 @@ export function useString() {
 export function useTextReader(config: RAGEmbeddingConfig) {
   const str = useString()
   const dst: RAGFile[] = []
-  async function read(meta: RAGLocalFileInfo, transformer: DataTransformer) {
-    const pushLine = (line: string) => {
-      if (isMaxTokensReached(str.toString(), config)) {
-        addChunk(dst, str.toString(), meta, config)
-        str.clear()
-      }
-      str.append(line)
-      if (isMaxTokensReached(str.toString(), config)) {
-        str.popLast()
-        addChunk(dst, str.toString(), meta, config)
-        str.clear()
-        str.append(line)
-      }
+  function pushLine(line: string, meta: RAGLocalFileInfo) {
+    if (isMaxTokensReached(str.toString(), config)) {
+      addChunk(dst, str.toString(), meta, config)
+      str.clear()
     }
+    str.append(line)
+    if (isMaxTokensReached(str.toString(), config)) {
+      str.popLast()
+      addChunk(dst, str.toString(), meta, config)
+      str.clear()
+      str.append(line)
+    }
+  }
+  async function read(meta: RAGLocalFileInfo, transformer: DataTransformer) {
     for await (const line of transformer.next()) {
       if (isMaxFileChunksReached(dst, config)) {
         transformer.done()
         break
       }
       if (!isSymbol(line)) {
-        pushLine(line)
+        pushLine(line, meta)
       } else {
-        pushLine("")
+        pushLine("", meta)
         transformer.done()
         if (!isMaxTokensReached(str.toString(), config) && !isMaxFileChunksReached(dst, config)) {
           addChunk(dst, str.toString(), meta, config)
@@ -83,15 +81,19 @@ export function useTextReader(config: RAGEmbeddingConfig) {
     }
     return dst
   }
+  function clear() {
+    str.clear()
+    dst.length = 0
+  }
   return {
     read,
+    clear,
   }
 }
 
 export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
-  const log = useLog(RAGServiceId)
-  const mimeType = data.mimeType ?? "application/octet-stream"
-  const ext = mime.extension(mimeType) || "bin"
+  const mimeType = data.mimeType
+  const ext = data.extenstion ?? ""
   const reader = useTextReader(config)
   let transformer: DataTransformer<string | symbol> | null = null
   log.debug(`[start readFile] ext: ${ext}, mimeType: ${mimeType}, path: ${data.path}`)
@@ -113,7 +115,7 @@ export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfi
       transformer = useXlsxTransformer(data.path)
       const res = await reader.read(data, useXlsxTransformer(data.path))
       resp = responseData(200, "ok", res)
-    } else if (mimeType.startsWith("text/") || ["md", "js", "xml"].includes(ext)) {
+    } else if (mimeType?.startsWith("text/")) {
       transformer = useTextTransformer(data.path)
       const res = await reader.read(data, useTextTransformer(data.path))
       resp = responseData(200, "ok", res)
@@ -123,5 +125,6 @@ export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfi
     return resp
   } finally {
     transformer?.done()
+    reader.clear()
   }
 }

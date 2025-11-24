@@ -22,9 +22,10 @@ export async function getFileInfo(filePath: string): Promise<FileInfo> {
   const ft = await fileTypeFromFile(filePath, { customDetectors: [detectXml] })
   if (ft) {
     info.mimeType = ft.mime
+    info.extension = ft.ext
   } else {
-    info.mimeType = mime.lookup(info.path) || "application/octet-stream"
+    info.mimeType = mime.lookup(info.path) || ""
+    info.extension = mime.extension(info.mimeType) || ""
   }
-  info.extension = mime.extension(info.mimeType) || "bin"
   return info
 }
