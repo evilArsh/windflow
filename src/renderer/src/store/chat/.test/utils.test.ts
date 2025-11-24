@@ -23,8 +23,8 @@ describe("chat-store-utils", () => {
             id: data.id,
             index,
             contextFlag: data.flag,
-            topicId: "",
-            modelId: "",
+            topicId: "1",
+            modelId: "1",
             createAt: 0,
             content: { role: "user", content: "" },
             type: ChatMessageType.TEXT,
@@ -40,7 +40,7 @@ describe("chat-store-utils", () => {
       let msgs: ChatMessageTree[] = genById([
         { id: "1", flag: ChatMessageContextFlag.PART },
         { id: targetId, flag: ChatMessageContextFlag.PART },
-        { id: "3", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
       ])
       let res = utils.getIsolatedMessages(msgs, targetId)
       expect(res.length).equal(3)
@@ -50,7 +50,7 @@ describe("chat-store-utils", () => {
       msgs = genById([
         { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
         { id: targetId, flag: ChatMessageContextFlag.PART },
-        { id: "3", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
       ])
       res = utils.getIsolatedMessages(msgs, targetId)
       expect(res.length).equal(2)
@@ -60,7 +60,7 @@ describe("chat-store-utils", () => {
       msgs = genById([
         { id: "1", flag: ChatMessageContextFlag.PART },
         { id: targetId, flag: ChatMessageContextFlag.PART },
-        { id: "3", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
       ])
       res = utils.getIsolatedMessages(msgs, targetId)
       expect(res.length).equal(2)
@@ -70,7 +70,7 @@ describe("chat-store-utils", () => {
       msgs = genById([
         { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
         { id: targetId, flag: ChatMessageContextFlag.PART },
-        { id: "3", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
       ])
       res = utils.getIsolatedMessages(msgs, targetId)
       expect(res.length).equal(1)
@@ -79,7 +79,7 @@ describe("chat-store-utils", () => {
       // ---
       msgs = genById([
         { id: targetId, flag: ChatMessageContextFlag.PART },
-        { id: "3", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
       ])
       res = utils.getIsolatedMessages(msgs, targetId)
       expect(res.length).equal(1)
@@ -92,6 +92,114 @@ describe("chat-store-utils", () => {
       ])
       res = utils.getIsolatedMessages(msgs, targetId)
       expect(res.length).equal(1)
+      // ---
+
+      // ---
+      msgs = genById([{ id: targetId, flag: ChatMessageContextFlag.PART }])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(1)
+      // ---
+
+      // ---
+      msgs = genById([{ id: targetId, flag: ChatMessageContextFlag.BOUNDARY }])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(0)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: targetId, flag: ChatMessageContextFlag.BOUNDARY },
+        { id: targetId, flag: ChatMessageContextFlag.BOUNDARY },
+        { id: targetId, flag: ChatMessageContextFlag.BOUNDARY },
+        { id: targetId, flag: ChatMessageContextFlag.BOUNDARY },
+        { id: targetId, flag: ChatMessageContextFlag.BOUNDARY },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(0)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(0)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(0)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: targetId, flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(5)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: targetId, flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(3)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: targetId, flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.BOUNDARY },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(7)
+      // ---
+
+      // ---
+      msgs = genById([
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: targetId, flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+        { id: "1", flag: ChatMessageContextFlag.PART },
+      ])
+      res = utils.getIsolatedMessages(msgs, targetId)
+      expect(res.length).equal(8)
       // ---
     })
   })

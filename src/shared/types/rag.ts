@@ -159,7 +159,7 @@ export interface RAGLocalFileInfo extends RAGLocalFileMeta {
   fileName: string
   fileSize: number
   mimeType?: string
-  extenstion?: string
+  extension?: string
   status?: RAGFileStatus
   code?: HttpStatusCode
   msg?: string

@@ -93,38 +93,30 @@ export function useTextReader(config: RAGEmbeddingConfig) {
 
 export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
   const mimeType = data.mimeType
-  const ext = data.extenstion ?? ""
+  const ext = data.extension ?? ""
   const reader = useTextReader(config)
   let transformer: DataTransformer<string | symbol> | null = null
   log.debug(`[start readFile] ext: ${ext}, mimeType: ${mimeType}, path: ${data.path}`)
   try {
-    let resp: Response<RAGFile[]>
     if (ext === "pdf") {
       transformer = usePdfTransformer(data.path)
-      const res = await reader.read(data, usePdfTransformer(data.path))
-      resp = responseData(200, "ok", res)
+      return responseData(200, "ok", await reader.read(data, usePdfTransformer(data.path)))
     } else if (ext === "csv") {
       transformer = useCsvTransformer(data.path)
-      const res = await reader.read(data, useCsvTransformer(data.path))
-      resp = responseData(200, "ok", res)
+      return responseData(200, "ok", await reader.read(data, useCsvTransformer(data.path)))
     } else if (/docx?/.test(ext)) {
       transformer = useDocxTransformer(data.path)
-      const res = await reader.read(data, useDocxTransformer(data.path))
-      resp = responseData(200, "ok", res)
+      return responseData(200, "ok", await reader.read(data, useDocxTransformer(data.path)))
     } else if (/xlsx?/.test(ext)) {
       transformer = useXlsxTransformer(data.path)
-      const res = await reader.read(data, useXlsxTransformer(data.path))
-      resp = responseData(200, "ok", res)
+      return responseData(200, "ok", await reader.read(data, useXlsxTransformer(data.path)))
     } else if (mimeType?.startsWith("text/")) {
       transformer = useTextTransformer(data.path)
-      const res = await reader.read(data, useTextTransformer(data.path))
-      resp = responseData(200, "ok", res)
+      return responseData(200, "ok", await reader.read(data, useTextTransformer(data.path)))
     } else {
-      resp = responseData(500, `file type ${data.mimeType} not supported`, [])
+      return responseData(500, `file type ${data.mimeType} not supported`, [])
     }
-    return resp
   } finally {
     transformer?.done()
-    reader.clear()
   }
 }

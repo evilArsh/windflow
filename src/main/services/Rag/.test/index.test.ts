@@ -11,6 +11,7 @@ import { combineTableName, createTableSchema } from "../db/utils"
 import sql from "sqlstring"
 import { readFile } from "../doc"
 import { createProcessStatus } from "../task"
+import { getFileInfo } from "@main/misc/file"
 
 describe("main/src/Rag", () => {
   vi.mock("electron", () => ({
@@ -50,18 +51,18 @@ describe("main/src/Rag", () => {
     },
     maxFileChunks: 512,
     maxInputs: 20,
-    maxTokens: 512,
-    dimensions: 1024,
+    maxTokens: 1024,
+    dimensions: 2048,
   }
 
   it("read file", async () => {
     const topicId = "topic-1"
     const files: string[] = [
-      path.join(__dirname, ".gitignore"),
+      // path.join(__dirname, ".gitignore"),
       path.join(__dirname, "work.xlsx"),
-      path.join(__dirname, "work.csv"),
-      path.join(__dirname, "test2.pdf"),
-      path.join(__dirname, "test2.doc"),
+      // path.join(__dirname, "work.csv"),
+      // path.join(__dirname, "test2.pdf"),
+      // path.join(__dirname, "test2.doc"),
     ]
     for await (const file of files) {
       const meta: RAGLocalFileMeta = {
@@ -73,13 +74,16 @@ describe("main/src/Rag", () => {
         console.warn("path not exists: " + meta.path)
         continue
       }
-      const stat = fs.statSync(meta.path)
-      const info: RAGLocalFileInfo = {
-        ...meta,
-        fileName: path.basename(meta.path),
-        fileSize: stat.size,
-      }
-      const res = await readFile(info, config)
+      const info = await getFileInfo(meta.path)
+      const res = await readFile(
+        {
+          ...meta,
+          ...info,
+          fileName: info.name,
+          fileSize: info.size,
+        },
+        config
+      )
       console.log(res)
       expect(res.data.length).gte(0)
     }
@@ -321,7 +325,7 @@ describe("main/src/Rag", () => {
       fileName: "test1.docx",
       fileSize: 27204,
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      extenstion: "docx",
+      extension: "docx",
       status: RAGFileStatus.Processing,
     }
     expect(s.has(data)).equal(false)

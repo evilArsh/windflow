@@ -3,8 +3,7 @@ import { RAGLocalFileInfo, RAGFileStatus, RAGEmbeddingConfig, RAGLocalFileMeta }
 import { EventBus } from "@shared/service"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
 import { cloneDeep, errorToText } from "@toolmain/shared"
-import { useLog } from "@main/hooks/useLog"
-import { encapEmbeddinConfig, RAGServiceId } from "../utils"
+import { encapEmbeddinConfig, log } from "../utils"
 import { combineUniqueId } from "./utils"
 
 class ProcessStatusImpl implements ProcessStatus {
@@ -44,7 +43,6 @@ class TaskManagerImpl implements TaskManager {
   #ss: ProcessStatus
   #tmp: ProcessStatus
   #globalBus: EventBus
-  #log = useLog(RAGServiceId)
   constructor(ss: ProcessStatus, globalBus: EventBus) {
     this.#ss = ss
     this.#tmp = createProcessStatus()
@@ -76,7 +74,7 @@ class TaskManagerImpl implements TaskManager {
     // recycling task handle
     const tmpInfo = this.#tmp.get(task.info)
     if (tmpInfo) {
-      this.#log.debug(`[TaskManager] task is done, find same task, start processing again.`, task.info)
+      log.debug(`[TaskManager] task is done, find same task, start processing again.`, task.info)
       this.#tmp.remove(tmpInfo.info)
       this.process(tmpInfo.info, tmpInfo.config)
     }
@@ -89,17 +87,17 @@ class TaskManagerImpl implements TaskManager {
       if (!this.#ss.has(task.info)) {
         throw new Error(`[TaskManager] task ${task.info.path} not exists`)
       }
-      this.#log.debug(`[TaskManager] current task end: `, status)
+      log.debug(`[TaskManager] current task end: `, status)
       this.#ss.updateStatus(task.info, status)
       // this.#emitStatus(task)
       if (this.#ss.getLastStatus(task)?.status === RAGFileStatus.Failed) {
-        this.#log.debug(`[TaskManager] task ${task.info.path} is failed`)
+        log.debug(`[TaskManager] task ${task.info.path} is failed`)
         this.#cleanStatus(task)
         return
       }
       const nextChain = this.#getNextChain(task)
       if (!nextChain) {
-        this.#log.debug(`[TaskManager] task ${task.info.path} is done`)
+        log.debug(`[TaskManager] task ${task.info.path} is done`)
         this.#cleanStatus(task)
         return
       }
@@ -108,14 +106,14 @@ class TaskManagerImpl implements TaskManager {
         status: RAGFileStatus.Processing,
       })
       this.#emitStatus(task)
-      this.#log.debug(
+      log.debug(
         `[TaskManager] next task start, ${nextChain.taskId()}, info: `,
         task.info,
         encapEmbeddinConfig(task.config)
       )
       nextChain.process(task, this)
     } catch (error) {
-      this.#log.error("[file process] error", errorToText(error))
+      log.error("[file process] error", errorToText(error))
       this.#cleanStatus(task)
     }
   }
@@ -128,9 +126,9 @@ class TaskManagerImpl implements TaskManager {
     }
     if (this.#ss.has(taskInfo.info)) {
       if (this.#tmp.has(taskInfo.info)) {
-        this.#log.debug("[process] current taskinfo is already in waiting lists, skip")
+        log.debug("[process] current taskinfo is already in waiting lists, skip")
       } else {
-        this.#log.debug(
+        log.debug(
           `[process] taskinfo is processing, save it in waiting lists. status: ${this.#ss.get(taskInfo.info)?.status}`
         )
         this.#tmp.set(taskInfo)
@@ -147,7 +145,7 @@ class TaskManagerImpl implements TaskManager {
       status: RAGFileStatus.Processing,
     })
     this.#emitStatus(taskInfo)
-    this.#log.debug("[process start]", taskInfo.info, encapEmbeddinConfig(taskInfo.config))
+    log.debug("[process start]", taskInfo.info, encapEmbeddinConfig(taskInfo.config))
     chain.process(taskInfo, this)
   }
   stop(meta?: RAGLocalFileMeta) {

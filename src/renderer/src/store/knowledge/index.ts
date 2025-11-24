@@ -84,7 +84,7 @@ export default defineStore("knowledge", () => {
           fileName: info.name,
           fileSize: info.size,
           mimeType: info.mimeType,
-          extenstion: info.extension,
+          extension: info.extension,
           status: RAGFileStatus.Processing,
         }
         datas.push(item)

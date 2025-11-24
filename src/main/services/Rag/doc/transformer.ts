@@ -6,8 +6,7 @@ import mammoth from "mammoth"
 import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValue } from "exceljs"
 import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
 import { Primitive } from "type-fest"
-import { useLog } from "@main/hooks/useLog"
-import { RAGServiceId } from "../utils"
+import { log } from "../utils"
 
 export const Flags = {
   Error: Symbol("[ERROR]"),
@@ -68,7 +67,6 @@ export function useReadLine(stream: fs.ReadStream): DataTransformer {
 export function useTextTransformer(path: string): DataTransformer<string | symbol> {
   let stream: fs.ReadStream | null = null
   let lineTransformer: DataTransformer | null = null
-  const log = useLog(RAGServiceId)
   function done(): void {
     lineTransformer?.done()
     !stream?.destroyed && stream?.destroy()
@@ -102,7 +100,6 @@ export function useTextTransformer(path: string): DataTransformer<string | symbo
 
 export function useCsvTransformer(path: string): DataTransformer<string | symbol> {
   let stream: fs.ReadStream | null = null
-  const log = useLog(RAGServiceId)
   function done(): void {
     !stream?.destroyed && stream?.destroy()
   }
@@ -132,7 +129,6 @@ export function useCsvTransformer(path: string): DataTransformer<string | symbol
 }
 
 export function usePdfTransformer(path: string): DataTransformer<string | symbol> {
-  const log = useLog(RAGServiceId)
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
@@ -162,7 +158,6 @@ export function usePdfTransformer(path: string): DataTransformer<string | symbol
 }
 
 export function useDocxTransformer(path: string): DataTransformer<string | symbol> {
-  const log = useLog(RAGServiceId)
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
     try {
@@ -185,7 +180,6 @@ export function useDocxTransformer(path: string): DataTransformer<string | symbo
   }
 }
 export function useXlsxTransformer(path: string): DataTransformer<string | symbol> {
-  const log = useLog(RAGServiceId)
   function useCounter() {
     // store oldest data with specified length
     let header: ExcelJS.CellValue[] | null = null

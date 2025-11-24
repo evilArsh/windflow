@@ -32,25 +32,20 @@ export const useUtils = (
   const getIsolatedMessages = (messages: ChatMessageTree[], messageId: string): ChatMessageTree[] => {
     const index = messages.findIndex(item => item.id === messageId)
     if (index === -1) return []
+    if (messages[index].node.contextFlag === ChatMessageContextFlag.BOUNDARY) return []
     let start = index - 1
     let end = index + 1
+    let startDone = false
+    let endDone = false
     while (true) {
-      if (start >= 0 && messages[start].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) {
-        start--
-      }
-      if (end < messages.length && messages[end].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) {
-        end++
-      }
-      if (
-        start < 0 ||
-        end >= messages.length ||
-        (messages[start].node.contextFlag === ChatMessageContextFlag.BOUNDARY &&
-          messages[end].node.contextFlag === ChatMessageContextFlag.BOUNDARY)
-      ) {
-        break
-      }
+      if (start >= 0 && messages[start].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) start--
+      else startDone = true
+      if (end < messages.length && messages[end].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) end++
+      else endDone = true
+      if (startDone && endDone) break
     }
-    return messages.slice(start + 1, end)
+    start = Math.max(0, start + 1)
+    return messages.slice(start, end)
   }
   /**
    * @description 根据消息`topicId`查找缓存的聊天数据

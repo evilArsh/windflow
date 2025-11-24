@@ -36,8 +36,7 @@ import { ServiceCore } from "@main/types"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
 import { mcpEnv } from "./env"
-import { useLog } from "@main/hooks/useLog"
-import { mcpName, MCPServiceId, mcpVersion } from "./vars"
+import { mcpName, log, mcpVersion } from "./vars"
 
 export class MCPServiceImpl implements MCPService, ServiceCore {
   #globalBus: EventBus
@@ -46,7 +45,6 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
   #cachedTools: Record<string, MCPToolDetail[]> = {}
   #toolCall = useToolCall()
   #context = useMCPContext()
-  #log = useLog(MCPServiceId)
   constructor(globalBus: EventBus) {
     this.#globalBus = globalBus
   }
@@ -63,11 +61,11 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
         } else if (ctx.status === MCPClientStatus.Connected) {
           const pong = await ctx.client.ping()
           if (pong) {
-            this.#log.debug("[MCP startServer]", `[${name}]already created`)
+            log.debug("[MCP startServer]", `[${name}]already created`)
             emitStatus(this.#globalBus, id, name, ctx.status, ctx.reference, 201, `[${name}]already created`)
             return
           } else {
-            this.#log.debug("[MCP startServer]", `[${name}]context found but client not connected`)
+            log.debug("[MCP startServer]", `[${name}]context found but client not connected`)
           }
         }
       }
@@ -76,26 +74,26 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
       emitStatus(this.#globalBus, id, name, ctx.status, ctx.reference, 200, "connecting")
       if (isStdioServerParams(ctx.params)) {
         ctx.transport = await createStdioTransport(ctx.client, this.#envParams, ctx.params)
-        this.#log.debug("[MCP register stdio server]", `[${name}]created`)
+        log.debug("[MCP register stdio server]", `[${name}]created`)
       } else if (isStreamableServerParams(ctx.params) || isSSEServerParams(ctx.params)) {
         try {
           ctx.transport = await createStreamableTransport(ctx.client, ctx.params)
-          this.#log.debug("[MCP register streamable server]", `[${name}]created`)
+          log.debug("[MCP register streamable server]", `[${name}]created`)
         } catch (_e) {
-          this.#log.warn("[MCP register streamable server error,attempt sse type]")
+          log.warn("[MCP register streamable server error,attempt sse type]")
           ctx.transport = await createSseTransport(ctx.client, ctx.params)
-          this.#log.debug("[MCP register sse server]", `[${name}]created`)
+          log.debug("[MCP register sse server]", `[${name}]created`)
         }
       } else {
         const err = `unknown server type:${params.type} in server ${name}`
-        this.#log.error("[MCP startServer]", err, params)
+        log.error("[MCP startServer]", err, params)
         throw new Error(err)
       }
       ctx.status = MCPClientStatus.Connected
       emitStatus(this.#globalBus, id, name, ctx.status, ctx.reference, 200, "ok")
     } catch (error) {
       await this.#context.removeContext(id)
-      this.#log.debug("[MCP startServer error]", error)
+      log.debug("[MCP startServer error]", error)
       emitStatus(this.#globalBus, id, name, MCPClientStatus.Disconnected, [], 500, errorToText(error))
     }
   }
@@ -123,7 +121,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
         emitStatus(this.#globalBus, ctx.params.id, ctx.params.name, MCPClientStatus.Connected, refs.data, 200, "ok")
       }
     } catch (error) {
-      this.#log.error("[MCP stopServer error]", error)
+      log.error("[MCP stopServer error]", error)
     }
   }
   async restartServer(topicId: string, id: string, params?: MCPServerParamCore): Promise<void> {
@@ -141,7 +139,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
         id,
       })
     } catch (error) {
-      this.#log.error("[MCP restartServer error]", error)
+      log.error("[MCP restartServer error]", error)
     }
   }
 
@@ -171,7 +169,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
             }))
             results.push(dst)
             this.#cachedTools[res.value.id] = dst
-            this.#log.debug("[MCP listTools]", `[${this.#context.getContext(res.value.id)?.params.name ?? ""}] cached`)
+            log.debug("[MCP listTools]", `[${this.#context.getContext(res.value.id)?.params.name ?? ""}] cached`)
           }
         })
       }
@@ -285,7 +283,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
             name: toolname,
             arguments: args,
           })) as MCPCallToolResult
-          this.#log.debug(`[calltool] [${toolname}]`)
+          log.debug(`[calltool] [${toolname}]`)
           return responseData(200, "ok", res)
         }
         throw new Error(`server [${id}] not connected or client not found`)

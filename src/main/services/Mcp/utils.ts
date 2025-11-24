@@ -9,14 +9,12 @@ import { MCPClientContext } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
 import { EventBus } from "@shared/service"
 import { EventKey } from "@shared/types/eventbus"
-import { useLog } from "@main/hooks/useLog"
-import { MCPServiceId } from "./vars"
+import { log } from "./vars"
 
 export function createClient(name: string, version: string) {
   return new Client({ name, version })
 }
 export async function createStdioTransport(client: Client, env: ToolEnvironment, params: MCPServerParam) {
-  const log = useLog(MCPServiceId)
   try {
     const patchedParams = modifyPlatformCMD(env, params)
     // log.debug("[MCP createStdioTransport]", patchedParams)
@@ -32,7 +30,6 @@ export async function createStdioTransport(client: Client, env: ToolEnvironment,
   }
 }
 export async function createStreamableTransport(client: Client, params: MCPServerParam) {
-  const log = useLog(MCPServiceId)
   try {
     const transport = new StreamableHTTPClientTransport(new URL(params.params.url))
     transport.onerror = error => {
@@ -46,7 +43,6 @@ export async function createStreamableTransport(client: Client, params: MCPServe
   }
 }
 export async function createSseTransport(client: Client, params: MCPServerParam) {
-  const log = useLog(MCPServiceId)
   try {
     const transport = new SSEClientTransport(new URL(params.params.url))
     transport.onerror = error => {

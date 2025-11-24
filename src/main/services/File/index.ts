@@ -4,17 +4,15 @@ import { FileService, IpcChannel } from "@shared/service"
 import { dialog, ipcMain, shell } from "electron"
 import { useStore } from "@main/hooks/useStore"
 import { useEnv } from "@main/hooks/useEnv"
-import { useLog } from "@main/hooks/useLog"
 import { FileInfo } from "@shared/types/files"
 import { getFileInfo } from "@main/misc/file"
 import path from "node:path"
 import fs from "node:fs"
+import { log } from "./utils"
 
-export const FileServiceId = "FileService"
 export class FileServiceImpl implements FileService, ServiceCore {
   #store = useStore()
   #env = useEnv()
-  #log = useLog(FileServiceId)
   async chooseFilePath(): Promise<Response<string[]>> {
     try {
       const defaultPath = this.#store.get("OpenDefaultPath") ?? this.#env.getRootDir()
@@ -24,7 +22,7 @@ export class FileServiceImpl implements FileService, ServiceCore {
         filters: [{ name: "All Files", extensions: ["*"] }],
       })
       const res = result.filePaths
-      this.#log.debug("[chooseFilePath]", res)
+      log.debug("[chooseFilePath]", res)
       if (res.length > 0) {
         this.#store.set("OpenDefaultPath", res[0])
         return responseData(200, "success", res)
@@ -43,7 +41,7 @@ export class FileServiceImpl implements FileService, ServiceCore {
       }
       return responseData(200, "ok", res)
     } catch (error) {
-      this.#log.error("[getInfo]", errorToText(error))
+      log.error("[getInfo]", errorToText(error))
       return responseData(500, errorToText(error), res)
     }
   }
