@@ -9,9 +9,9 @@ const props = defineProps<{
 const { t } = useI18n()
 const chatStore = useChatStore()
 const topic = computed(() => props.topic)
-const onInput = useThrottleFn(() => {
+const onInput = useThrottleFn(async () => {
   try {
-    chatStore.updateChatTopic(topic.value)
+    await chatStore.updateChatTopic(topic.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

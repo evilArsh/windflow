@@ -41,8 +41,8 @@ async function updateTopic() {
             @change="updateTopic"
             show-input
             v-model="topic.maxContextLength"
-            :min="-1"
-            :max="30"
+            :min="1"
+            :max="999"
             :step="1"></el-slider>
         </div>
       </template>
