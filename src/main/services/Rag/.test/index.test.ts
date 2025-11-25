@@ -56,10 +56,12 @@ describe("main/src/Rag", () => {
   }
 
   it("read file", async () => {
+    console.time("readFile")
     const topicId = "topic-1"
     const files: string[] = [
       // path.join(__dirname, ".gitignore"),
-      path.join(__dirname, "work.xlsx"),
+      // path.join(__dirname, "work.xlsx"),
+      path.join(__dirname, "test.md"),
       // path.join(__dirname, "work.csv"),
       // path.join(__dirname, "test2.pdf"),
       // path.join(__dirname, "test2.doc"),
@@ -87,6 +89,7 @@ describe("main/src/Rag", () => {
       console.log(res)
       expect(res.data.length).gte(0)
     }
+    console.timeEnd("readFile")
   })
 
   it("clear table data", async () => {

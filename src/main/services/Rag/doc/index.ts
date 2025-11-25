@@ -1,5 +1,5 @@
 import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@shared/types/rag"
-import { isString, isSymbol, Response, responseData } from "@toolmain/shared"
+import { errorToText, isSymbol, Response, responseData, toNumber } from "@toolmain/shared"
 import path from "node:path"
 
 import {
@@ -9,8 +9,9 @@ import {
   usePdfTransformer,
   useTextTransformer,
   useXlsxTransformer,
+  // useXlsxTransformer2,
 } from "./transformer"
-import { isMaxTokensReached, addChunk, isMaxFileChunksReached } from "./utils"
+import { isMaxTokensReached, addChunk, isMaxFileChunksReached, useString } from "./utils"
 import { log } from "../utils"
 export function detectFileTypeByExtension(filePath: string) {
   const ext = path.extname(filePath).toLowerCase()
@@ -20,73 +21,79 @@ export function detectFileTypeByExtension(filePath: string) {
   }
   return null
 }
-export function useString() {
-  const parts: string[] = []
-  let len = 0
-  function append(str: string) {
-    parts.push(str)
-    len += str.length
-  }
-  function clear() {
-    parts.length = 0
-    len = 0
-  }
-  function toString() {
-    return parts.join("")
-  }
-  function length() {
-    return len
-  }
-  function popLast() {
-    const latest = parts.pop()
-    if (isString(latest)) {
-      len -= latest.length
-    }
-  }
-  return { append, toString, length, clear, popLast }
-}
-
 export function useTextReader(config: RAGEmbeddingConfig) {
-  const str = useString()
-  const dst: RAGFile[] = []
+  const gStr = useString()
+  const gDst: RAGFile[] = []
   function pushLine(line: string, meta: RAGLocalFileInfo) {
-    if (isMaxTokensReached(str.toString(), config)) {
-      addChunk(dst, str.toString(), meta, config)
-      str.clear()
+    if (isMaxTokensReached(line, toNumber(config.maxTokens))) {
+      throw new Error("max tokens reached of single line")
     }
-    str.append(line)
-    if (isMaxTokensReached(str.toString(), config)) {
-      str.popLast()
-      addChunk(dst, str.toString(), meta, config)
-      str.clear()
-      str.append(line)
+    if (isMaxTokensReached(gDst.toString(), toNumber(config.maxFileChunks))) {
+      throw new Error("max tokens reached of original chunk")
+    }
+    gStr.append(line)
+    if (isMaxTokensReached(gStr.toString(), toNumber(config.maxTokens))) {
+      const last = gStr.popLast()
+      addChunk(gDst, gStr.toString(), meta, config)
+      gStr.clear()
+      last && gStr.append(last)
     }
   }
   async function read(meta: RAGLocalFileInfo, transformer: DataTransformer) {
     for await (const line of transformer.next()) {
-      if (isMaxFileChunksReached(dst, config)) {
-        transformer.done()
-        break
-      }
-      if (!isSymbol(line)) {
-        pushLine(line, meta)
-      } else {
-        pushLine("", meta)
-        transformer.done()
-        if (!isMaxTokensReached(str.toString(), config) && !isMaxFileChunksReached(dst, config)) {
-          addChunk(dst, str.toString(), meta, config)
+      try {
+        if (isMaxFileChunksReached(gDst, toNumber(config.maxFileChunks))) {
+          transformer.done()
+          break
         }
+        if (!isSymbol(line)) {
+          pushLine(line, meta)
+        } else {
+          // the final chunk should be flush to gDst
+          pushLine("", meta)
+          transformer.done()
+          if (
+            !isMaxTokensReached(gStr.toString(), toNumber(config.maxTokens)) &&
+            !isMaxFileChunksReached(gDst, toNumber(config.maxFileChunks))
+          ) {
+            addChunk(gDst, gStr.toString(), meta, config)
+          }
+          break
+        }
+      } catch (error) {
+        log.debug("[read file error]", errorToText(error))
         break
       }
     }
-    return dst
+    return Array.from(gDst)
+  }
+  /**
+   * readBlock assumes that the token length of each block has reached the maximum value that is less than `config.maxTokens`.
+   *
+   * it's useful when you handle the token by yourself
+   */
+  async function readBlock(meta: RAGLocalFileInfo, transformer: DataTransformer) {
+    for await (const block of transformer.next()) {
+      if (isMaxFileChunksReached(gDst, toNumber(config.maxFileChunks))) {
+        transformer.done()
+        break
+      }
+      if (!isSymbol(block)) {
+        addChunk(gDst, block, meta, config)
+      } else {
+        transformer.done()
+        break
+      }
+    }
+    return Array.from(gDst)
   }
   function clear() {
-    str.clear()
-    dst.length = 0
+    gStr.clear()
+    gDst.length = 0
   }
   return {
     read,
+    readBlock,
     clear,
   }
 }
@@ -100,23 +107,28 @@ export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfi
   try {
     if (ext === "pdf") {
       transformer = usePdfTransformer(data.path)
-      return responseData(200, "ok", await reader.read(data, usePdfTransformer(data.path)))
+      return responseData(200, "ok", await reader.read(data, transformer))
     } else if (ext === "csv") {
       transformer = useCsvTransformer(data.path)
-      return responseData(200, "ok", await reader.read(data, useCsvTransformer(data.path)))
+      return responseData(200, "ok", await reader.read(data, transformer))
     } else if (/docx?/.test(ext)) {
       transformer = useDocxTransformer(data.path)
-      return responseData(200, "ok", await reader.read(data, useDocxTransformer(data.path)))
+      return responseData(200, "ok", await reader.read(data, transformer))
     } else if (/xlsx?/.test(ext)) {
+      // transformer = useXlsxTransformer2(data.path, {
+      //   maxTokens: toNumber(config.maxTokens),
+      // })
+      // return responseData(200, "ok", await reader.readBlock(data, transformer))
       transformer = useXlsxTransformer(data.path)
-      return responseData(200, "ok", await reader.read(data, useXlsxTransformer(data.path)))
+      return responseData(200, "ok", await reader.read(data, transformer))
     } else if (mimeType?.startsWith("text/")) {
       transformer = useTextTransformer(data.path)
-      return responseData(200, "ok", await reader.read(data, useTextTransformer(data.path)))
+      return responseData(200, "ok", await reader.read(data, transformer))
     } else {
       return responseData(500, `file type ${data.mimeType} not supported`, [])
     }
   } finally {
     transformer?.done()
+    reader.clear()
   }
 }

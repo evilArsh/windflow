@@ -7,6 +7,7 @@ import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValu
 import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
 import { Primitive } from "type-fest"
 import { log } from "../utils"
+import { isMaxTokensReached, useString } from "./utils"
 
 export const Flags = {
   Error: Symbol("[ERROR]"),
@@ -179,6 +180,9 @@ export function useDocxTransformer(path: string): DataTransformer<string | symbo
     done,
   }
 }
+export type XlsxTransformConfig = {
+  maxTokens: number
+}
 export function useXlsxTransformer(path: string): DataTransformer<string | symbol> {
   function useCounter() {
     // store oldest data with specified length
@@ -193,6 +197,92 @@ export function useXlsxTransformer(path: string): DataTransformer<string | symbo
         }
       }
       data.push(newData)
+    }
+    function clear() {
+      header = null
+      data.length = 0
+    }
+    function getData() {
+      return { header, data }
+    }
+    return {
+      clear,
+      add,
+      getData,
+    }
+  }
+  function getValue(cell: CellValue): string | null {
+    if (isNull(cell) || isUndefined(cell)) {
+      return null
+    }
+    if (isString(cell) || isNumber(cell) || isBoolean(cell) || isDate(cell)) {
+      const res = cell.toString()
+      return res || null
+    } else if (Object.hasOwn(cell, "error")) {
+      return (cell as CellErrorValue).error
+    } else if (Object.hasOwn(cell, "text")) {
+      return (cell as CellHyperlinkValue).text
+    } else if (Object.hasOwn(cell, "result")) {
+      return String((cell as CellFormulaValue).result)
+    }
+    return null
+  }
+  function done(): void {}
+  async function* next(): AsyncGenerator<any> {
+    try {
+      const workbook = new ExcelJS.stream.xlsx.WorkbookReader(path, {
+        sharedStrings: "cache",
+        hyperlinks: "emit",
+        worksheets: "emit",
+        styles: "ignore",
+      })
+      const counter = useCounter()
+      for await (const worksheetReader of workbook) {
+        counter.clear()
+        for await (const row of worksheetReader) {
+          if (isArray(row.values)) {
+            counter.add(row.values)
+          }
+        }
+        const { header, data } = counter.getData()
+        for (let i = 0; i < data.length; i++) {
+          const result: Record<string, Primitive> = {}
+          for (let j = 0; j < data[i].length; j++) {
+            const row = getValue(data[i][j])
+            const headerTitle = header && header.length >= data[i].length ? getValue(header[j]) : null
+            if (headerTitle) {
+              result[headerTitle] = row
+            }
+          }
+          if (Object.keys(result).length) {
+            yield JSON.stringify(result)
+          }
+        }
+      }
+      yield Flags.Done
+    } catch (e) {
+      log.error("[useCsvTransformer error]", e)
+      yield Flags.Error
+    }
+  }
+  return {
+    next,
+    done,
+  }
+}
+
+export function useXlsxTransformer2(path: string, config: XlsxTransformConfig): DataTransformer<string | symbol> {
+  const gStr = useString()
+  function useCounter() {
+    let header: ExcelJS.CellValue[] | null = null
+    const data: Array<ExcelJS.CellValue[]> = []
+    function add(newData: ExcelJS.CellValue[]) {
+      if (!header || newData.length > header.length) {
+        header = newData
+        data.length = 0
+      } else {
+        data.push(newData)
+      }
     }
     function clear() {
       header = null
@@ -233,6 +323,7 @@ export function useXlsxTransformer(path: string): DataTransformer<string | symbo
       })
       const counter = useCounter()
       for await (const worksheetReader of workbook) {
+        gStr.clear()
         counter.clear()
         for await (const row of worksheetReader) {
           if (isArray(row.values)) {
@@ -240,18 +331,25 @@ export function useXlsxTransformer(path: string): DataTransformer<string | symbo
           }
         }
         const { header, data } = counter.getData()
+        const headerStr = header?.map(h => getValue(h)).join() ?? ""
+        let line = ""
+        gStr.append(headerStr)
         for (let i = 0; i < data.length; i++) {
-          const result: Record<string, Primitive> = {}
-          for (let j = 0; j < data[i].length; j++) {
-            const row = getValue(data[i][j])
-            const headerTitle = header && header.length >= data[i].length ? getValue(header[j]) : null
-            if (headerTitle) {
-              result[headerTitle] = row
-            }
+          line = data[i].map(h => getValue(h)).join()
+          line && gStr.append(line)
+          if (isMaxTokensReached(gStr.toString(), config.maxTokens)) {
+            const last = gStr.popLast()
+            const str = gStr.toString("\n")
+            gStr.clear()
+            gStr.append(headerStr)
+            last && gStr.append(last)
+            yield str
           }
-          if (Object.keys(result).length) {
-            yield JSON.stringify(result)
-          }
+        }
+        if (!isMaxTokensReached(gStr.toString(), config.maxTokens)) {
+          const str = gStr.toString("\n")
+          gStr.clear()
+          yield str
         }
       }
       yield Flags.Done
