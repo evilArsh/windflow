@@ -2,18 +2,7 @@ import { defineStore } from "pinia"
 import { SettingKeys, Settings, SettingsValue } from "@renderer/types"
 import { useData } from "./api"
 import { Reactive } from "vue"
-import {
-  isArray,
-  isBigInt,
-  isBoolean,
-  isFunction,
-  isNull,
-  isNumber,
-  isObject,
-  isString,
-  isSymbol,
-  isUndefined,
-} from "@toolmain/shared"
+import { isArray, isFunction, isNull, isObject, isString, isUndefined } from "@toolmain/shared"
 
 import { db } from "@renderer/db"
 
@@ -55,7 +44,7 @@ export default defineStore("settings", () => {
     updateValue(data.id, data)
   }
   /**
-   * monitoring `wrapData` value, and update new value database which is related to `id`
+   * monitoring `wrapData` value, and sync new value to database which is related to `id`
    */
   function dataWatcher<T extends SettingsValue>(
     id: SettingKeys,
@@ -70,12 +59,8 @@ export default defineStore("settings", () => {
       if (isArray(cacheValue)) return cacheValue.length === 0
       if (isNull(cacheValue) || isUndefined(cacheValue)) return true
       if (isString(cacheValue)) return cacheValue.length == 0
-      if (isNumber(cacheValue)) return cacheValue === 0
-      if (isBoolean(cacheValue)) return cacheValue === false
-      if (isSymbol(cacheValue)) return false
-      if (isBigInt(cacheValue)) return cacheValue === BigInt(0)
       if (isObject(cacheValue)) return Object.keys(cacheValue).length === 0
-      return true
+      return false
     }
     const updateWrapData = (val: T) => {
       if (isRef(wrapData)) {

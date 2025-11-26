@@ -73,17 +73,19 @@ const { key: cleanMessageKey, trigger: triggerCleanMessage } = shortcut.listen("
 const { key: cleanContextKey, trigger: triggerCleanContext } = shortcut.listen("ctrl+k", handler.cleanContext)
 </script>
 <template>
-  <div class="flex gap.5rem bg-[var(--el-fill-color-darker)] b-rd-.5rem p-[var(--ai-gap-small)]">
-    <ContentBox background @click="triggerCleanMessage">
-      <el-tooltip placement="top" :content="t('chat.cleanMessage', { shortcut: cleanMessageKey })">
-        <i-icon-park-outline-delete class="text-1.4rem"></i-icon-park-outline-delete>
-      </el-tooltip>
-    </ContentBox>
-    <ContentBox background @click="triggerCleanContext">
-      <el-tooltip placement="top" :content="t('chat.cleanContext', { shortcut: cleanContextKey })">
-        <i-icon-park-outline-clear-format class="text-1.4rem"></i-icon-park-outline-clear-format>
-      </el-tooltip>
-    </ContentBox>
-  </div>
+  <ContentBox still-lock default-lock>
+    <div class="flex-center gap[--ai-gap-base]">
+      <ContentBox background @click="triggerCleanMessage">
+        <el-tooltip placement="top" :content="t('chat.cleanMessage', { shortcut: cleanMessageKey })">
+          <i-icon-park-outline-delete class="text-1.4rem"></i-icon-park-outline-delete>
+        </el-tooltip>
+      </ContentBox>
+      <ContentBox background @click="triggerCleanContext">
+        <el-tooltip placement="top" :content="t('chat.cleanContext', { shortcut: cleanContextKey })">
+          <i-icon-park-outline-clear-format class="text-1.4rem"></i-icon-park-outline-clear-format>
+        </el-tooltip>
+      </ContentBox>
+    </div>
+  </ContentBox>
 </template>
 <style lang="scss" scoped></style>

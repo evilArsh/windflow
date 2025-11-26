@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider"
 import { DialogPanel } from "@toolmain/components"
+import { AbbrsNode } from "@renderer/components/Abbrs"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()
@@ -16,9 +17,8 @@ const providerStore = useProviderStore()
 const modelStore = useModelStore()
 const { models } = storeToRefs(modelStore)
 
-const activeModels = ref<Record<string, ModelMeta[]>>({})
-watchEffect(() => {
-  activeModels.value = models.value
+const activeModels = computed<Record<string, ModelMeta[]>>(() =>
+  models.value
     .filter(v => v.active)
     .reduce((acc, cur) => {
       if (acc[cur.providerName]) {
@@ -28,16 +28,25 @@ watchEffect(() => {
       }
       return acc
     }, {})
-})
+)
+const activeModelsIcons = computed<AbbrsNode[]>(() =>
+  data.value.modelIds.map(modelId => {
+    return {
+      data: providerStore.getProviderLogo(modelStore.find(modelId)?.providerName),
+      type: "svg",
+    }
+  })
+)
 </script>
 <template>
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
-      <el-badge :value="data.modelIds.length" type="primary">
+      <ContentBox still-lock default-lock>
         <ContentBox background>
-          <i-fluent-emoji-flat-wrapped-gift class="text-1.6rem"></i-fluent-emoji-flat-wrapped-gift>
+          <i-fluent-emoji-flat-wrapped-gift class="text-1.4rem"></i-fluent-emoji-flat-wrapped-gift>
         </ContentBox>
-      </el-badge>
+        <Abbrs :spacing="12" style="--abbrs-padding: 3px" width="22" height="22" :data="activeModelsIcons"></Abbrs>
+      </ContentBox>
     </template>
     <DialogPanel>
       <template #header>

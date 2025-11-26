@@ -27,7 +27,7 @@ const handler = {
   onSend: async (active: boolean, _key: string, done?: unknown) => {
     try {
       if (active) {
-        if (!topic.value.content) {
+        if (!topic.value.content.replaceAll(/[\r\n\s]/g, "")) {
           isFunction(done) && done()
           return
         }

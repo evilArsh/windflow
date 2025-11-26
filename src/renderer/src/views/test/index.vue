@@ -28,6 +28,8 @@
 
     <el-text type="success" style="--el-text-font-size: 1.8rem">文字测试</el-text>
     <el-text type="success" style="--el-text-font-size: 18px">文字测试</el-text>
+    <el-divider></el-divider>
+    <router-view></router-view>
   </div>
 </template>
 <script lang="ts" setup>
