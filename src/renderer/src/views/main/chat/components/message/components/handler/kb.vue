@@ -51,15 +51,10 @@ const ev = {
   fetchRagFiles(kbId: string) {
     ragFilesStore.fetchAllByTopicId(kbId)
   },
-  async onKbChange(kbId?: string) {
+  async onKbChange() {
     try {
       status.load()
-      if (kbId) {
-        if (!ragFiles.value[kbId]) {
-          await ragFilesStore.fetchAllByTopicId(kbId)
-        }
-        await chatStore.updateChatTopic(props.topic)
-      }
+      await chatStore.updateChatTopic(props.topic)
     } catch (error) {
       msgError(errorToText(error))
     } finally {
@@ -86,7 +81,16 @@ const ev = {
       status.done()
     }
   },
+  refreshKnowledges() {
+    topic.value.knowledgeId = topic.value.knowledgeId.filter(kbId => {
+      return knowledges.value.some(kb => kb.id === kbId)
+    })
+    ev.onKbChange()
+  },
 }
+watch(topic, ev.refreshKnowledges, {
+  immediate: true,
+})
 </script>
 <template>
   <Shell>
@@ -121,7 +125,10 @@ const ev = {
     </template>
     <template #default>
       <div class="h-40rem w-full">
-        <el-checkbox-group v-model="topic.knowledgeId" class="line-height-unset! w-full text-inherit">
+        <el-checkbox-group
+          v-model="topic.knowledgeId"
+          @change="ev.onKbChange"
+          class="line-height-unset! w-full text-inherit">
           <el-collapse :before-collapse="ev.beforeCollapse">
             <el-collapse-item v-for="item in knowledges" :key="item.id" :title="item.name" :name="item.id">
               <template #title>

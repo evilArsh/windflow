@@ -132,12 +132,11 @@ export function useCsvTransformer(path: string): DataTransformer<string | symbol
 export function usePdfTransformer(path: string): DataTransformer<string | symbol> {
   function done(): void {}
   async function* next(): AsyncGenerator<any> {
+    const parser = new PDFParse({
+      url: path,
+    })
     try {
-      const buf = fs.readFileSync(path, {
-        encoding: "utf8",
-      })
-      const res = new PDFParse({ data: buf })
-      const text = await res.getText()
+      const text = await parser.getText()
       for (let i = 0; i < text.pages.length; i++) {
         const textArr = text.pages[i].text.split(/\r?\n/g)
         for (let j = 0; j < textArr.length; j++) {
@@ -150,6 +149,8 @@ export function usePdfTransformer(path: string): DataTransformer<string | symbol
     } catch (e) {
       log.error("[usePdfTransformer error]", e)
       yield Flags.Error
+    } finally {
+      await parser.destroy()
     }
   }
   return {
@@ -171,7 +172,7 @@ export function useDocxTransformer(path: string): DataTransformer<string | symbo
       }
       yield Flags.Done
     } catch (e) {
-      log.error("[usePdfTransformer error]", e)
+      log.error("[useDocxTransformer error]", e)
       yield Flags.Error
     }
   }
@@ -245,18 +246,17 @@ export function useXlsxTransformer(path: string): DataTransformer<string | symbo
           }
         }
         const { header, data } = counter.getData()
-        for (let i = 0; i < data.length; i++) {
+        for (let row = 0; row < data.length; row++) {
           const result: Record<string, Primitive> = {}
-          for (let j = 0; j < data[i].length; j++) {
-            const row = getValue(data[i][j])
-            const headerTitle = header && header.length >= data[i].length ? getValue(header[j]) : null
+          for (let column = 0; column < data[row].length; column++) {
+            const cellData = getValue(data[row][column])
+            const headerTitle = header && header.length >= data[row].length ? getValue(header[column]) : null
             if (headerTitle) {
-              result[headerTitle] = row
+              result[headerTitle] = cellData
             }
           }
-          if (Object.keys(result).length) {
-            yield JSON.stringify(result)
-          }
+          const res = JSON.stringify(result)
+          res && (yield res)
         }
       }
       yield Flags.Done

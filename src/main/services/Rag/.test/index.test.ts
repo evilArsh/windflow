@@ -61,10 +61,7 @@ describe("main/src/Rag", () => {
     const files: string[] = [
       // path.join(__dirname, ".gitignore"),
       // path.join(__dirname, "work.xlsx"),
-      path.join(__dirname, "test.md"),
-      // path.join(__dirname, "work.csv"),
-      // path.join(__dirname, "test2.pdf"),
-      // path.join(__dirname, "test2.doc"),
+      path.join(__dirname, "test.xlsx"),
     ]
     for await (const file of files) {
       const meta: RAGLocalFileMeta = {
@@ -306,14 +303,16 @@ describe("main/src/Rag", () => {
       console.warn("need complete rerank config")
       return
     }
-    const sRes = await rag.search(
-      {
-        content: "总结这里面都有什么",
-        topicId: topicId,
-        sessionId,
-      },
-      config
-    )
+    const sRes = await rag.search({
+      content: "总结这里面都有什么",
+      sessionId,
+      configs: [
+        {
+          topicId,
+          config,
+        },
+      ],
+    })
     console.log(sRes)
     expect(sRes.data.length).gt(0)
     expect(sRes.code).equal(200)

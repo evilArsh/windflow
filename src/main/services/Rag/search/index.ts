@@ -81,10 +81,9 @@ export function useSearchManager(db: VectorStore) {
     try {
       const embeddingReqs = transformEmbedding(params, abortController.signal)
       const vectors = await Promise.all(embeddingReqs.map(r => r.pending))
-      if (!vectors.some(v => !isArray(v.data.data))) {
-        throw new Error(
-          `[embedding search] Invalid embedding response. data: ${JSON.stringify(vectors.map(v => v.data))}`
-        )
+      const except = vectors.find(v => !isArray(v.data.data))
+      if (except) {
+        throw new Error(`[embedding search] invalid embedding response. data: ${JSON.stringify(except)}`)
       }
       vectors.forEach(vector => {
         log.debug(
@@ -104,7 +103,7 @@ export function useSearchManager(db: VectorStore) {
         )
       })
       const vectorSearchRes = await Promise.all(searchReq)
-      log.debug(`[embedding search] query result, length: ${vectorSearchRes.length}\n`, vectorSearchRes)
+      log.debug(`[embedding search] search complete, total count: ${vectorSearchRes.length}`)
       const rerankReq = transformRerank(
         params,
         vectorSearchRes.map(vectors => vectors.map(v => v.content)),
@@ -113,14 +112,11 @@ export function useSearchManager(db: VectorStore) {
       if (isArrayLength(rerankReq)) {
         const rerankResRaws = await Promise.all(rerankReq.map(r => r.pending))
         const results = rerankResRaws.map((rerankRes, index) => {
-          const maxRanksIndex = rerankRes.data.results.reduce(
-            (prev, cur) => {
-              if (!prev) return cur
-              if (cur.relevance_score > prev.relevance_score) return cur
-              return prev
-            },
-            null as RerankResponse["results"][number] | null
-          )
+          const maxRanksIndex = rerankRes.data.results.reduce<RerankResponse["results"][number] | null>((prev, cur) => {
+            if (!prev) return cur
+            if (cur.relevance_score > prev.relevance_score) return cur
+            return prev
+          }, null)
           return isNull(maxRanksIndex) ? [] : [vectorSearchRes[index][maxRanksIndex.index]]
         })
         log.debug("[embedding rerank result]", results)

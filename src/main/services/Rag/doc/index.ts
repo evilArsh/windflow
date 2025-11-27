@@ -26,7 +26,9 @@ export function useTextReader(config: RAGEmbeddingConfig) {
   const gDst: RAGFile[] = []
   function pushLine(line: string, meta: RAGLocalFileInfo) {
     if (isMaxTokensReached(line, toNumber(config.maxTokens))) {
-      throw new Error("max tokens reached of single line")
+      log.debug("[pushLine] max tokens reached of single line, Split the string into two equal parts: ", line)
+      pushLine(line.slice(0, line.length / 2), meta)
+      pushLine(line.slice(line.length / 2), meta)
     }
     if (isMaxTokensReached(gDst.toString(), toNumber(config.maxFileChunks))) {
       throw new Error("max tokens reached of original chunk")
