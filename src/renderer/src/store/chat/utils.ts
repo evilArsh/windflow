@@ -74,6 +74,7 @@ export const useUtils = (
       icon: getDefaultIcon(),
       content: "",
       modelIds: [],
+      knowledgeId: [],
       prompt: "you are a helpful assistant",
       createAt: Date.now(),
       requestCount: 0,

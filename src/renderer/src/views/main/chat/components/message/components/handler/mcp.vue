@@ -8,6 +8,7 @@ import MCPForm from "@renderer/views/main/mcp/index/components/form/form.vue"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { Spinner } from "@toolmain/components"
+import Shell from "./shell.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -96,7 +97,7 @@ const serverHandler = {
 }
 </script>
 <template>
-  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
+  <Shell>
     <template #reference>
       <ContentBox
         style="
@@ -104,6 +105,8 @@ const serverHandler = {
           --box-border-radius: 1rem;
           --box-border-size: 1px;
           --box-padding: 2px;
+          --box-border-hover-color: var(--el-border-color-dark);
+          --box-border-active-color: var(--el-border-color-darker);
         "
         normal>
         <div class="flex-center gap-.5rem">
@@ -122,10 +125,10 @@ const serverHandler = {
       </ContentBox>
     </template>
     <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
-    <el-card style="--el-card-padding: 1rem">
-      <template #header>
-        <el-text>{{ t("chat.mcp.label") }}</el-text>
-      </template>
+    <template #header>
+      <el-text>{{ t("chat.mcp.label") }}</el-text>
+    </template>
+    <template #default>
       <div class="w-full h-40rem flex">
         <el-scrollbar v-if="!visible" class="w-full">
           <div>
@@ -205,8 +208,8 @@ const serverHandler = {
           :data="currentServer">
         </MCPForm>
       </div>
-    </el-card>
-  </el-popover>
+    </template>
+  </Shell>
 </template>
 <style lang="scss">
 .mcp-status-switch {

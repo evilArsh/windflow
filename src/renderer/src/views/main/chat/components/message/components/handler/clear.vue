@@ -74,7 +74,13 @@ const { key: cleanContextKey, trigger: triggerCleanContext } = shortcut.listen("
 </script>
 <template>
   <ContentBox
-    style="--box-border-color: var(--el-border-color-light); --box-border-size: 1px; --box-padding: 2px"
+    style="
+      --box-border-color: var(--el-border-color-light);
+      --box-border-size: 1px;
+      --box-padding: 2px;
+      --box-border-hover-color: var(--el-border-color-dark);
+      --box-border-active-color: var(--el-border-color-darker);
+    "
     normal>
     <div class="flex-center gap[--ai-gap-base]">
       <ContentBox background @click="triggerCleanMessage">

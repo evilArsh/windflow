@@ -7,7 +7,8 @@ import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
 import { defaultTTIConfig } from "@renderer/store/chat/default"
 import { cloneDeep, errorToText, msg } from "@toolmain/shared"
-import { DialogPanel, Spinner } from "@toolmain/components"
+import { Spinner } from "@toolmain/components"
+import Shell from "./shell.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -96,34 +97,34 @@ function onRandSeed() {
 }
 </script>
 <template>
-  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
+  <Shell>
     <template #reference>
       <ContentBox background>
         <i-material-symbols-image-search-outline class="text-1.6rem"></i-material-symbols-image-search-outline>
       </ContentBox>
     </template>
-    <DialogPanel>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-.5rem">
-            <el-text>{{ t("chat.tti.label") }}</el-text>
-            <Spinner class="text-1.2rem" v-model="loading"></Spinner>
-          </div>
-          <el-dropdown :teleported="false" @command="onCommand">
-            <el-button plain text size="small" type="info">
-              {{ t("chat.llm.btnMore") }}
-              <i-ep-arrow-down class="ml-.5rem text-1.2rem"></i-ep-arrow-down>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item v-for="item in dropList" :key="item.value" :command="item.value">
-                  {{ t(item.label) }}
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+    <template #header>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-.5rem">
+          <el-text>{{ t("chat.tti.label") }}</el-text>
+          <Spinner class="text-1.2rem" v-model="loading"></Spinner>
         </div>
-      </template>
+        <el-dropdown :teleported="false" @command="onCommand">
+          <el-button plain text size="small" type="info">
+            {{ t("chat.llm.btnMore") }}
+            <i-ep-arrow-down class="ml-.5rem text-1.2rem"></i-ep-arrow-down>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-for="item in dropList" :key="item.value" :command="item.value">
+                {{ t(item.label) }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+    </template>
+    <template #default>
       <div v-if="!config" class="h-40rem w-full">
         <el-empty></el-empty>
       </div>
@@ -218,8 +219,8 @@ function onRandSeed() {
           </template>
         </ContentBox>
       </div>
-    </DialogPanel>
-  </el-popover>
+    </template>
+  </Shell>
 </template>
 <style lang="scss" scoped>
 .tti-wrap {

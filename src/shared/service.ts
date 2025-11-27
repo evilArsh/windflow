@@ -106,7 +106,7 @@ export interface ThemeService {
 }
 
 export interface RAGService {
-  search: (content: RAGSearchParam, config: RAGEmbeddingConfig) => Promise<Response<RAGFile[]>>
+  search: (params: RAGSearchParam) => Promise<Response<RAGFile[]>>
   searchTerminate(sessionId: string): Promise<Response<RAGSearchTask | undefined>>
   processLocalFile: (file: RAGLocalFileMeta, config: RAGEmbeddingConfig) => Promise<void>
   /**

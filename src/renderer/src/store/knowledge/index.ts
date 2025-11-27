@@ -1,12 +1,12 @@
 import { defineStore } from "pinia"
-import { Knowledge } from "@renderer/types/knowledge"
+import { Knowledge, KnowledgeEmbeddingPair } from "@renderer/types/knowledge"
 import { useData } from "./api"
 import useRagFilesStore from "../ragFiles/index"
 import useEmbeddingStore from "@renderer/store/embedding"
 import { db } from "@renderer/db"
-import { cloneDeep, code5xx, msgError, uniqueId } from "@toolmain/shared"
+import { cloneDeep, code5xx, isUndefined, msgError, uniqueId } from "@toolmain/shared"
 import { EventKey } from "@shared/types/eventbus"
-import { RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
+import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
 export default defineStore("knowledge", () => {
   const ragFilesStore = useRagFilesStore()
   const embeddingStore = useEmbeddingStore()
@@ -51,15 +51,39 @@ export default defineStore("knowledge", () => {
     const knowledge = knowledges.find(item => item.id === knowledgeId)
     return knowledge ?? (await api.get(knowledgeId))
   }
+  async function gets(knowledgeIds: string[]): Promise<Array<Knowledge>> {
+    const knowledge = knowledges.filter(item => knowledgeIds.includes(item.id))
+    if (knowledge.length !== knowledgeIds.length) return (await api.gets(knowledgeIds)).filter(v => !isUndefined(v))
+    return knowledge
+  }
   /**
    * find embedding config which was binded by `knowledgeId`
    */
-  async function getEmbeddingConfigById(knowledgeId: string) {
+  async function getEmbeddingConfigById(knowledgeId: string): Promise<RAGEmbeddingConfig | undefined> {
     const kb = await get(knowledgeId)
     if (kb?.embeddingId) {
       return embeddingStore.get(kb.embeddingId)
     }
     return
+  }
+  async function getEmbeddingConfigByIds(knowledgeIds: string[]): Promise<KnowledgeEmbeddingPair[]> {
+    const kbs = await gets(knowledgeIds)
+    const availableKbs = kbs.filter(kb => !isUndefined(kb.embeddingId))
+    const res = await embeddingStore.gets(availableKbs.map(kb => kb.embeddingId!))
+    if (knowledgeIds.length !== res.length) {
+      console.warn("[getEmbeddingConfigByIds] mismatch length bwetween knowledgeIds and embeddingConfigs")
+    }
+    return res
+      .map(embeddingConfig => {
+        const kb = availableKbs.find(kb => kb.embeddingId === embeddingConfig.id)
+        return !isUndefined(kb)
+          ? {
+              knowledgeId: kb.id,
+              embeddingConfig,
+            }
+          : undefined
+      })
+      .filter(r => !!r)
   }
   async function processFiles(filePaths: string[], knowledge: Knowledge) {
     if (!knowledge.embeddingId) {
@@ -130,6 +154,7 @@ export default defineStore("knowledge", () => {
     remove,
     findByEmbeddingId,
     getEmbeddingConfigById,
+    getEmbeddingConfigByIds,
     update,
     add,
     get,

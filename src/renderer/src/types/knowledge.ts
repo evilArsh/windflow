@@ -1,3 +1,5 @@
+import { RAGEmbeddingConfig } from "@shared/types/rag"
+
 export type Knowledge = {
   id: string
   name: string
@@ -9,4 +11,9 @@ export type Knowledge = {
    * knowledge implementation type, current `rag` only
    */
   type: "rag"
+}
+
+export type KnowledgeEmbeddingPair = {
+  knowledgeId: string
+  embeddingConfig: RAGEmbeddingConfig
 }

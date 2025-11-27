@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import useModelStore from "@renderer/store/model"
+import Shell from "./shell.vue"
 import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider"
-import { DialogPanel } from "@toolmain/components"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
@@ -39,7 +39,7 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
 )
 </script>
 <template>
-  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
+  <Shell>
     <template #reference>
       <ContentBox
         style="
@@ -47,6 +47,8 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
           --box-border-radius: 1rem;
           --box-border-size: 1px;
           --box-padding: 2px;
+          --box-border-hover-color: var(--el-border-color-dark);
+          --box-border-active-color: var(--el-border-color-darker);
         "
         normal>
         <div class="flex-center gap-.5rem">
@@ -64,10 +66,10 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
         </div>
       </ContentBox>
     </template>
-    <DialogPanel>
-      <template #header>
-        <el-text>{{ t("chat.model.label") }}</el-text>
-      </template>
+    <template #header>
+      <el-text>{{ t("chat.model.label") }}</el-text>
+    </template>
+    <template #default>
       <div class="h-40rem w-full flex">
         <el-checkbox-group
           v-model="data.modelIds"
@@ -95,8 +97,8 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
           </div>
         </el-checkbox-group>
       </div>
-    </DialogPanel>
-  </el-popover>
+    </template>
+  </Shell>
 </template>
 <style lang="scss" scoped>
 .select-wrap {

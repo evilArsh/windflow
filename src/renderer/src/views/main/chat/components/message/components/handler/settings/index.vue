@@ -2,23 +2,23 @@
 import { ChatTopic } from "@renderer/types"
 import Global from "./global.vue"
 import Message from "./message.vue"
-import { DialogPanel } from "@toolmain/components"
+import Shell from "../shell.vue"
 defineProps<{
   topic: ChatTopic
 }>()
 const { t } = useI18n()
 </script>
 <template>
-  <el-popover trigger="hover" :width="500" popper-style="--el-popover-padding: 0">
+  <Shell>
     <template #reference>
       <ContentBox background>
         <i-ic-outline-settings class="text-1.6rem" />
       </ContentBox>
     </template>
-    <DialogPanel>
-      <template #header>
-        <el-text>{{ t("chat.settings.label") }}</el-text>
-      </template>
+    <template #header>
+      <el-text>{{ t("chat.settings.label") }}</el-text>
+    </template>
+    <template #default>
       <div class="w-full h-40rem flex flex-col gap-1rem">
         <ContentBox>
           <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
@@ -33,7 +33,7 @@ const { t } = useI18n()
           </template>
         </ContentBox>
       </div>
-    </DialogPanel>
-  </el-popover>
+    </template>
+  </Shell>
 </template>
 <style lang="scss" scoped></style>

@@ -3,6 +3,7 @@ import ModelSelect from "./modelSelect.vue"
 import TextToImage from "./textToImage.vue"
 import LLMRequest from "./llmRequest.vue"
 import Mcp from "./mcp.vue"
+import KnowledgeBase from "./kb.vue"
 import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
 import useChatStore from "@renderer/store/chat"
@@ -69,6 +70,7 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
         <LLMRequest :topic></LLMRequest>
         <TextToImage :topic></TextToImage>
         <Mcp :topic></Mcp>
+        <KnowledgeBase :topic></KnowledgeBase>
         <Settings :topic></Settings>
       </div>
       <Clear :topic="topic" @context-clean="emit('contextClean')"></Clear>

@@ -99,15 +99,24 @@ export type RAGFile = {
 export type RAGSearchParam = {
   content: string
   /**
-   * specify the scope of current search, generally, it's the knowledge base id
-   */
-  topicId: string
-  /**
    * `sessionId` marks current searching, genereally, it's the chat-message id.
    * it is used to stop/identify the searching, user must specify a `sessionId` when searching.
    * this `sessionId` will be used to stop the searching
    */
   sessionId: string
+  /**
+   * configs of each `topicId`
+   */
+  configs: Array<{
+    /**
+     * specify the scope of current search, generally, it's the knowledge base id
+     */
+    topicId: string
+    /**
+     * configs of each `topicId`
+     */
+    config: RAGEmbeddingConfig
+  }>
 }
 
 export type RAGSearchResult = {

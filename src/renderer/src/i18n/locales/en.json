@@ -31,6 +31,9 @@
     "defaultPrompt": "you are a helpful assistant",
     "deleteFailed": "Delete failed",
     "editChat": "Edit",
+    "kb": {
+      "label": "knowledge base"
+    },
     "llm": {
       "btnCoverGlobal": "Override Global Config",
       "btnMore": "More Actions",

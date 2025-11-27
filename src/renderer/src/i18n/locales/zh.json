@@ -31,6 +31,9 @@
     "defaultPrompt": "你是一个实用的AI助手",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
+    "kb": {
+      "label": "知识库"
+    },
     "llm": {
       "btnCoverGlobal": "覆盖全局配置",
       "btnMore": "更多操作",

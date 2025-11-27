@@ -1,6 +1,6 @@
 {
   "name": "windflow",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "All-In-One AI pair",
   "main": "./out/main/index.js",
   "author": "windflow <arshdebian@163.com>",

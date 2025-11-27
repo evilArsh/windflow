@@ -6,6 +6,7 @@ export const useData = () => {
   const add = async (data: RAGEmbeddingConfig) => db.embedding.add(cloneDeep(data))
   const remove = async (id: string) => db.embedding.delete(id)
   const get = async (id: string) => db.embedding.get(id)
+  const gets = async (ids: string[]) => await db.embedding.bulkGet(ids)
 
   async function fetch() {
     return await db.embedding.toArray()
@@ -18,5 +19,6 @@ export const useData = () => {
     add,
     get,
     remove,
+    gets,
   }
 }

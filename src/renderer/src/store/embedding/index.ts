@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { useData } from "./api"
 import { RAGEmbeddingConfig } from "@shared/types/rag"
-import { cloneDeep } from "@toolmain/shared"
+import { cloneDeep, isUndefined } from "@toolmain/shared"
 export default defineStore("embedding", () => {
   const embeddings = reactive<RAGEmbeddingConfig[]>([])
   const api = useData()
@@ -19,10 +19,15 @@ export default defineStore("embedding", () => {
     await api.add(data)
     embeddings.push(cloneDeep(data))
   }
-  async function get(id: string) {
-    const cache = embeddings.find(item => item.id === id)
+  async function get(embeddingId: string) {
+    const cache = embeddings.find(item => item.id === embeddingId)
     if (cache) return cache
-    return api.get(id)
+    return api.get(embeddingId)
+  }
+  async function gets(embeddingIds: string[]): Promise<Array<RAGEmbeddingConfig>> {
+    const cache = embeddings.filter(item => embeddingIds.includes(item.id))
+    if (cache.length !== embeddingIds.length) return (await api.gets(embeddingIds)).filter(v => !isUndefined(v))
+    return cache
   }
   async function init() {
     embeddings.length = 0
@@ -36,5 +41,6 @@ export default defineStore("embedding", () => {
     update,
     add,
     get,
+    gets,
   }
 })

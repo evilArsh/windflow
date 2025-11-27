@@ -2,7 +2,6 @@
 import { ChatTopic } from "@renderer/types"
 import { CSSProperties, px } from "@toolmain/shared"
 import { Resize } from "@toolmain/components"
-import Kb from "./kb.vue"
 import Prompt from "./prompt.vue"
 import { useMsgContext } from "../../../../index"
 const props = defineProps<{
@@ -30,9 +29,6 @@ const tab = ref("knowledge")
     <div class="flex flex-col flex-1 gap-1rem">
       <Prompt :topic></Prompt>
       <el-tabs class="chat-config-tabs" v-model="tab">
-        <el-tab-pane :label="t('chat.right.knowledge')" name="knowledge">
-          <Kb :topic></Kb>
-        </el-tab-pane>
         <el-tab-pane :label="t('chat.right.history')" name="history"> </el-tab-pane>
       </el-tabs>
     </div>

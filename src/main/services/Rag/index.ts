@@ -63,9 +63,9 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
 
     this.#search = useSearchManager(this.#db)
   }
-  async search(params: RAGSearchParam, config: RAGEmbeddingConfig): Promise<Response<RAGFile[]>> {
+  async search(params: RAGSearchParam): Promise<Response<RAGFile[]>> {
     try {
-      this.#search.addSearchTask(params, config)
+      this.#search.addSearchTask(params)
       const res = await this.#search.getSearchResult(params.sessionId)
       if (res.status === RagSearchStatus.Success) {
         return responseData(200, "ok", cloneDeep(res.result ?? []))
@@ -204,8 +204,8 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     }
   }
   async registerIpc() {
-    ipcMain.handle(IpcChannel.RagSearch, async (_, content: RAGSearchParam, config: RAGEmbeddingConfig) => {
-      return this.search(content, config)
+    ipcMain.handle(IpcChannel.RagSearch, async (_, params: RAGSearchParam) => {
+      return this.search(params)
     })
     ipcMain.handle(IpcChannel.RagSearchTerminate, async (_, sessionId: string) => {
       return this.searchTerminate(sessionId)

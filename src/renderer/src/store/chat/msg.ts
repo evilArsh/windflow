@@ -38,15 +38,16 @@ export function useMsg(
   const utils = useUtils(chatMessage, chatLLMConfig, chatTTIConfig)
   const rag = useRag()
 
+  /**
+   * the hook is triggered when the 100 status code message is send before do llm request
+   */
   const llmHooks = (topic: ChatTopic, message: ChatMessage): BeforeRequestCallback => {
     return async (messages: Message[], model: ModelMeta, provider: ProviderMeta): Promise<BeforeRequestParams> => {
       let m = messages
       // rag service
-      if (topic.knowledgeId) {
-        const em = await knowledgeStore.getEmbeddingConfigById(topic.knowledgeId)
-        if (em) {
-          m = await rag.patch(topic.knowledgeId, message.id, em, messages)
-        }
+      if (isArrayLength(topic.knowledgeId)) {
+        const pairs = await knowledgeStore.getEmbeddingConfigByIds(topic.knowledgeId)
+        m = await rag.patch(pairs, message.id, messages)
       }
       // mcp service
       const mcpServersIds = (await window.api.mcp.getTopicServers(topic.id)).data

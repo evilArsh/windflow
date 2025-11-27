@@ -113,6 +113,8 @@ watch(
 
   --box-border-radius: 5px;
   --box-border-color: transparent;
+  --box-border-hover-color: transparent;
+  --box-border-active-color: transparent;
   --box-border-size: 0;
 
   --box-shadow-color: var(--el-fill-color-lighter);
@@ -156,11 +158,13 @@ watch(
   &:hover {
     background-color: var(--box-bg-hover-color);
     box-shadow: 0 0 3px var(--box-shadow-color);
+    border-color: var(--box-border-hover-color);
   }
   &:active,
   &.active {
     background-color: var(--box-bg-active-color);
     box-shadow: 0 0 5px var(--box-shadow-active-color);
+    border-color: var(--box-border-active-color);
   }
   &.normal {
     @extend .normal;

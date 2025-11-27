@@ -39,7 +39,7 @@ const exceed = computed(() => props.maxLength >= 0 && props.data.length > props.
 const length = computed(() => (props.maxLength < 0 ? props.data.length : props.maxLength))
 </script>
 <template>
-  <div class="abbrs-container">
+  <div v-if="data.length" class="abbrs-container">
     <TransitionGroup name="list" tag="ul">
       <template v-for="(item, index) in data.slice(0, length)" :key="index">
         <div v-if="item.type === 'text'" :style="nodeStyle(index)" class="abbrs" :class="[nodeClass]">
