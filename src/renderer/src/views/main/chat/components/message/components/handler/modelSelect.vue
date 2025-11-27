@@ -41,11 +41,27 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
 <template>
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
-      <ContentBox still-lock default-lock>
-        <ContentBox background>
-          <i-fluent-emoji-flat-wrapped-gift class="text-1.4rem"></i-fluent-emoji-flat-wrapped-gift>
-        </ContentBox>
-        <Abbrs :spacing="12" style="--abbrs-padding: 3px" width="22" height="22" :data="activeModelsIcons"></Abbrs>
+      <ContentBox
+        style="
+          --box-border-color: var(--el-border-color-light);
+          --box-border-radius: 1rem;
+          --box-border-size: 1px;
+          --box-padding: 2px;
+        "
+        normal>
+        <div class="flex-center gap-.5rem">
+          <ContentBox background>
+            <i-material-symbols-featured-seasonal-and-gifts
+              class="text-1.6rem"></i-material-symbols-featured-seasonal-and-gifts>
+          </ContentBox>
+          <Abbrs
+            :max-length="5"
+            :spacing="12"
+            style="--abbrs-padding: 3px"
+            width="22"
+            height="22"
+            :data="activeModelsIcons"></Abbrs>
+        </div>
       </ContentBox>
     </template>
     <DialogPanel>

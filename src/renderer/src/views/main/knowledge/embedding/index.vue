@@ -169,7 +169,7 @@ onMounted(() => {
         <div class="flex flex-col w-full p-1rem">
           <ContentBox
             v-for="item in filterEmbeddings"
-            style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
+            style="--box-bg-color: var(--el-bg-color); --box-padding: var(--ai-gap-base)"
             class="select-unset! mb-1rem!"
             :key="item.id">
             <i class="i-material-symbols-bookmark-stacks text-3rem"></i>

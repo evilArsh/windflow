@@ -6,6 +6,8 @@ import { CallBackFn, msg, errorToText } from "@toolmain/shared"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import MCPForm from "@renderer/views/main/mcp/index/components/form/form.vue"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
+import { AbbrsNode } from "@renderer/components/Abbrs"
+import { Spinner } from "@toolmain/components"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -20,7 +22,19 @@ const isCurrentActive = computed(() => {
 const filterServers = computed(() => {
   return servers.value.filter(v => !v.modifyTopic || v.modifyTopic === topic.value.id)
 })
-const currentLength = computed(() => filterServers.value.filter(s => isCurrentActive.value(s)).length)
+const currentActive = computed<AbbrsNode[]>(() =>
+  filterServers.value
+    .filter(s => isCurrentActive.value(s))
+    .map(v => {
+      return {
+        data: v.name.slice(0, 1),
+        type: "text",
+      }
+    })
+)
+const currentLoading = computed(() => {
+  return filterServers.value.some(v => v.status === MCPClientStatus.Connecting)
+})
 const usePopover = () => {
   const visible = ref(false)
   const currentServer = shallowRef<MCPServerParam>()
@@ -84,11 +98,28 @@ const serverHandler = {
 <template>
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
-      <el-badge :value="currentLength" type="primary" :show-zero="false">
-        <ContentBox background>
-          <i-twemoji-hammer-and-wrench class="text-1.6rem" />
-        </ContentBox>
-      </el-badge>
+      <ContentBox
+        style="
+          --box-border-color: var(--el-border-color-light);
+          --box-border-radius: 1rem;
+          --box-border-size: 1px;
+          --box-padding: 2px;
+        "
+        normal>
+        <div class="flex-center gap-.5rem">
+          <ContentBox background>
+            <i-material-symbols-code-rounded class="text-1.6rem" />
+          </ContentBox>
+          <Abbrs
+            :max-length="5"
+            :spacing="10"
+            style="--abbrs-padding: 3px"
+            width="22"
+            height="22"
+            :data="currentActive"></Abbrs>
+          <Spinner destroy-icon class="text-1.2rem" :model-value="currentLoading"></Spinner>
+        </div>
+      </ContentBox>
     </template>
     <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     <el-card style="--el-card-padding: 1rem">

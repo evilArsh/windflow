@@ -102,54 +102,68 @@ watch(
 <style lang="scss" scoped>
 .normal {
   --box-shadow-color: transparent;
-  --box-active-shadow-color: transparent;
+  --box-shadow-active-color: transparent;
   --box-bg-color: transparent;
-  --box-hover-bg-color: transparent;
-  --box-active-bg-color: transparent;
+  --box-bg-hover-color: transparent;
+  --box-bg-active-color: transparent;
 }
 .comp-content-box {
+  --box-padding: var(--ai-gap-small);
+  --box-margin: 0;
+
+  --box-border-radius: 5px;
+  --box-border-color: transparent;
+  --box-border-size: 0;
+
   --box-shadow-color: var(--el-fill-color-lighter);
-  --box-active-shadow-color: var(--el-fill-color-light);
-  // --box-shadow-color: var(--el-color-primary-light-8);
-  // --box-active-shadow-color: var(--el-color-primary-light-7);
+  --box-shadow-active-color: var(--el-fill-color-light);
+
   --box-bg-color: transparent;
-  --box-hover-bg-color: var(--el-fill-color-dark);
-  --box-active-bg-color: var(--el-fill-color-darker);
-  &.background {
-    --box-bg-color: transparent;
-    --box-hover-bg-color: var(--el-color-info-light-7);
-    --box-active-bg-color: var(--el-color-info-light-5);
-  }
-  &.normal {
-    @extend .normal;
-  }
+  --box-bg-hover-color: var(--el-fill-color-dark);
+  --box-bg-active-color: var(--el-fill-color-darker);
+
+  --box-bg-background-color: transparent;
+  --box-bg-background-hover-color: var(--el-color-info-light-7);
+  --box-bg-background-active-color: var(--el-color-info-light-5);
+
+  --box-icon-color: var(--el-text-color-regular);
+  --box-icon-hover-color: var(--el-color-primary-light-7);
+  --box-icon-active-color: var(--el-color-primary-light-5);
 }
 .comp-content-box {
   -webkit-app-region: no-drag;
-  --content-box-padding: var(--ai-gap-small);
-  --content-box-margin: 0;
   user-select: none;
   cursor: pointer;
-  margin: var(--content-box-margin);
-  padding: var(--content-box-padding);
-  border-radius: 5px;
+  margin: var(--box-margin);
+  padding: var(--box-padding);
+  border-radius: var(--box-border-radius);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: var(--ai-gap-base);
   background-color: var(--box-bg-color);
-
-  --box-icon-color: var(--el-text-color-regular);
-  --box-icon-hover-color: var(--el-color-primary-light-7);
-  --box-icon-active-color: var(--el-color-primary-light-5);
+  border: solid var(--box-border-size) var(--box-border-color);
+  &.background {
+    background-color: var(--box-bg-background-color);
+    &:hover {
+      background-color: var(--box-bg-background-hover-color);
+    }
+    &:active,
+    &.active {
+      background-color: var(--box-bg-background-active-color);
+    }
+  }
   &:hover {
-    background-color: var(--box-hover-bg-color);
+    background-color: var(--box-bg-hover-color);
     box-shadow: 0 0 3px var(--box-shadow-color);
   }
   &:active,
   &.active {
-    background-color: var(--box-active-bg-color);
-    box-shadow: 0 0 5px var(--box-active-shadow-color);
+    background-color: var(--box-bg-active-color);
+    box-shadow: 0 0 5px var(--box-shadow-active-color);
+  }
+  &.normal {
+    @extend .normal;
   }
   .box-main {
     display: flex;

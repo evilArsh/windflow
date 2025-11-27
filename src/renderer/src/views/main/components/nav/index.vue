@@ -92,7 +92,7 @@ settingsStore.dataWatcher<string>(SettingKeys.DefaultRoute, defaultRoute, "/main
               <ContentBox
                 normal-icon
                 class="flex-1"
-                style="--content-box-padding: 0 var(--ai-gap-base)"
+                style="--box-padding: 0 var(--ai-gap-base)"
                 :main-style="{ flexDirection: 'column' }"
                 background
                 still-lock

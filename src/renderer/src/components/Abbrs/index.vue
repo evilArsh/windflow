@@ -20,7 +20,7 @@ const props = withDefaults(
     width: 30,
     height: 30,
     nodeClass: "",
-    maxLength: 5,
+    maxLength: -1,
     nodeStyle: () => ({}),
   }
 )
@@ -35,12 +35,13 @@ const nodeStyle = computed<(index: number) => CSSProperties>(() => {
       props.nodeStyle
     )
 })
-const exceed = computed(() => Math.max(0, props.data.length - props.maxLength))
+const exceed = computed(() => props.maxLength >= 0 && props.data.length > props.maxLength)
+const length = computed(() => (props.maxLength < 0 ? props.data.length : props.maxLength))
 </script>
 <template>
   <div class="abbrs-container">
     <TransitionGroup name="list" tag="ul">
-      <template v-for="(item, index) in data.slice(0, maxLength)" :key="index">
+      <template v-for="(item, index) in data.slice(0, length)" :key="index">
         <div v-if="item.type === 'text'" :style="nodeStyle(index)" class="abbrs" :class="[nodeClass]">
           <span>{{ item.data }}</span>
         </div>

@@ -99,7 +99,7 @@ function onRandSeed() {
   <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
-        <i-fluent-emoji-flat-framed-picture class="text-1.6rem"></i-fluent-emoji-flat-framed-picture>
+        <i-material-symbols-image-search-outline class="text-1.6rem"></i-material-symbols-image-search-outline>
       </ContentBox>
     </template>
     <DialogPanel>

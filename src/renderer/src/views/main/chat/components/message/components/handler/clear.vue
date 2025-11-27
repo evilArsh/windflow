@@ -73,7 +73,9 @@ const { key: cleanMessageKey, trigger: triggerCleanMessage } = shortcut.listen("
 const { key: cleanContextKey, trigger: triggerCleanContext } = shortcut.listen("ctrl+k", handler.cleanContext)
 </script>
 <template>
-  <ContentBox still-lock default-lock>
+  <ContentBox
+    style="--box-border-color: var(--el-border-color-light); --box-border-size: 1px; --box-padding: 2px"
+    normal>
     <div class="flex-center gap[--ai-gap-base]">
       <ContentBox background @click="triggerCleanMessage">
         <el-tooltip placement="top" :content="t('chat.cleanMessage', { shortcut: cleanMessageKey })">

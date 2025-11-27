@@ -160,7 +160,7 @@ const ev = {
     <template #default>
       <slot :wait="btnWait">
         <div class="fixed left-0 top-0 right-0 bottom-0 z-2999"></div>
-        <ContentBox class="relative z-3000" normal style="--ai-gap-base: 1rem; --content-box-padding: 0">
+        <ContentBox class="relative z-3000" normal style="--ai-gap-base: 1rem; --box-padding: 0">
           <template #header>
             <div class="flex gap-1rem items-center">
               <i class="i-ep-question-filled c-[var(--el-color-warning)] text-1.4rem"></i>

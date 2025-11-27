@@ -62,7 +62,7 @@ const ev = {
       v-for="item in filtedFilieList"
       class="select-unset!"
       :class="[view ? '' : 'mb-1rem!']"
-      style="--box-bg-color: var(--el-bg-color); --content-box-padding: var(--ai-gap-base)"
+      style="--box-bg-color: var(--el-bg-color); --box-padding: var(--ai-gap-base)"
       :key="item.id">
       <i v-if="!view" class="i-ic-baseline-insert-drive-file text-3rem"></i>
       <ContentBox class="flex-1 select-unset!" normal>

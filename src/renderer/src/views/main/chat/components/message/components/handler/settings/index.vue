@@ -12,7 +12,7 @@ const { t } = useI18n()
   <el-popover trigger="hover" :width="500" popper-style="--el-popover-padding: 0">
     <template #reference>
       <ContentBox background>
-        <i-fluent-emoji-flat-gear class="text-1.6rem" />
+        <i-ic-outline-settings class="text-1.6rem" />
       </ContentBox>
     </template>
     <DialogPanel>
