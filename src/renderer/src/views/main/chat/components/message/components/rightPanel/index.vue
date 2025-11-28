@@ -5,7 +5,7 @@ import { Resize } from "@toolmain/components"
 import Prompt from "./prompt.vue"
 import { useMsgContext } from "../../../../index"
 const props = defineProps<{
-  topic: ChatTopic
+  topic?: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
 const emit = defineEmits<{
@@ -26,7 +26,7 @@ const tab = ref("knowledge")
       @after-scale="emit('resizeChange')"
       size="8px"
       direction="left" />
-    <div class="flex flex-col flex-1 gap-1rem">
+    <div v-if="topic" class="flex flex-col flex-1 gap-1rem">
       <Prompt :topic></Prompt>
       <el-tabs class="chat-config-tabs" v-model="tab">
         <el-tab-pane :label="t('chat.right.history')" name="history"> </el-tab-pane>

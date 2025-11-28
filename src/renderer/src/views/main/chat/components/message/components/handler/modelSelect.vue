@@ -52,7 +52,7 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
         "
         normal>
         <div class="flex-center gap-.5rem">
-          <ContentBox background>
+          <ContentBox style="--box-border-radius: 1rem" background>
             <i-material-symbols-featured-seasonal-and-gifts
               class="text-1.6rem"></i-material-symbols-featured-seasonal-and-gifts>
           </ContentBox>

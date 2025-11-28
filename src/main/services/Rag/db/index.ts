@@ -17,11 +17,22 @@ import { merge } from "@toolmain/shared"
 import path from "node:path"
 
 export type VectorQuery = {
-  tableName: string
+  /**
+   * the scope of current file, generally a knowledge base id
+   */
   topicId: string
+  tableName: string
   queryVector: number[]
   topK?: number
-  // columns?: string[]
+}
+export type FtsQuery = {
+  /**
+   * the scope of current file, generally a knowledge base id
+   */
+  topicId: string
+  tableName: string
+  content: string
+  topK?: number
 }
 export type VectorStoreConfig = {
   /**
@@ -92,31 +103,58 @@ export class VectorStore {
       console.error("[store open error]", error)
     }
   }
+  #defaultSearchColumns(): string[] {
+    return [
+      "id",
+      "fileId",
+      "configId",
+      "topicId",
+      "content",
+      "fileName",
+      "filePath",
+      "fileSize",
+      "chunkIndex",
+      "mimeType",
+      "tokens",
+    ]
+  }
   /**
    * vector similarity search
    */
-  async search({ tableName, queryVector, topicId, topK = 5 }: VectorQuery): Promise<RAGFile[]> {
+  async search({ tableName, queryVector, topicId, topK = 10 }: VectorQuery): Promise<RAGFile[]> {
     let table: Table | undefined
     try {
       const client = this.#getClient()
       table = await client.openTable(tableName)
+      const columns = this.#defaultSearchColumns()
+      columns.push("_distance")
       const query = table
         .vectorSearch(queryVector)
         .distanceType("cosine")
-        .select([
-          "_distance",
-          "id",
-          "fileId",
-          "configId",
-          "topicId",
-          "content",
-          "fileName",
-          "filePath",
-          "fileSize",
-          "chunkIndex",
-          "mimeType",
-          "tokens",
-        ])
+        .select(columns)
+        .where(sql.format("`topicId` = ?", [topicId]))
+        .limit(topK)
+      const results = (await query.toArray()) as RAGFile[]
+      table.close()
+      return results
+    } finally {
+      table?.close()
+    }
+  }
+  /**
+   * full test search (fts)
+   */
+  async searchFts({ tableName, content, topicId, topK = 10 }: FtsQuery): Promise<RAGFile[]> {
+    let table: Table | undefined
+    try {
+      const client = this.#getClient()
+      table = await client.openTable(tableName)
+      const columns = this.#defaultSearchColumns()
+      table.query()
+      columns.push("_score")
+      const query = table
+        .search(content, "fts", ["content", "_score"])
+        .select(columns)
         .where(sql.format("`topicId` = ?", [topicId]))
         .limit(topK)
       const results = (await query.toArray()) as RAGFile[]

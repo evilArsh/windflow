@@ -57,7 +57,13 @@ onBeforeUnmount(() => {
               @update:model-value="tree.onSearchKeywordChange"
               :placeholder="t('chat.search')"
               clearable />
-            <div id="toggleMenu"></div>
+            <teleport to="#toggleMenu" defer :disabled="showTreeMenu">
+              <ContentBox @click="_ => toggleTreeMenu()" background>
+                <i-material-symbols-right-panel-close-outline
+                  v-if="showTreeMenu"></i-material-symbols-right-panel-close-outline>
+                <i-material-symbols-left-panel-close-outline v-else></i-material-symbols-left-panel-close-outline>
+              </ContentBox>
+            </teleport>
           </div>
           <Button @click="onCreateNewTopic">
             <i class="text-1.4rem i-ep-plus"></i>
@@ -124,13 +130,7 @@ onBeforeUnmount(() => {
     <template #content>
       <MessagePanel :topic="currentTopic" :context="msgContext">
         <template #leftHandler>
-          <teleport to="#toggleMenu" defer :disabled="!showTreeMenu">
-            <ContentBox @click="_ => toggleTreeMenu()" background>
-              <i-material-symbols-right-panel-close-outline
-                v-if="!showTreeMenu"></i-material-symbols-right-panel-close-outline>
-              <i-material-symbols-left-panel-close-outline v-else></i-material-symbols-left-panel-close-outline>
-            </ContentBox>
-          </teleport>
+          <div id="toggleMenu"></div>
         </template>
       </MessagePanel>
     </template>

@@ -69,14 +69,14 @@ export default defineStore("knowledge", () => {
   async function getEmbeddingConfigByIds(knowledgeIds: string[]): Promise<KnowledgeEmbeddingPair[]> {
     const kbs = await gets(knowledgeIds)
     const availableKbs = kbs.filter(kb => !isUndefined(kb.embeddingId))
-    const res = await embeddingStore.gets(availableKbs.map(kb => kb.embeddingId!))
-    if (knowledgeIds.length !== res.length) {
+    const emConfigs = await embeddingStore.gets(availableKbs.map(kb => kb.embeddingId!))
+    if (knowledgeIds.length !== emConfigs.length) {
       console.warn("[getEmbeddingConfigByIds] mismatch length bwetween knowledgeIds and embeddingConfigs")
     }
-    return res
-      .map(embeddingConfig => {
-        const kb = availableKbs.find(kb => kb.embeddingId === embeddingConfig.id)
-        return !isUndefined(kb)
+    return availableKbs
+      .map(kb => {
+        const embeddingConfig = emConfigs.find(em => em.id === kb.embeddingId)
+        return !isUndefined(embeddingConfig)
           ? {
               knowledgeId: kb.id,
               embeddingConfig,

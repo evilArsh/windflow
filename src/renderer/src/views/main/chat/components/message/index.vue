@@ -39,9 +39,9 @@ const handler = {
 }
 </script>
 <template>
-  <div v-if="topic" class="message-container">
+  <div class="message-container">
     <ContentLayout
-      :handler-height="topic.inputHeight"
+      :handler-height="toValue(topic?.inputHeight)"
       @update:handler-height="handler.onHandlerHeightChange"
       ref="contentLayout"
       chat-mode>
@@ -61,15 +61,17 @@ const handler = {
           </div>
         </el-card>
       </template>
-      <Content :topic :context></Content>
-      <template #handler>
+      <template #default>
+        <Content v-if="topic" :topic :context></Content>
+        <div v-else class="flex flex-1 items-center justify-center">
+          <el-empty />
+        </div>
+      </template>
+      <template v-if="topic" #handler>
         <Handler :topic @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
       </template>
     </ContentLayout>
     <RightPanel v-show="showRightPanel" :context :topic></RightPanel>
-  </div>
-  <div v-else class="flex flex-1 items-center justify-center">
-    <el-empty />
   </div>
 </template>
 <style lang="scss" scoped>

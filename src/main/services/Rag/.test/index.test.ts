@@ -34,7 +34,7 @@ describe("main/src/Rag", () => {
       default: { ...lgMock, scope: (_: string) => lgMock },
     }
   })
-  const config: RAGEmbeddingConfig = {
+  const globalConfig: RAGEmbeddingConfig = {
     id: "embedding-1",
     name: "test",
     embedding: {
@@ -43,17 +43,18 @@ describe("main/src/Rag", () => {
       api: "https://api.siliconflow.cn/v1/embeddings",
       apiKey: "",
     },
-    rerank: {
-      providerName: "SiliconFlow",
-      model: "Qwen/Qwen3-Reranker-8B",
-      api: "https://api.siliconflow.cn/v1/rerank",
-      apiKey: "",
-    },
+    // rerank: {
+    //   providerName: "SiliconFlow",
+    //   model: "Qwen/Qwen3-Reranker-8B",
+    //   api: "https://api.siliconflow.cn/v1/rerank",
+    //   apiKey: "",
+    // },
     maxFileChunks: 512,
     maxInputs: 20,
     maxTokens: 1024,
     dimensions: 2048,
   }
+  const globalTopicIds = ["test_topic_rag", "test_topic_rag2"]
 
   it("read file", async () => {
     console.time("readFile")
@@ -81,7 +82,7 @@ describe("main/src/Rag", () => {
           fileName: info.name,
           fileSize: info.size,
         },
-        config
+        globalConfig
       )
       console.log(res)
       expect(res.data.length).gte(0)
@@ -243,7 +244,7 @@ describe("main/src/Rag", () => {
 
     db.close()
   })
-  it("process RAG file", async () => {
+  it("process file", async () => {
     const bus = new EventBusImpl()
     const rag = new RAGServiceImpl(bus, {
       store: {
@@ -255,38 +256,38 @@ describe("main/src/Rag", () => {
       res = data
     })
     bus.on(EventKey.RAGFileProcessStatus, eventCallback)
-
-    const topicId = "test_topic_rag"
-
-    const meta: RAGLocalFileMeta = {
-      id: uniqueId(),
-      path: path.join(__dirname, "work.xlsx"),
-      topicId: topicId,
-    }
-
-    const { model, api, apiKey } = config.embedding
-    if (!(model && api && apiKey)) {
-      console.warn("need complete embedding config")
-      return
-    }
-    await rag.processLocalFile(meta, config)
-    await vi.waitFor(
-      () => {
-        expect(res?.status).toBe(RAGFileStatus.Success)
-      },
-      {
-        timeout: 30000,
-        interval: 1500,
+    // const paths = ["work.xlsx", "work.pdf"]
+    const paths = ["content1.txt", "content2.txt"]
+    const ids = globalTopicIds.map((id, index) => ({ topicId: id, path: paths[index] }))
+    for (const topicId of ids) {
+      const meta: RAGLocalFileMeta = {
+        id: `id_${topicId.topicId}`,
+        path: path.join(__dirname, topicId.path),
+        topicId: topicId.topicId,
       }
-    )
-    expect(res).toBeTruthy()
-    expect(res?.path).equal(meta.path)
-    expect(res?.id).equal(meta.id)
-    expect(res?.status).equal(RAGFileStatus.Success)
+      const { model, api, apiKey } = globalConfig.embedding
+      if (!(model && api && apiKey)) {
+        console.warn("need complete embedding config")
+        return
+      }
+      await rag.processLocalFile(meta, globalConfig)
+      await vi.waitFor(
+        () => {
+          expect(res?.status).toBe(RAGFileStatus.Success)
+        },
+        {
+          timeout: 30000,
+          interval: 1500,
+        }
+      )
+      expect(res).toBeTruthy()
+      expect(res?.path).equal(meta.path)
+      expect(res?.id).equal(meta.id)
+      expect(res?.status).equal(RAGFileStatus.Success)
+    }
   }, 60000)
 
-  it("search RAG file", async () => {
-    const topicId = "test_topic_rag"
+  it("search file", async () => {
     const sessionId = "test_session_id"
     const bus = new EventBusImpl()
     const rag = new RAGServiceImpl(bus, {
@@ -294,24 +295,18 @@ describe("main/src/Rag", () => {
         rootDir: path.join(__dirname),
       },
     })
-    if (!config.rerank) {
-      console.warn("need set rerank config")
-      return
-    }
-    const { model, api, apiKey } = config.rerank
+    const { model, api, apiKey } = globalConfig.embedding
     if (!(model && api && apiKey)) {
-      console.warn("need complete rerank config")
+      console.warn("need complete embedding config")
       return
     }
     const sRes = await rag.search({
-      content: "总结这里面都有什么",
+      content: "考勤情况",
       sessionId,
-      configs: [
-        {
-          topicId,
-          config,
-        },
-      ],
+      configs: globalTopicIds.map(topicId => ({
+        topicId,
+        config: globalConfig,
+      })),
     })
     console.log(sRes)
     expect(sRes.data.length).gt(0)
@@ -333,7 +328,7 @@ describe("main/src/Rag", () => {
     expect(s.has(data)).equal(false)
     s.set({
       info: data,
-      config,
+      config: globalConfig,
       data: [],
       status: [],
     })

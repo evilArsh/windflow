@@ -105,6 +105,10 @@ export type RAGSearchParam = {
    */
   sessionId: string
   /**
+   * specify max search result
+   */
+  topK?: number
+  /**
    * configs of each `topicId`
    */
   configs: Array<{

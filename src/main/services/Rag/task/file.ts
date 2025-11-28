@@ -4,7 +4,7 @@ import { readFile } from "../doc"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { combineUniqueId } from "./utils"
-import { log } from "../utils"
+import { encapEmbeddinConfig, log } from "../utils"
 export class FileProcessTaskImpl implements TaskChain {
   #queue: PQueue
   #meta: Map<string, AbortController>
@@ -39,7 +39,7 @@ export class FileProcessTaskImpl implements TaskChain {
           status: RAGFileStatus.Processing,
         }
         try {
-          log.debug(`[file process] task start`, info)
+          log.debug(`[file process] task start`, info.info, encapEmbeddinConfig(info.config))
           const chunksData = await readFile(info.info, info.config)
           if (signal?.aborted) {
             throw new Error("task aborted")

@@ -110,7 +110,7 @@ const serverHandler = {
         "
         normal>
         <div class="flex-center gap-.5rem">
-          <ContentBox background>
+          <ContentBox style="--box-border-radius: 1rem" background>
             <i-material-symbols-code-rounded class="text-1.6rem" />
           </ContentBox>
           <Abbrs

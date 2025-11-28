@@ -62,8 +62,11 @@ export class StoreTaskImpl implements TaskChain {
             } else {
               // cond1: different task with same file
               // cond2: different task with same id (also same file path)
-              const cond = sql.format("`filePath` = ? OR `id` = ?", [taskInfo.info.path, taskInfo.info.id])
+              const cond = sql.format("`filePath` = ? or `fileId` = ?", [taskInfo.info.path, taskInfo.info.id])
               const pathRows = await this.#db.countRows(tableName, cond)
+              log.debug(
+                `[store process] [insert] old table exists, check if need to clear, pathRows: ${pathRows}, cond: ${cond}`
+              )
               if (pathRows) {
                 log.debug(`[store process] [insert] will clean old data, counts: ${pathRows}`)
                 await this.#db.deleteData(tableName, cond)

@@ -78,6 +78,7 @@ export function useSearchManager(db: VectorStore) {
       controler: abortController,
       result: [],
     })
+    const topK = params.topK || 5
     try {
       const embeddingReqs = transformEmbedding(params, abortController.signal)
       const vectors = await Promise.all(embeddingReqs.map(r => r.pending))
@@ -99,9 +100,20 @@ export function useSearchManager(db: VectorStore) {
             tableName: combineTableName(config.topicId),
             queryVector: vectors[index].data.data?.[0].embedding ?? [],
             topicId: config.topicId,
+            topK,
           })
         )
       })
+      // params.configs.forEach(config => {
+      //   searchReq.push(
+      //     db.searchFts({
+      //       tableName: combineTableName(config.topicId),
+      //       content: params.content,
+      //       topicId: config.topicId,
+      //       topK,
+      //     })
+      //   )
+      // })
       const vectorSearchRes = await Promise.all(searchReq)
       log.debug(`[embedding search] search complete, total count: ${vectorSearchRes.length}`)
       const rerankReq = transformRerank(
@@ -120,15 +132,24 @@ export function useSearchManager(db: VectorStore) {
           return isNull(maxRanksIndex) ? [] : [vectorSearchRes[index][maxRanksIndex.index]]
         })
         log.debug("[embedding rerank result]", results)
-        emitStatus(params.sessionId, RagSearchStatus.Success, 200, "ok", results.flat())
+        emitStatus(
+          params.sessionId,
+          RagSearchStatus.Success,
+          200,
+          "ok",
+          results
+            .flat()
+            .sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
+            .slice(0, topK)
+        )
       } else {
         const results = vectorSearchRes.flat().sort((a, b) => toNumber(b._distance) - toNumber(a._distance))
         log.debug(
           `[embedding search finish] total_length: ${vectorSearchRes.length}, score_gt_0.7_length: ${
-            vectorSearchRes.flat().filter(r => toNumber(r._distance) >= 0.7).length
+            results.filter(r => toNumber(r._distance) >= 0.7).length
           }`
         )
-        emitStatus(params.sessionId, RagSearchStatus.Success, 200, "ok", results.flat())
+        emitStatus(params.sessionId, RagSearchStatus.Success, 200, "ok", results.slice(0, topK))
       }
     } catch (error) {
       log.error(
