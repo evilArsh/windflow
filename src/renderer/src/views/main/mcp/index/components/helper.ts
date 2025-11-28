@@ -79,7 +79,7 @@ export function assembleParam(
   if (!isHTTPUrl(value.url)) {
     value.url = ""
   }
-  let copyName = `${name}_copy`
+  let copyName = `${name}`
   copyName = servers.some(v => v.name === copyName) ? `${copyName}_copy` : copyName
   return mcp.clonePure({
     id: mcp.createNewId(),
