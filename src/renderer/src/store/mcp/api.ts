@@ -10,6 +10,9 @@ export const useData = () => {
   async function add(data: MCPServerParam) {
     return db.mcpServer.add(cloneDeep(data))
   }
+  async function bulkAdd(datas: MCPServerParam[]) {
+    return db.mcpServer.bulkAdd(cloneDeep(datas))
+  }
   async function del(id: string) {
     return db.mcpServer.delete(id)
   }
@@ -38,6 +41,7 @@ export const useData = () => {
   }
   return {
     add,
+    bulkAdd,
     del,
     fetch,
     update,

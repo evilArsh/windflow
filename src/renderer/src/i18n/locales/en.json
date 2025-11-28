@@ -149,6 +149,7 @@
     "edit": "Edit",
     "enable": "Enable",
     "env": "Environment Variables",
+    "label": "alias",
     "menu": {
       "env": "Environment Config",
       "market": "Discover",

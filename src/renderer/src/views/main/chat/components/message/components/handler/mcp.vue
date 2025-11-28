@@ -54,6 +54,7 @@ const usePopover = () => {
       newCopy.modifyTopic = topic.value.id
       newCopy.referId = data.referId
       newCopy.name = `${newCopy.name}_copy`
+      newCopy.name = servers.value.some(v => v.name === newCopy.name) ? `${newCopy.name}_copy` : newCopy.name
       await mcp.add(newCopy)
       mcp.start(topic.value.id, newCopy)
     } catch (error) {

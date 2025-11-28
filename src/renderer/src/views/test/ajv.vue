@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import Ajv from "ajv"
 import AjvErrors from "ajv-errors"
-function useToolCall() {
+function useSchemaValidate() {
   const ajv = new Ajv({
     strict: true, // 强制校验 Schema 本身的合法性
     allErrors: true, // 收集所有错误
@@ -35,7 +35,7 @@ function useToolCall() {
     normalizetoolCallArgs,
   }
 }
-const call = useToolCall()
+const call = useSchemaValidate()
 function test1() {
   try {
     const res = call.validate(

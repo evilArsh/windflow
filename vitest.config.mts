@@ -47,7 +47,7 @@ export default mergeConfig(
             name: "unit-node",
             environment: "node",
             setupFiles: [path.resolve(import.meta.dirname, "src/.test/setup-node.ts")],
-            include: ["src/main/**/*.{test,spec}.ts"],
+            include: ["src/main/**/*.{test,spec}.ts", "src/shared/**/*.{test,spec}.ts"],
             server: {
               deps: {
                 inline: ["vue", "msw"],

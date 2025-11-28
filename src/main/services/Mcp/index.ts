@@ -31,7 +31,7 @@ import {
   requestWithId,
   useMCPContext,
 } from "./utils"
-import { useToolCall } from "@shared/mcp"
+import { useSchemaValidate } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
@@ -43,7 +43,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
   #envParams: ToolEnvironment = defaultEnv()
   #env = mcpEnv()
   #cachedTools: Record<string, MCPToolDetail[]> = {}
-  #toolCall = useToolCall()
+  #toolCall = useSchemaValidate()
   #context = useMCPContext()
   constructor(globalBus: EventBus) {
     this.#globalBus = globalBus
@@ -272,10 +272,15 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
           const msg = `server [${id}] not found`
           return responseData(500, msg, { content: { type: "text", text: msg } })
         }
-        const [validArgs, validErrors] = this.#toolCall.validate(tool, args)
+        if (!tool.inputSchema) {
+          return responseData(200, "function call arguments validate failed", {
+            content: { type: "text", text: "args validate failed" },
+          })
+        }
+        const [validArgs, validErrors] = this.#toolCall.validate(tool.inputSchema, args)
         if (!validArgs) {
-          return responseData(200, "args vailid error", {
-            content: { type: "text", text: errorToText(validErrors) },
+          return responseData(200, "args validate failed", {
+            content: { type: "text", text: `function call arguments validate failed: ${errorToText(validErrors)}` },
           })
         }
         if (ctx.status === MCPClientStatus.Connected && ctx.client) {

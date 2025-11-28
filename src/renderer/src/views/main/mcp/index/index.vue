@@ -6,6 +6,7 @@ import { msg, useDialog, CallBackFn, errorToText } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import Form from "./components/form/form.vue"
+import Copy from "./components/copy/index.vue"
 import List from "./components/form/list.vue"
 import { Spinner } from "@toolmain/components"
 import Loading from "./components/tools/loading.vue"
@@ -32,9 +33,11 @@ const {
 })
 const formRef = useTemplateRef("formRef")
 const current = ref<MCPServerParam>()
+const currentCache = shallowRef<MCPServerParam>()
 const search = shallowReactive({
   keyword: "",
 })
+const tab = ref("1")
 const filterServers = computed(() =>
   servers.value.filter(
     v =>
@@ -72,7 +75,8 @@ const serverHandler = {
 }
 const dlg = {
   onFormClose: () => {
-    current.value = undefined
+    current.value = currentCache.value
+    currentCache.value = undefined
     close()
   },
   onListClose: () => {
@@ -98,13 +102,20 @@ const dlg = {
     }
   },
 }
+const ev = {
+  onOpenNew() {
+    currentCache.value = current.value
+    current.value = undefined
+    open()
+  },
+}
 </script>
 <template>
   <ContentLayout custom>
     <template #header>
       <div class="p-1rem flex-1 flex flex-col">
         <div class="flex items-center">
-          <el-button type="primary" size="small" @click="open">{{ t("btn.new") }}</el-button>
+          <el-button type="primary" size="small" @click="ev.onOpenNew">{{ t("btn.new") }}</el-button>
           <el-button type="warning" size="small" @click="listDlgOpen">{{ t("btn.mcpList") }}</el-button>
         </div>
       </div>
@@ -129,7 +140,7 @@ const dlg = {
                   still-lock
                   @click.stop="serverHandler.onCardClick(server)">
                   <template #icon>
-                    <i-twemoji-hammer-and-wrench class="text-1.4rem" />
+                    <i-material-symbols-terminal class="text-1.4rem" />
                   </template>
                   <McpName :data="server"></McpName>
                   <Spinner
@@ -207,7 +218,14 @@ const dlg = {
       <el-empty v-else class="mcp-config-tabs"></el-empty>
     </div>
     <el-dialog v-bind="props" v-on="event">
-      <Form class="h-70vh" @close="dlg.onFormClose" @change="dlg.onFormChange" :data="current"></Form>
+      <el-tabs v-model="tab">
+        <el-tab-pane name="1" :label="t('mcp.addNew.form')">
+          <Form class="h-70vh" name-editable @close="dlg.onFormClose" @change="dlg.onFormChange" :data="current"></Form>
+        </el-tab-pane>
+        <el-tab-pane name="2" :label="t('mcp.addNew.copy')">
+          <Copy @close="dlg.onFormClose" class="h-70vh"></Copy>
+        </el-tab-pane>
+      </el-tabs>
     </el-dialog>
     <el-dialog v-bind="listDlgProps" v-on="listDlgEvent" style="--el-dialog-padding-primary: 0">
       <List class="h-70vh" @close="dlg.onListClose"></List>

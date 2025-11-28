@@ -3,12 +3,13 @@ import Args from "./args.vue"
 import Env from "./env.vue"
 import useMcpStore from "@renderer/store/mcp"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn, isNumber, isHTTPUrl } from "@toolmain/shared"
+import { CallBackFn, isNumber, isHTTPUrl, cloneDeep } from "@toolmain/shared"
 import { FormProps, FormRules } from "element-plus"
 import { MCPServerParam } from "@shared/types/mcp"
 
 const props = defineProps<{
   size?: "" | "default" | "small" | "large"
+  nameEditable?: boolean
   hideCloseBtn?: boolean
   data?: MCPServerParam
   formProps?: Partial<FormProps>
@@ -23,10 +24,9 @@ const formRef = useTemplateRef("form")
 const formRules = ref<FormRules>({
   name: {
     required: true,
-    message: "",
     trigger: "blur",
     validator: (_, v: string, cb) => {
-      cb(v.trim().length > 0 ? undefined : new Error(t("form.valueRequired")))
+      cb(v.trim().length > 0 ? undefined : new Error(t("form.emptyValueNotAllowed")))
     },
   },
   "params.command": {
@@ -66,6 +66,7 @@ const formRules = ref<FormRules>({
 const defaultData = (): MCPServerParam => ({
   id: "",
   name: "",
+  label: "",
   type: "stdio",
   referTopics: [],
   params: { url: "", command: "", args: [], env: {} },
@@ -83,8 +84,8 @@ const handler = {
   save: async (done: CallBackFn) => {
     try {
       await handler.validate()
-      emit("change", clonedData.value)
-      emit("close")
+      emit("change", cloneDeep(clonedData.value))
+      handler.close()
       done()
     } catch (error) {
       console.log(error)
@@ -92,6 +93,7 @@ const handler = {
     }
   },
   close: () => {
+    clonedData.value = defaultData()
     emit("close")
   },
 }
@@ -111,7 +113,10 @@ defineExpose({
       class="w-full"
       v-bind="formProps">
       <el-form-item :label="t('mcp.name')" required prop="name">
-        <el-input v-model.trim="clonedData.name"></el-input>
+        <el-input :disabled="!nameEditable" v-model.trim="clonedData.name"></el-input>
+      </el-form-item>
+      <el-form-item :label="t('mcp.label')" required prop="label">
+        <el-input v-model.trim="clonedData.label"></el-input>
       </el-form-item>
       <el-form-item :label="t('mcp.type')" required prop="type">
         <el-radio-group v-model="clonedData.type">

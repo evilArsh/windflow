@@ -66,6 +66,11 @@ export default defineStore("mcp", () => {
     servers.push(newData)
     return newData
   }
+  async function bulkAdd(newDatas: MCPServerParam[]) {
+    await api.bulkAdd(newDatas)
+    servers.push(...newDatas)
+    return newDatas
+  }
   /**
    * 停止并删除 `topicId` 下的 `serverId`
    */
@@ -109,6 +114,7 @@ export default defineStore("mcp", () => {
     createNewId,
     findServer,
     add,
+    bulkAdd,
     getAll,
     update,
   }

@@ -1,5 +1,5 @@
 import { Message, LLMToolCall, Role, LLMToolCallRequest } from "@renderer/types"
-import { useToolCall } from "@shared/mcp"
+import { normalizetoolCallArgs } from "@shared/mcp"
 import json5 from "json5"
 export async function loadMCPTools(mcpServersIds: string[]): Promise<LLMToolCallRequest[]> {
   if (!window.api) {
@@ -29,7 +29,7 @@ export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
     const parse = (args: string) => {
       try {
         if (!args) return
-        return json5.parse(useToolCall().normalizetoolCallArgs(args))
+        return json5.parse(normalizetoolCallArgs(args))
       } catch (e) {
         console.log("[parse tool calls args error]", e, args)
         return args

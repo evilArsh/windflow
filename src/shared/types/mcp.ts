@@ -24,7 +24,14 @@ export interface MCPRequestParams {
 }
 export interface MCPServerParamCore extends MCPRequestParams {
   id: string
+  /**
+   * mcpServer name
+   */
   name: string
+  /**
+   * alias of mcpServer name
+   */
+  label: string
   description: string
   type: "sse" | "streamable" | "stdio"
   params: {
