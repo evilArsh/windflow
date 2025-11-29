@@ -31,7 +31,7 @@ export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
         if (!args) return
         return json5.parse(normalizetoolCallArgs(args))
       } catch (e) {
-        console.log("[parse tool calls args error]", e, args)
+        console.log("[parse tool calls args error]", e, "\n", args)
         return args
       }
     }

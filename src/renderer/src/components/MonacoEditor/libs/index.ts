@@ -28,23 +28,20 @@ export async function initEnv(ev: EventBus<EditorEv>) {
         return new TsWorker()
       }
       // @@@@@@@@ todo:plugin
-      if (label === "vue") {
-        return await vueWorker.getWorker()
-      }
       // @@@@@@@@
       return new EditorWorker()
     },
   }
-  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+  monaco.typescript.javascriptDefaults.setDiagnosticsOptions({
     noSemanticValidation: true,
     noSyntaxValidation: false,
   })
-  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-    target: monaco.languages.typescript.ScriptTarget.ESNext,
+  monaco.typescript.javascriptDefaults.setCompilerOptions({
+    target: monaco.typescript.ScriptTarget.ESNext,
     allowNonTsExtensions: true,
   })
 
-  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+  monaco.json.jsonDefaults.setDiagnosticsOptions({
     allowComments: true,
   })
 
