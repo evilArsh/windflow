@@ -8,7 +8,7 @@ export default {
   singleQuote: false,
   bracketSameLine: true,
   arrowParens: "avoid",
-  endOfLine: "crlf",
+  endOfLine: "auto",
   trailingComma: "es5",
   htmlWhitespaceSensitivity: "css",
 };
