@@ -45,19 +45,6 @@ export const mcpStdioDefault = (): MCPServerParam[] => {
     },
     {
       type: "stdio",
-      id: "12306-mcp",
-      name: "12306-mcp",
-      label: "12306-车票查询工具",
-      params: {
-        url: "",
-        args: ["-y", "12306-mcp"],
-        command: "npx",
-        env: {},
-      },
-      description: "12306车票查询工具",
-    },
-    {
-      type: "stdio",
       id: "server-everything",
       label: "Server Everything",
       name: "server-everything",
