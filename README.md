@@ -33,6 +33,11 @@
 - **Extensible Architecture**: Plugin system for adding custom tools and integrations
 - **Performance Monitoring**: Track token usage and performance metrics
 
+## 📝TODO LIST
+
+- [ ] Core workflow support
+- [ ] Rewrite core services with rust and running in wasm/wasi
+
 ## 👀 Preview
 
 ![chat](./docs/preview.png)
