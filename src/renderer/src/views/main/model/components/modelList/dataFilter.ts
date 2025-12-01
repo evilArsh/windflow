@@ -44,12 +44,14 @@ export function useDataFilter(provider: Readonly<ShallowRef<ProviderMeta | undef
     })
   )
   const subProviders = computed(() => {
-    return scopeList.value.reduce<string[]>((acc, cur) => {
-      if (!acc.includes(cur.subProviderName)) {
-        acc.push(cur.subProviderName)
-      }
-      return acc
-    }, [])
+    return scopeList.value
+      .reduce<string[]>((acc, cur) => {
+        if (!acc.includes(cur.subProviderName)) {
+          acc.push(cur.subProviderName)
+        }
+        return acc
+      }, [])
+      .sort((a, b) => a.localeCompare(b))
   })
 
   const currentPage = ref(1)

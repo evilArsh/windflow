@@ -52,8 +52,6 @@ export type ModelMeta = {
    * @description 是否启用
    */
   active?: boolean
-  // TODO:
-  children?: ModelMeta[]
   icon?: string
 }
 /**

@@ -83,13 +83,15 @@ const currentPage = computed({
     </template>
     <template v-if="$slots.footer || total" #footer>
       <slot name="footer"></slot>
-      <el-pagination
-        v-model:page-size="pageSize"
-        v-model:current-page="currentPage"
-        @change="(a, b) => emit('change', a, b)"
-        background
-        default="total, sizes, prev, pager, next, jumper"
-        :total />
+      <div>
+        <el-pagination
+          v-model:page-size="pageSize"
+          v-model:current-page="currentPage"
+          @change="(a, b) => emit('change', a, b)"
+          background
+          layout="total,sizes,prev,pager,next,jumper"
+          :total />
+      </div>
     </template>
   </DialogPanel>
 </template>

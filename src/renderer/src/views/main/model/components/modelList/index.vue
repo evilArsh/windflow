@@ -43,7 +43,7 @@ const tableProps = shallowReactive<CombineTableProps>({
 
 const onModelChange = async (row: ModelMeta) => {
   try {
-    await modelStore.update(row)
+    await modelStore.put(row)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }
@@ -73,29 +73,13 @@ const useIcon = () => {
 }
 const { current, onIconClick, onModelIconChange } = useIcon()
 
-// const handledData = computed<Record<string, ModelMeta[]>>(() => {
-//   return props.data.reduce((acc, cur) => {
-//     if (acc[cur.subProviderName]) {
-//       acc[cur.subProviderName].push(cur)
-//     } else {
-//       acc[cur.subProviderName] = [cur]
-//     }
-//     return acc
-//   }, {})
-// })
-
 async function onRefreshModel(done?: CallBackFn) {
   try {
     if (provider.value) {
       const meta = providerStore.providerManager.getProvider(provider.value.name)
       if (meta) {
         const models = await meta.fetchModels(provider.value)
-        if (models.length !== 0) {
-          // 设置默认logo
-          // FIXME: will overwrite existing logo
-          models.forEach(v => {
-            v.icon = providerStore.getProviderLogo(v.providerName)
-          })
+        if (models.length) {
           await modelStore.refresh(models)
           await modelStore.init()
         }
@@ -174,22 +158,26 @@ onMounted(onQuery)
             </el-form-item>
           </el-form>
         </template>
-        <el-table-column prop="icon" width="80" :label="t('provider.model.icon')">
+        <el-table-column width="80" :label="t('provider.model.icon')">
           <template #default="{ row }: { row: ModelMeta }">
             <el-button @click="onIconClick($event, row)">
               <Svg class="text-2.5rem" :src="row.icon"></Svg>
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="modelName" width="300" :label="t('provider.model.name')" />
-        <el-table-column prop="type" width="200" :label="t('provider.model.type')">
+        <el-table-column :label="t('provider.model.name')">
+          <template #default="{ row }">
+            <el-text line-clamp="1">{{ row.modelName }}</el-text>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('provider.model.type')">
           <template #default="{ row }: { row: ModelMeta }">
             <div class="flex flex-wrap gap0.5rem">
               <el-tag v-for="type in row.type" :key="type" type="primary">{{ t(`modelType.${type}`) }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column :label="t('provider.model.active')">
+        <el-table-column width="80" :label="t('provider.model.active')">
           <template #default="{ row }">
             <el-switch v-model="row.active" @change="onModelChange(row)" />
           </template>

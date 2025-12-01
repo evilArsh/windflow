@@ -6,6 +6,7 @@ import { useData } from "./api"
 import { useUtils } from "./utils"
 import { IconifyJSON } from "@iconify/types"
 import { modelsDefault } from "./default"
+import { UpdateSpec } from "dexie"
 export default defineStore("model", () => {
   const providerSvgIcon = inject(providerSvgIconKey)
   const providerStore = useProviderStore()
@@ -32,14 +33,27 @@ export default defineStore("model", () => {
   function findByProvider(providerName: string): ModelMeta[] {
     return models.filter(v => v.providerName === providerName)
   }
-  async function refresh(data: ModelMeta[]) {
-    return api.refresh(data)
+  async function refresh(metas: ModelMeta[]) {
+    const keysAndChanges: Array<{
+      key: string
+      changes: UpdateSpec<ModelMeta>
+    }> = metas.map(v => {
+      const res = { ...v }
+      delete res["active"]
+      delete res["icon"]
+      return {
+        key: v.id,
+        changes: res,
+      }
+    })
+    return api.bulkUpdate(keysAndChanges)
   }
-  async function update(data: ModelMeta) {
-    return api.update(data)
+  async function put(data: ModelMeta) {
+    return api.put(data)
   }
   async function init() {
     models.length = 0
+    cache.clear()
     const data = await api.fetch()
     const defaultData = modelsDefault(providerSvgIcon as IconifyJSON)
     data.forEach(v => {
@@ -64,6 +78,6 @@ export default defineStore("model", () => {
     find,
     findByProvider,
     refresh,
-    update,
+    put,
   }
 })
