@@ -271,6 +271,7 @@
     "initError": "Init Error",
     "inputPlaceholder": "Enter your question",
     "loading": "Loading...",
+    "noContent": "No Content",
     "regenerate": "re-generate?",
     "reset": "Reset?",
     "saveSuccess": "Save successful",

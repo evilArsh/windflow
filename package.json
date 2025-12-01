@@ -1,7 +1,7 @@
 {
   "name": "windflow",
   "version": "0.6.5",
-  "description": "All-In-One AI pair",
+  "description": "Power your automated workflows with multiple AI providers",
   "main": "./out/main/index.js",
   "author": "windflow <arshdebian@163.com>",
   "homepage": "https://vivcode.cn",

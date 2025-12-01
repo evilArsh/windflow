@@ -98,7 +98,7 @@ export type ProviderMeta = {
   /**
    * @description 模型列表中需要展示的模型类型
    */
-  selectedTypes: string[]
+  selectedTypes: ModelType[]
   /**
    * @description 模型列表中需要展示的子提供商
    */

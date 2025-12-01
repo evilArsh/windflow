@@ -4,7 +4,7 @@ import useProviderStore from "@renderer/store/provider"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import useSettingsStore from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
-import Config from "./components/config.vue"
+import ModelList from "./components/modelList/index.vue"
 import { ProviderMeta, SettingKeys } from "@renderer/types"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
@@ -20,7 +20,7 @@ const useConfigComponent = () => {
     if (!providerStore.providerManager.availableProviders().some(v => v.name() === name)) {
       return h(ElEmpty)
     }
-    return h(Config)
+    return h(ModelList)
   }
   return {
     getComponent,
@@ -102,12 +102,10 @@ shortcut.listen("ctrl+b", res => {
       </el-scrollbar>
     </template>
     <template #content>
-      <ContentLayout>
-        <component
-          :key="cache.currentProvider?.name"
-          :is="getComponent(cache.currentProvider?.name)"
-          :provider-name="cache.currentProvider?.name" />
-      </ContentLayout>
+      <component
+        :key="cache.currentProvider?.name"
+        :is="getComponent(cache.currentProvider?.name)"
+        :provider-name="cache.currentProvider?.name" />
     </template>
   </SubNavLayout>
 </template>

@@ -295,6 +295,7 @@
     "initError": "初始化错误",
     "inputPlaceholder": "输入你的问题",
     "loading": "加载中...",
+    "noContent": "没有内容",
     "regenerate": "重新生成?",
     "reset": "即将重置?",
     "saveSuccess": "保存成功",
