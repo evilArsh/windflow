@@ -38,7 +38,7 @@ async function checkBinPath(pathStr: string) {
       throw new Error(`${pathStr} is not a file`)
     }
     if (platform.isWindows) {
-      if (info.extension.toLowerCase() !== ".exe") {
+      if (info.extension.toLowerCase() !== "exe") {
         throw new Error(`${pathStr} is not a executable file`)
       }
     } else {
@@ -83,6 +83,7 @@ export async function testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTe
     data.data.uv.msg = uvVer.msg
     return data
   } catch (error) {
+    log.error(error)
     data.code = 500
     data.msg = errorToText(error)
     return data
