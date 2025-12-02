@@ -21,6 +21,7 @@ const { providerMetas } = storeToRefs(providerStore)
 const provider = computed<ProviderMeta | undefined>(() => providerMetas.value[props.providerName])
 
 const {
+  keyword,
   loading,
   list,
   modelTypeKeys,
@@ -130,7 +131,7 @@ onMounted(onQuery)
         <template #header>
           <el-form label-width="10rem">
             <el-form-item :label="t('provider.model.type')">
-              <el-select v-model="provider.selectedTypes" multiple>
+              <el-select v-model="provider.selectedTypes" multiple filterable>
                 <el-option
                   v-for="key in modelTypeKeys"
                   :key="key"
@@ -139,12 +140,12 @@ onMounted(onQuery)
               </el-select>
             </el-form-item>
             <el-form-item :label="t('provider.model.subProvider')">
-              <el-select v-model="provider.selectedSubProviders" multiple>
+              <el-select v-model="provider.selectedSubProviders" multiple filterable>
                 <el-option v-for="item in subProviders" :key="item" :label="item" :value="item"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item :label="t('provider.model.activeStatus')">
-              <el-radio-group v-model="provider.activeStatus" size="small">
+              <el-radio-group v-model="provider.activeStatus">
                 <el-radio-button :value="ModelActiveStatus.All">
                   {{ t("provider.model.activeStatusAll") }}
                 </el-radio-button>
@@ -155,6 +156,9 @@ onMounted(onQuery)
                   {{ t("provider.model.activeStatusInactive") }}
                 </el-radio-button>
               </el-radio-group>
+            </el-form-item>
+            <el-form-item :label="t('provider.model.searchKeyword')">
+              <el-input v-model="keyword"> </el-input>
             </el-form-item>
           </el-form>
         </template>

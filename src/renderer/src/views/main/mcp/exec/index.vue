@@ -21,7 +21,7 @@ settingsStore.dataWatcher<ToolEnvironment>(SettingKeys.ToolEnvironment, env, def
 </script>
 <template>
   <ContentLayout>
-    <div class="flex flex-col gap1rem">
+    <div class="flex p-1rem flex-col gap4rem">
       <Npm></Npm>
       <Python></Python>
     </div>

@@ -3,6 +3,7 @@ import useEnvStore from "@renderer/store/env"
 import { storeToRefs } from "pinia"
 import { onFileChoose } from "../utils"
 import { CallBackFn } from "@toolmain/shared"
+import { DialogPanel } from "@toolmain/components"
 
 const envStore = useEnvStore()
 const { env } = storeToRefs(envStore)
@@ -37,12 +38,12 @@ function chooseFile(done: CallBackFn) {
 }
 </script>
 <template>
-  <el-card shadow="never">
+  <DialogPanel>
     <template #header>
       <el-text type="primary" size="large">{{ t("mcp.settings.python.title") }}</el-text>
     </template>
-    <div class="flex flex-col gap-0.5rem">
-      <ContentBox class="p1rem! gap1rem!">
+    <div class="flex flex-col gap-2rem">
+      <ContentBox class="p1rem! gap1rem!" normal>
         <el-text type="primary">{{ t("mcp.settings.python.mirror.title") }}</el-text>
         <template #footer>
           <ContentBox class="m0! p0!" normal>
@@ -62,14 +63,17 @@ function chooseFile(done: CallBackFn) {
           </ContentBox>
         </template>
       </ContentBox>
-      <ContentBox class="p1rem! gap1rem!">
+      <ContentBox class="p1rem! gap1rem!" normal>
         <div class="flex gap-1rem">
           <el-text type="primary">{{ t("mcp.settings.python.uv.title") }}</el-text>
-          <el-tooltip :content="t(`mcp.settings.python.uv.test`)" placement="top">
-            <Button class="m0!" size="small" text @click="done => envStore.checkEnv(done)">
-              <i-ic-baseline-terminal class="text-1.4rem"></i-ic-baseline-terminal>
-            </Button>
-          </el-tooltip>
+          <Button class="m0!" size="small" @click="done => envStore.checkEnv(done)">
+            <i-ic-baseline-terminal class="text-1.4rem"></i-ic-baseline-terminal>
+            <span>{{ t(`mcp.settings.python.uv.test`) }}</span>
+          </Button>
+          <Button size="small" @click="chooseFile">
+            <i-ep-document class="text-1.4rem"></i-ep-document>
+            <span>{{ t("btn.chooseFile") }}</span>
+          </Button>
         </div>
         <template #footer>
           <ContentBox class="m0! p0!" normal>
@@ -92,12 +96,6 @@ function chooseFile(done: CallBackFn) {
                   <div class="flex flex-col gap-1rem flex-1">
                     <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
                       <template #header>
-                        <el-text>{{ t("mcp.settings.python.uv.manualChoose") }}</el-text>
-                      </template>
-                      <Button size="small" @click="chooseFile">{{ t("btn.chooseFile") }}</Button>
-                    </el-card>
-                    <el-card style="--el-card-padding: 1rem" class="flex-1" shadow="never">
-                      <template #header>
                         <el-text>{{ t("mcp.settings.python.uv.onlineDownload") }}</el-text>
                       </template>
                       <Markdown v-model="doc"></Markdown>
@@ -116,7 +114,7 @@ function chooseFile(done: CallBackFn) {
         </template>
       </ContentBox>
     </div>
-  </el-card>
+  </DialogPanel>
 </template>
 <style lang="scss" scoped>
 :deep(.el-alert__content) {

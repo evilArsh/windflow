@@ -255,6 +255,7 @@
       "activeStatusInactive": "Inactive",
       "icon": "Icon",
       "name": "Model",
+      "searchKeyword": "model search",
       "subProvider": "Model Identifier",
       "type": "Type"
     },

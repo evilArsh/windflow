@@ -35,13 +35,12 @@ import { useSchemaValidate } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
 import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
 import { defaultEnv } from "@shared/env"
-import { mcpEnv } from "./env"
 import { mcpName, log, mcpVersion } from "./vars"
+import { testEnv } from "./env"
 
 export class MCPServiceImpl implements MCPService, ServiceCore {
   #globalBus: EventBus
   #envParams: ToolEnvironment = defaultEnv()
-  #env = mcpEnv()
   #cachedTools: Record<string, MCPToolDetail[]> = {}
   #toolCall = useSchemaValidate()
   #context = useMCPContext()
@@ -320,7 +319,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
     return responseData(200, "ok", this.#context.hasTopicReference(id, topicId))
   }
   async testEnv(args: ToolEnvironment): Promise<Response<ToolEnvTestResult>> {
-    return this.#env.testEnv(args)
+    return testEnv(args)
   }
   registerIpc() {
     ipcMain.handle(IpcChannel.McpStartServer, async (_, topicId: string, params: MCPServerParam) => {

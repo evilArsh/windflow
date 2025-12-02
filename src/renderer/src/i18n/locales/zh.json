@@ -222,13 +222,13 @@
         "title": "Python环境",
         "uv": {
           "desc": "用于执行python包",
-          "lack": "本机缺失uv运行环境，请下载",
+          "lack": "缺失uv运行环境，请下载",
           "lackTitle": "uv缺失",
           "manualChoose": "手动选择",
           "onlineDownload": "官网下载",
           "test": "测试命令",
           "title": "uv命令配置",
-          "version": "本机当前uv版本可用"
+          "version": "uv版本可用"
         }
       }
     },
@@ -279,6 +279,7 @@
       "activeStatusInactive": "未激活",
       "icon": "图标",
       "name": "模型",
+      "searchKeyword": "模型搜索",
       "subProvider": "模型标识",
       "type": "类型"
     },

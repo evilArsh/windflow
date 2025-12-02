@@ -13,6 +13,13 @@ const condSelectedTypes = (provider: ProviderMeta, meta: ModelMeta) => {
 const condSelectedSubProviders = (provider: ProviderMeta, meta: ModelMeta) => {
   return !provider.selectedSubProviders.length || provider.selectedSubProviders.includes(meta.subProviderName)
 }
+const condKeyword = (keyword: string, meta: ModelMeta) => {
+  return (
+    meta.modelName.toLowerCase().includes(keyword.toLowerCase()) ||
+    meta.subProviderName.toLowerCase().includes(keyword.toLowerCase()) ||
+    meta.providerName.toLowerCase().includes(keyword.toLowerCase())
+  )
+}
 const condActiveStatus = (provider: ProviderMeta, meta: ModelMeta) => {
   return (
     provider.activeStatus === ModelActiveStatus.All ||
@@ -27,6 +34,7 @@ export function useDataFilter(provider: Readonly<ShallowRef<ProviderMeta | undef
   const modelTypeKeys = Object.keys(ModelType)
   const modelStore = useModelStore()
   const { models } = storeToRefs(modelStore)
+  const keyword = ref("")
 
   const scopeList = computed(() =>
     models.value.filter(meta => {
@@ -37,6 +45,7 @@ export function useDataFilter(provider: Readonly<ShallowRef<ProviderMeta | undef
     scopeList.value.filter(meta => {
       return (
         provider.value &&
+        condKeyword(keyword.value, meta) &&
         condSelectedTypes(provider.value, meta) &&
         condSelectedSubProviders(provider.value, meta) &&
         condActiveStatus(provider.value, meta)
@@ -76,6 +85,7 @@ export function useDataFilter(provider: Readonly<ShallowRef<ProviderMeta | undef
   }
   watch(rawList, onQuery)
   return {
+    keyword,
     loading,
     list,
     modelTypeKeys,

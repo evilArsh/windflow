@@ -3,13 +3,45 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
-import { modifyPlatformCMD } from "./cmd"
-import { HttpStatusCode, errorToText } from "@toolmain/shared"
+import { HttpStatusCode, cloneDeep, errorToText } from "@toolmain/shared"
 import { MCPClientContext } from "./types"
 import { ToolEnvironment } from "@shared/types/env"
 import { EventBus } from "@shared/service"
 import { EventKey } from "@shared/types/eventbus"
 import { log } from "./vars"
+import { platform } from "@electron-toolkit/utils"
+
+function modifyPlatformCMD(env: ToolEnvironment, param: MCPServerParam): MCPServerParam {
+  const p = cloneDeep(param)
+  if (platform.isWindows) {
+    const command = p.params.command.toLowerCase().trim()
+    if (command === "npx") {
+      p.params.command = env.bun.path.trim()
+      const args = p.params.args ?? []
+      if (!args.includes("-y")) {
+        args.unshift("-y")
+      }
+      if (!args.includes("x")) {
+        args.unshift("x")
+      }
+      if (env.npm.registry) {
+        p.params.env["NPM_CONFIG_REGISTRY"] = env.npm.registry
+      }
+      p.params.args = args
+    } else if (command === "uvx" || command === "uv") {
+      p.params.command = env.uv.path.trim()
+      const args = p.params.args ?? []
+      args.unshift("run")
+      args.unshift("tool")
+      if (env.python.registry) {
+        p.params.env["UV_DEFAULT_INDEX"] = env.python.registry
+        p.params.env["PIP_INDEX_URL"] = env.python.registry
+      }
+      p.params.args = args
+    }
+  }
+  return p
+}
 
 export function createClient(name: string, version: string) {
   return new Client({ name, version })
