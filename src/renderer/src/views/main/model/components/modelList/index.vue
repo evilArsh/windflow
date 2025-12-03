@@ -4,8 +4,9 @@ import useModelStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
 import { ElMessage } from "element-plus"
+import ApiConfig from "./apiConfig.vue"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn, errorToText, msg } from "@toolmain/shared"
+import { CallBackFn, errorToText, msg, msgWarning, useDialog } from "@toolmain/shared"
 import { CombineTableProps } from "@renderer/components/Table/types"
 import { useDataFilter } from "./dataFilter"
 const { t } = useI18n()
@@ -14,25 +15,25 @@ const props = defineProps<{
 }>()
 const svgRef = useTemplateRef("svg")
 
+const {
+  props: dlgProps,
+  event: dlgEvent,
+  close: dlgClose,
+  open: dlgOpen,
+} = useDialog({
+  width: "50vw",
+  showClose: false,
+  destroyOnClose: true,
+})
+
 const modelStore = useModelStore()
 const providerStore = useProviderStore()
 const { providerMetas } = storeToRefs(providerStore)
 
 const provider = computed<ProviderMeta | undefined>(() => providerMetas.value[props.providerName])
 
-const {
-  keyword,
-  loading,
-  list,
-  modelTypeKeys,
-  subProviders,
-  currentPage,
-  pageSize,
-  total,
-  onQuery,
-  onList,
-  //
-} = useDataFilter(provider)
+const { keyword, loading, list, modelTypeKeys, subProviders, currentPage, pageSize, total, onQuery, onList } =
+  useDataFilter(provider)
 
 const tableProps = shallowReactive<CombineTableProps>({
   stripe: true,
@@ -42,19 +43,49 @@ const tableProps = shallowReactive<CombineTableProps>({
   height: "100%",
 })
 
-const onModelChange = async (row: ModelMeta) => {
-  try {
-    await modelStore.put(row)
-  } catch (error) {
-    msg({ code: 500, msg: errorToText(error) })
-  }
-}
-const onProviderChange = async (row: ProviderMeta) => {
-  try {
-    await providerStore.update(row)
-  } catch (error) {
-    msg({ code: 500, msg: errorToText(error) })
-  }
+const ev = {
+  async onRefreshModel(done?: CallBackFn) {
+    try {
+      if (provider.value) {
+        const meta = providerStore.providerManager.getProvider(provider.value.name)
+        if (meta) {
+          const models = await meta.fetchModels(provider.value)
+          if (models.length) {
+            await modelStore.refresh(models)
+            await modelStore.init()
+          }
+        } else {
+          msgWarning(t("provider.notFound", { name: provider.value.name }))
+        }
+      }
+      done?.()
+    } catch (e) {
+      done?.()
+      ElMessage.error(errorToText(e))
+    }
+  },
+  async onModelChange(row: ModelMeta): Promise<boolean> {
+    try {
+      await modelStore.put(row)
+      return true
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+      return false
+    }
+  },
+  async onProviderChange(row?: ProviderMeta, done?: CallBackFn) {
+    try {
+      if (!row) return
+      await providerStore.update(row)
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+    } finally {
+      done?.()
+    }
+  },
+  onOpenApiConfig() {
+    dlgOpen()
+  },
 }
 const useIcon = () => {
   const current = ref("")
@@ -67,31 +98,13 @@ const useIcon = () => {
     current.value = iconStr
     if (iconRow.value) {
       iconRow.value.icon = iconStr
-      onModelChange(iconRow.value)
+      ev.onModelChange(iconRow.value)
     }
   }
   return { current, onIconClick, onModelIconChange }
 }
 const { current, onIconClick, onModelIconChange } = useIcon()
 
-async function onRefreshModel(done?: CallBackFn) {
-  try {
-    if (provider.value) {
-      const meta = providerStore.providerManager.getProvider(provider.value.name)
-      if (meta) {
-        const models = await meta.fetchModels(provider.value)
-        if (models.length) {
-          await modelStore.refresh(models)
-          await modelStore.init()
-        }
-      }
-    }
-    done?.()
-  } catch (e) {
-    done?.()
-    ElMessage.error(errorToText(e))
-  }
-}
 onMounted(onQuery)
 </script>
 <template>
@@ -99,24 +112,33 @@ onMounted(onQuery)
     <template #header>
       <el-space class="p1rem">
         <el-text type="primary" :id="provider.name">{{ provider.alias ?? provider.name }}</el-text>
-        <Button size="small" type="primary" plain @click="onRefreshModel">
+        <Button size="small" round type="default" plain @click="ev.onRefreshModel">
           <i-ep-refresh></i-ep-refresh>
         </Button>
       </el-space>
     </template>
     <SvgPicker invoke-mode ref="svg" :model-value="current" @update:model-value="onModelIconChange"></SvgPicker>
+    <el-dialog v-bind="dlgProps" v-on="dlgEvent" :title="t('provider.apiInfo')">
+      <ApiConfig :provider @close="dlgClose" @confirm="done => ev.onProviderChange(provider, done)"></ApiConfig>
+    </el-dialog>
     <div class="model-setting">
       <DialogPanel class="w-full h-auto grow-0! shrink! basis-auto!">
         <el-form :model="provider" label-width="10rem" class="w-full">
-          <el-form-item :show-message="false" :label="t('provider.apiUrl')">
-            <el-input v-model="provider.api.url" @input="onProviderChange(provider)" />
+          <el-form-item :label="t('provider.apiUrl')">
+            <el-input v-model="provider.api.url" @input="ev.onProviderChange(provider)" />
           </el-form-item>
-          <el-form-item :show-message="false" :label="t('provider.apiKey')">
+          <el-form-item :label="t('provider.apiKey')">
             <el-input
               v-model="provider.api.key"
               show-password
-              @input="onProviderChange(provider)"
-              @change="_ => onRefreshModel()" />
+              @input="ev.onProviderChange(provider)"
+              @change="_ => ev.onRefreshModel()" />
+          </el-form-item>
+          <el-form-item label="">
+            <el-button size="small" @click="ev.onOpenApiConfig">
+              <i-ic-outline-settings class="text-1.4rem"></i-ic-outline-settings>
+              <span>{{ t("provider.apiInfo") }}</span>
+            </el-button>
           </el-form-item>
         </el-form>
       </DialogPanel>
@@ -183,7 +205,7 @@ onMounted(onQuery)
         </el-table-column>
         <el-table-column width="80" :label="t('provider.model.active')">
           <template #default="{ row }">
-            <el-switch v-model="row.active" @change="onModelChange(row)" />
+            <el-switch v-model="row.active" :before-change="() => ev.onModelChange(row)" />
           </template>
         </el-table-column>
       </Table>

@@ -12,16 +12,40 @@ import {
   BeforeRequestCallback,
 } from "@renderer/types"
 import { useSingleLLMChat } from "./compatible/request"
-// import OpenAi from "openai"
+import OpenAISDK from "openai"
 
 export class OpenAI implements Provider {
+  #client?: OpenAISDK
   constructor() {}
 
   name(): string {
     return "openai"
   }
-  async fetchModels(_provider: ProviderMeta): Promise<ModelMeta[]> {
-    return []
+  #getClient(provider: ProviderMeta) {
+    if (!this.#client) {
+      this.#client = new OpenAISDK({
+        apiKey: provider.api.key,
+        baseURL: provider.api.url,
+        dangerouslyAllowBrowser: true,
+      })
+    }
+    return this.#client
+  }
+  async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
+    const res = await this.#getClient(provider).models.list({
+      method: provider.api.models?.method as any,
+      path: provider.api.models?.url,
+    })
+    return res.data.map<ModelMeta>(model => {
+      return {
+        id: `${provider.name}_${model.id}`,
+        type: [],
+        modelName: model.id,
+        providerName: provider.name,
+        subProviderName: model.owned_by,
+      }
+    })
+    // .filter(model => model.subProviderName === "openai")
   }
   async chat(
     _messages: Message[],

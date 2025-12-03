@@ -225,6 +225,8 @@
     "Embedding": "Embedding",
     "ImageToImage": "ImageToImage",
     "ImageToText": "ImageToText",
+    "Models": "List Models",
+    "Rerank": "Rerank",
     "Reranker": "Reranker",
     "SpeechToText": "SpeechToText",
     "TextToImage": "TextToImage",
@@ -245,6 +247,7 @@
     }
   },
   "provider": {
+    "apiInfo": "API Config",
     "apiKey": "API Key",
     "apiUrl": "API URL",
     "model": {
@@ -259,6 +262,7 @@
       "subProvider": "Model Identifier",
       "type": "Type"
     },
+    "notFound": "current provider {name} not supported",
     "providerName": "Provider"
   },
   "request": {

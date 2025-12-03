@@ -1,19 +1,19 @@
 import { ModelMeta } from "@renderer/types"
 import { providerSvgIconKey } from "@renderer/app/hooks/useSvgIcon"
-import useProviderStore from "@renderer/store/provider"
 import { defineStore } from "pinia"
 import { useData } from "./api"
 import { useUtils } from "./utils"
 import { IconifyJSON } from "@iconify/types"
 import { modelsDefault } from "./default"
-import { UpdateSpec } from "dexie"
+import { db } from "@renderer/db"
+import { getIconHTML } from "@renderer/components/SvgPicker"
 export default defineStore("model", () => {
   const providerSvgIcon = inject(providerSvgIconKey)
-  const providerStore = useProviderStore()
   const models = reactive<ModelMeta[]>([]) // 所有模型
   const cache: Map<string, ModelMeta> = new Map() // 检索缓存
   const api = useData()
   const utils = useUtils()
+  const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
 
   function setModel(newModel: ModelMeta) {
     cache.set(newModel.id, newModel)
@@ -33,20 +33,30 @@ export default defineStore("model", () => {
   function findByProvider(providerName: string): ModelMeta[] {
     return models.filter(v => v.providerName === providerName)
   }
+  function getModelLogo(meta?: ModelMeta) {
+    return meta
+      ? meta.icon ||
+          getIconHTML(providerSvgIcon as IconifyJSON, meta.subProviderName.toLowerCase()) ||
+          getIconHTML(providerSvgIcon as IconifyJSON, meta.providerName.toLowerCase()) ||
+          defaultLogo
+      : defaultLogo
+  }
   async function refresh(metas: ModelMeta[]) {
-    const keysAndChanges: Array<{
-      key: string
-      changes: UpdateSpec<ModelMeta>
-    }> = metas.map(v => {
-      const res = { ...v }
-      delete res["active"]
-      delete res["icon"]
-      return {
-        key: v.id,
-        changes: res,
+    const ids = metas.map(item => item.id)
+    const existingRecords = await db.model.where("id").anyOf(ids).toArray()
+    const existingMap = new Map(existingRecords.map(record => [record.id, record]))
+    const recordsToWrite = metas.map(newItem => {
+      const existing = existingMap.get(newItem.id)
+      if (existing) {
+        return {
+          ...newItem,
+          active: existing.active,
+          icon: existing.icon ?? getModelLogo(newItem),
+        }
       }
+      return newItem
     })
-    return api.bulkUpdate(keysAndChanges)
+    await db.model.bulkPut(recordsToWrite)
   }
   async function put(data: ModelMeta) {
     return api.put(data)
@@ -58,7 +68,7 @@ export default defineStore("model", () => {
     const defaultData = modelsDefault(providerSvgIcon as IconifyJSON)
     data.forEach(v => {
       if (!v.icon) {
-        v.icon = providerStore.getProviderLogo(v.subProviderName)
+        v.icon = getModelLogo(v)
       }
       models.push(v)
     })
@@ -79,5 +89,6 @@ export default defineStore("model", () => {
     findByProvider,
     refresh,
     put,
+    getModelLogo,
   }
 })

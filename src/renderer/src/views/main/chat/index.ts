@@ -16,7 +16,7 @@ export const useMsgContext = () => {
   const shortcut = useShortcut()
   const toggleBus = useEventBus<boolean>("toggle")
   const showTreeMenu = ref(true) // 左侧菜单是否显示
-  const showRightPanel = ref(true) // 右侧菜单是否展示
+  const showRightPanel = ref(false) // 右侧菜单是否展示
   function toggleTreeMenu(toggle?: boolean) {
     showTreeMenu.value = toggle ?? !showTreeMenu.value
     toggleBus.emit(showTreeMenu.value)

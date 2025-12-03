@@ -6,7 +6,7 @@ export const providerSvgIconKey = Symbol("providerSvgIcon") as InjectionKey<Icon
 
 const nameWithoutExt = (path: string) => {
   const fileName = path.split("/").pop()
-  return fileName?.split(".").slice(0, -1).join(".") ?? ""
+  return (fileName?.split(".").slice(0, -1).join(".") ?? "").toLocaleLowerCase()
 }
 export default async (app: App<Element>) => {
   const svgIcon = import.meta.glob("/src/assets/images/provider/**/*.svg", {

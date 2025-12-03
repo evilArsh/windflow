@@ -249,6 +249,8 @@
     "Embedding": "嵌入",
     "ImageToImage": "图片转图片",
     "ImageToText": "图片转文本",
+    "Models": "列出模型",
+    "Rerank": "重排序",
     "Reranker": "重排序",
     "SpeechToText": "语音转文本",
     "TextToImage": "文本转图片",
@@ -269,6 +271,7 @@
     }
   },
   "provider": {
+    "apiInfo": "接口配置",
     "apiKey": "API Key",
     "apiUrl": "API 地址",
     "model": {
@@ -283,6 +286,7 @@
       "subProvider": "模型标识",
       "type": "类型"
     },
+    "notFound": "当前提供商{name}暂未被支持",
     "providerName": "提供商"
   },
   "request": {

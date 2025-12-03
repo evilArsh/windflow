@@ -20,7 +20,7 @@ export default defineStore("provider", () => {
       return defaultLogo
     }
     const provider = metas[providerName]
-    return provider?.logo || userLogo
+    return provider?.logo || getIconHTML(providerSvgIcon as IconifyJSON, providerName.toLowerCase()) || userLogo
   }
   async function update(meta: ProviderMeta) {
     return api.update(meta)

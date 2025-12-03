@@ -74,7 +74,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       logo: getIconHTML(providerSvgIcon, "openai"),
       api: {
         doc: "https://platform.openai.com/docs/api-reference",
-        url: "https://api.openai.com",
+        url: "https://api.openai.com/v1",
         key: "",
         models: { method: "GET", url: "/models" },
         llmChat: { method: "POST", url: "/chat/completions" },

@@ -32,7 +32,7 @@ const activeModels = computed<Record<string, ModelMeta[]>>(() =>
 const activeModelsIcons = computed<AbbrsNode[]>(() =>
   data.value.modelIds.map(modelId => {
     return {
-      data: providerStore.getProviderLogo(modelStore.find(modelId)?.providerName),
+      data: modelStore.getModelLogo(modelStore.find(modelId)),
       type: "svg",
     }
   })
