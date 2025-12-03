@@ -13,7 +13,7 @@ export default defineStore("model", () => {
   const cache: Map<string, ModelMeta> = new Map() // 检索缓存
   const api = useData()
   const utils = useUtils()
-  const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "default")
+  const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
 
   function setModel(newModel: ModelMeta) {
     cache.set(newModel.id, newModel)

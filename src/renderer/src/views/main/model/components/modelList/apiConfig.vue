@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 import { ProviderMeta } from "@renderer/types"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn } from "@toolmain/shared"
+import { CallBackFn, cloneDeep } from "@toolmain/shared"
 import { Method } from "axios"
 const { t } = useI18n()
 const emit = defineEmits<{
   close: []
-  confirm: [done: CallBackFn]
+  confirm: [provider: ProviderMeta, done: CallBackFn]
 }>()
 const props = defineProps<{
   provider: ProviderMeta
 }>()
-const provider = computed(() => props.provider)
 const dataSets = ref<
   Array<{
     label: string
@@ -28,77 +27,78 @@ function init() {
       label: t("modelType.Models"),
       field: "models",
       value: {
-        method: provider.value.api.models?.method ?? "GET",
-        url: provider.value.api.models?.url ?? "",
+        method: props.provider.api.models?.method ?? "GET",
+        url: props.provider.api.models?.url ?? "",
       },
     },
     {
       label: t("modelType.Chat"),
       field: "llmChat",
       value: {
-        method: provider.value.api.llmChat?.method ?? "POST",
-        url: provider.value.api.llmChat?.url ?? "",
+        method: props.provider.api.llmChat?.method ?? "POST",
+        url: props.provider.api.llmChat?.url ?? "",
       },
     },
     {
       label: t("modelType.TextToImage"),
       field: "textToImage",
       value: {
-        method: provider.value.api.textToImage?.method ?? "POST",
-        url: provider.value.api.textToImage?.url ?? "",
+        method: props.provider.api.textToImage?.method ?? "POST",
+        url: props.provider.api.textToImage?.url ?? "",
       },
     },
     {
       label: t("modelType.ImageToText"),
       field: "imageToText",
       value: {
-        method: provider.value.api.imageToText?.method ?? "POST",
-        url: provider.value.api.imageToText?.url ?? "",
+        method: props.provider.api.imageToText?.method ?? "POST",
+        url: props.provider.api.imageToText?.url ?? "",
       },
     },
     {
       label: t("modelType.TextToVideo"),
       field: "speechToText",
       value: {
-        method: provider.value.api.speechToText?.method ?? "POST",
-        url: provider.value.api.speechToText?.url ?? "",
+        method: props.provider.api.speechToText?.method ?? "POST",
+        url: props.provider.api.speechToText?.url ?? "",
       },
     },
     {
       label: t("modelType.TextToSpeech"),
       field: "textToSpeech",
       value: {
-        method: provider.value.api.textToSpeech?.method ?? "POST",
-        url: provider.value.api.textToSpeech?.url ?? "",
+        method: props.provider.api.textToSpeech?.method ?? "POST",
+        url: props.provider.api.textToSpeech?.url ?? "",
       },
     },
     {
       label: t("modelType.Embedding"),
       field: "embedding",
       value: {
-        method: provider.value.api.embedding?.method ?? "POST",
-        url: provider.value.api.embedding?.url ?? "",
+        method: props.provider.api.embedding?.method ?? "POST",
+        url: props.provider.api.embedding?.url ?? "",
       },
     },
     {
       label: t("modelType.Rerank"),
       field: "rerank",
       value: {
-        method: provider.value.api.rerank?.method ?? "POST",
-        url: provider.value.api.rerank?.url ?? "",
+        method: props.provider.api.rerank?.method ?? "POST",
+        url: props.provider.api.rerank?.url ?? "",
       },
     },
   ]
 }
 async function onConfirm(done: CallBackFn) {
+  const provider = cloneDeep(props.provider)
   dataSets.value.forEach(item => {
-    if (!Object.hasOwn(provider.value.api, item.field)) {
-      provider.value.api[item.field] = item.value
+    if (!Object.hasOwn(provider.api, item.field)) {
+      provider.api[item.field] = item.value
     } else {
-      Object.assign(provider.value.api[item.field], item.value)
+      provider.api[item.field] = item.value
     }
   })
-  emit("confirm", () => {
+  emit("confirm", provider, () => {
     done()
     emit("close")
   })

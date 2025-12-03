@@ -275,6 +275,7 @@
     "apiKey": "API Key",
     "apiUrl": "API 地址",
     "model": {
+      "action": "操作",
       "active": "使用",
       "activeStatus": "激活状态",
       "activeStatusActive": "激活",
@@ -284,8 +285,10 @@
       "name": "模型",
       "searchKeyword": "模型搜索",
       "subProvider": "模型标识",
-      "type": "类型"
+      "type": "类型",
+      "typeDesc": "请选择该模型正确的类型"
     },
+    "modelConfig": "模型配置",
     "notFound": "当前提供商{name}暂未被支持",
     "providerName": "提供商"
   },

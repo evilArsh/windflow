@@ -9,7 +9,7 @@ import useScale from "./useScale"
 import { ScaleInstance, ScalePanel } from "@toolmain/components"
 const providerSvgIcon = inject(providerSvgIconKey)
 defineProps<{
-  modelValue: string
+  modelValue?: string
   /**
    * 该模式下只能通过暴露的方法调用
    */
@@ -41,7 +41,7 @@ defineExpose({
       v-if="!invokeMode"
       @click.stop="e => open(e.clientX, e.clientY)"
       class="w-3rem h-3rem flex items-center justify-center">
-      <Svg :src="modelValue" class="text-25px"></Svg>
+      <Svg :src="modelValue" class="text-2.5rem"></Svg>
     </ContentBox>
     <teleport to="body">
       <ScalePanel v-model="panelConfig" ref="scale" @mask-click="clickMask">

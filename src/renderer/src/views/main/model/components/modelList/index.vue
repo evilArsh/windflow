@@ -5,6 +5,7 @@ import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
 import { ElMessage } from "element-plus"
 import ApiConfig from "./apiConfig.vue"
+import Detail from "./detail.vue"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, errorToText, msg, msgWarning, useDialog } from "@toolmain/shared"
 import { CombineTableProps } from "@renderer/components/Table/types"
@@ -14,7 +15,6 @@ const props = defineProps<{
   providerName: string
 }>()
 const svgRef = useTemplateRef("svg")
-
 const {
   props: dlgProps,
   event: dlgEvent,
@@ -25,16 +25,22 @@ const {
   showClose: false,
   destroyOnClose: true,
 })
-
+const {
+  props: dlgDetailProps,
+  event: dlgDetailEvent,
+  close: dlgDetailClose,
+  open: dlgDetailOpen,
+} = useDialog({
+  width: "50vw",
+  showClose: false,
+  destroyOnClose: true,
+})
 const modelStore = useModelStore()
 const providerStore = useProviderStore()
 const { providerMetas } = storeToRefs(providerStore)
-
 const provider = computed<ProviderMeta | undefined>(() => providerMetas.value[props.providerName])
-
 const { keyword, loading, list, modelTypeKeys, subProviders, currentPage, pageSize, total, onQuery, onList } =
   useDataFilter(provider)
-
 const tableProps = shallowReactive<CombineTableProps>({
   stripe: true,
   border: true,
@@ -42,7 +48,7 @@ const tableProps = shallowReactive<CombineTableProps>({
   context: undefined,
   height: "100%",
 })
-
+const tempMeta = shallowRef<ModelMeta>()
 const ev = {
   async onRefreshModel(done?: CallBackFn) {
     try {
@@ -64,13 +70,19 @@ const ev = {
       ElMessage.error(errorToText(e))
     }
   },
-  async onModelChange(row: ModelMeta): Promise<boolean> {
+  async onModelChange(row?: ModelMeta, done?: CallBackFn): Promise<boolean> {
     try {
+      if (!row) return false
       await modelStore.put(row)
+      if (tempMeta.value) {
+        Object.assign(tempMeta.value, row)
+      }
       return true
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
       return false
+    } finally {
+      done?.()
     }
   },
   async onProviderChange(row?: ProviderMeta, done?: CallBackFn) {
@@ -85,6 +97,14 @@ const ev = {
   },
   onOpenApiConfig() {
     dlgOpen()
+  },
+  onOpenModelConfig(row: ModelMeta) {
+    tempMeta.value = row
+    dlgDetailOpen()
+  },
+  onCloseModelConfig() {
+    dlgDetailClose()
+    tempMeta.value = undefined
   },
 }
 const useIcon = () => {
@@ -119,7 +139,10 @@ onMounted(onQuery)
     </template>
     <SvgPicker invoke-mode ref="svg" :model-value="current" @update:model-value="onModelIconChange"></SvgPicker>
     <el-dialog v-bind="dlgProps" v-on="dlgEvent" :title="t('provider.apiInfo')">
-      <ApiConfig :provider @close="dlgClose" @confirm="done => ev.onProviderChange(provider, done)"></ApiConfig>
+      <ApiConfig :provider @close="dlgClose" @confirm="ev.onProviderChange"></ApiConfig>
+    </el-dialog>
+    <el-dialog v-bind="dlgDetailProps" v-on="dlgDetailEvent" :title="t('provider.modelConfig')">
+      <Detail :model="tempMeta" @close="ev.onCloseModelConfig" @confirm="ev.onModelChange"></Detail>
     </el-dialog>
     <div class="model-setting">
       <DialogPanel class="w-full h-auto grow-0! shrink! basis-auto!">
@@ -184,7 +207,20 @@ onMounted(onQuery)
             </el-form-item>
           </el-form>
         </template>
-        <el-table-column width="80" :label="t('provider.model.icon')">
+        <el-table-column width="100" :label="t('provider.model.action')" align="center">
+          <template #default="{ row }">
+            <el-button size="small" @click="ev.onOpenModelConfig(row)" link type="primary">
+              <i-ep-edit></i-ep-edit>
+              <span>{{ t("btn.edit") }}</span>
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column width="80" :label="t('provider.model.active')" align="center">
+          <template #default="{ row }">
+            <el-switch v-model="row.active" @change="ev.onModelChange(row)" />
+          </template>
+        </el-table-column>
+        <el-table-column width="80" :label="t('provider.model.icon')" align="center">
           <template #default="{ row }: { row: ModelMeta }">
             <el-button @click="onIconClick($event, row)">
               <Svg class="text-2.5rem" :src="row.icon"></Svg>
@@ -201,11 +237,6 @@ onMounted(onQuery)
             <div class="flex flex-wrap gap0.5rem">
               <el-tag v-for="type in row.type" :key="type" type="primary">{{ t(`modelType.${type}`) }}</el-tag>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column width="80" :label="t('provider.model.active')">
-          <template #default="{ row }">
-            <el-switch v-model="row.active" :before-change="() => ev.onModelChange(row)" />
           </template>
         </el-table-column>
       </Table>

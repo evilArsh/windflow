@@ -251,6 +251,7 @@
     "apiKey": "API Key",
     "apiUrl": "API URL",
     "model": {
+      "action": "action",
       "active": "Active",
       "activeStatus": "Active Status",
       "activeStatusActive": "Active",
@@ -260,8 +261,10 @@
       "name": "Model",
       "searchKeyword": "model search",
       "subProvider": "Model Identifier",
-      "type": "Type"
+      "type": "Type",
+      "typeDesc": "plaese choose the correct types of this model"
     },
+    "modelConfig": "Model Config",
     "notFound": "current provider {name} not supported",
     "providerName": "Provider"
   },

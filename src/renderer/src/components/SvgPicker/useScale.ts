@@ -1,11 +1,12 @@
 import { ScaleInstance, ScaleConfig } from "@toolmain/components"
-import { z, toNumber } from "@toolmain/shared"
+import { toNumber } from "@toolmain/shared"
 
 export default (scaleRef: Readonly<Ref<ScaleInstance | null>>, target: Readonly<Ref<HTMLElement | null>>) => {
+  const index = 9999
   // 弹框配置
   const panelConfig = reactive<ScaleConfig>({
     containerStyle: {
-      zIndex: z.FIXED_MAX,
+      zIndex: index,
       position: "fixed",
       width: 600,
       left: 0,
@@ -18,7 +19,7 @@ export default (scaleRef: Readonly<Ref<ScaleInstance | null>>, target: Readonly<
     mask: false,
     maskStyle: {
       backgroundColor: "transparent",
-      zIndex: z.FIXED_MAX - 1,
+      zIndex: index - 1,
     },
   })
   const move = async (x: number, y: number) => {
