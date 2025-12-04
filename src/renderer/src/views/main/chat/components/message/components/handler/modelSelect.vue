@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@renderer/types"
 import useProviderStore from "@renderer/store/provider"
 import { AbbrsNode } from "@renderer/components/Abbrs"
+import { isArrayLength } from "@toolmain/shared"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()
@@ -19,7 +20,17 @@ const { models } = storeToRefs(modelStore)
 
 const activeModels = computed<Record<string, ModelMeta[]>>(() =>
   models.value
-    .filter(v => v.active)
+    .filter(
+      v =>
+        v.active &&
+        isArrayLength(v.type) &&
+        (modelStore.utils.isChatReasonerType(v) ||
+          modelStore.utils.isASRType(v) ||
+          modelStore.utils.isChatType(v) ||
+          modelStore.utils.isImageType(v) ||
+          modelStore.utils.isTTSType(v) ||
+          modelStore.utils.isVideoType(v))
+    )
     .reduce((acc, cur) => {
       if (acc[cur.providerName]) {
         acc[cur.providerName].push(cur)
