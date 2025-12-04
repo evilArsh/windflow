@@ -2,7 +2,7 @@ import { Provider } from "@renderer/types"
 import { DeepSeek } from "./deepseek"
 import { SiliconFlow } from "./siliconflow"
 import { Volcengine } from "./volcengine"
-import { OpenAI } from "./openai"
+import { OpenAI } from "./openai/index"
 export class ProviderManager {
   #providers: Map<string, Provider>
   constructor() {

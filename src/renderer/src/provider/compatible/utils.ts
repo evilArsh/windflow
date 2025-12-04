@@ -4,7 +4,7 @@ import {
   Role,
   Message,
   ModelMeta,
-  LLMRequest,
+  LLMConfig,
   ProviderMeta,
   LLMToolCallRequest,
 } from "@renderer/types"
@@ -196,8 +196,8 @@ export function useOpenAICompatParser() {
 
 export const openAICompatParser = useOpenAICompatParser()
 
-export function mergeRequestConfig(messages: Message[], modelMeta: ModelMeta, req?: LLMRequest): LLMRequest {
-  const conf: LLMRequest = {
+export function mergeRequestConfig(messages: Message[], modelMeta: ModelMeta, req?: LLMConfig): Record<string, any> {
+  return {
     stream: true,
     ...req,
     model: modelMeta.modelName,
@@ -205,7 +205,6 @@ export function mergeRequestConfig(messages: Message[], modelMeta: ModelMeta, re
     n: 1,
     response_format: { type: "text" },
   }
-  return conf
 }
 
 export function generateSummaryText(context: string) {

@@ -3,7 +3,7 @@ import {
   LLMResponse,
   ProviderMeta,
   ModelMeta,
-  LLMRequest,
+  LLMConfig,
   Role,
   RequestHandler,
   Provider,
@@ -44,7 +44,7 @@ export abstract class Compatible implements Provider {
     modelMeta: ModelMeta,
     provider: ProviderMeta,
     callback: (message: LLMResponse) => void,
-    reqConfig?: LLMRequest
+    reqConfig?: LLMConfig
   ): Promise<RequestHandler> {
     const requestHandler = useSingleLLMChat()
     const request = async () => {

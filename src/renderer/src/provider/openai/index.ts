@@ -4,20 +4,18 @@ import {
   Provider,
   ProviderMeta,
   ModelMeta,
-  LLMRequest,
-  LLMRequestHandler,
+  LLMConfig,
   MediaRequest,
   RequestHandler,
   ImageResponse,
   BeforeRequestCallback,
 } from "@renderer/types"
-import { useSingleLLMChat } from "./compatible/request"
 import OpenAISDK from "openai"
+import { makeRequest, useHandler } from "./request"
 
 export class OpenAI implements Provider {
   #client?: OpenAISDK
   constructor() {}
-
   name(): string {
     return "openai"
   }
@@ -48,22 +46,26 @@ export class OpenAI implements Provider {
     // .filter(model => model.subProviderName === "openai")
   }
   async chat(
-    _messages: Message[],
-    _modelMeta: ModelMeta,
-    _providerMeta: ProviderMeta,
-    _callback: (message: LLMResponse) => void,
-    _beforeRequest?: BeforeRequestCallback
-  ): Promise<LLMRequestHandler> {
-    throw new Error("Method not implemented.")
+    messages: Message[],
+    modelMeta: ModelMeta,
+    providerMeta: ProviderMeta,
+    callback: (message: LLMResponse) => void,
+    beforeRequest?: BeforeRequestCallback
+  ): Promise<RequestHandler> {
+    const client = this.#getClient(providerMeta)
+    const requestHandler = useHandler()
+    makeRequest(client, messages, providerMeta, modelMeta, requestHandler, callback, beforeRequest)
+    return requestHandler
   }
   async summarize(
     _context: string,
     _modelMeta: ModelMeta,
     _provider: ProviderMeta,
     _callback: (message: LLMResponse) => void,
-    _reqConfig?: LLMRequest
+    _reqConfig?: LLMConfig
   ): Promise<RequestHandler> {
-    return useSingleLLMChat()
+    const requestHandler = useHandler()
+    return requestHandler
   }
   async textToImage(
     _message: MediaRequest,
@@ -71,6 +73,7 @@ export class OpenAI implements Provider {
     _provider: ProviderMeta,
     _callback: (message: ImageResponse) => void
   ): Promise<RequestHandler> {
-    return { terminate: () => {} }
+    const requestHandler = useHandler()
+    return requestHandler
   }
 }

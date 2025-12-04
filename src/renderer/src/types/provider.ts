@@ -1,5 +1,5 @@
 import { Method } from "axios"
-import { LLMRequest, Message, LLMResponse, MediaRequest, RequestHandler, ImageResponse } from "."
+import { LLMConfig, Message, LLMResponse, MediaRequest, RequestHandler, ImageResponse } from "."
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
@@ -111,7 +111,7 @@ export type BeforeRequestParams = {
   messages: Message[]
   model: ModelMeta
   provider: ProviderMeta
-  reqConfig?: LLMRequest
+  reqConfig?: LLMConfig
   mcpServersIds: Array<string>
 }
 export type BeforeRequestCallback = (
@@ -136,7 +136,7 @@ export interface LLMProvider {
     model: ModelMeta,
     provider: ProviderMeta,
     callback: (message: LLMResponse) => void,
-    reqConfig?: LLMRequest
+    reqConfig?: LLMConfig
   ): Promise<RequestHandler>
 }
 /**

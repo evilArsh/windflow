@@ -118,7 +118,7 @@ const { loading, dropList, onCommand, update } = useEvent()
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.stream") }}</el-text>
-            <el-text type="primary">stream</el-text>
+            <!-- <el-text type="primary">stream</el-text> -->
           </div>
           <template #end>
             <el-tooltip
@@ -139,7 +139,7 @@ const { loading, dropList, onCommand, update } = useEvent()
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.max_tokens") }}</el-text>
-            <el-text type="primary">max_tokens</el-text>
+            <!-- <el-text type="primary">max_tokens</el-text> -->
           </div>
           <template #end>
             <el-tooltip
@@ -167,7 +167,7 @@ const { loading, dropList, onCommand, update } = useEvent()
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.temperature") }}</el-text>
-            <el-text type="primary">temperature</el-text>
+            <!-- <el-text type="primary">temperature</el-text> -->
           </div>
           <template #end>
             <el-tooltip
@@ -195,7 +195,7 @@ const { loading, dropList, onCommand, update } = useEvent()
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.topP") }}</el-text>
-            <el-text type="primary">top_p</el-text>
+            <!-- <el-text type="primary">top_p</el-text> -->
           </div>
           <template #end>
             <el-tooltip :teleported="false" popper-class="max-w-25rem" :content="t('chat.llm.topPExp')" placement="top">
@@ -212,7 +212,7 @@ const { loading, dropList, onCommand, update } = useEvent()
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.frequencyPenalty") }}</el-text>
-            <el-text type="primary">frequency_penalty</el-text>
+            <!-- <el-text type="primary">frequency_penalty</el-text> -->
           </div>
           <template #end>
             <el-tooltip
@@ -240,7 +240,7 @@ const { loading, dropList, onCommand, update } = useEvent()
         <ContentBox>
           <div class="flex gap-.5rem">
             <el-text>{{ t("chat.llm.presence_penalty") }}</el-text>
-            <el-text type="primary">presence_penalty</el-text>
+            <!-- <el-text type="primary">presence_penalty</el-text> -->
           </div>
           <template #end>
             <el-tooltip

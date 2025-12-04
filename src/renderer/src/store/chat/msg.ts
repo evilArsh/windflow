@@ -55,6 +55,7 @@ export function useMsg(
         messages: m,
         model,
         provider,
+        reqConfig: utils.findChatLLMConfig(topic.id),
         mcpServersIds,
       }
     }
@@ -135,7 +136,7 @@ export function useMsg(
           if (message.content.children?.some(child => !!child.reasoning_content)) {
             if (!modelsStore.utils.isChatReasonerType(model)) {
               model.type.push(ModelType.ChatReasoner)
-              modelsStore.update(model)
+              modelsStore.put(model)
             }
           }
           if (message.parentId) return // 多模型请求时不总结标题

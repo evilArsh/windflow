@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@toolmain/shared"
-import { Message, Provider, RequestHandler } from "."
+import { LLMConfig, Message, Provider, RequestHandler, TTIConfig } from "."
 export enum ChatMessageType {
   /**
    * @description 文本消息
@@ -150,51 +150,6 @@ export type ChatTopic = {
   maxContextLength?: number
 }
 
-export type LLMConfig = {
-  /**
-   * @description 模型温度
-   */
-  temperature: number
-  /**
-   * @description 是否流式返回
-   */
-  stream?: boolean
-  top_p: number
-  frequency_penalty: number
-  presence_penalty: number
-  max_tokens: number
-}
-export type TTIConfig = {
-  /**
-   * @description 生成图片的大小。
-   * 1.siliconflow: batch_size === n
-   */
-  n: number
-  /**
-   * @description 图片尺寸。
-   * 1.siliconflow: image_size ===  size
-   */
-  size?: string
-  /**
-   * @description 推理步数。
-   * 平台：siliconflow
-   */
-  num_inference_steps?: number
-  /**
-   * @description 引导权重。
-   * 平台：siliconflow
-   */
-  guidance_scale?: number
-  /**
-   * @description 反向提示词。
-   * 平台：siliconflow
-   */
-  negative_prompt?: string
-  /**
-   * @description 随机种子
-   */
-  seed?: number
-}
 export type ChatLLMConfig = LLMConfig & {
   id: string
   topicId: string

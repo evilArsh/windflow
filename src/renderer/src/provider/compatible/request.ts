@@ -3,7 +3,7 @@ import {
   Role,
   LLMToolCall,
   Message,
-  LLMRequest,
+  LLMConfig,
   LLMRequestHandler,
   ModelMeta,
   ProviderMeta,
@@ -29,7 +29,7 @@ async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
 }
 
 async function* request(
-  body: LLMRequest,
+  body: LLMConfig,
   abortController: AbortController,
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMResponse> {
@@ -67,17 +67,26 @@ async function* request(
   }
 }
 export function useSingleLLMChat(): LLMRequestHandler {
-  let abortController: AbortController | undefined
-  function chat(message: LLMRequest, providerMeta: ProviderMeta): AsyncGenerator<LLMResponse> {
-    terminate()
-    abortController = new AbortController()
+  let abortController: AbortController = new AbortController()
+  /**
+   * you should terminate first before chat
+   */
+  function chat(message: LLMConfig, providerMeta: ProviderMeta): AsyncGenerator<LLMResponse> {
     return request(message, abortController, providerMeta)
   }
   function terminate() {
-    abortController?.abort("Request Aborted")
-    abortController = undefined
+    abortController.abort("Request Aborted")
+  }
+  function getSignal() {
+    return abortController.signal
+  }
+  function setController(controller: AbortController) {
+    terminate()
+    abortController = controller
   }
   return {
+    getSignal,
+    setController,
     chat,
     terminate,
   }
@@ -98,7 +107,7 @@ export async function makeRequest(
     let providerMetaCopy = cloneDeep(providerMeta)
     let modelMetaCopy = cloneDeep(modelMeta)
     let mcpServersIds: string[] = []
-    let requestBody: LLMRequest | undefined
+    let requestBody: LLMConfig | undefined
     // hooks start
     if (beforeRequest) {
       const resp = await beforeRequest(contextCopy, modelMetaCopy, providerMetaCopy)
@@ -111,15 +120,15 @@ export async function makeRequest(
     // hooks end
     const toolList = await loadMCPTools(mcpServersIds)
     partial.updateToolLists(toolList)
-    const appendTools = (req: LLMRequest, toolist: unknown) => {
+    const appendTools = (req: LLMConfig, toolist: unknown) => {
       return { ...req, ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}) }
     }
     let neededCallTools: LLMToolCall[] = []
     let callToolResults: Message[] = []
     while (true) {
       for await (const content of requestHandler.chat(
-        appendTools(mergeRequestConfig(contextCopy, modelMeta, requestBody), toolList),
-        providerMeta
+        appendTools(mergeRequestConfig(contextCopy, modelMetaCopy, requestBody), toolList),
+        providerMetaCopy
       )) {
         partial.add(content)
         callback(partial.getResponse())

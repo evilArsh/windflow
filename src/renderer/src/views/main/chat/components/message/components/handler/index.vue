@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ModelSelect from "./modelSelect.vue"
 import TextToImage from "./textToImage.vue"
-import LLMRequest from "./llmRequest.vue"
+import LLMRequestConfig from "./llmRequest.vue"
 import Mcp from "./mcp.vue"
 import KnowledgeBase from "./kb.vue"
 import Settings from "./settings/index.vue"
@@ -67,7 +67,7 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
     <div class="chat-input-header">
       <div class="flex items-center gap-1rem c-[--el-text-color-regular]">
         <ModelSelect :topic @change="handler.onTopicUpdate" />
-        <LLMRequest :topic></LLMRequest>
+        <LLMRequestConfig :topic></LLMRequestConfig>
         <TextToImage :topic></TextToImage>
         <Mcp :topic></Mcp>
         <KnowledgeBase :topic></KnowledgeBase>
