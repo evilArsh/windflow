@@ -89,6 +89,9 @@ const ev = {
     try {
       if (!row) return
       await providerStore.update(row)
+      if (provider.value) {
+        Object.assign(provider.value, row)
+      }
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {

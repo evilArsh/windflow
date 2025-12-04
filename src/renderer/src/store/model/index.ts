@@ -50,6 +50,7 @@ export default defineStore("model", () => {
       if (existing) {
         return {
           ...newItem,
+          type: existing.type,
           active: existing.active,
           icon: existing.icon ?? getModelLogo(newItem),
         }

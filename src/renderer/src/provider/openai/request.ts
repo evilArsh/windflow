@@ -172,6 +172,8 @@ export async function makeRequest(
         },
         {
           signal: requestHandler.getSignal(),
+          path: providerMeta.api.llmChat?.url,
+          method: providerMeta.api.llmChat?.method as any,
         }
       )
       for await (const chunk of response) {

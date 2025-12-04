@@ -77,7 +77,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
         url: "https://api.openai.com/v1",
         key: "",
         models: { method: "GET", url: "/models" },
-        llmChat: { method: "POST", url: "/chat/completions" },
+        llmChat: { method: "POST", url: "/responses" },
         balance: { method: "GET", url: "" },
         textToImage: { method: "POST", url: "/images/generations" },
         imageToText: { method: "GET", url: "" },
