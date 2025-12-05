@@ -1,6 +1,5 @@
 import { HttpStatusCode } from "@toolmain/shared"
-import { ProviderMeta } from "."
-import { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios"
+import { ProviderMeta, RequestHandler } from "."
 
 export enum Role {
   System = "system",
@@ -10,18 +9,6 @@ export enum Role {
   Developer = "developer",
 }
 
-export interface RequestHandler {
-  getSignal: () => AbortSignal
-  /**
-   * maby you want to use your own controller
-   */
-  setController: (controller: AbortController) => void
-  terminate: () => void
-}
-export interface GeneralRequestHandler extends RequestHandler {
-  request: <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>) => Promise<R>
-  getInstance: () => AxiosInstance
-}
 // --- llm
 export type LLMConfig = {
   /**
@@ -73,7 +60,7 @@ export interface Message {
     total_tokens: number
   }
   /**
-   * some other fields which on specified platforms
+   * some other fields that on specified platforms
    */
   [x: string]: unknown
 }

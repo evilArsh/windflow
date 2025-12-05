@@ -47,7 +47,7 @@ jobs:
           Invoke-WebRequest https://get.pnpm.io/install.ps1 -UseBasicParsing | Invoke-Expression
 
       - name: Install pnpm
-        if: ${{ !startsWith(matrix.platform, 'windows') }}
+        if: ${{ startsWith(matrix.platform, 'windows') == 'false' }}
         # corepack enable pnpm
         run: |
           curl -fsSL https://get.pnpm.io/install.sh | sh -

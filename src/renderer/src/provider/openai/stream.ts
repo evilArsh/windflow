@@ -31,7 +31,7 @@ export async function streamParse(
         responseData = {
           status: 206,
           data: {
-            role: Role.Tool,
+            role: "",
             tool_calls: [
               {
                 function: {
@@ -62,7 +62,7 @@ export async function streamParse(
         responseData = {
           status: 206,
           data: {
-            role: Role.Tool,
+            role: "",
             tool_calls: [
               {
                 function: {
