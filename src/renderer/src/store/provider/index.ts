@@ -23,7 +23,10 @@ export default defineStore("provider", () => {
     return provider?.logo || getIconHTML(providerSvgIcon as IconifyJSON, providerName.toLowerCase()) || userLogo
   }
   async function update(meta: ProviderMeta) {
-    return api.update(meta)
+    await api.update(meta)
+    if (metas[meta.name]) {
+      Object.assign(metas[meta.name], meta)
+    }
   }
   /**
    * find provider meta by providerName in cache

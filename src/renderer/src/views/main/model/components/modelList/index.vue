@@ -74,9 +74,6 @@ const ev = {
     try {
       if (!row) return false
       await modelStore.put(row)
-      if (tempMeta.value) {
-        Object.assign(tempMeta.value, row)
-      }
       return true
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
@@ -89,9 +86,6 @@ const ev = {
     try {
       if (!row) return
       await providerStore.update(row)
-      if (provider.value) {
-        Object.assign(provider.value, row)
-      }
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })
     } finally {

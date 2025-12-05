@@ -60,7 +60,9 @@ export default defineStore("model", () => {
     await db.model.bulkPut(recordsToWrite)
   }
   async function put(data: ModelMeta) {
-    return api.put(data)
+    await api.put(data)
+    const current = find(data.id)
+    current && Object.assign(current, data)
   }
   async function init() {
     models.length = 0

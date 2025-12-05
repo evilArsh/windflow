@@ -23,11 +23,12 @@ import type {
   ResponseInputImage,
   ResponseInputItem,
   ResponseInputText,
-  ResponseOutputItem,
   Tool,
 } from "openai/resources/responses/responses"
 import { usePartialData } from "../compatible/utils"
 import { AbortError, HttpCodeError } from "../compatible/error"
+import { nonStreamParse, streamParse } from "./stream"
+import { Stream } from "openai/core/streaming.mjs"
 
 export function useHandler(): RequestHandler {
   let abortController = new AbortController()
@@ -156,19 +157,16 @@ export async function makeRequest(
     partial.updateToolLists(toolList)
     let neededCallTools: LLMToolCall[] = []
     let callToolResults: Message[] = []
-    let responseData: LLMResponse
-    const tmpItems: ResponseOutputItem[] = []
     while (true) {
-      tmpItems.length = 0
       const response = await client.responses.create(
         {
-          ...requestBody,
-          // TODO: non stream mode compatible
-          stream: true,
+          stream: requestBody?.stream,
           model: modelMetaCopy.modelName,
           input: messagesTransform(contextCopy),
           tools: toolsTransform(toolList),
           max_output_tokens: requestBody?.max_tokens,
+          temperature: requestBody?.temperature,
+          top_p: requestBody?.top_p,
         },
         {
           signal: requestHandler.getSignal(),
@@ -176,117 +174,10 @@ export async function makeRequest(
           method: providerMeta.api.llmChat?.method as any,
         }
       )
-      for await (const chunk of response) {
-        console.log(`[${chunk.type}]`, chunk)
-        switch (chunk.type) {
-          case "response.output_item.added": {
-            tmpItems.push(chunk.item)
-            break
-          }
-          case "response.mcp_call_arguments.delta": {
-            const callItem = tmpItems.find(item => item.type == "function_call" && item.id === chunk.item_id) as
-              | ResponseFunctionToolCall
-              | undefined
-            if (!callItem) {
-              console.warn("[openai makeRequest]", "unknown item", chunk)
-              break
-            }
-            responseData = {
-              status: 206,
-              data: {
-                role: Role.Tool,
-                tool_calls: [
-                  {
-                    function: {
-                      arguments: "",
-                      name: callItem.name,
-                    },
-                    type: "function",
-                    index: chunk.output_index,
-                    serverId: "",
-                    id: callItem.call_id,
-                  },
-                ],
-                content: "",
-              },
-            }
-            partial.add(responseData)
-            callback(partial.getResponse())
-            break
-          }
-          case "response.function_call_arguments.done": {
-            const callItem = tmpItems.find(item => item.type == "function_call" && item.id === chunk.item_id) as
-              | ResponseFunctionToolCall
-              | undefined
-            if (!callItem) {
-              console.warn("[openai makeRequest]", "unknown item", chunk)
-              break
-            }
-            responseData = {
-              status: 206,
-              data: {
-                role: Role.Tool,
-                tool_calls: [
-                  {
-                    function: {
-                      arguments: chunk.arguments,
-                      name: callItem.name,
-                    },
-                    type: "function",
-                    index: chunk.output_index,
-                    // will auto set in `partial` later
-                    serverId: "",
-                    id: callItem.call_id,
-                  },
-                ],
-                content: "",
-              },
-            }
-            partial.add(responseData)
-            callback(partial.getResponse())
-            break
-          }
-          case "response.output_text.delta": {
-            responseData = {
-              status: 206,
-              data: {
-                content: chunk.delta,
-                role: Role.Assistant,
-              },
-            }
-            partial.add(responseData)
-            callback(partial.getResponse())
-            break
-          }
-          case "response.reasoning_text.delta": {
-            responseData = {
-              status: 206,
-              data: {
-                content: "",
-                reasoning_content: chunk.delta,
-                role: Role.Assistant,
-              },
-            }
-            partial.add(responseData)
-            callback(partial.getResponse())
-            break
-          }
-          case "response.output_text.done": {
-            break
-          }
-          case "response.failed": {
-            callback({
-              status: 500,
-              data: {
-                content: chunk.response.error?.message ?? "request error",
-                role: Role.Assistant,
-              },
-            })
-            break
-          }
-          default:
-            break
-        }
+      if (requestBody?.stream) {
+        await streamParse(partial, response as Stream<OpenAISDK.Responses.ResponseStreamEvent>, callback)
+      } else {
+        await nonStreamParse(partial, response as OpenAISDK.Responses.Response, callback)
       }
       neededCallTools = partial.getTools()
       if (neededCallTools.length) {
@@ -322,6 +213,7 @@ export async function makeRequest(
       }
     }
   } catch (error) {
+    console.error(error)
     if (error instanceof AbortError) {
       partial.add({
         msg: "request aborted",

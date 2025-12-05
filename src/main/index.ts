@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow } from "electron"
 import { join } from "path"
-import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils"
+import { electronApp, optimizer, is } from "@electron-toolkit/utils"
 import windowStateKeeper from "electron-window-state"
 import icon from "../../resources/icon.png?asset"
 import { registerService } from "./services"
@@ -28,7 +28,7 @@ function createWindow(): BrowserWindow {
     titleBarOverlay: autoTitleBarOverlay(),
     backgroundColor: autoBackgroundColor(),
     movable: true,
-    ...(platform.isLinux ? { icon } : {}),
+    icon,
     webPreferences: {
       devTools: true,
       preload: join(__dirname, "../preload/index.mjs"),

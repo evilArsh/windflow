@@ -88,13 +88,13 @@ defineExpose({
       <div v-else-if="isText" class="chat-item-content">
         <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.node.finish"></Thinking>
-          <MCPCall :message="child"></MCPCall>
           <Markdown
             v-if="isString(child.content)"
             :ref="ref => (mdRefs[index] = ref as InstanceType<typeof Markdown>)"
             editable
             v-model="child.content"
             @change="onContentChange" />
+          <MCPCall :message="child"></MCPCall>
         </div>
         <Error :message></Error>
       </div>
