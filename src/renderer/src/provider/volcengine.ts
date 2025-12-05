@@ -1,5 +1,6 @@
 import { ProviderMeta, ModelMeta, ImageResponse, RequestHandler, MediaRequest } from "@renderer/types"
 import { Compatible } from "./compatible"
+import { useHandler } from "./openai/request"
 
 export class Volcengine extends Compatible {
   constructor() {
@@ -17,6 +18,6 @@ export class Volcengine extends Compatible {
     _provider: ProviderMeta,
     _callback: (message: ImageResponse) => void
   ): Promise<RequestHandler> {
-    return { terminate: () => {} }
+    return useHandler()
   }
 }

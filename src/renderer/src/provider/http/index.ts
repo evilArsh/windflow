@@ -26,7 +26,7 @@ export const createInstance = (): AxiosInstance => {
 }
 
 export function useSingleRequest(): GeneralRequestHandler {
-  let abortController: AbortController | undefined
+  let abortController: AbortController = new AbortController()
   const instance = createInstance()
   function request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R> {
     terminate()
@@ -34,14 +34,23 @@ export function useSingleRequest(): GeneralRequestHandler {
     config.signal = abortController.signal
     return instance.request(config)
   }
+  function getSignal() {
+    return abortController.signal
+  }
   function terminate() {
-    abortController?.abort("Request Aborted")
-    abortController = undefined
+    abortController.abort("Request Aborted")
   }
   function getInstance() {
     return instance
   }
+  function setController(newController: AbortController) {
+    terminate()
+    abortController = newController
+  }
+
   return {
+    setController,
+    getSignal,
     getInstance,
     request,
     terminate,

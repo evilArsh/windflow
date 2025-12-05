@@ -1,6 +1,7 @@
 import { ProviderMeta, ModelMeta, ModelType, ModelsResponse, RequestHandler, MediaRequest } from "@renderer/types"
 import { Compatible } from "./compatible"
 import { patchAxios } from "./compatible/utils"
+import { useHandler } from "./openai/request"
 
 export class DeepSeek extends Compatible {
   constructor() {
@@ -24,6 +25,6 @@ export class DeepSeek extends Compatible {
     }))
   }
   async textToImage(_message: MediaRequest, _modelMeta: ModelMeta, _provider: ProviderMeta): Promise<RequestHandler> {
-    return { terminate: () => {} }
+    return useHandler()
   }
 }
