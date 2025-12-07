@@ -1,6 +1,6 @@
 import { MCPServerParam, MCPServerParamCore } from "@shared/types/mcp"
 import { defineStore } from "pinia"
-import { useData } from "./api"
+import { useData } from "../../core/storage/mcp"
 
 import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"

@@ -1,4 +1,4 @@
-import { ChatTopic, Message, Role, LLMConfig, TTIConfig } from "../../types/index"
+import { ChatTopic, Message, Role, LLMConfig, TTIConfig } from "../../types"
 import { merge } from "@toolmain/shared"
 import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []

@@ -1,13 +1,7 @@
 import { useInjectedSetup } from "../../../../../.test/mount"
 import { describe, expect, it } from "vitest"
 import { reactive } from "vue"
-import {
-  ChatMessageTree,
-  ChatLLMConfig,
-  ChatTTIConfig,
-  ChatMessageType,
-  ChatMessageContextFlag,
-} from "../../../types/index"
+import { ChatMessageTree, ChatLLMConfig, ChatTTIConfig, ChatMessageType, ChatMessageContextFlag } from "../../../types"
 import { useUtils } from "../utils"
 describe("chat-store-utils", () => {
   it("test getIsolatedMessages", () => {

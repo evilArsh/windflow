@@ -1,35 +1,15 @@
-import {
-  ProviderMeta,
-  ModelMeta,
-  ChatTopic,
-  ChatMessage,
-  Settings,
-  SettingsValue,
-  ChatLLMConfig,
-  ChatTTIConfig,
-} from "@renderer/types"
-import { MCPServerParam } from "@shared/types/mcp"
-import Dexie, { Transaction, type EntityTable } from "dexie"
-import { Knowledge } from "@renderer/types/knowledge"
-import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@shared/types/rag"
+import Dexie from "dexie"
+import { DexieTable } from "../types/storage"
+import * as chat from "./chat"
+import * as embedding from "./embedding"
+import * as knowledge from "./knowledge"
+import * as mcp from "./mcp"
+import * as model from "./model"
+import * as provider from "./provider"
+import * as ragFiles from "./ragFiles"
+import * as settings from "./settings"
 
 export const name = "db-windflow"
-
-export type Table = {
-  providerMeta: EntityTable<ProviderMeta, "name">
-  model: EntityTable<ModelMeta, "id">
-  chatTopic: EntityTable<ChatTopic, "id">
-  chatMessage: EntityTable<ChatMessage, "id">
-  chatLLMConfig: EntityTable<ChatLLMConfig, "id">
-  chatTTIConfig: EntityTable<ChatTTIConfig, "id">
-  settings: EntityTable<Settings<SettingsValue>, "id">
-  mcpServer: EntityTable<MCPServerParam, "id">
-  knowledge: EntityTable<Knowledge, "id">
-  ragFiles: EntityTable<RAGLocalFileInfo, "id">
-  embedding: EntityTable<RAGEmbeddingConfig, "id">
-}
-export type DexieTransaction = Transaction & Table
-export type DexieTable = Dexie & Table
 
 const db = new Dexie(name) as DexieTable
 
@@ -47,3 +27,14 @@ db.version(1).stores({
   embedding: "id",
 })
 export { db }
+
+export const storage = {
+  chat,
+  model,
+  provider,
+  knowledge,
+  ragFiles,
+  embedding,
+  settings,
+  mcp,
+}

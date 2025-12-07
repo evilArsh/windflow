@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { Knowledge, KnowledgeEmbeddingPair } from "@renderer/types/knowledge"
-import { useData } from "./api"
+import { useData } from "../../core/storage/knowledge"
 import useRagFilesStore from "../ragFiles/index"
 import useEmbeddingStore from "@renderer/store/embedding"
 import { db } from "@renderer/db"

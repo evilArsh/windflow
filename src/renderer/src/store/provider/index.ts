@@ -1,7 +1,7 @@
 import { ProviderMeta } from "@renderer/types"
 import { defineStore } from "pinia"
 import { ProviderManager } from "@renderer/provider"
-import { useData } from "./api.js"
+import { useData } from "../../core/storage/provider/index.js"
 import { providerDefault } from "./default"
 import { IconifyJSON } from "@iconify/types"
 import { providerSvgIconKey } from "@renderer/app/hooks/useSvgIcon"

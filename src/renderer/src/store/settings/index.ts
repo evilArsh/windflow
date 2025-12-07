@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { SettingKeys, Settings, SettingsValue } from "@renderer/types"
-import { useData } from "./api"
+import { useData } from "../../core/storage/settings"
 import { Reactive } from "vue"
 import { isArray, isFunction, isNull, isObject, isString, isUndefined } from "@toolmain/shared"
 
