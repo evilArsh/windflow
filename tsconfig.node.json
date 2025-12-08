@@ -2,9 +2,9 @@
   "include": [
     "src/main/**/*",
     "src/preload/**/*",
-    "src/shared/**/*.ts",
     "src/main/**/.test/*",
-    "src/.test/setup-node.ts"
+    "src/.test/setup-node.ts",
+    "packages/shared/**/*.ts"
   ],
   "compilerOptions": {
     "composite": true,
@@ -30,6 +30,7 @@
       "@main/*": ["src/main/*"],
       "@preload/*": ["src/preload/*"],
       "@shared/*": ["src/shared/*"],
+      "@windflow/shared/*": ["packages/shared/src/*"],
     }
   }
 }

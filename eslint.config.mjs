@@ -39,7 +39,7 @@ const __dirname = path.dirname(__filename) // get the name of the directory
  */
 export default defineConfig([
   {
-    files: ["src/**/*.{js,mjs,cjs,ts,vue,jsx,tsx}"],
+    files: ["src/**/*.{js,mjs,cjs,ts,vue,jsx,tsx}", "packages/**/*.{js,mjs,cjs,ts,vue,jsx,tsx}"],
   },
   {
     // If ignores is used without any other keys in the configuration object, then the patterns act as global ignores

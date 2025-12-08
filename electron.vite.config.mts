@@ -25,7 +25,7 @@ export default defineConfig({
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
         { find: "@preload", replacement: path.resolve("src/preload") },
-        { find: "@shared", replacement: path.resolve("src/shared") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
       ],
     },
   },
@@ -35,7 +35,7 @@ export default defineConfig({
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
         { find: "@preload", replacement: path.resolve("src/preload") },
-        { find: "@shared", replacement: path.resolve("src/shared") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
       ],
     },
   },
@@ -52,7 +52,8 @@ export default defineConfig({
     resolve: {
       alias: [
         { find: "@renderer", replacement: path.resolve("src/renderer/src") },
-        { find: "@shared", replacement: path.resolve("src/shared") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
+        { find: "@windflow/core", replacement: path.resolve("packages/core") },
       ],
     },
     plugins: [

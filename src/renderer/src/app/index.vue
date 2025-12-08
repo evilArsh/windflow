@@ -14,7 +14,6 @@ import { errorToText } from "@toolmain/shared"
 const ready = ref(false)
 const { t, locale } = useI18n()
 const epLocale = computed(() => (locale.value === "zh" ? zhCn : enUs))
-
 async function init() {
   try {
     const res = await Promise.allSettled([

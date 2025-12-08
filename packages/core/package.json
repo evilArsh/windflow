@@ -1,0 +1,11 @@
+{
+  "name": "@windflow/core",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {},
+  "exports": {},
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0"
+}

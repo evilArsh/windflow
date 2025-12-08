@@ -9,9 +9,9 @@
     "src/renderer/auto-imports.d.ts",
     "src/renderer/components.d.ts",
     "src/preload/index.d.ts",
-    "src/shared/**/*.ts",
     "src/renderer/**/*.test.ts",
-    "src/.test/mount.ts"
+    "src/.test/mount.ts",
+    "packages/**/*.ts"
   ],
   "compilerOptions": {
     "baseUrl": ".",
@@ -41,7 +41,8 @@
     "noImplicitReturns": true,
     "paths": {
       "@renderer/*": ["src/renderer/src/*"],
-      "@shared/*": ["src/shared/*"],
+      "@windflow/core/*": ["packages/core/src/*"],
+      "@windflow/shared/*": ["packages/shared/src/*"],
     }
   }
 }
