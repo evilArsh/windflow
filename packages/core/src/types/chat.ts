@@ -176,6 +176,7 @@ export type ChatMessageTree = {
   node: ChatMessage
   children: Array<ChatMessageTree>
 }
+
 export type ChatContextMeta = {
   topicId: string
   messageId: string

@@ -17,7 +17,7 @@ import {
   ChatMessageContextFlag,
   ChatContext,
 } from "@windflow/core/types"
-import { useUtils } from "./utils"
+import { createChatMessage, useUtils } from "./utils"
 import { createChatContext, useContext } from "./context"
 import { useData } from "./api"
 import { isArrayLength, isString, toNumber } from "@toolmain/shared"
@@ -25,6 +25,12 @@ import { defaultMessage } from "./default"
 import { useRag } from "./rag"
 
 export class MessageManager {
+  readonly #msg: ChatMessage[]
+  readonly #ctx: ChatContext
+  constructor() {
+    this.#msg = []
+    this.#ctx = createChatContext()
+  }
   async send(
     topicId: string,
     messageId: string,
@@ -32,6 +38,11 @@ export class MessageManager {
     providerMeta: ProviderMeta,
     contexts: Message[]
   ) {
+    const newMessage = createChatMessage({
+      id: messageId,
+      topicId,
+    })
+    //
     const content = config?.content || topic.content
     const modelIds = config?.modelIds || topic.modelIds
     const withExistUser = !!userMessage
