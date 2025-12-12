@@ -20,7 +20,7 @@ export enum ChatMessageType {
   /**
    * @description 多模型请求消息
    */
-  MULTIMODELS = "multi-models",
+  // MULTIMODELS = "multi-models",
 }
 export enum ChatMessageContextFlag {
   /**
@@ -38,7 +38,7 @@ export type ChatMessage = {
    */
   id: string
   /**
-   * @description 当前消息使用的模型配置id
+   * @description 当前消息使用的模型配置id,非模型name
    */
   modelId: string
   /**
@@ -80,7 +80,7 @@ export type ChatMessage = {
   /**
    * @description 多模型同时请求时，标识父ChatMessage的ID
    */
-  parentId?: string
+  // parentId?: string
   /**
    * @description 如果当前消息为AI响应，则标识当前消息是对哪个提问的响应
    */
@@ -177,25 +177,25 @@ export type ChatMessageTree = {
   children: Array<ChatMessageTree>
 }
 
-export type ChatContextMeta = {
+export type ChatContext = {
+  id: string
   topicId: string
   messageId: string
-  modelId: string
+  modelId?: string
   provider?: Provider
   handler?: RequestHandler
 }
-export interface ChatContext {
+export interface ChatContextManager {
   /**
-   * create a new context or return the existing one
+   * create a new context and return context id
    */
-  create(meta: ChatContextMeta): ChatContextMeta
-  get(topicId: string, messageId: string): ChatContextMeta | undefined
-  has(topicId: string): boolean
-  getAll(topicId: string): ChatContextMeta[] | undefined
+  create(topicId: string, message: string): ChatContext
+  get(contextId: string): ChatContext | undefined
+  has(contextId: string): boolean
   /**
    * remove context, try to terminate
    */
-  remove(topicId: string, messageId?: string): number
-  setProvider(topicId: string, messageId: string, provider: Provider): boolean
-  setHandler(topicId: string, messageId: string, handler: RequestHandler): boolean
+  remove(contextId: string): boolean
+  setProvider(contextId: string, provider: Provider): boolean
+  setHandler(contextId: string, handler: RequestHandler): boolean
 }

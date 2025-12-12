@@ -1,65 +1,60 @@
-import { ChatContext, ChatContextMeta, Provider, RequestHandler } from "@windflow/core/types"
+import { uniqueId } from "@toolmain/shared"
+import { ChatContextManager, ChatContext, Provider, RequestHandler } from "@windflow/core/types"
 
-class ChatContextImpl implements ChatContext {
-  #ctx: Map<string, ChatContextMeta[]>
+class ChatContextImpl implements ChatContextManager {
+  #ctx: ChatContext[]
   constructor() {
-    this.#ctx = new Map()
+    this.#ctx = []
   }
-  create(meta: ChatContextMeta) {
-    const exist = this.get(meta.topicId, meta.modelId)
+  #findByTopicMessageId(topicId: string, messageId: string) {
+    return this.#ctx.find(ctx => ctx.topicId === topicId && ctx.messageId === messageId)
+  }
+  #getIndex(contextId: string) {
+    return this.#ctx.findIndex(ctx => ctx.id === contextId)
+  }
+  create(topicId: string, messageId: string) {
+    const exist = this.#findByTopicMessageId(topicId, messageId)
     if (exist) return exist
-    const scope = this.#ctx.get(meta.topicId) ?? []
-    const m = { ...meta }
-    scope.push(m)
-    if (!this.has(meta.topicId)) this.#ctx.set(meta.topicId, scope)
-    return { ...m }
-  }
-  has(topicId: string) {
-    return this.#ctx.has(topicId)
-  }
-  get(topicId: string, messageId: string): ChatContextMeta | undefined {
-    return this.getAll(topicId)?.find(item => item.messageId === messageId)
-  }
-  getAll(topicId: string): ChatContextMeta[] | undefined {
-    return this.#ctx.get(topicId)
-  }
-  remove(topicId: string, messageId?: string) {
-    const all = this.getAll(topicId)
-    if (messageId) {
-      if (!all) return 0
-      const index = all.findIndex(item => item.messageId === messageId)
-      if (index === -1) return 0
-      const res = all.splice(index, 1)
-      res.forEach(item => {
-        item.handler?.terminate()
-      })
-      return res.length
-    } else {
-      all?.forEach(item => {
-        item.handler?.terminate()
-      })
-      this.#ctx.delete(topicId)
-      return all?.length || 0
+    const ctx: ChatContext = {
+      id: uniqueId(),
+      topicId,
+      messageId,
     }
+    this.#ctx.push(ctx)
+    return { ...ctx }
   }
-  setProvider(topicId: string, messageId: string, provider: Provider): boolean {
-    const chatContext = this.get(topicId, messageId)
-    if (chatContext) {
-      chatContext.provider = provider
+  has(contextId: string) {
+    return this.#ctx.findIndex(ctx => ctx.id === contextId) > -1
+  }
+  get(contextId: string): ChatContext | undefined {
+    return this.#ctx.find(ctx => ctx.id === contextId)
+  }
+  remove(contextId: string) {
+    const ctx = this.get(contextId)
+    if (!ctx) return false
+    const index = this.#getIndex(contextId)
+    ctx.handler?.terminate()
+    this.#ctx.splice(index, 1)
+    return true
+  }
+  setProvider(contextId: string, provider: Provider): boolean {
+    const ctx = this.get(contextId)
+    if (ctx) {
+      ctx.provider = provider
       return true
     }
     return false
   }
-  setHandler(topicId: string, messageId: string, handler: RequestHandler): boolean {
-    const chatContext = this.get(topicId, messageId)
-    if (chatContext) {
-      chatContext.handler = handler
+  setHandler(contextId: string, handler: RequestHandler): boolean {
+    const ctx = this.get(contextId)
+    if (ctx) {
+      ctx.handler = handler
       return true
     }
     return false
   }
 }
 
-export function createChatContext(): ChatContext {
+export function createChatContext(): ChatContextManager {
   return new ChatContextImpl()
 }

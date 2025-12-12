@@ -17,7 +17,7 @@ const { providerMetas } = storeToRefs(providerStore)
 const useConfigComponent = () => {
   function getComponent(name?: string) {
     if (!name) return h(ElEmpty)
-    if (!providerStore.providerManager.availableProviders().some(v => v.name() === name)) {
+    if (!providerStore.providerManager.getAvailable().some(v => v.name() === name)) {
       return h(ElEmpty)
     }
     return h(ModelList)

@@ -15,69 +15,54 @@ import {
   Message,
   ChatMessageType,
   ChatMessageContextFlag,
-  ChatContext,
+  ChatContextManager,
+  ProviderManager,
 } from "@windflow/core/types"
-import { createChatMessage, useUtils } from "./utils"
+import { createChatMessage, getMessageType, useUtils } from "./utils"
 import { createChatContext, useContext } from "./context"
 import { useData } from "./api"
-import { isArrayLength, isString, toNumber } from "@toolmain/shared"
-import { defaultMessage } from "./default"
-import { useRag } from "./rag"
+import { cloneDeep, isArrayLength, isString, toNumber, uniqueId } from "@toolmain/shared"
+import { defaultMessage } from "@windflow/core/storage/presets"
+import { ChatMessageManager } from "./chat"
+import { useRag } from "@renderer/store/chat/rag"
+import utils from "mermaid/dist/utils.js"
+import { config } from "process"
+import { createProviderManager } from "@windflow/core/provider"
 
 export class MessageManager {
-  readonly #msg: ChatMessage[]
-  readonly #ctx: ChatContext
+  readonly #ctx: ChatContextManager
+  readonly #chatMsg: ChatMessageManager
+  readonly #providerManager: ProviderManager
   constructor() {
-    this.#msg = []
     this.#ctx = createChatContext()
+    this.#chatMsg = new ChatMessageManager()
+    this.#providerManager = createProviderManager()
   }
-  async send(
-    topicId: string,
-    messageId: string,
-    modelMeta: ModelMeta,
-    providerMeta: ProviderMeta,
-    contexts: Message[]
-  ) {
-    const newMessage = createChatMessage({
-      id: messageId,
+  async sendLLMMessage(topicId: string, content: Content, modelMeta: ModelMeta, providerMeta: ProviderMeta) {
+    const newUserMessage = createChatMessage({
+      content: {
+        role: Role.User,
+        content: isString(content) ? content : cloneDeep(content),
+      },
+      type: ChatMessageType.TEXT,
+      contextFlag: ChatMessageContextFlag.PART,
       topicId,
+      finish: true,
     })
-    //
-    const content = config?.content || topic.content
-    const modelIds = config?.modelIds || topic.modelIds
-    const withExistUser = !!userMessage
-    if (withExistUser && userMessage.node.topicId !== topic.id) {
-      throw new Error(t("error.messageNotInTopic"))
-    }
-    if (!modelIds.length) {
-      throw new Error(t("error.emptyModels"))
-    }
-    const messages = utils.findChatMessage(topic.id)
-    if (!messages) {
-      throw new Error(t("error.noMessages"))
-    }
-    const userIndex = withExistUser ? userMessage.node.index : utils.findMaxMessageIndex(messages) + 1
-    const userMsg: ChatMessageTree = withExistUser
-      ? userMessage
-      : reactive(
-          utils.wrapMessage(
-            utils.newChatMessage(topic.id, userIndex, {
-              content: { role: Role.User, content: content },
-              type: ChatMessageType.TEXT,
-              contextFlag: ChatMessageContextFlag.PART,
-            })
-          )
-        )
-    const newMessage: ChatMessageTree = reactive(
-      utils.wrapMessage(
-        utils.newChatMessage(topic.id, userIndex + 1, {
-          content: defaultMessage(),
-          fromId: userMsg.id,
-          type: ChatMessageType.TEXT,
-          contextFlag: ChatMessageContextFlag.PART,
-        })
-      )
-    )
+    const newMessage2 = createChatMessage({
+      content: defaultMessage(),
+      fromId: newUserMessage.id,
+      topicId,
+      type: getMessageType(modelMeta),
+      contextFlag: ChatMessageContextFlag.PART,
+      finish: false,
+      modelId: modelMeta.id,
+    })
+    const msgCtx = this.#ctx.create(topicId, newMessage2.id)
+    this.#chatMsg.addMessage(newUserMessage)
+    this.#chatMsg.addMessage(newMessage2)
+    const provider = this.#providerManager.getProvider(modelMeta.providerName)
+
     const availableModels = modelIds.filter(modelId => !!utils.getMeta(modelId))
     if (availableModels.length > 1) {
       userMsg.node.type = ChatMessageType.MULTIMODELS

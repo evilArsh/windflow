@@ -16,7 +16,8 @@ import { cloneDeep, isArrayLength, isNumber, merge, toNumber, uniqueId } from "@
 // import useModelsStore from "@renderer/store/model"
 // import useProviderStore from "@renderer/store/provider"
 // import { storeToRefs } from "pinia"
-import { defaultMessage } from "../storage/presets"
+import { defaultMessage } from "@windflow/core/storage/presets/chat"
+import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models/utils"
 
 /**
  * find the closest sub-messages between `messageId` where the `contextFlag` field value is "ChatMessageContextFlag.BOUNDARY"
@@ -86,7 +87,7 @@ export function createChatMessage(initial?: Partial<ChatMessage>): ChatMessage {
     index: 0,
     topicId: "",
     modelId: "",
-    parentId: "",
+    // parentId: "",
   }
   return merge(dst, initial)
 }
@@ -135,12 +136,12 @@ function getMeta(modelId: string) {
   }
   return { model, providerMeta, provider }
 }
-function getMessageType(meta: ModelMeta): ChatMessageType {
-  return modelsStore.utils.isImageType(meta)
+export function getMessageType(meta: ModelMeta): ChatMessageType {
+  return isImageType(meta)
     ? ChatMessageType.IMAGE
-    : modelsStore.utils.isVideoType(meta)
+    : isVideoType(meta)
       ? ChatMessageType.VIDEO
-      : modelsStore.utils.isTTSType(meta) || modelsStore.utils.isASRType(meta)
+      : isTTSType(meta) || isASRType(meta)
         ? ChatMessageType.AUDIO
         : ChatMessageType.TEXT
 }

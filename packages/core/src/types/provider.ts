@@ -169,15 +169,15 @@ export type SiliconFlowBalance = {
 export interface LLMProvider {
   chat(
     messages: Message[],
-    model: ModelMeta,
-    provider: ProviderMeta,
+    modelMeta: ModelMeta,
+    providerMeta: ProviderMeta,
     callback: (message: LLMResponse) => void,
     beforeRequest?: BeforeRequestCallback
   ): Promise<RequestHandler>
   summarize(
     context: string,
-    model: ModelMeta,
-    provider: ProviderMeta,
+    modelMeta: ModelMeta,
+    providerMeta: ProviderMeta,
     callback: (message: LLMResponse) => void,
     reqConfig?: LLMConfig
   ): Promise<RequestHandler>
@@ -189,8 +189,8 @@ export interface LLMProvider {
 export interface MediaProvider {
   textToImage(
     message: MediaRequest,
-    model: ModelMeta,
-    provider: ProviderMeta,
+    modelMeta: ModelMeta,
+    providerMeta: ProviderMeta,
     callback: (message: ImageResponse) => void
   ): Promise<RequestHandler>
 }
@@ -199,6 +199,6 @@ export interface Provider extends LLMProvider, MediaProvider {
   fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 }
 export interface ProviderManager {
-  availableProviders(): Provider[]
+  getAvailable(): Provider[]
   getProvider(providerName: string): Provider | undefined
 }

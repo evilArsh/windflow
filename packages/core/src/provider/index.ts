@@ -21,11 +21,11 @@ class ProviderManagerImpl implements ProviderManager {
   getProvider(providerName: string): Provider | undefined {
     return this.#providers.get(providerName)
   }
-  availableProviders(): Provider[] {
+  getAvailable(): Provider[] {
     return Array.from(this.#providers.values())
   }
 }
 
-export function createManager(): ProviderManager {
+export function createProviderManager(): ProviderManager {
   return new ProviderManagerImpl()
 }

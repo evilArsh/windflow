@@ -15,4 +15,4 @@ core/storage
    1. update->put
 7. /settings
    1. update->put
-8. new ProviderManager->createManager
+8. new ProviderManager->createProviderManager
