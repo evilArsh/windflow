@@ -13,6 +13,7 @@ import { chatTopicDefault } from "../presets/chat"
 import { cloneDeep } from "@toolmain/shared"
 import { resolveDb } from "../utils"
 import { assembleMessageTree, assembleTopicTree } from "./utils"
+import Dexie from "dexie"
 
 const topicQueue = new PQueue({ concurrency: 1 })
 const msgQueue = new PQueue({ concurrency: 1 })
@@ -55,6 +56,9 @@ export async function putChatMessage(data: ChatMessage, params?: QueryParams) {
 export async function bulkPutChatMessage(data: ChatMessage[], params?: QueryParams) {
   return msgQueue.add(async () => resolveDb(params).chatMessage.bulkPut(cloneDeep(data)))
 }
+export async function bulkAddChatMessage(data: ChatMessage[], params?: QueryParams) {
+  return msgQueue.add(async () => resolveDb(params).chatMessage.bulkAdd(cloneDeep(data)))
+}
 /**
  * @description get all messages of a topic
  */
@@ -72,6 +76,14 @@ export async function getChatMessage(topicId: string, params?: QueryParams) {
   )
   return messageList
 }
+/**
+ * get a message that has the max value of `index` field in `topicId`
+ */
+export async function getMaxIndexMessage(topicId: string, params?: QueryParams) {
+  return msgQueue.add(async () =>
+    resolveDb(params).chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
+  )
+}
 export async function deleteChatMessage(messageId: string, params?: QueryParams) {
   return msgQueue.add(async () => resolveDb(params).chatMessage.delete(messageId))
 }
@@ -86,7 +98,7 @@ export async function deleteAllMessages(topicId: string, params?: QueryParams) {
  */
 export async function delChatTopic(data: ChatTopic[]) {
   const topicIds = data.map(item => item.id)
-  return db.transaction("rw", db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig, async trans => {
+  return db.transaction("rw", [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig], async trans => {
     await topicQueue.add(async () => trans.chatTopic.bulkDelete(topicIds))
     await msgQueue.add(async () => trans.chatMessage.where("topicId").anyOf(topicIds).delete())
     await configQueue.add(async () => trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete())

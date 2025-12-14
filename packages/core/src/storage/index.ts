@@ -1,5 +1,5 @@
-import Dexie from "dexie"
-import { DexieTable } from "@windflow/core/types"
+import Dexie, { TransactionMode } from "dexie"
+import { DexieTable, DexieTransaction, TableName } from "@windflow/core/types"
 import * as chat from "./chat"
 import * as embedding from "./embedding"
 import * as knowledge from "./knowledge"
@@ -17,7 +17,7 @@ db.version(1).stores({
   providerMeta: "name",
   model: "id",
   chatTopic: "id",
-  chatMessage: "id,topicId",
+  chatMessage: "id,topicId,[topicId+index]",
   chatLLMConfig: "id,topicId",
   chatTTIConfig: "id,topicId",
   settings: "id",
@@ -26,7 +26,13 @@ db.version(1).stores({
   ragFiles: "id,topicId,[topicId+path]",
   embedding: "id",
 })
-export { db }
+export function withTransaction<U>(
+  mode: TransactionMode,
+  tables: TableName[],
+  fn: (trans: DexieTransaction) => PromiseLike<U> | U
+) {
+  return db.transaction(mode, tables, fn)
+}
 
 export const storage = {
   chat,
@@ -38,3 +44,4 @@ export const storage = {
   settings,
   mcp,
 }
+export { db }

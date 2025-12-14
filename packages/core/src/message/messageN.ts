@@ -18,15 +18,13 @@ import {
   ChatContextManager,
   ProviderManager,
 } from "@windflow/core/types"
-import { createChatMessage, getMessageType, useUtils } from "./utils"
+import { createChatMessage, getMessageType } from "./utils"
 import { createChatContext, useContext } from "./context"
 import { useData } from "./api"
 import { cloneDeep, isArrayLength, isString, toNumber, uniqueId } from "@toolmain/shared"
 import { defaultMessage } from "@windflow/core/storage/presets"
 import { ChatMessageManager } from "./chat"
 import { useRag } from "@renderer/store/chat/rag"
-import utils from "mermaid/dist/utils.js"
-import { config } from "process"
 import { createProviderManager } from "@windflow/core/provider"
 
 export class MessageManager {
@@ -39,7 +37,7 @@ export class MessageManager {
     this.#providerManager = createProviderManager()
   }
   async sendLLMMessage(topicId: string, content: Content, modelMeta: ModelMeta, providerMeta: ProviderMeta) {
-    const newUserMessage = createChatMessage({
+    const userMessage = createChatMessage({
       content: {
         role: Role.User,
         content: isString(content) ? content : cloneDeep(content),
@@ -49,70 +47,74 @@ export class MessageManager {
       topicId,
       finish: true,
     })
-    const newMessage2 = createChatMessage({
+    const message = createChatMessage({
       content: defaultMessage(),
-      fromId: newUserMessage.id,
+      fromId: userMessage.id,
       topicId,
       type: getMessageType(modelMeta),
       contextFlag: ChatMessageContextFlag.PART,
       finish: false,
       modelId: modelMeta.id,
     })
-    const msgCtx = this.#ctx.create(topicId, newMessage2.id)
-    this.#chatMsg.addMessage(newUserMessage)
-    this.#chatMsg.addMessage(newMessage2)
+    const msgCtx = this.#ctx.create(topicId, message.id)
     const provider = this.#providerManager.getProvider(modelMeta.providerName)
-
-    const availableModels = modelIds.filter(modelId => !!utils.getMeta(modelId))
-    if (availableModels.length > 1) {
-      userMsg.node.type = ChatMessageType.MULTIMODELS
-      newMessage.node.type = ChatMessageType.MULTIMODELS
-      availableModels.forEach((modelId, index) => {
-        const message = utils.newChatMessage(topic.id, utils.findMaxMessageIndex(newMessage.children) + 1, {
-          fromId: userMsg.id,
-          parentId: newMessage.node.id,
-          content: defaultMessage(),
-          modelId,
-          // first child message as the default context
-          contextFlag: index == 0 ? ChatMessageContextFlag.PART : undefined,
-        })
-        const meta = utils.getMeta(modelId)
-        if (meta) {
-          message.type = utils.getMessageType(meta.model)
+    if (!provider) {
+      console.warn(`[send msg] can't find provider: ${modelMeta.providerName}`)
+      return
+    }
+    // const partialContexts = utils.getIsolatedMessages(messages, message.parentId || message.id)
+    // const messageIndex = partialContexts.findIndex(p => p.node.id === (message.parentId || message.id))
+    // if (messageIndex > partialContexts.length - 1) return
+    // const messageContext = ctx.getMessageContext(topic, partialContexts.slice(messageIndex + 1))
+    // const chatContext =
+    //   ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
+    // if (!chatContext.provider) chatContext.provider = provider
+    // chatContext.handler?.terminate()
+    // topic.requestCount = Math.max(1, topic.requestCount + 1)
+    this.#ctx.setProvider(msgCtx.id, provider)
+    const handler = await provider.chat(
+      [],
+      modelMeta,
+      providerMeta,
+      value => {
+        const { data, status, msg } = value
+        message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
+        message.promptTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.prompt_tokens), 0)
+        message.status = status
+        message.content = data
+        message.msg = msg
+        if (status == 206) {
+          message.finish = false
+        } else if (status == 200) {
+          message.finish = true
+          // topic.requestCount = Math.max(0, topic.requestCount - 1)
+          // if (message.content.children?.some(child => !!child.reasoning_content)) {
+          //   if (!modelsStore.utils.isChatReasonerType(model)) {
+          //     model.type.push(ModelType.ChatReasoner)
+          //     modelsStore.put(model)
+          //   }
+          // }
+          // if (message.parentId) return // 多模型请求时不总结标题
+          // if (topic.label === window.defaultTopicTitle && chatContext.provider) {
+          //   chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
+          //     if (isString(value.data.content)) {
+          //       topic.label = value.data.content
+          //       api.putChatTopic(topic)
+          //     }
+          //   })
+          // }
+        } else if (status == 100) {
+          message.finish = false
         } else {
-          message.content.content = `unknown model id :${newMessage.node.modelId}`
+          message.finish = true
+          // topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
-        newMessage.children.push(utils.wrapMessage(message))
-      })
-      await api.bulkPutChatMessage([userMsg.node, newMessage.node, ...newMessage.children.map(m => m.node)])
-    } else {
-      newMessage.node.modelId = availableModels[0]
-      const meta = utils.getMeta(newMessage.node.modelId)
-      if (!meta) {
-        newMessage.node.content.content = `unknown model id :${newMessage.node.modelId}`
-      } else {
-        newMessage.node.type = utils.getMessageType(meta.model)
-        userMsg.node.type = newMessage.node.type
+        this.#chatMsg.putChatMessage(message)
       }
-      await api.bulkPutChatMessage([userMsg.node, newMessage.node])
-    }
-    !withExistUser && messages.unshift(userMsg)
-    if (withExistUser) {
-      messages.splice(
-        messages.findIndex(m => m.id === userMessage.id),
-        0,
-        newMessage
-      )
-    } else {
-      messages.unshift(newMessage)
-    }
-    if (isArrayLength(newMessage.children)) {
-      for (const child of newMessage.children) {
-        await sendMessage(topic, child.node)
-      }
-    } else {
-      await sendMessage(topic, newMessage.node)
-    }
+      // llmHooks(topic, message)
+    )
+    this.#ctx.setHandler(msgCtx.id, handler)
+    await this.#chatMsg.addMessages([userMessage, message])
   }
 }
 export function useMsg() {
@@ -162,67 +164,6 @@ export function useMsg() {
       message.content.content = "暂未支持，敬请期待"
       topic.requestCount = Math.max(0, topic.requestCount - 1)
     }
-  }
-
-  const sendLLMMessage = async (
-    topic: ChatTopic,
-    model: ModelMeta,
-    providerMeta: ProviderMeta,
-    provider: Provider,
-    message: ChatMessage
-  ) => {
-    const messages = utils.findChatMessage(topic.id)
-    if (!messages) return
-    const partialContexts = utils.getIsolatedMessages(messages, message.parentId || message.id)
-    const messageIndex = partialContexts.findIndex(p => p.node.id === (message.parentId || message.id))
-    if (messageIndex > partialContexts.length - 1) return
-    const messageContext = ctx.getMessageContext(topic, partialContexts.slice(messageIndex + 1))
-    const chatContext =
-      ctx.findContext(topic.id, message.id) ?? ctx.fetchTopicContext(topic.id, message.modelId, message.id, provider)
-    if (!chatContext.provider) chatContext.provider = provider
-    chatContext.handler?.terminate()
-    topic.requestCount = Math.max(1, topic.requestCount + 1)
-    chatContext.handler = await chatContext.provider.chat(
-      messageContext,
-      model,
-      providerMeta,
-      value => {
-        const { data, status, msg } = value
-        message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
-        message.promptTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.prompt_tokens), 0)
-        message.status = status
-        message.content = data
-        message.msg = msg
-        if (status == 206) {
-          message.finish = false
-        } else if (status == 200) {
-          message.finish = true
-          topic.requestCount = Math.max(0, topic.requestCount - 1)
-          if (message.content.children?.some(child => !!child.reasoning_content)) {
-            if (!modelsStore.utils.isChatReasonerType(model)) {
-              model.type.push(ModelType.ChatReasoner)
-              modelsStore.put(model)
-            }
-          }
-          if (message.parentId) return // 多模型请求时不总结标题
-          if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-            chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
-              if (isString(value.data.content)) {
-                topic.label = value.data.content
-                api.putChatTopic(topic)
-              }
-            })
-          }
-        } else if (status == 100) {
-          message.finish = false
-        } else {
-          message.finish = true
-          topic.requestCount = Math.max(0, topic.requestCount - 1)
-        }
-        api.putChatMessage(message)
-      },
-      llmHooks(topic, message)
-    )
   }
 
   const sendMessage = async (topic: ChatTopic, message: ChatMessage) => {

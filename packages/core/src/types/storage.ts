@@ -26,7 +26,9 @@ export type Table = {
   ragFiles: EntityTable<RAGLocalFileInfo, "id">
   embedding: EntityTable<RAGEmbeddingConfig, "id">
 }
+export type TableName = keyof Table
 export type DexieTransaction = Transaction & Table
+export type DexieTransactionTables<Tables extends TableName[]> = Transaction & Pick<Table, Tables[number]>
 export type DexieTable = Dexie & Table
 export type QueryParams = {
   transaction?: DexieTransaction
