@@ -24,9 +24,12 @@ export async function bulkUpdate(
 ) {
   return queue.add(async () => resolveDb(params).model.bulkUpdate(keysAndChanges))
 }
-export async function find(modelId?: string, params?: QueryParams) {
+export async function get(modelId?: string, params?: QueryParams) {
   if (!modelId) return
   return queue.add(async () => resolveDb(params).model.get(modelId))
+}
+export async function bulkGet(modelIds: string[], params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).model.bulkGet(modelIds))
 }
 export async function fetch(params?: QueryParams) {
   return queue.add(async () => resolveDb(params).model.toArray())

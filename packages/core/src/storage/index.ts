@@ -17,7 +17,7 @@ db.version(1).stores({
   providerMeta: "name",
   model: "id",
   chatTopic: "id",
-  chatMessage: "id,topicId,[topicId+index]",
+  chatMessage: "id,topicId,[topicId+index],fromId,contextFlag",
   chatLLMConfig: "id,topicId",
   chatTTIConfig: "id,topicId",
   settings: "id",

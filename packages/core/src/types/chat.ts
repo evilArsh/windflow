@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@toolmain/shared"
-import { LLMConfig, Message, Provider, RequestHandler, TTIConfig } from "@windflow/core/types"
+import { LLMConfig, Message, ModelMeta, Provider, ProviderMeta, RequestHandler, TTIConfig } from "@windflow/core/types"
 export enum ChatMessageType {
   /**
    * @description 文本消息
@@ -17,10 +17,6 @@ export enum ChatMessageType {
    * @description 视频消息
    */
   VIDEO = "video",
-  /**
-   * @description 多模型请求消息
-   */
-  // MULTIMODELS = "multi-models",
 }
 export enum ChatMessageContextFlag {
   /**
@@ -58,11 +54,11 @@ export type ChatMessage = {
    */
   content: Message
   /**
-   * @description 消息类型，默认为'text'消息
+   * @description 消息类型,同时请求多个模型时，为数组
    */
-  type: ChatMessageType
+  type: ChatMessageType | ChatMessageType[]
   /**
-   * @description 当前设置为消息上下文时的标志
+   * @description 消息上下文标志
    */
   contextFlag?: ChatMessageContextFlag
   /**
@@ -78,9 +74,9 @@ export type ChatMessage = {
    */
   msg?: string
   /**
-   * @description 多模型同时请求时，标识父ChatMessage的ID
+   * @description 标识为多模型同时请求的消息
    */
-  // parentId?: string
+  concurrency?: boolean
   /**
    * @description 如果当前消息为AI响应，则标识当前消息是对哪个提问的响应
    */
@@ -181,7 +177,8 @@ export type ChatContext = {
   id: string
   topicId: string
   messageId: string
-  modelId?: string
+  modelMeta?: ModelMeta
+  providerMeta?: ProviderMeta
   provider?: Provider
   handler?: RequestHandler
 }
@@ -189,7 +186,8 @@ export interface ChatContextManager {
   /**
    * create a new context and return context id
    */
-  create(topicId: string, message: string): ChatContext
+  create(topicId: string, messageId: string): string
+  findByTopic(topicId: string, messageId: string): ChatContext | undefined
   get(contextId: string): ChatContext | undefined
   has(contextId: string): boolean
   /**
@@ -198,4 +196,14 @@ export interface ChatContextManager {
   remove(contextId: string): boolean
   setProvider(contextId: string, provider: Provider): boolean
   setHandler(contextId: string, handler: RequestHandler): boolean
+  setModelMeta(contextId: string, modelMeta: ModelMeta): boolean
+  setProviderMeta(contextId: string, providerMeta: ProviderMeta): boolean
+}
+
+export type ChatEventResponseMessage = {
+  contextId: string
+  data: ChatMessage
+}
+export interface ChatEventResponse {
+  message: (response: ChatEventResponseMessage) => void
 }

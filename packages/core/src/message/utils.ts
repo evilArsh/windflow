@@ -1,62 +1,59 @@
 import {
-  ChatLLMConfig,
   ChatMessage,
   ChatMessageContextFlag,
-  ChatMessageTree,
   ChatMessageType,
   ChatTopic,
-  ChatTopicTree,
-  ChatTTIConfig,
   Message,
   ModelMeta,
-  ProviderMeta,
   Role,
 } from "@windflow/core/types"
-import { cloneDeep, isArrayLength, isNumber, merge, toNumber, uniqueId } from "@toolmain/shared"
-// import useModelsStore from "@renderer/store/model"
-// import useProviderStore from "@renderer/store/provider"
-// import { storeToRefs } from "pinia"
+import { storage, withTransaction } from "@windflow/core/storage"
 import { defaultMessage } from "@windflow/core/storage/presets/chat"
+import { isArrayLength, isUndefined, merge, toNumber, uniqueId } from "@toolmain/shared"
 import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models/utils"
 
-/**
- * find the closest sub-messages between `messageId` where the `contextFlag` field value is "ChatMessageContextFlag.BOUNDARY"
- */
-const getIsolatedMessages = (messages: ChatMessageTree[], messageId: string): ChatMessageTree[] => {
-  const index = messages.findIndex(item => item.id === messageId)
-  if (index === -1) return []
-  if (messages[index].node.contextFlag === ChatMessageContextFlag.BOUNDARY) return []
-  let start = index - 1
-  let end = index + 1
-  let startDone = false
-  let endDone = false
-  while (true) {
-    if (start >= 0 && messages[start].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) start--
-    else startDone = true
-    if (end < messages.length && messages[end].node.contextFlag !== ChatMessageContextFlag.BOUNDARY) end++
-    else endDone = true
-    if (startDone && endDone) break
-  }
-  start = Math.max(0, start + 1)
-  return messages.slice(start, end)
+const MessageIndexStep = 100
+export async function saveNewMessages(messages: ChatMessage[]) {
+  return withTransaction("rw", ["chatTopic"], async t => {
+    const messagesByTopic = messages.reduce<Record<string, ChatMessage[]>>((acc, message) => {
+      if (!acc[message.topicId]) {
+        acc[message.topicId] = []
+      }
+      acc[message.topicId].push(message)
+      return acc
+    }, {})
+
+    // get max index of messages in each topic
+    const topicIds = Object.keys(messagesByTopic)
+    const maxIndices = await Promise.all(
+      topicIds.map(async topicId => {
+        return storage.chat.getMaxIndexMessage(topicId, { transaction: t })
+      })
+    )
+    const indexMap = new Map(maxIndices.filter(v => !isUndefined(v)).map(({ topicId, index }) => [topicId, index]))
+
+    const allMessagesToInsert: ChatMessage[] = []
+    for (const [topicId, topicMessages] of Object.entries(messagesByTopic)) {
+      const maxIndex = indexMap.get(topicId) ?? 0
+      const messagesWithIndex = topicMessages.map((message, i) => ({
+        ...message,
+        index: maxIndex + MessageIndexStep * (i + 1),
+      }))
+      allMessagesToInsert.push(...messagesWithIndex)
+    }
+    await storage.chat.bulkAddChatMessage(allMessagesToInsert, { transaction: t })
+  })
 }
 /**
- * @description 根据消息`topicId`查找缓存的聊天数据
+ * insert new messages after `current` message, messages must have the same `topicId` as `current`
  */
-const findChatMessage = (topicId: string): ChatMessageTree[] | undefined => {
-  return chatMessage[topicId]
-}
-/**
- * @description 根据话题id查找缓存的llm配置数据
- */
-const findChatLLMConfig = (topicId: string): ChatLLMConfig | undefined => {
-  return chatLLMConfig[topicId]
-}
-/**
- * @description 根据话题id查找缓存tti配置数据
- */
-const findChatTTIConfig = (topicId: string): ChatTTIConfig | undefined => {
-  return chatTTIConfig[topicId]
+export async function insertNewMessages(current: ChatMessage, messages: ChatMessage[]) {
+  const currentIndex = current.index ?? 0
+  const messagesWithIndex = messages.map((message, i) => ({
+    ...message,
+    index: currentIndex + i + 1,
+  }))
+  return storage.chat.bulkAddChatMessage(messagesWithIndex)
 }
 export function createChatTopic(initial?: Partial<ChatTopic>): ChatTopic {
   const dst: ChatTopic = {
@@ -91,51 +88,7 @@ export function createChatMessage(initial?: Partial<ChatMessage>): ChatMessage {
   }
   return merge(dst, initial)
 }
-export function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
-  const part: Partial<ChatTopic> = {
-    id: uniqueId(),
-    label: "",
-    parentId: "",
-    requestCount: 0,
-    maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
-  }
-  return cloneDeep(merge({}, topic, part, initial))
-}
-function topicToTree(topic: ChatTopic): ChatTopicTree {
-  return {
-    id: topic.id,
-    node: topic,
-    children: [],
-  }
-}
-function getAllNodes(current: ChatTopicTree): ChatTopic[] {
-  const res: ChatTopic[] = []
-  res.push(current.node)
-  current.children.forEach(item => {
-    res.push(item.node)
-    res.push(...getAllNodes(item))
-  })
-  return res
-}
 
-function getMeta(modelId: string) {
-  if (!modelId) {
-    console.warn("[getMeta] modelId is empty")
-    return
-  }
-  const model = modelsStore.find(modelId) // 模型元数据
-  const providerMeta: ProviderMeta | undefined = providerMetas.value[model?.providerName ?? ""] // 提供商元数据
-  if (!(model && providerMeta)) {
-    console.warn("[getMeta] model or providerMeta not found", modelId)
-    return
-  }
-  const provider = providerStore.providerManager.getProvider(model.providerName)
-  if (!provider) {
-    console.warn("[getMeta] provider not found", model.providerName)
-    return
-  }
-  return { model, providerMeta, provider }
-}
 export function getMessageType(meta: ModelMeta): ChatMessageType {
   return isImageType(meta)
     ? ChatMessageType.IMAGE
@@ -145,131 +98,69 @@ export function getMessageType(meta: ModelMeta): ChatMessageType {
         ? ChatMessageType.AUDIO
         : ChatMessageType.TEXT
 }
-/**
- * @description 递归重置聊天信息,重置项为响应结果,其他不变
- */
-function resetChatMessage(message: ChatMessageTree) {
-  message.node.finish = true
-  message.node.status = 200
-  message.node.createAt = Date.now()
-  message.node.msg = ""
-  message.node.completionTokens = 0
-  message.node.promptTokens = 0
-  message.children.forEach(resetChatMessage)
-}
-/**
- * find index of `messageId` of messages in `topicId`, if `target` is provided, find it in `target`'s children
- */
-function getIndex(topicId: string, messageId: string, target?: ChatMessageTree): number {
-  if (target) {
-    return target.children.findIndex(item => item.id === messageId)
-  }
-  return findChatMessage(topicId)?.findIndex(item => item.id === messageId) ?? -1
-}
-/**
- * find non-nested message by `messageId`
- *
- * @param isolated limit the search scope between `messageId` according to the field `contextFlag` with value `ChatMessageContextFlag.BOUNDARY`
- */
-function findMessageById(topicId: string, messageId: string, isolated?: boolean): ChatMessageTree | undefined {
-  const rawMessages = findChatMessage(topicId)
-  if (!rawMessages) return
-  return (isolated ? getIsolatedMessages(rawMessages, messageId) : rawMessages).find(item => item.node.id === messageId)
-}
-/**
- * find non-nested message in messages while one's `fromId` field value matches the giving `messageId`
- * @param isolated limit the search scope between `messageId` according to the field `contextFlag` with value `ChatMessageContextFlag.BOUNDARY`
- */
-function findMessageByFromIdField(topicId: string, messageId: string, isolated?: boolean): ChatMessageTree | undefined {
-  const rawMessages = findChatMessage(topicId)
-  if (!rawMessages) return
-  return (isolated ? getIsolatedMessages(rawMessages, messageId) : rawMessages).find(
-    item => item.node.fromId === messageId
-  )
-}
-/**
- * find in messages while one's `parentId` field value matches the giving `messageId`
- * @param isolated limit the search scope between `messageId` according to the field `contextFlag` with value `ChatMessageContextFlag.BOUNDARY`
- */
-function findMessageByParentIdField(
-  topicId: string,
-  messageId: string,
-  isolated?: boolean
-): ChatMessageTree | undefined {
-  const rawMessages = findChatMessage(topicId)
-  if (!rawMessages) return
-  return (isolated ? getIsolatedMessages(rawMessages, messageId) : rawMessages).find(
-    item => item.node.parentId === messageId
-  )
-}
-function findMaxMessageIndex(messages: ChatMessageTree[]): number {
-  return Math.max(0, ...messages.map(item => item.node.index))
-}
-function findMaxTopicIndex(topic: ChatTopicTree[]): number {
-  return Math.max(0, ...topic.map(item => item.node.index))
-}
-/**
- * remove `message` in cache, if `message` has a `parentId`, remove it from parent's children.
- */
-function removeMessage(topicId: string, message: ChatMessageTree) {
-  // it's a nested message, delete it from it's parent's children
-  if (message.node.parentId) {
-    const parent = findMessageById(topicId, message.node.parentId)
-    if (parent) {
-      const index = getIndex(topicId, message.node.id, parent)
-      if (index > -1) {
-        parent.children.splice(index, 1)
-      } else {
-        console.warn("[removeMessage] child not found", message.node.id)
-      }
-    } else {
-      console.warn("[removeMessage] parent not found", message.node.parentId)
-    }
-  } else {
-    const index = getIndex(topicId, message.node.id)
-    if (index > -1) {
-      findChatMessage(topicId)?.splice(index, 1)
-    } else {
-      console.warn("[removeMessage] message not found", message.node.id)
-    }
-  }
-}
-function wrapMessage(msg: ChatMessage): ChatMessageTree {
-  return {
-    id: msg.id,
-    node: msg,
-    children: [],
-  }
-}
-function unwrapMessage(msgTree: ChatMessageTree): ChatMessage {
-  return msgTree.node
-}
 
 /**
- * @param rawMessages sort in descending order by create time
+ * find the sub-messages closest to `messageId` that are bounded by messages where `contextFlag` equals `ChatMessageContextFlag.BOUNDARY`
  */
-export const getMessageContext = (topic: ChatTopic, rawMessages: ChatMessageTree[]): Message[] => {
+export function getIsolatedMessages(messages: ChatMessage[], messageId: string): ChatMessage[] {
+  const index = messages.findIndex(item => item.id === messageId)
+  if (index === -1) return []
+  if (messages[index].contextFlag === ChatMessageContextFlag.BOUNDARY) return []
+  let start = index - 1
+  let end = index + 1
+  let startDone = false
+  let endDone = false
+  while (true) {
+    if (start >= 0 && messages[start].contextFlag !== ChatMessageContextFlag.BOUNDARY) start--
+    else startDone = true
+    if (end < messages.length && messages[end].contextFlag !== ChatMessageContextFlag.BOUNDARY) end++
+    else endDone = true
+    if (startDone && endDone) break
+  }
+  start = Math.max(0, start + 1)
+  return messages.slice(start, end)
+}
+/**
+ * @param rawMessages sorted in ascending order by `index`
+ */
+export function getMessageContexts(topic: ChatTopic, rawMessages: ChatMessage[]): Message[] {
   const maxContextLength = Math.max(1, toNumber(topic.maxContextLength))
   const messages = Array.from(rawMessages)
-  const contexts: ChatMessageTree[] = []
-  let current: ChatMessageTree | undefined
-  let firstCtx: ChatMessageTree | undefined
-  const isEmptyContexts = (contexts: ChatMessageTree[]) => !contexts.length
-  const getFirstContext = (contexts: ChatMessageTree[]) => (!isEmptyContexts(contexts) ? contexts[0] : undefined)
+  const contexts: ChatMessage[] = []
+  let newContexts: Message[] | undefined
+  let current: ChatMessage | undefined
+  let lastCtx: ChatMessage | undefined
+  let lastMsg: Message | undefined
+  const getLastContext = <T>(contexts: T[]) => (isArrayLength(contexts) ? contexts[0] : undefined)
   while (true) {
-    current = messages.shift()
-    firstCtx = getFirstContext(contexts)
+    current = messages.pop()
+    lastCtx = getLastContext(contexts)
     if (!current) {
-      if (firstCtx?.node.content.role !== Role.User) contexts.shift()
-      break
-    }
-    if (current.node.content.role === Role.User) {
-      if (!firstCtx) {
+      if (lastCtx?.content.role !== Role.User) {
+        contexts.shift()
+      } else if (!newContexts) {
+        newContexts = contexts.slice(Math.max(0, contexts.length - maxContextLength)).map(ctx => ({
+          role: ctx.content.role,
+          content:
+            ctx.content.role === Role.User
+              ? ctx.content.content
+              : (ctx.content.children?.map(item => item.content as string).join("\n") ?? ""),
+        }))
+      } else {
+        lastMsg = getLastContext(newContexts)
+        if (lastMsg?.role !== Role.User) {
+          newContexts.shift()
+        } else {
+          break
+        }
+      }
+    } else if (current.content.role === Role.User) {
+      if (!lastCtx) {
         contexts.unshift(current)
-      } else if (firstCtx.node.content.role === Role.User) {
+      } else if (lastCtx.content.role === Role.User) {
         continue
-      } else if (firstCtx.node.content.role === Role.Assistant) {
-        if (firstCtx.node.fromId === current.id) {
+      } else if (lastCtx.content.role === Role.Assistant) {
+        if (lastCtx.fromId === current.id) {
           contexts.unshift(current)
         } else {
           contexts.shift()
@@ -277,20 +168,11 @@ export const getMessageContext = (topic: ChatTopic, rawMessages: ChatMessageTree
       } else {
         continue
       }
-    } else if (current.node.content.role === Role.Assistant) {
-      if (!firstCtx) {
+    } else if (current.content.role === Role.Assistant) {
+      if (!lastCtx) {
         continue
-      } else if (firstCtx.node.content.role === Role.User) {
-        if (isArrayLength(current.children)) {
-          const childCtx = current.children.find(item => item.node.contextFlag === ChatMessageContextFlag.PART)
-          if (childCtx) {
-            contexts.unshift(childCtx)
-          } else {
-            continue
-          }
-        } else {
-          contexts.unshift(current)
-        }
+      } else if (lastCtx.content.role === Role.User) {
+        contexts.unshift(current)
       } else {
         continue
       }
@@ -298,17 +180,6 @@ export const getMessageContext = (topic: ChatTopic, rawMessages: ChatMessageTree
       continue
     }
   }
-  firstCtx = getFirstContext(contexts)
-  if (firstCtx?.node.content.role === Role.Assistant) {
-    contexts.shift()
-  }
-  const newContexts = contexts.slice(Math.max(0, contexts.length - maxContextLength)).map(ctx => ({
-    role: ctx.node.content.role,
-    content:
-      ctx.node.content.role === Role.User
-        ? ctx.node.content.content
-        : (ctx.node.content.children?.map(item => item.content as string).join("\n") ?? ""),
-  }))
   newContexts.unshift({
     role: Role.System,
     content: topic.prompt,

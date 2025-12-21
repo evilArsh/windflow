@@ -2,7 +2,6 @@
   "include": [
     "src/main/**/*",
     "src/preload/**/*",
-    "src/main/**/.test/*",
     "src/.test/setup-node.ts",
     "packages/shared/**/*.ts"
   ],

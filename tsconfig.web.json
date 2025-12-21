@@ -1,15 +1,11 @@
 {
   "include": [
-    "src/renderer/src/env.d.ts",
-    "src/renderer/src/global.d.ts",
-    "src/renderer/src/*.ts",
     "src/renderer/src/**/*.ts",
     "src/renderer/src/**/*.tsx",
     "src/renderer/src/**/*.vue",
     "src/renderer/auto-imports.d.ts",
     "src/renderer/components.d.ts",
     "src/preload/index.d.ts",
-    "src/renderer/**/*.test.ts",
     "src/.test/mount.ts",
     "packages/**/*.ts"
   ],

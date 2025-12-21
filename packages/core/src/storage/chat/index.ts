@@ -1,18 +1,10 @@
-import {
-  ChatLLMConfig,
-  ChatMessage,
-  ChatMessageTree,
-  ChatTopic,
-  ChatTopicTree,
-  ChatTTIConfig,
-  QueryParams,
-} from "@windflow/core/types"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig, QueryParams } from "@windflow/core/types"
 import { db } from "../index"
 import PQueue from "p-queue"
 import { chatTopicDefault } from "../presets/chat"
 import { cloneDeep } from "@toolmain/shared"
 import { resolveDb } from "../utils"
-import { assembleMessageTree, assembleTopicTree } from "./utils"
+import { assembleTopicTree } from "./utils"
 import Dexie from "dexie"
 
 const topicQueue = new PQueue({ concurrency: 1 })
@@ -60,28 +52,26 @@ export async function bulkAddChatMessage(data: ChatMessage[], params?: QueryPara
   return msgQueue.add(async () => resolveDb(params).chatMessage.bulkAdd(cloneDeep(data)))
 }
 /**
- * @description get all messages of a topic
+ * @description get all messages of a topic and sort by `index`
  */
-export async function getChatMessage(topicId: string, params?: QueryParams) {
-  const messageList: ChatMessageTree[] = []
-
-  const res = (
-    await msgQueue.add(async () => resolveDb(params).chatMessage.where("topicId").equals(topicId).sortBy("index"))
-  ).reverse()
-  messageList.push(
-    ...assembleMessageTree(res, item => {
-      item.node.finish = true
-      item.node.status = 200
-    })
-  )
-  return messageList
+export async function getChatMessages(topicId: string, params?: QueryParams) {
+  return await msgQueue.add(async () => resolveDb(params).chatMessage.where("topicId").equals(topicId).sortBy("index"))
 }
 /**
- * get a message that has the max value of `index` field in `topicId`
+ * @description get message by `messageId` in a topic
  */
-export async function getMaxIndexMessage(topicId: string, params?: QueryParams) {
+export async function getChatMessage(
+  topicId: string,
+  messageId: string,
+  params?: QueryParams
+): Promise<ChatMessage | undefined> {
   return msgQueue.add(async () =>
-    resolveDb(params).chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
+    resolveDb(params)
+      .chatMessage.where({
+        topicId,
+        id: messageId,
+      })
+      .first()
   )
 }
 export async function deleteChatMessage(messageId: string, params?: QueryParams) {
@@ -104,6 +94,26 @@ export async function delChatTopic(data: ChatTopic[]) {
     await configQueue.add(async () => trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete())
     await configQueue.add(async () => trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete())
   })
+}
+/**
+ * get a message that has the max value of `index` field in `topicId`
+ */
+export async function getMaxIndexMessage(topicId: string, params?: QueryParams) {
+  return msgQueue.add(async () =>
+    resolveDb(params).chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
+  )
+}
+/**
+ * get messages by `fromId`, which response to the same question
+ */
+export async function getMessagesByFromId(topicId: string, fromId: string, params?: QueryParams) {
+  return msgQueue.add(async () =>
+    resolveDb(params)
+      .chatMessage.where("topicId")
+      .equals(topicId)
+      .and(m => m.fromId === fromId)
+      .toArray()
+  )
 }
 export async function fetch(params?: QueryParams) {
   const topicList: ChatTopicTree[] = []

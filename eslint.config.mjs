@@ -55,6 +55,7 @@ export default defineConfig([
       "**/h5/",
       "**/.vscode/",
       "**/assets/",
+      "**/.test/",
       "**/*/components.d.ts",
       "**/*/auto-imports.d.ts",
       "eslint.config.{mjs,cjs,js}",

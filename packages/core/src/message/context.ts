@@ -1,5 +1,12 @@
-import { uniqueId } from "@toolmain/shared"
-import { ChatContextManager, ChatContext, Provider, RequestHandler } from "@windflow/core/types"
+import { cloneDeep, uniqueId } from "@toolmain/shared"
+import {
+  ChatContextManager,
+  ChatContext,
+  Provider,
+  RequestHandler,
+  ModelMeta,
+  ProviderMeta,
+} from "@windflow/core/types"
 
 class ChatContextImpl implements ChatContextManager {
   #ctx: ChatContext[]
@@ -14,14 +21,17 @@ class ChatContextImpl implements ChatContextManager {
   }
   create(topicId: string, messageId: string) {
     const exist = this.#findByTopicMessageId(topicId, messageId)
-    if (exist) return exist
+    if (exist) return exist.id
     const ctx: ChatContext = {
       id: uniqueId(),
       topicId,
       messageId,
     }
     this.#ctx.push(ctx)
-    return { ...ctx }
+    return ctx.id
+  }
+  findByTopic(topicId: string, messageId: string): ChatContext | undefined {
+    return this.#findByTopicMessageId(topicId, messageId)
   }
   has(contextId: string) {
     return this.#ctx.findIndex(ctx => ctx.id === contextId) > -1
@@ -49,6 +59,22 @@ class ChatContextImpl implements ChatContextManager {
     const ctx = this.get(contextId)
     if (ctx) {
       ctx.handler = handler
+      return true
+    }
+    return false
+  }
+  setModelMeta(contextId: string, modelMeta: ModelMeta): boolean {
+    const ctx = this.get(contextId)
+    if (ctx) {
+      ctx.modelMeta = cloneDeep(modelMeta)
+      return true
+    }
+    return false
+  }
+  setProviderMeta(contextId: string, providerMeta: ProviderMeta): boolean {
+    const ctx = this.get(contextId)
+    if (ctx) {
+      ctx.providerMeta = cloneDeep(providerMeta)
       return true
     }
     return false

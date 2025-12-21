@@ -13,6 +13,12 @@ export async function add(data: ProviderMeta, params?: QueryParams) {
 export async function clear(params?: QueryParams) {
   return queue.add(async () => resolveDb(params).providerMeta.clear())
 }
+export async function bulkGet(providerNames: string[], params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).providerMeta.bulkGet(providerNames))
+}
+export async function get(providerName: string, params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).providerMeta.get(providerName))
+}
 export async function fetch(params?: QueryParams) {
   return queue.add(async () => resolveDb(params).providerMeta.toArray())
 }
