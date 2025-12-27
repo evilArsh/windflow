@@ -14,7 +14,7 @@
 </template>
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@renderer/types/settings"
+import { SettingKeys } from "@windflow/core/types"
 const settingsStore = useSettingsStore()
 const i18n = useI18n()
 const toggle = ref(false)

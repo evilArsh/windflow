@@ -1,4 +1,4 @@
-import { FileInfo } from "@shared/types/files"
+import { FileInfo } from "@windflow/shared"
 import fs from "node:fs"
 import path from "node:path"
 import { fileTypeFromFile } from "file-type"

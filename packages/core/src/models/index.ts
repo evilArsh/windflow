@@ -1,1 +1,1 @@
-export * as modelUtils from "./utils"
+export * from "./utils"

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import SubNavLayout from "@renderer/components/SubNavLayout/index.vue"
-import { ChatTopicTree, SettingKeys } from "@renderer/types"
+import { ChatTopicTree, SettingKeys } from "@windflow/core/types"
 import MessagePanel from "./components/message/index.vue"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"

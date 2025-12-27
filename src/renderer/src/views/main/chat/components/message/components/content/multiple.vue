@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"
 import Handler from "./handler.vue"
@@ -154,7 +154,7 @@ const itemStyle = computed<CSSProperties>(() => {
 })
 async function del() {
   try {
-    await chatStore.deleteMessage(props.topic, message.value)
+    await chatStore.deleteMessage(message.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }

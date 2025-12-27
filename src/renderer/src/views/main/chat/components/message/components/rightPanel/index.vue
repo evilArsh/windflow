@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@renderer/types"
+import { ChatTopic } from "@windflow/core/types"
 import { CSSProperties, px } from "@toolmain/shared"
 import { Resize } from "@toolmain/components"
 import Prompt from "./prompt.vue"

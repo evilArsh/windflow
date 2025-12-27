@@ -5,7 +5,7 @@ import useMcpStore from "@renderer/store/mcp"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, isNumber, isHTTPUrl, cloneDeep } from "@toolmain/shared"
 import { FormProps, FormRules } from "element-plus"
-import { MCPServerParam } from "@shared/types/mcp"
+import { MCPServerParam } from "@windflow/shared"
 
 const props = defineProps<{
   size?: "" | "default" | "small" | "large"

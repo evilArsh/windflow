@@ -1,15 +1,12 @@
-import { MCPServerParam, MCPServerParamCore } from "@shared/types/mcp"
+import { MCPServerParam, MCPServerParamCore, EventKey } from "@windflow/shared"
 import { defineStore } from "pinia"
-import { useData } from "../../core/storage/mcp"
-
-import { EventKey } from "@shared/types/eventbus"
 import PQueue from "p-queue"
 import { cloneDeep, uniqueNanoId } from "@toolmain/shared"
+import { storage } from "@windflow/core/storage"
 const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
-  const api = useData()
   /**
    * 去掉多余mcp tool列表
    */
@@ -62,12 +59,12 @@ export default defineStore("mcp", () => {
     }
   }
   async function add(newData: MCPServerParam) {
-    await api.add(newData)
+    await storage.mcp.add(newData)
     servers.push(newData)
     return newData
   }
   async function bulkAdd(newDatas: MCPServerParam[]) {
-    await api.bulkAdd(newDatas)
+    await storage.mcp.bulkAdd(newDatas)
     servers.push(...newDatas)
     return newDatas
   }
@@ -75,16 +72,16 @@ export default defineStore("mcp", () => {
    * 停止并删除 `topicId` 下的 `serverId`
    */
   async function remove(topicId: string, serverId: string) {
-    await api.del(serverId)
+    await storage.mcp.remove(serverId)
     const index = servers.findIndex(v => v.id === serverId)
     index >= 0 && servers.splice(index, 1)
     return stop(topicId, serverId)
   }
   async function update(data: MCPServerParam) {
-    return api.update(data)
+    return storage.mcp.put(data)
   }
   async function getAll() {
-    return api.getAll()
+    return storage.mcp.getAll()
   }
   async function init() {
     window.api.bus.on(EventKey.MCPStatus, async data => {
@@ -94,11 +91,11 @@ export default defineStore("mcp", () => {
       const status = data.status
       server.status = status
       server.referTopics = data.refs
-      queue.add(async () => api.update(clonePure(server)))
+      queue.add(async () => storage.mcp.put(clonePure(server)))
       fetchTools(server.id)
     })
     servers.length = 0
-    const data = await api.fetch()
+    const data = await storage.mcp.fetch()
     servers.push(...data)
   }
   return {

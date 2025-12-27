@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPResourceItem } from "@shared/types/mcp"
+import { MCPResourceItem } from "@windflow/shared"
 
 defineProps<{ data: MCPResourceItem }>()
 </script>

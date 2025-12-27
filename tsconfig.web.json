@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.base.json",
   "include": [
     "src/renderer/src/**/*.ts",
     "src/renderer/src/**/*.tsx",
@@ -6,39 +7,26 @@
     "src/renderer/auto-imports.d.ts",
     "src/renderer/components.d.ts",
     "src/preload/index.d.ts",
-    "src/.test/mount.ts",
+    "src/tests/mount.ts",
     "packages/**/*.ts"
   ],
   "compilerOptions": {
-    "baseUrl": ".",
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "strict": true,
     "jsx": "preserve",
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
-    "sourceMap": false,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
     "jsxImportSource": "vue",
-    // "suppressImplicitAnyIndexErrors":true,
-    "moduleResolution": "bundler",
     "module": "ESNext",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
-    "types": ["element-plus/global", "unplugin-icons/types/vue","@toolmain/shared","@toolmain/libs"],
+    "types": ["element-plus/global", "unplugin-icons/types/vue", "@toolmain/shared", "@toolmain/libs"],
     "noEmit": false,
-    "composite": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitAny": false,
-    "noImplicitReturns": true,
+    "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
       "@renderer/*": ["src/renderer/src/*"],
       "@windflow/core/*": ["packages/core/src/*"],
-      "@windflow/shared/*": ["packages/shared/src/*"],
+      "@windflow/shared": ["packages/shared/src/index.ts"]
     }
   }
 }

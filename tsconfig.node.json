@@ -1,35 +1,24 @@
 {
+  "extends": "./tsconfig.base.json",
   "include": [
     "src/main/**/*",
     "src/preload/**/*",
-    "src/.test/setup-node.ts",
-    "packages/shared/**/*.ts"
+    "src/tests/setup-node.ts",
+    "packages/shared/**/*.ts",
+    "scripts"
   ],
   "compilerOptions": {
-    "composite": true,
-    "types": ["node","electron-vite/node", "vite/client","@toolmain/shared"],
-    "strictNullChecks": true,
-    "allowImportingTsExtensions":false,
     "target": "ESNext",
     "module": "ESNext",
-    "sourceMap": false,
-    "strict": true,
-    "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitAny": false,
-    "noImplicitReturns": true,
+    "allowImportingTsExtensions": false,
+    "types": ["node", "electron-vite/node", "vite/client", "@toolmain/shared"],
+    "strictNullChecks": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
       "@main/*": ["src/main/*"],
       "@preload/*": ["src/preload/*"],
-      "@shared/*": ["src/shared/*"],
-      "@windflow/shared/*": ["packages/shared/src/*"],
+      "@windflow/shared": ["packages/shared/src/index.ts"]
     }
   }
 }

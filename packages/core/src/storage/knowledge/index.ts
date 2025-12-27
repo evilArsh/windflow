@@ -16,6 +16,9 @@ export async function get(id: string, params?: QueryParams) {
 export async function gets(ids: string[], params?: QueryParams) {
   return queue.add(async () => resolveDb(params).knowledge.bulkGet(ids))
 }
+export async function remove(knowlwdgeId: string, params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).knowledge.delete(knowlwdgeId))
+}
 export async function findByEmbeddingId(embeddingId: string, params?: QueryParams): Promise<Knowledge[]> {
   return queue.add(async () => resolveDb(params).knowledge.where("embeddingId").equals(embeddingId).toArray())
 }

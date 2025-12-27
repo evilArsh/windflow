@@ -9,7 +9,7 @@ import * as provider from "./provider"
 import * as ragFiles from "./ragFiles"
 import * as settings from "./settings"
 
-export const name = "db-windflow"
+export const name = "db-windflow-v2"
 
 const db = new Dexie(name) as DexieTable
 
@@ -26,6 +26,7 @@ db.version(1).stores({
   ragFiles: "id,topicId,[topicId+path]",
   embedding: "id",
 })
+export * from "./presets"
 export function withTransaction<U>(
   mode: TransactionMode,
   tables: TableName[],

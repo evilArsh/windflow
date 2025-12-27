@@ -1,5 +1,5 @@
 import { QueryParams } from "@windflow/core/types"
-import { RAGEmbeddingConfig } from "@windflow/shared/types"
+import { RAGEmbeddingConfig } from "@windflow/shared"
 import { cloneDeep } from "@toolmain/shared"
 import PQueue from "p-queue"
 import { resolveDb } from "../utils"
@@ -11,8 +11,8 @@ export async function put(data: RAGEmbeddingConfig, params?: QueryParams) {
 export async function add(data: RAGEmbeddingConfig, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).embedding.add(cloneDeep(data)))
 }
-export async function remove(id: string, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).embedding.delete(id))
+export async function remove(embeddingId: string, params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).embedding.delete(embeddingId))
 }
 export async function get(id: string, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).embedding.get(id))

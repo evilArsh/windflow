@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPPromptItem } from "@shared/types/mcp"
+import { MCPPromptItem } from "@windflow/shared"
 
 const props = defineProps<{ data: MCPPromptItem }>()
 const { t } = useI18n()

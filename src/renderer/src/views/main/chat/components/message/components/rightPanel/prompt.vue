@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@renderer/types"
+import { ChatTopic } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 import { errorToText, msg } from "@toolmain/shared"
 import { useThrottleFn } from "@vueuse/core"

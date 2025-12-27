@@ -1,6 +1,6 @@
 import { App } from "vue"
 
-export default async (app: App<Element>) => {
+export const useSize = async (app: App<Element>) => {
   const setRootFontSize = () => {
     const w = window.innerWidth
     let fontSize: number

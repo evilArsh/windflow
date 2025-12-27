@@ -1,4 +1,4 @@
-import { MCPServerParam } from "@windflow/shared/types"
+import { MCPServerParam } from "@windflow/shared"
 
 export const mcpStdioDefault = (): MCPServerParam[] => {
   return [

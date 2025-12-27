@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { ChatLLMConfig, ChatTopic, LLMConfig, SettingKeys } from "@renderer/types"
+import { ChatLLMConfig, ChatTopic, LLMConfig, SettingKeys } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 import useSettings from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
-import { defaultLLMConfig } from "@renderer/store/chat/default"
 import { cloneDeep, errorToText, msg } from "@toolmain/shared"
 import { Spinner } from "@toolmain/components"
 import Shell from "./shell.vue"
+import { defaultLLMConfig } from "@windflow/core/storage"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -52,9 +52,7 @@ const useEvent = () => {
       } else if (cmd === "coverGlobal") {
         // cover global config
         if (!config.value) return
-        const copyData = cloneDeep(config.value) as LLMConfig
-        delete copyData["id"]
-        delete copyData["topicId"]
+        const { id, topicId, ...copyData } = cloneDeep(config.value)
         await settingsStore.update({
           id: SettingKeys.ChatLLMConfig,
           value: copyData,

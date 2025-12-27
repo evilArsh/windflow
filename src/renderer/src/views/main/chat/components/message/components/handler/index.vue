@@ -8,7 +8,7 @@ import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
 import useChatStore from "@renderer/store/chat"
 import useSettingsStore from "@renderer/store/settings"
-import { ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
 import { errorToText, isFunction, msg, useShortcut } from "@toolmain/shared"
 import { useThrottleFn } from "@vueuse/core"
@@ -32,7 +32,7 @@ const handler = {
           isFunction(done) && done()
           return
         }
-        await chatStore.send(topic.value)
+        await chatStore.send(topic.value.id, topic.value.content, topic.value.modelIds)
         topic.value.content = ""
         await chatStore.updateChatTopic(toValue(topic))
         await nextTick()

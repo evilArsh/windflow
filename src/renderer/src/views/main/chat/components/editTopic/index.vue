@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@renderer/types"
+import { ChatTopic } from "@windflow/core/types"
 import ModelSelect from "../message/components/handler/modelSelect.vue"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
 import { errorToText, msg } from "@toolmain/shared"

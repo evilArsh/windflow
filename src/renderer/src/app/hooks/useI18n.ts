@@ -3,7 +3,7 @@ import { createI18n } from "vue-i18n"
 import en from "@renderer/i18n/locales/en.json"
 import zh from "@renderer/i18n/locales/zh.json"
 
-export default async (app: App<Element>) => {
+export const useI18n = async (app: App<Element>) => {
   const i18n = createI18n({
     legacy: false,
     locale: "zh",

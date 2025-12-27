@@ -1,4 +1,4 @@
-import { MCPClientStatus, MCPServerParam } from "@windflow/shared/types"
+import { MCPClientStatus, MCPServerParam } from "@windflow/shared"
 import { cloneDeep } from "@toolmain/shared"
 import PQueue from "p-queue"
 import { resolveDb } from "../utils"
@@ -15,7 +15,7 @@ export async function add(data: MCPServerParam, params?: QueryParams) {
 export async function bulkAdd(datas: MCPServerParam[], params?: QueryParams) {
   return queue.add(async () => resolveDb(params).mcpServer.bulkAdd(cloneDeep(datas)))
 }
-export async function del(id: string, params?: QueryParams) {
+export async function remove(id: string, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).mcpServer.delete(id))
 }
 export async function getAll(params?: QueryParams) {

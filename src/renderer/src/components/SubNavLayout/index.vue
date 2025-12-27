@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys, SettingsValue } from "@renderer/types"
+import { SettingKeys, SettingsValue } from "@windflow/core/types"
 import { CSSProperties } from "@toolmain/shared"
 import { Resize } from "@toolmain/components"
 const emit = defineEmits<{

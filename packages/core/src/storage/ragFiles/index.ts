@@ -2,7 +2,7 @@ import { QueryParams } from "@windflow/core/types"
 import { cloneDeep } from "@toolmain/shared"
 import PQueue from "p-queue"
 import { resolveDb } from "../utils"
-import { RAGLocalFileInfo } from "@windflow/shared/types"
+import { RAGLocalFileInfo } from "@windflow/shared"
 
 const queue = new PQueue({ concurrency: 1 })
 export async function put(data: RAGLocalFileInfo, params?: QueryParams) {
@@ -16,6 +16,9 @@ export async function bulkAdd(datas: RAGLocalFileInfo[], params?: QueryParams) {
 }
 export async function remove(id: string, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).ragFiles.delete(id))
+}
+export async function removeByTopicId(topicId: string, params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).ragFiles.where("topicId").equals(topicId).delete())
 }
 export async function get(id: string, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).ragFiles.get(id))

@@ -15,10 +15,16 @@ import {
   MCPClientStatus,
   MCPRootTopicId,
   getPureParam,
+  EventBus,
+  IpcChannel,
+  MCPService,
+  useSchemaValidate,
+  defaultEnv,
+  ToolEnvironment,
+  ToolEnvTestResult,
   MCPServerParamCore,
-} from "@shared/types/mcp"
+} from "@windflow/shared"
 import { errorToText, Response, responseData } from "@toolmain/shared"
-import { EventBus, IpcChannel, MCPService } from "@shared/service"
 import { ipcMain } from "electron"
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js"
 import {
@@ -31,10 +37,7 @@ import {
   requestWithId,
   useMCPContext,
 } from "./utils"
-import { useSchemaValidate } from "@shared/mcp"
 import { ServiceCore } from "@main/types"
-import { ToolEnvironment, ToolEnvTestResult } from "@shared/types/env"
-import { defaultEnv } from "@shared/env"
 import { mcpName, log, mcpVersion } from "./vars"
 import { testEnv } from "./env"
 

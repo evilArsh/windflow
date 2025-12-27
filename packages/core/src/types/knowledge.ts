@@ -1,4 +1,4 @@
-import { RAGEmbeddingConfig } from "@windflow/shared/types"
+import { RAGEmbeddingConfig } from "@windflow/shared"
 
 export type Knowledge = {
   id: string

@@ -11,20 +11,16 @@ import {
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models/utils"
 
-import {
-  createChatMessage,
-  getIsolatedMessages,
-  getMessageContexts,
-  getMessageType,
-  insertNewMessages,
-  saveNewMessages,
-} from "./utils"
+import { createChatMessage, getIsolatedMessages, getMessageContexts, getMessageType } from "./utils"
 import { createChatContext } from "./context"
-import { cloneDeep, EventBus, isString, isUndefined, toNumber, useEvent } from "@toolmain/shared"
+import { cloneDeep, EventBus, isArrayLength, isString, isUndefined, toNumber, useEvent } from "@toolmain/shared"
 import { defaultMessage, defaultTTIConfig } from "@windflow/core/storage/presets"
 import { createProviderManager } from "@windflow/core/provider"
 import { storage } from "@windflow/core/storage"
 import { beforeLLMRequest } from "./hooks"
+import { insertNewMessages, saveNewMessages } from "./storage"
+
+export * from "./utils"
 export class MessageManager {
   readonly #ctx: ChatContextManager
   readonly #providerManager: ProviderManager
@@ -34,7 +30,7 @@ export class MessageManager {
     this.#providerManager = createProviderManager()
     this.#ev = useEvent<ChatEventResponse>()
   }
-  #emitMessage(contextId: string, message: ChatMessage) {
+  #emitMessage(message: ChatMessage, contextId?: string) {
     this.#ev.emit("message", { contextId, data: message })
   }
   async #sendChat(contextId: string, message: ChatMessage): Promise<void> {
@@ -53,7 +49,7 @@ export class MessageManager {
     const rawContexts = getIsolatedMessages(messages, messageId)
     const contexts = getMessageContexts(topic, rawContexts)
     message.status = 100
-    this.#emitMessage(ctx.id, message)
+    this.#emitMessage(message, ctx.id)
     const newHandler = await provider.chat(
       contexts,
       modelMeta,
@@ -69,29 +65,13 @@ export class MessageManager {
           message.finish = false
         } else if (status == 200) {
           message.finish = true
-          // topic.requestCount = Math.max(0, topic.requestCount - 1)
-          // if (message.content.children?.some(child => !!child.reasoning_content)) {
-          //   if (!modelsStore.utils.isChatReasonerType(model)) {
-          //     model.type.push(ModelType.ChatReasoner)
-          //     modelsStore.put(model)
-          //   }
-          // }
-          // if (message.parentId) return // 多模型请求时不总结标题
-          // if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-          //   chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
-          //     if (isString(value.data.content)) {
-          //       topic.label = value.data.content
-          //       api.putChatTopic(topic)
-          //     }
-          //   })
-          // }
         } else if (status == 100) {
           message.finish = false
         } else {
           message.finish = true
         }
         storage.chat.putChatMessage(message)
-        this.#emitMessage(ctx.id, message)
+        this.#emitMessage(message, ctx.id)
       },
       beforeLLMRequest(topic, message)
     )
@@ -100,22 +80,22 @@ export class MessageManager {
   async #sendMedia(contextId: string, message: ChatMessage): Promise<void> {
     const ctx = this.#ctx.get(contextId)
     if (!ctx) return
-    const { modelMeta, providerMeta, provider, handler, topicId } = ctx
+    const { modelMeta, providerMeta, provider, handler } = ctx
     if (!(modelMeta && providerMeta && provider)) return
     if (isImageType(modelMeta)) {
       if (!message.fromId) return
-      const askMessage = await storage.chat.getChatMessage(topicId, message.fromId)
+      const askMessage = await storage.chat.getChatMessage(message.fromId)
       if (!askMessage) return
       handler?.terminate()
       message.status = 100
-      this.#emitMessage(ctx.id, message)
+      this.#emitMessage(message, ctx.id)
       const conf = (await storage.chat.getChatTTIConfig(message.topicId)) ?? defaultTTIConfig()
       const hdl = await provider.textToImage({ ...conf, prompt: askMessage.content }, modelMeta, providerMeta, res => {
         message.content = res.data
         message.finish = true
         message.status = res.status
         message.msg = res.msg
-        this.#emitMessage(ctx.id, message)
+        this.#emitMessage(message, ctx.id)
       })
       this.#ctx.setHandler(contextId, hdl)
     } else {
@@ -123,7 +103,7 @@ export class MessageManager {
       message.finish = true
       message.status = 404
       message.content.content = "not implemented"
-      this.#emitMessage(ctx.id, message)
+      this.#emitMessage(message, ctx.id)
     }
   }
   #getDispatcher(
@@ -186,6 +166,15 @@ export class MessageManager {
     }
     return reqInfo
   }
+  removeAllListener() {
+    this.#ev.removeAllListeners()
+  }
+  on<K extends keyof ChatEventResponse>(event: K, cb: ChatEventResponse[K]): void {
+    this.#ev.on(event, cb)
+  }
+  off<K extends keyof ChatEventResponse>(event: K, cb: ChatEventResponse[K]): void {
+    this.#ev.off(event, cb)
+  }
   /**
    * send multiple messages and return context ids
    */
@@ -206,6 +195,7 @@ export class MessageManager {
     })
     const reqInfo = await this.#createResponseMessages(topicId, userMessage.id, modelMetas)
     await saveNewMessages([userMessage, ...reqInfo.map(i => i.message)])
+    this.#emitMessage(userMessage)
     const dispatcher = this.#getDispatcher(reqInfo)
     await Promise.all(dispatcher)
     return reqInfo.map(info => info.contextId)
@@ -216,9 +206,10 @@ export class MessageManager {
   async restart(topicId: string, messageId: string): Promise<string[]> {
     const topic = await storage.chat.getTopic(topicId)
     if (!topic) return []
-    const currentMsg = await storage.chat.getChatMessage(topicId, messageId)
+    const currentMsg = await storage.chat.getChatMessage(messageId)
     if (!currentMsg) return []
     if (currentMsg.content.role === Role.User) {
+      this.#emitMessage(currentMsg)
       const msgs = await storage.chat.getMessagesByFromId(topicId, messageId)
       if (msgs.length) {
         const reqInfo: Array<{
@@ -280,6 +271,7 @@ export class MessageManager {
       this.#ctx.setModelMeta(ctx.id, modelMeta)
       this.#ctx.setProviderMeta(ctx.id, providerMeta)
       this.#ctx.setProvider(ctx.id, provider)
+      this.#emitMessage(currentMsg)
       await Promise.all(
         this.#getDispatcher([
           {
@@ -291,11 +283,23 @@ export class MessageManager {
       return [ctx.id]
     }
   }
+  /**
+   * @param destroy true to destroy the context and will create new one next time
+   */
   terminate(topicId: string, messageId: string, destroy?: boolean) {
     const ctx = this.#ctx.findByTopic(topicId, messageId)
-    if (ctx && destroy) {
+    if (ctx) {
       ctx.handler?.terminate()
-      this.#ctx.remove(ctx.id)
+      destroy && this.#ctx.remove(ctx.id)
+    }
+  }
+  /**
+   * @param destroy true to destroy the context and will create new one next time
+   */
+  terminateAll(topicId: string, destroy?: boolean) {
+    const ctx = this.#ctx.findAllByTopic(topicId)
+    if (isArrayLength(ctx)) {
+      ctx.forEach(c => this.terminate(topicId, c.messageId, destroy))
     }
   }
 }

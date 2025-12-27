@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { usePartialData, openAICompatParser } from "@renderer/provider/compatible/utils"
 import { CSSProperties } from "@toolmain/shared"
 import { useDebounceFn } from "@vueuse/core"
 import { DialogPanel } from "@toolmain/components"
 import { Resize } from "@toolmain/components"
+import { openAICompatParser, usePartialData } from "@windflow/core/provider"
 
 const leftStyle = ref<CSSProperties>({
   width: "40%",

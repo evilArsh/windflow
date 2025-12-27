@@ -1,6 +1,6 @@
 import type Node from "element-plus/es/components/tree/src/model/node"
 import { useTask } from "@renderer/hooks/useTask"
-import { ChatTopicTree, ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
 import { errorToText, isArray, msg } from "@toolmain/shared"
 import { TreeInstance, ScrollbarInstance, ElMessage, NodeDropType, TreeNodeData } from "element-plus"
@@ -9,6 +9,8 @@ import { Reactive } from "vue"
 import useChatStore from "@renderer/store/chat"
 import useSettingsStore from "@renderer/store/settings"
 import { useThrottleFn } from "@vueuse/core"
+import { cloneTopic, createChatTopic } from "@windflow/core/message"
+import { findMaxTopicIndex } from "@renderer/store/chat/utils"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -31,7 +33,7 @@ export const useTree = (
   })
   const currentHover = ref("") // 鼠标移动过的节点
   // 新增聊天
-  async function createNewTopic(parentId?: string) {
+  async function createNew(parentId?: string) {
     try {
       if (task.pending()) {
         ElMessage.warning(t("chat.topicSwitching"))
@@ -40,13 +42,14 @@ export const useTree = (
       let topic: ChatTopic
       if (parentId && selectedTopic.value) {
         pushDefaultExpandedKeys(parentId)
-        topic = chatStore.utils.cloneTopic(selectedTopic.value.node, {
+        topic = cloneTopic(selectedTopic.value.node, {
           parentId,
           label: t("chat.addChat"),
-          index: chatStore.utils.findMaxTopicIndex(selectedTopic.value.children),
+          index: findMaxTopicIndex(selectedTopic.value.children),
         })
       } else {
-        topic = chatStore.utils.newTopic(chatStore.utils.findMaxTopicIndex(topicList.value), {
+        topic = createChatTopic({
+          index: findMaxTopicIndex(topicList.value),
           parentId,
           modelIds: [],
           label: t("chat.addChat"),
@@ -186,7 +189,7 @@ export const useTree = (
     filterNode,
     pushDefaultExpandedKeys,
     removeDefaultExpandedKeys,
-    createNewTopic,
+    createNewTopic: createNew,
     setCurrentTopic,
     setSelectedTopic,
     clearCurrentTopic,

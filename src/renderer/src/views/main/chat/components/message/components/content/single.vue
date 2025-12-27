@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
 import { CallBackFn, code1xx, errorToText, isString, msg } from "@toolmain/shared"
 import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
@@ -11,7 +11,7 @@ import MCPCall from "./mcpcall.vue"
 import Image from "./image.vue"
 import Error from "./error.vue"
 import useChatStore from "@renderer/store/chat"
-import { Role } from "@renderer/types"
+import { Role } from "@windflow/core/types"
 import { useMsgContext } from "../../../../index"
 const props = defineProps<{
   message: ChatMessageTree
@@ -41,7 +41,7 @@ async function onContentChange() {
 }
 async function onContentDelete(m: ChatMessageTree, done: CallBackFn) {
   try {
-    await chatStore.deleteMessage(topic.value, m)
+    await chatStore.deleteMessage(m)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   } finally {

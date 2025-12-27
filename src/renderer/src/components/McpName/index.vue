@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPServerParam } from "@shared/types/mcp"
+import { MCPServerParam } from "@windflow/shared"
 defineProps<{
   data: MCPServerParam
   hideFlag?: boolean

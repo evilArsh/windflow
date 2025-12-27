@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ProviderMeta, ModelMeta, ModelActiveStatus } from "@renderer/types"
+import { ProviderMeta, ModelMeta, ModelActiveStatus } from "@windflow/core/types"
 import useModelStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"

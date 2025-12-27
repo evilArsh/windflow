@@ -1,4 +1,4 @@
-import { RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileMeta } from "@windflow/shared"
 import { code4xx, code5xx, errorToText } from "@toolmain/shared"
 import { readFile } from "../doc"
 import PQueue from "p-queue"

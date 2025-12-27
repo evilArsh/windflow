@@ -6,10 +6,7 @@ const __dirname = path.dirname(__filename)
 
 export default defineConfig({
   resolve: {
-    alias: [
-      { find: "@", replacement: path.resolve("./src") },
-      { find: "@shared", replacement: path.resolve("../../src/shared") },
-    ],
+    alias: [{ find: "@", replacement: path.resolve("./src") }],
   },
   optimizeDeps: {
     disabled: true,

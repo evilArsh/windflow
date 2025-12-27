@@ -1,12 +1,13 @@
 <script lang="ts" setup>
-import { RAGEmbeddingConfig } from "@shared/types/rag"
+import { RAGEmbeddingConfig } from "@windflow/shared"
 import { Arrayable } from "@vueuse/core"
 import { FormItemRule, FormInstance, CascaderValue, CascaderProps, CascaderNode, Resolve } from "element-plus"
 import useProviderStore from "@renderer/store/provider"
 import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
-import { ModelMeta, ProviderMeta } from "@renderer/types"
+import { ModelMeta, ProviderMeta } from "@windflow/core/types"
 import { isArrayLength, resolvePath } from "@toolmain/shared"
+import { isRerankerType, isEmbeddingType } from "@windflow/core/models"
 
 const props = defineProps<{
   mode: "add" | "edit" | "view"
@@ -93,11 +94,7 @@ const ev = {
       const data = node.data.value as ProviderMeta
       resolve(
         models.value
-          .filter(
-            v =>
-              data.name === v.providerName &&
-              (rerank ? modelStore.utils.isRerankerType(v) : modelStore.utils.isEmbeddingType(v))
-          )
+          .filter(v => data.name === v.providerName && (rerank ? isRerankerType(v) : isEmbeddingType(v)))
           .map(val => ({
             label: val.modelName,
             value: val,

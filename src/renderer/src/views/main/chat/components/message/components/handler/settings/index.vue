@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@renderer/types"
+import { ChatTopic } from "@windflow/core/types"
 import Global from "./global.vue"
 import Message from "./message.vue"
 import Shell from "../shell.vue"

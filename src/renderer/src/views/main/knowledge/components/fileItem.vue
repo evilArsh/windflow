@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import useRagFilesStore from "@renderer/store/ragFiles"
 import useKnowledgeStore from "@renderer/store/knowledge"
-import { RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileInfo } from "@windflow/shared"
 import { CallBackFn, msgError, errorToText, cloneDeep } from "@toolmain/shared"
 import { filesize } from "filesize"
 import { Spinner } from "@toolmain/components"

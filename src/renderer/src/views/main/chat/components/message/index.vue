@@ -4,7 +4,7 @@ import Handler from "./components/handler/index.vue"
 import useChatStore from "@renderer/store/chat"
 import Content from "./components/content/index.vue"
 import RightPanel from "./components/rightPanel/index.vue"
-import { ChatTopicTree } from "@renderer/types"
+import { ChatTopicTree } from "@windflow/core/types"
 import { useMsgContext } from "../../index"
 const props = defineProps<{
   topic?: ChatTopicTree

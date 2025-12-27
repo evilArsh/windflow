@@ -2,13 +2,13 @@ import { App, InjectionKey } from "vue"
 import { parseSVGContent, convertParsedSVG } from "@iconify/utils"
 import { IconifyJSON } from "@iconify/types"
 
-export const providerSvgIconKey = Symbol("providerSvgIcon") as InjectionKey<IconifyJSON>
+export const ProviderSvgIconKey: InjectionKey<IconifyJSON> = Symbol("providerSvgIcon")
 
 const nameWithoutExt = (path: string) => {
   const fileName = path.split("/").pop()
   return (fileName?.split(".").slice(0, -1).join(".") ?? "").toLocaleLowerCase()
 }
-export default async (app: App<Element>) => {
+export const useSvgIcon = async (app: App<Element>) => {
   const svgIcon = import.meta.glob("/src/assets/images/provider/**/*.svg", {
     eager: true,
     query: "?raw",
@@ -28,5 +28,5 @@ export default async (app: App<Element>) => {
       }
     }
   })
-  app.provide(providerSvgIconKey, providerSvgIcon)
+  app.provide(ProviderSvgIconKey, providerSvgIcon)
 }

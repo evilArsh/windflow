@@ -1,6 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js"
-import { MCPClientStatus, MCPServerParam } from "@shared/types/mcp"
+import { MCPClientStatus, MCPServerParam } from "@windflow/shared"
 
 export interface MCPClientContext {
   params: MCPServerParam

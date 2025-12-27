@@ -7,53 +7,19 @@ import {
   ModelMeta,
   Role,
 } from "@windflow/core/types"
-import { storage, withTransaction } from "@windflow/core/storage"
 import { defaultMessage } from "@windflow/core/storage/presets/chat"
-import { isArrayLength, isUndefined, merge, toNumber, uniqueId } from "@toolmain/shared"
+import { cloneDeep, isArrayLength, isNumber, merge, toNumber, uniqueId } from "@toolmain/shared"
 import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models/utils"
 
-const MessageIndexStep = 100
-export async function saveNewMessages(messages: ChatMessage[]) {
-  return withTransaction("rw", ["chatTopic"], async t => {
-    const messagesByTopic = messages.reduce<Record<string, ChatMessage[]>>((acc, message) => {
-      if (!acc[message.topicId]) {
-        acc[message.topicId] = []
-      }
-      acc[message.topicId].push(message)
-      return acc
-    }, {})
-
-    // get max index of messages in each topic
-    const topicIds = Object.keys(messagesByTopic)
-    const maxIndices = await Promise.all(
-      topicIds.map(async topicId => {
-        return storage.chat.getMaxIndexMessage(topicId, { transaction: t })
-      })
-    )
-    const indexMap = new Map(maxIndices.filter(v => !isUndefined(v)).map(({ topicId, index }) => [topicId, index]))
-
-    const allMessagesToInsert: ChatMessage[] = []
-    for (const [topicId, topicMessages] of Object.entries(messagesByTopic)) {
-      const maxIndex = indexMap.get(topicId) ?? 0
-      const messagesWithIndex = topicMessages.map((message, i) => ({
-        ...message,
-        index: maxIndex + MessageIndexStep * (i + 1),
-      }))
-      allMessagesToInsert.push(...messagesWithIndex)
-    }
-    await storage.chat.bulkAddChatMessage(allMessagesToInsert, { transaction: t })
-  })
-}
-/**
- * insert new messages after `current` message, messages must have the same `topicId` as `current`
- */
-export async function insertNewMessages(current: ChatMessage, messages: ChatMessage[]) {
-  const currentIndex = current.index ?? 0
-  const messagesWithIndex = messages.map((message, i) => ({
-    ...message,
-    index: currentIndex + i + 1,
-  }))
-  return storage.chat.bulkAddChatMessage(messagesWithIndex)
+export function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
+  const part: Partial<ChatTopic> = {
+    id: uniqueId(),
+    label: "",
+    parentId: "",
+    requestCount: 0,
+    maxContextLength: isNumber(topic.maxContextLength) ? topic.maxContextLength : 7,
+  }
+  return cloneDeep(merge({}, topic, part, initial))
 }
 export function createChatTopic(initial?: Partial<ChatTopic>): ChatTopic {
   const dst: ChatTopic = {
@@ -84,7 +50,6 @@ export function createChatMessage(initial?: Partial<ChatMessage>): ChatMessage {
     index: 0,
     topicId: "",
     modelId: "",
-    // parentId: "",
   }
   return merge(dst, initial)
 }

@@ -13,3 +13,6 @@ export async function add(data: Settings<SettingsValue>, params?: QueryParams) {
 export async function put(data: Settings<SettingsValue>, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).settings.put(cloneDeep(data)))
 }
+export async function fetch(params?: QueryParams) {
+  return queue.add(async () => resolveDb(params).settings.toArray())
+}

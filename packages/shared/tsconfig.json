@@ -1,27 +1,16 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ESNext"],
     "jsx": "preserve",
-    "rootDir": "src",
-    "baseUrl": "src",
     "outDir": "dist",
     "target": "ESNext",
     "module": "ESNext",
-    "strict": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "sourceMap": false,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "noEmit": false,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    }
   },
-  "include": ["src/**/*", "src/.test"],
+  "include": ["src/**/*", "src/tests"],
   "exclude": ["**/node_modules", "**/*.md", "**/dist"]
 }

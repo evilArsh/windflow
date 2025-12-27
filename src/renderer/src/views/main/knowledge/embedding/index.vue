@@ -1,23 +1,19 @@
 <script lang="ts" setup>
 import useKnowledgeStore from "@renderer/store/knowledge"
-// import useRagFilesStore from "@renderer/store/ragFiles"
 import useSettingsStore from "@renderer/store/settings"
 import useEmbeddingStore from "@renderer/store/embedding"
 import { storeToRefs } from "pinia"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
-import { SettingKeys } from "@renderer/types"
+import { SettingKeys } from "@windflow/core/types"
 import EmbeddingForm from "./components/form.vue"
-import { RAGEmbeddingConfig } from "@shared/types/rag"
+import { RAGEmbeddingConfig } from "@windflow/shared"
 const route = useRoute()
 
 const knowledgeStore = useKnowledgeStore()
-// const ragFilesStore = useRagFilesStore()
 const settingsStore = useSettingsStore()
 const embeddingStore = useEmbeddingStore()
-// const { knowledges } = storeToRefs(knowledgeStore)
-// const { ragFiles } = storeToRefs(ragFilesStore)
 const { embeddings } = storeToRefs(embeddingStore)
 const formRef = useTemplateRef("form")
 const formConfirmRef = useTemplateRef("formConfirm")

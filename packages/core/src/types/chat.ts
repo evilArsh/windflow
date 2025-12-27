@@ -78,9 +78,13 @@ export type ChatMessage = {
    */
   concurrency?: boolean
   /**
-   * @description 如果当前消息为AI响应，则标识当前消息是对哪个提问的响应
+   * @description 标识当前消息是对 `fromId` 消息的回应
    */
   fromId?: string
+  // /**
+  //  * @description 多模型同时请求时，标识父ChatMessage的ID
+  //  */
+  // parentId?: string
   /**
    * @description 本次请求中模型产生的token数
    */
@@ -90,7 +94,6 @@ export type ChatMessage = {
    */
   promptTokens?: number
 }
-
 export type ChatTopic = {
   /**
    * @description 会话ID
@@ -171,6 +174,7 @@ export type ChatMessageTree = {
   id: string
   node: ChatMessage
   children: Array<ChatMessageTree>
+  parentId?: string
 }
 
 export type ChatContext = {
@@ -188,6 +192,10 @@ export interface ChatContextManager {
    */
   create(topicId: string, messageId: string): string
   findByTopic(topicId: string, messageId: string): ChatContext | undefined
+  /**
+   * find all contexts under `topicId`
+   */
+  findAllByTopic(topicId: string): ChatContext[] | undefined
   get(contextId: string): ChatContext | undefined
   has(contextId: string): boolean
   /**
@@ -201,7 +209,7 @@ export interface ChatContextManager {
 }
 
 export type ChatEventResponseMessage = {
-  contextId: string
+  contextId?: string
   data: ChatMessage
 }
 export interface ChatEventResponse {

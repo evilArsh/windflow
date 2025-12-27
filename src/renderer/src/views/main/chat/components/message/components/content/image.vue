@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useRequest } from "@renderer/provider/http"
-import { ChatMessageTree } from "@renderer/types"
+import { useRequest } from "@windflow/core/provider"
+import { ChatMessageTree } from "@windflow/core/types"
 import { errorToText, isBase64Image, isString, msg } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
 import { useTask } from "@renderer/hooks/useTask"

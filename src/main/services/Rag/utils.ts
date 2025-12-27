@@ -1,5 +1,5 @@
 import { useLog } from "@main/hooks/useLog"
-import { RAGEmbeddingConfig } from "@shared/types/rag"
+import { RAGEmbeddingConfig } from "@windflow/shared"
 import { cloneDeep } from "@toolmain/shared"
 
 export const RAGServiceId = "RAGService"

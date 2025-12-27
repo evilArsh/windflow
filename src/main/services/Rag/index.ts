@@ -1,6 +1,4 @@
 import { ServiceCore } from "@main/types"
-import { EventKey } from "@shared/types/eventbus"
-import { EventBus, IpcChannel, RAGService } from "@shared/service"
 import { VectorStore, VectorStoreConfig } from "./db"
 import {
   RAGEmbeddingConfig,
@@ -10,7 +8,12 @@ import {
   RAGSearchParam,
   RagSearchStatus,
   RAGSearchTask,
-} from "@shared/types/rag"
+  FileInfo,
+  EventKey,
+  EventBus,
+  IpcChannel,
+  RAGService,
+} from "@windflow/shared"
 import sql from "sqlstring"
 import {
   cloneDeep,
@@ -32,7 +35,6 @@ import { StoreTaskImpl } from "./task/store"
 import { combineTableName } from "./db/utils"
 import { log, RAGServiceId } from "./utils"
 import { getFileInfo } from "@main/misc/file"
-import { FileInfo } from "@shared/types/files"
 
 export type RAGServiceConfig = {
   store?: VectorStoreConfig

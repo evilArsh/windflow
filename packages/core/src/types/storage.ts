@@ -9,9 +9,9 @@ import {
   ChatTTIConfig,
   Knowledge,
 } from "."
-import { MCPServerParam } from "@windflow/shared/types"
+import { MCPServerParam } from "@windflow/shared"
 import Dexie, { Transaction, type EntityTable } from "dexie"
-import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@windflow/shared/types"
+import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@windflow/shared"
 
 export type Table = {
   providerMeta: EntityTable<ProviderMeta, "name">

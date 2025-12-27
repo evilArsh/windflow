@@ -1,5 +1,5 @@
 import type { ElectronAPI } from "@electron-toolkit/preload"
-import type { MCPService, FileService, EventBus, ThemeService, RAGService } from "@shared/service"
+import type { MCPService, FileService, EventBus, ThemeService, RAGService } from "@windflow/shared"
 declare global {
   interface Window {
     electron: ElectronAPI

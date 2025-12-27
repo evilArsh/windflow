@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ProviderMeta } from "@renderer/types"
+import { ProviderMeta } from "@windflow/core/types"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, cloneDeep } from "@toolmain/shared"
 import { Method } from "axios"
@@ -14,7 +14,7 @@ const props = defineProps<{
 const dataSets = ref<
   Array<{
     label: string
-    field: string
+    field: Exclude<keyof ProviderMeta["api"], "url" | "key" | "doc">
     value: {
       method: Method
       url: string

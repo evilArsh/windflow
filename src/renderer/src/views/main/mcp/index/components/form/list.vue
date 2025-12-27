@@ -4,9 +4,9 @@ import useMcpStore from "@renderer/store/mcp"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, errorToText, msg, msgError } from "@toolmain/shared"
 import { storeToRefs } from "pinia"
-import { MCPServerParam } from "@shared/types/mcp"
+import { MCPServerParam } from "@windflow/shared"
 import { useI18n } from "vue-i18n"
-import { useSchemaValidate } from "@shared/mcp"
+import { useSchemaValidate } from "@windflow/shared"
 import { assembleParam, McpServersSchema } from "../helper"
 type MCPServersConfig = { mcpServers: Record<string, MCPServerParam["params"]> }
 const emit = defineEmits<{

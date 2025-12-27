@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@windflow/core/types"
 import Single from "./single.vue"
 import Multiple from "./multiple.vue"
 import Divider from "./divider.vue"
@@ -7,13 +7,13 @@ import { useMsgContext } from "../../../../index"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 const chatStore = useChatStore()
-const { chatMessage } = storeToRefs(chatStore)
+const { chatMessageList } = storeToRefs(chatStore)
 
 const props = defineProps<{
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
-const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
+const messages = computed<ChatMessageTree[] | undefined>(() => chatMessageList.value[props.topic.id])
 </script>
 <template>
   <div v-if="messages" class="flex flex-col-reverse p-1.5rem gap2.5rem">

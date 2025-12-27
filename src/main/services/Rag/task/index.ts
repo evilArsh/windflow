@@ -1,6 +1,11 @@
-import { EventKey } from "@shared/types/eventbus"
-import { RAGLocalFileInfo, RAGFileStatus, RAGEmbeddingConfig, RAGLocalFileMeta } from "@shared/types/rag"
-import { EventBus } from "@shared/service"
+import {
+  RAGLocalFileInfo,
+  RAGFileStatus,
+  RAGEmbeddingConfig,
+  RAGLocalFileMeta,
+  EventBus,
+  EventKey,
+} from "@windflow/shared"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { encapEmbeddinConfig, log } from "../utils"

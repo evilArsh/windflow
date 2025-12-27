@@ -12,7 +12,7 @@ import {
 } from "@lancedb/lancedb"
 import sql from "sqlstring"
 import { useEnv } from "@main/hooks/useEnv"
-import { RAGFile } from "@shared/types/rag"
+import { RAGFile } from "@windflow/shared"
 import { merge } from "@toolmain/shared"
 import path from "node:path"
 

@@ -10,7 +10,7 @@ import {
 } from "@windflow/core/types"
 import { Compatible } from "../compatible"
 import { patchAxios } from "../compatible/utils"
-import { useSingleRequest } from "../http"
+import { useSingleRequest } from "../utils"
 import { AxiosError, CanceledError } from "axios"
 import { cloneDeep, errorToText, resolvePath } from "@toolmain/shared"
 

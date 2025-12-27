@@ -1,10 +1,8 @@
-import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTopicTree, ChatTTIConfig, QueryParams } from "@windflow/core/types"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, QueryParams } from "@windflow/core/types"
 import { db } from "../index"
 import PQueue from "p-queue"
-import { chatTopicDefault } from "../presets/chat"
 import { cloneDeep } from "@toolmain/shared"
 import { resolveDb } from "../utils"
-import { assembleTopicTree } from "./utils"
 import Dexie from "dexie"
 
 const topicQueue = new PQueue({ concurrency: 1 })
@@ -12,6 +10,9 @@ const msgQueue = new PQueue({ concurrency: 1 })
 const configQueue = new PQueue({ concurrency: 1 })
 export async function addChatTopic(data: ChatTopic, params?: QueryParams) {
   return topicQueue.add(async () => resolveDb(params).chatTopic.add(cloneDeep(data)))
+}
+export async function bulkAddChatTopics(datas: ChatTopic[], params?: QueryParams) {
+  return topicQueue.add(async () => resolveDb(params).chatTopic.bulkAdd(cloneDeep(datas)))
 }
 export async function putChatTopic(data: ChatTopic, params?: QueryParams) {
   return topicQueue.add(async () => resolveDb(params).chatTopic.put(cloneDeep(data)))
@@ -55,24 +56,13 @@ export async function bulkAddChatMessage(data: ChatMessage[], params?: QueryPara
  * @description get all messages of a topic and sort by `index`
  */
 export async function getChatMessages(topicId: string, params?: QueryParams) {
-  return await msgQueue.add(async () => resolveDb(params).chatMessage.where("topicId").equals(topicId).sortBy("index"))
+  return msgQueue.add(async () => resolveDb(params).chatMessage.where("topicId").equals(topicId).sortBy("index"))
 }
 /**
  * @description get message by `messageId` in a topic
  */
-export async function getChatMessage(
-  topicId: string,
-  messageId: string,
-  params?: QueryParams
-): Promise<ChatMessage | undefined> {
-  return msgQueue.add(async () =>
-    resolveDb(params)
-      .chatMessage.where({
-        topicId,
-        id: messageId,
-      })
-      .first()
-  )
+export async function getChatMessage(messageId: string, params?: QueryParams): Promise<ChatMessage | undefined> {
+  return msgQueue.add(async () => resolveDb(params).chatMessage.where("id").equals(messageId).first())
 }
 export async function deleteChatMessage(messageId: string, params?: QueryParams) {
   return msgQueue.add(async () => resolveDb(params).chatMessage.delete(messageId))
@@ -86,7 +76,7 @@ export async function deleteAllMessages(topicId: string, params?: QueryParams) {
 /**
  * @description delete chat group and all messages
  */
-export async function delChatTopic(data: ChatTopic[]) {
+export async function bulkDeleteChatTopic(data: ChatTopic[]) {
   const topicIds = data.map(item => item.id)
   return db.transaction("rw", [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig], async trans => {
     await topicQueue.add(async () => trans.chatTopic.bulkDelete(topicIds))
@@ -116,24 +106,5 @@ export async function getMessagesByFromId(topicId: string, fromId: string, param
   )
 }
 export async function fetch(params?: QueryParams) {
-  const topicList: ChatTopicTree[] = []
-
-  const data = await topicQueue.add(async () => resolveDb(params).chatTopic.toCollection().sortBy("index"))
-  const defaultData = chatTopicDefault()
-  const newDefault: ChatTopic[] = []
-  for (const item of defaultData) {
-    if (!data.find(v => v.id === item.id)) {
-      newDefault.push(item)
-    }
-  }
-  if (newDefault.length) {
-    data.push(...newDefault)
-    await db.chatTopic.bulkAdd(newDefault)
-  }
-  topicList.push(
-    ...assembleTopicTree(data, item => {
-      item.node.requestCount = 0
-    })
-  )
-  return topicList
+  return topicQueue.add(async () => resolveDb(params).chatTopic.toCollection().sortBy("index"))
 }

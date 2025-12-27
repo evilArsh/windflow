@@ -1,4 +1,4 @@
-import { ModelActiveStatus, ModelMeta, ModelType, ProviderMeta } from "@renderer/types"
+import { ModelActiveStatus, ModelMeta, ModelType, ProviderMeta } from "@windflow/core/types"
 import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
 import { ShallowRef } from "vue"

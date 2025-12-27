@@ -16,6 +16,9 @@ class ChatContextImpl implements ChatContextManager {
   #findByTopicMessageId(topicId: string, messageId: string) {
     return this.#ctx.find(ctx => ctx.topicId === topicId && ctx.messageId === messageId)
   }
+  #findAllByTopic(topicId: string) {
+    return this.#ctx.filter(ctx => ctx.topicId === topicId)
+  }
   #getIndex(contextId: string) {
     return this.#ctx.findIndex(ctx => ctx.id === contextId)
   }
@@ -32,6 +35,9 @@ class ChatContextImpl implements ChatContextManager {
   }
   findByTopic(topicId: string, messageId: string): ChatContext | undefined {
     return this.#findByTopicMessageId(topicId, messageId)
+  }
+  findAllByTopic(topicId: string): ChatContext[] | undefined {
+    return this.#findAllByTopic(topicId)
   }
   has(contextId: string) {
     return this.#ctx.findIndex(ctx => ctx.id === contextId) > -1

@@ -3,9 +3,27 @@
   "version": "0.0.1",
   "description": "",
   "type": "module",
-  "scripts": {},
-  "exports": {},
+  "scripts": {
+    "build": "rollup --config=rollup.config.ts --configPlugin=rollup-plugin-esbuild"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./*": "./dist/*"
+  },
+  "files": [
+    "*.d.mts",
+    "*.js",
+    "*.mjs"
+  ],
   "keywords": [],
   "author": "",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@toolmain/shared": "catalog:common",
+    "ajv": "catalog:common",
+    "ajv-errors": "catalog:common"
+  }
 }

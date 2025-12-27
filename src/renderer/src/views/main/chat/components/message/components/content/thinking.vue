@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Message } from "@renderer/types"
+import { Message } from "@windflow/core/types"
 import Markdown from "@renderer/components/Markdown/index.vue"
 import { Spinner } from "@toolmain/components"
 

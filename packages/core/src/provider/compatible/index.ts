@@ -11,7 +11,7 @@ import {
   MediaRequest,
   BeforeRequestCallback,
 } from "@windflow/core/types"
-import { createInstance } from "../http"
+import { createInstance } from "../utils"
 import { useSingleLLMChat, makeRequest } from "./request"
 import { mergeRequestConfig, generateSummaryText } from "./utils"
 

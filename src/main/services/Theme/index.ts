@@ -1,7 +1,6 @@
 import { useStore } from "@main/hooks/useStore"
 import { ServiceCore } from "@main/types"
-import { IpcChannel, ThemeService } from "@shared/service"
-import { Theme } from "@shared/types/theme"
+import { IpcChannel, ThemeService, Theme } from "@windflow/shared"
 import { BrowserWindow, ipcMain, nativeTheme } from "electron"
 
 export const DarkOverlay: Electron.TitleBarOverlayOptions = {

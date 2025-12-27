@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ChatMessageTree, ChatTopic } from "@renderer/types/chat"
+import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 
 import { errorToText, CallBackFn, code1xx, msg, isArrayLength } from "@toolmain/shared"
-import { Role } from "@renderer/types"
+import { Role } from "@windflow/core/types"
 const props = defineProps<{
   message: ChatMessageTree
   topic: ChatTopic
@@ -34,12 +34,12 @@ const isFinish = computed(() => {
     : message.value.node.finish
 })
 function terminate(done: CallBackFn) {
-  chatStore.terminate(topic.value, message.value)
+  chatStore.terminate(topic.value.id, message.value.id)
   done()
 }
 async function restart(done: CallBackFn) {
   try {
-    await chatStore.restart(topic.value, message.value)
+    await chatStore.restart(topic.value.id, message.value.id)
     await chatStore.updateChatTopic(topic.value)
     done()
   } catch (error) {

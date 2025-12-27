@@ -1,4 +1,4 @@
-import { SettingKeys } from "@renderer/types"
+import { SettingKeys } from "@windflow/core/types"
 import { useTree } from "./hooks/useTree"
 import { useDlg } from "./hooks/useDlg"
 import { useMenu } from "./hooks/useMenu"

@@ -1,4 +1,4 @@
-import { ChatTopicTree } from "@renderer/types"
+import { ChatTopicTree } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
 import { toNumber, CallBackFn, errorToText } from "@toolmain/shared"
 import { TreeInstance, ElMessage } from "element-plus"
@@ -7,6 +7,7 @@ import { Reactive } from "vue"
 import { useDlg } from "./useDlg"
 import { useTree } from "./useTree"
 import { useTask } from "@renderer/hooks/useTask"
+import { getAllNodes } from "@renderer/store/chat/utils"
 
 export const useMenu = (
   editTopicRef: Readonly<Ref<{ bounding: () => DOMRect | undefined } | null>>,
@@ -35,7 +36,7 @@ export const useMenu = (
           ElMessage.warning(t("chat.topicSwitching"))
           return
         }
-        const nodes = chatStore.utils.getAllNodes(treeCtx.selectedTopic.value)
+        const nodes = getAllNodes(treeCtx.selectedTopic.value)
         for (const item of nodes) {
           if (window.api) {
             await window.api.mcp.stopTopicServers(item.id)
@@ -43,7 +44,7 @@ export const useMenu = (
           // 删除展开的节点key
           treeCtx.removeDefaultExpandedKeys(item.id)
           // 终止请求
-          chatStore.terminateAll(item)
+          chatStore.terminateAll(item.id, true)
           // 删除消息缓存
           chatStore.cacheRemoveChatMessage(item.id)
         }

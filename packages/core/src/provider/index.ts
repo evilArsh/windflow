@@ -3,6 +3,8 @@ import { DeepSeek } from "./deepseek"
 import { SiliconFlow } from "./siliconflow"
 import { Volcengine } from "./volcengine"
 import { OpenAI } from "./openai/index"
+export * from "./utils"
+export * from "./compatible/utils"
 class ProviderManagerImpl implements ProviderManager {
   #providers: Map<string, Provider>
   constructor() {

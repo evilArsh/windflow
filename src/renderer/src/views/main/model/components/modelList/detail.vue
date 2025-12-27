@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ModelMeta, ModelType } from "@renderer/types"
+import { ModelMeta, ModelType } from "@windflow/core/types"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, cloneDeep, isArrayLength } from "@toolmain/shared"
 import { Arrayable } from "@vueuse/core"

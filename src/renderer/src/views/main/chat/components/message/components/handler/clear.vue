@@ -1,9 +1,11 @@
 <script lang="ts" setup>
-import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@renderer/types"
+import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@windflow/core/types"
 import { errorToText, isArrayLength, msg, useShortcut } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
+import { createChatMessage } from "@windflow/core/message"
+import { findMaxMessageIndex } from "@renderer/store/chat/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -11,9 +13,9 @@ const emit = defineEmits<{
   contextClean: []
 }>()
 const chatStore = useChatStore()
-const { chatMessage } = storeToRefs(chatStore)
+const { chatMessageList } = storeToRefs(chatStore)
 const topic = computed(() => props.topic)
-const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
+const messages = computed<ChatMessageTree[] | undefined>(() => chatMessageList.value[props.topic.id])
 
 const shortcut = useShortcut()
 const { t } = useI18n()
@@ -49,17 +51,15 @@ const handler = {
       if (active) {
         if (isArrayLength(messages.value)) {
           if (messages.value[0].node.contextFlag === ChatMessageContextFlag.BOUNDARY) {
-            await chatStore.deleteMessage(topic.value, messages.value[0])
+            await chatStore.deleteMessage(messages.value[0])
           } else {
-            const newMessage = chatStore.utils.newChatMessage(
-              props.topic.id,
-              chatStore.utils.findMaxMessageIndex(messages.value),
-              {
-                contextFlag: ChatMessageContextFlag.BOUNDARY,
-                content: { role: "", content: "" },
-              }
-            )
-            await chatStore.addChatMessage(newMessage, 0)
+            const newMessage = createChatMessage({
+              topicId: props.topic.id,
+              index: findMaxMessageIndex(messages.value),
+              contextFlag: ChatMessageContextFlag.BOUNDARY,
+              content: { role: "", content: "" },
+            })
+            await chatStore.addChatMessage(newMessage)
           }
           emit("contextClean")
         }

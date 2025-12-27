@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPToolDetail } from "@shared/types/mcp"
+import { MCPToolDetail } from "@windflow/shared"
 import { isArray } from "@toolmain/shared"
 
 const props = defineProps<{ data: MCPToolDetail }>()

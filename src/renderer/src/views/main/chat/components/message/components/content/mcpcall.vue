@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LLMToolCall, Message } from "@renderer/types"
+import { LLMToolCall, Message } from "@windflow/core/types"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
 import { cloneDeep, isArray } from "@toolmain/shared"

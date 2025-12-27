@@ -2,10 +2,11 @@
 import useModelStore from "@renderer/store/model"
 import Shell from "./shell.vue"
 import { storeToRefs } from "pinia"
-import type { ModelMeta, ChatTopic } from "@renderer/types"
+import type { ModelMeta, ChatTopic } from "@windflow/core/types"
 import useProviderStore from "@renderer/store/provider"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { isArrayLength } from "@toolmain/shared"
+import { isASRType, isChatReasonerType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()
@@ -24,14 +25,9 @@ const activeModels = computed<Record<string, ModelMeta[]>>(() =>
       v =>
         v.active &&
         isArrayLength(v.type) &&
-        (modelStore.utils.isChatReasonerType(v) ||
-          modelStore.utils.isASRType(v) ||
-          modelStore.utils.isChatType(v) ||
-          modelStore.utils.isImageType(v) ||
-          modelStore.utils.isTTSType(v) ||
-          modelStore.utils.isVideoType(v))
+        (isChatReasonerType(v) || isASRType(v) || isChatType(v) || isImageType(v) || isTTSType(v) || isVideoType(v))
     )
-    .reduce((acc, cur) => {
+    .reduce<Record<string, ModelMeta[]>>((acc, cur) => {
       if (acc[cur.providerName]) {
         acc[cur.providerName].push(cur)
       } else {

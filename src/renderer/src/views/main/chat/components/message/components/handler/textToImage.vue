@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { ChatTTIConfig, ChatTopic, SettingKeys, TTIConfig } from "@renderer/types"
+import { ChatTTIConfig, ChatTopic, SettingKeys, TTIConfig } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 import useSettings from "@renderer/store/settings"
 import Chance from "chance"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
-import { defaultTTIConfig } from "@renderer/store/chat/default"
 import { cloneDeep, errorToText, msg } from "@toolmain/shared"
 import { Spinner } from "@toolmain/components"
 import Shell from "./shell.vue"
+import { defaultTTIConfig } from "@windflow/core/storage"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -54,9 +54,7 @@ const useEvent = () => {
       } else if (cmd === "coverGlobal") {
         // cover global config
         if (!config.value) return
-        const copyData = cloneDeep(config.value) as TTIConfig
-        delete copyData["id"]
-        delete copyData["topicId"]
+        const { id, topicId, ...copyData } = cloneDeep(config.value)
         await settingsStore.update({
           id: SettingKeys.ChatTextToImageConfig,
           value: copyData,

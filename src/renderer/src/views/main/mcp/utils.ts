@@ -5,9 +5,9 @@ export function envToRecord(env: unknown): Record<string, string | number> {
     return env
       .split(/[\n\s]+/)
       .filter(Boolean)
-      .reduce((prev, cur) => {
+      .reduce<Record<string, string | number>>((prev, cur) => {
         const [key, value] = cur.split("=")
-        if (key && value) {
+        if (!isUndefined(key) && !isUndefined(value)) {
           prev[key] = value
         }
         return prev

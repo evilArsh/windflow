@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ModelMeta, ModelType } from "@renderer/types"
+import { ModelMeta, ModelType } from "@windflow/core/types"
 import flashlight from "~icons/fluent-emoji-flat/flashlight"
 import speech from "~icons/twemoji/speech-balloon"
 import gear from "~icons/fluent-emoji-flat/gear"

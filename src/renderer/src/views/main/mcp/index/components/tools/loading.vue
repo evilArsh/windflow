@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPServerParam } from "@shared/types/mcp"
+import { MCPServerParam } from "@windflow/shared"
 import { Spinner } from "@toolmain/components"
 const { t } = useI18n()
 defineProps<{ server: MCPServerParam }>()

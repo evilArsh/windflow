@@ -4,7 +4,7 @@ import ContentBox from "@renderer/components/ContentBox/index.vue"
 import IBook from "~icons/material-symbols/book-4"
 import IBookmark from "~icons/material-symbols/bookmark-stacks"
 import { type Component } from "vue"
-import { SettingKeys } from "@renderer/types"
+import { SettingKeys } from "@windflow/core/types"
 import { useI18nWatch, useShortcut } from "@toolmain/shared"
 const { t } = useI18n()
 

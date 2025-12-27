@@ -12,7 +12,8 @@ export default mergeConfig(
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
         { find: "@preload", replacement: path.resolve("src/preload") },
-        { find: "@shared", replacement: path.resolve("src/shared") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
+        { find: "@windflow/core", replacement: path.resolve("packages/core") },
         { find: "@renderer", replacement: path.resolve("src/renderer/src") },
       ],
     },
@@ -46,7 +47,7 @@ export default mergeConfig(
           test: {
             name: "unit-node",
             environment: "node",
-            setupFiles: [path.resolve(import.meta.dirname, "src/.test/setup-node.ts")],
+            setupFiles: [path.resolve(import.meta.dirname, "src/tests/setup-node.ts")],
             include: ["src/main/**/*.{test,spec}.ts", "src/shared/**/*.{test,spec}.ts"],
             server: {
               deps: {

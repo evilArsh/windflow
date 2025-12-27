@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageTree } from "@renderer/types"
+import { ChatMessageTree } from "@windflow/core/types"
 const props = defineProps<{
   message: ChatMessageTree
 }>()

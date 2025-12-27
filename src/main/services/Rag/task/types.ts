@@ -1,4 +1,4 @@
-import { RAGFileStatus, RAGLocalFileInfo, RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileInfo, RAGEmbeddingConfig, RAGFile, RAGLocalFileMeta } from "@windflow/shared"
 import { HttpStatusCode } from "@toolmain/shared"
 
 export interface TaskInfoStatus {

@@ -1,5 +1,5 @@
 import path from "node:path"
-import { defineConfig, externalizeDepsPlugin } from "electron-vite"
+import { defineConfig } from "electron-vite"
 import VueDevTools from "vite-plugin-vue-devtools"
 import vue from "@vitejs/plugin-vue"
 import Unocss from "unocss/vite"
@@ -12,7 +12,6 @@ import { ElementPlusResolver } from "unplugin-vue-components/resolvers"
 import { visualizer } from "rollup-plugin-visualizer"
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
     optimizeDeps: {
       exclude: ["@lancedb/lancedb"],
     },
@@ -20,23 +19,26 @@ export default defineConfig({
       rollupOptions: {
         external: ["@lancedb/lancedb"],
       },
+      externalizeDeps: true,
     },
     resolve: {
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
         { find: "@preload", replacement: path.resolve("src/preload") },
-        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared/src") },
       ],
     },
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
     resolve: {
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
         { find: "@preload", replacement: path.resolve("src/preload") },
-        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared/src") },
       ],
+    },
+    build: {
+      externalizeDeps: true,
     },
   },
   renderer: {
@@ -52,8 +54,8 @@ export default defineConfig({
     resolve: {
       alias: [
         { find: "@renderer", replacement: path.resolve("src/renderer/src") },
-        { find: "@windflow/shared", replacement: path.resolve("packages/shared") },
-        { find: "@windflow/core", replacement: path.resolve("packages/core") },
+        { find: "@windflow/shared", replacement: path.resolve("packages/shared/src") },
+        { find: "@windflow/core", replacement: path.resolve("packages/core/src") },
       ],
     },
     plugins: [

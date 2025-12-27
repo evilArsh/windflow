@@ -1,4 +1,4 @@
-import { RAGFileStatus, RAGLocalFileMeta } from "@shared/types/rag"
+import { RAGFileStatus, RAGLocalFileMeta } from "@windflow/shared"
 import PQueue from "p-queue"
 import { TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import { errorToText } from "@toolmain/shared"

@@ -1,5 +1,5 @@
 import { Message, LLMToolCall, Role, LLMToolCallRequest } from "@windflow/core/types"
-import { normalizetoolCallArgs } from "@windflow/shared/mcp"
+import { normalizetoolCallArgs } from "@windflow/shared"
 import json5 from "json5"
 export async function loadMCPTools(mcpServersIds: string[]): Promise<LLMToolCallRequest[]> {
   if (!window.api) {

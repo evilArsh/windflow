@@ -1,26 +1,23 @@
 import { defineStore } from "pinia"
-import { Knowledge, KnowledgeEmbeddingPair } from "@renderer/types/knowledge"
-import { useData } from "../../core/storage/knowledge"
+import { Knowledge } from "@windflow/core/types"
 import useRagFilesStore from "../ragFiles/index"
 import useEmbeddingStore from "@renderer/store/embedding"
-import { db } from "@renderer/db"
-import { cloneDeep, code5xx, isUndefined, msgError, uniqueId } from "@toolmain/shared"
-import { EventKey } from "@shared/types/eventbus"
-import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo } from "@shared/types/rag"
+import { storage, withTransaction } from "@windflow/core/storage"
+import { cloneDeep, code5xx, msgError, uniqueId } from "@toolmain/shared"
+import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo, EventKey } from "@windflow/shared"
 export default defineStore("knowledge", () => {
   const ragFilesStore = useRagFilesStore()
   const embeddingStore = useEmbeddingStore()
 
   const knowledges = reactive<Knowledge[]>([])
   const { t } = useI18n()
-  const api = useData()
   /**
    * remove knowledge and all contents related to it
    */
   async function remove(knowledgeId: string) {
-    await db.transaction("rw", db.knowledge, db.ragFiles, async trans => {
-      await trans.knowledge.delete(knowledgeId)
-      await trans.ragFiles.where("topicId").equals(knowledgeId).delete()
+    await withTransaction("rw", ["knowledge", "ragFiles"], async tx => {
+      await storage.knowledge.remove(knowledgeId, { transaction: tx })
+      await storage.ragFiles.removeByTopicId(knowledgeId, { transaction: tx })
     })
     if (window.api) {
       const res = await window.api.rag.removeByTopicId(knowledgeId)
@@ -38,23 +35,18 @@ export default defineStore("knowledge", () => {
    * find all knowledges which using `embedding`
    */
   async function findByEmbeddingId(embedding: string) {
-    return api.findByEmbeddingId(embedding)
+    return storage.knowledge.findByEmbeddingId(embedding)
   }
   async function update(data: Knowledge) {
-    return api.update(data)
+    return storage.knowledge.put(data)
   }
   async function add(data: Knowledge) {
-    await api.add(data)
+    await storage.knowledge.add(data)
     knowledges.push(cloneDeep(data))
   }
   async function get(knowledgeId: string) {
     const knowledge = knowledges.find(item => item.id === knowledgeId)
-    return knowledge ?? (await api.get(knowledgeId))
-  }
-  async function gets(knowledgeIds: string[]): Promise<Array<Knowledge>> {
-    const knowledge = knowledges.filter(item => knowledgeIds.includes(item.id))
-    if (knowledge.length !== knowledgeIds.length) return (await api.gets(knowledgeIds)).filter(v => !isUndefined(v))
-    return knowledge
+    return knowledge ?? (await storage.knowledge.get(knowledgeId))
   }
   /**
    * find embedding config which was binded by `knowledgeId`
@@ -117,7 +109,7 @@ export default defineStore("knowledge", () => {
    */
   async function init() {
     knowledges.length = 0
-    const data = await api.fetch()
+    const data = await storage.knowledge.fetch()
     data.forEach(item => {
       knowledges.push(item)
     })
@@ -136,7 +128,6 @@ export default defineStore("knowledge", () => {
     remove,
     findByEmbeddingId,
     getEmbeddingConfigById,
-    getEmbeddingConfigByIds,
     update,
     add,
     get,

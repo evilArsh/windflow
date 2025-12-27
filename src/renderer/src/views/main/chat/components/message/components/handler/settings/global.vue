@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { ChatTopic, SettingKeys } from "@renderer/types"
+import { ChatTopic, SettingKeys } from "@windflow/core/types"
 defineProps<{
   topic: ChatTopic
 }>()

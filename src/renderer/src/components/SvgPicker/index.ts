@@ -11,7 +11,7 @@ import type { Component } from "vue"
 import { getIcons, getIconData, iconToSVG, iconToHTML } from "@iconify/utils"
 
 export const getSubIconSet = (iconMap: IconifyJSON, allIconKeys: string[], from: number, length: number) => {
-  return getIcons(iconMap as IconifyJSON, allIconKeys.slice(from, from + length))
+  return getIcons(iconMap, allIconKeys.slice(from, from + length))
 }
 export const searchIcon = (iconMap: IconifyJSON, allIconKeys: string[], keyword?: string) => {
   if (!keyword) return []

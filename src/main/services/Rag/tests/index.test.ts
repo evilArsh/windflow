@@ -3,8 +3,15 @@ import path from "node:path"
 import { RAGServiceImpl } from ".."
 import { uniqueId } from "@toolmain/shared"
 import { EventBusImpl } from "@main/services/EventBus"
-import { EventKey, RAGFileProcessStatusEvent } from "@shared/types/eventbus"
-import { RAGEmbeddingConfig, RAGFile, RAGFileStatus, RAGLocalFileInfo, RAGLocalFileMeta } from "@shared/types/rag"
+import {
+  EventKey,
+  RAGFileProcessStatusEvent,
+  RAGEmbeddingConfig,
+  RAGFile,
+  RAGFileStatus,
+  RAGLocalFileInfo,
+  RAGLocalFileMeta,
+} from "@windflow/shared"
 import fs from "node:fs"
 import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"
@@ -317,7 +324,7 @@ describe("main/src/Rag", () => {
     const s = createProcessStatus()
     const data: RAGLocalFileInfo = {
       id: uniqueId(),
-      path: "/src/main/services/Rag/.test/test1.docx",
+      path: "/src/main/services/Rag/tests/test1.docx",
       topicId: "ProcessStatus",
       fileName: "test1.docx",
       fileSize: 27204,

@@ -1,19 +1,13 @@
-import { ModelMeta } from "@renderer/types"
-import { providerSvgIconKey } from "@renderer/app/hooks/useSvgIcon"
+import { ModelMeta } from "@windflow/core/types"
 import { defineStore } from "pinia"
-import { useData } from "./api"
-import { useUtils } from "./utils"
-import { IconifyJSON } from "@iconify/types"
-import { modelsDefault } from "./default"
-import { db } from "@renderer/db"
 import { getIconHTML } from "@renderer/components/SvgPicker"
+import { modelsDefault, storage } from "@windflow/core/storage"
+import { useSvgIcon } from "@renderer/hooks/useSvgIcon"
 export default defineStore("model", () => {
-  const providerSvgIcon = inject(providerSvgIconKey)
+  const { providerSvgIcon } = useSvgIcon()
   const models = reactive<ModelMeta[]>([]) // 所有模型
   const cache: Map<string, ModelMeta> = new Map() // 检索缓存
-  const api = useData()
-  const utils = useUtils()
-  const defaultLogo = getIconHTML(providerSvgIcon as IconifyJSON, "user")
+  const defaultLogo = getIconHTML(providerSvgIcon, "user")
 
   function setModel(newModel: ModelMeta) {
     cache.set(newModel.id, newModel)
@@ -36,14 +30,14 @@ export default defineStore("model", () => {
   function getModelLogo(meta?: ModelMeta) {
     return meta
       ? meta.icon ||
-          getIconHTML(providerSvgIcon as IconifyJSON, meta.subProviderName.toLowerCase()) ||
-          getIconHTML(providerSvgIcon as IconifyJSON, meta.providerName.toLowerCase()) ||
+          getIconHTML(providerSvgIcon, meta.subProviderName.toLowerCase()) ||
+          getIconHTML(providerSvgIcon, meta.providerName.toLowerCase()) ||
           defaultLogo
       : defaultLogo
   }
   async function refresh(metas: ModelMeta[]) {
     const ids = metas.map(item => item.id)
-    const existingRecords = await db.model.where("id").anyOf(ids).toArray()
+    const existingRecords = await storage.model.anyOf(ids)
     const existingMap = new Map(existingRecords.map(record => [record.id, record]))
     const recordsToWrite = metas.map(newItem => {
       const existing = existingMap.get(newItem.id)
@@ -57,18 +51,18 @@ export default defineStore("model", () => {
       }
       return newItem
     })
-    await db.model.bulkPut(recordsToWrite)
+    await storage.model.bulkPut(recordsToWrite)
   }
   async function put(data: ModelMeta) {
-    await api.put(data)
+    await storage.model.put(data)
     const current = find(data.id)
     current && Object.assign(current, data)
   }
   async function init() {
     models.length = 0
     cache.clear()
-    const data = await api.fetch()
-    const defaultData = modelsDefault(providerSvgIcon as IconifyJSON)
+    const data = await storage.model.fetch()
+    const defaultData = modelsDefault(providerSvgIcon)
     data.forEach(v => {
       if (!v.icon) {
         v.icon = getModelLogo(v)
@@ -78,14 +72,13 @@ export default defineStore("model", () => {
     for (const v of defaultData) {
       if (!models.find(model => model.id === v.id)) {
         models.push(v)
-        await api.add(v)
+        await storage.model.add(v)
       }
     }
   }
 
   return {
     models,
-    utils,
     init,
     setModel,
     find,
