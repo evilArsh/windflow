@@ -41,11 +41,7 @@ export class MessageManager {
     const topic = await storage.chat.getTopic(topicId)
     if (!topic) return
     handler?.terminate()
-    const messages = (await storage.chat.getChatMessages(topicId)).filter(
-      item =>
-        item.type === ChatMessageType.TEXT &&
-        (item.contextFlag === ChatMessageContextFlag.PART || item.contextFlag === ChatMessageContextFlag.BOUNDARY)
-    )
+    const messages = await storage.chat.getChatMessages(topicId)
     const rawContexts = getIsolatedMessages(messages, messageId)
     const contexts = getMessageContexts(topic, rawContexts)
     message.status = 100
@@ -128,7 +124,7 @@ export class MessageManager {
         }
         return undefined
       })
-      .filter(v => !!v)
+      .filter(v => !isUndefined(v))
   }
   async #createResponseMessages(topicId: string, userMessageId: string, modelMetas: ModelMeta[]) {
     const reqInfo: Array<{
@@ -138,6 +134,7 @@ export class MessageManager {
     const providerMetas = new Map(
       (await storage.provider.bulkGet(modelMetas.map(m => m.providerName))).map((item, i) => [modelMetas[i].id, item])
     )
+    // the first text model message as the default llm context
     const contextIndex = modelMetas.findIndex(m => getMessageType(m) === ChatMessageType.TEXT)
     for (let i = 0; i < modelMetas.length; i++) {
       const modelMeta = modelMetas[i]

@@ -101,7 +101,7 @@ export function getMessageContexts(topic: ChatTopic, rawMessages: ChatMessage[])
     current = messages.pop()
     lastCtx = getLastContext(contexts)
     if (!current) {
-      if (lastCtx?.content.role !== Role.User) {
+      if (lastCtx && lastCtx.content.role !== Role.User) {
         contexts.shift()
       } else if (!newContexts) {
         newContexts = contexts.slice(Math.max(0, contexts.length - maxContextLength)).map(ctx => ({
@@ -113,7 +113,7 @@ export function getMessageContexts(topic: ChatTopic, rawMessages: ChatMessage[])
         }))
       } else {
         lastMsg = getLastContext(newContexts)
-        if (lastMsg?.role !== Role.User) {
+        if (lastMsg && lastMsg.role !== Role.User) {
           newContexts.shift()
         } else {
           break

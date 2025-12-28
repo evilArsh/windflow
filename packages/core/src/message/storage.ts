@@ -2,6 +2,10 @@ import { ChatMessage } from "@windflow/core/types"
 import { storage, withTransaction } from "@windflow/core/storage"
 import { isUndefined } from "@toolmain/shared"
 const MessageIndexStep = 100
+
+/**
+ * save messages to database, besides set `index` of each message
+ */
 export async function saveNewMessages(messages: ChatMessage[]) {
   return withTransaction("rw", ["chatMessage"], async t => {
     const messagesByTopic = messages.reduce<Record<string, ChatMessage[]>>((acc, message) => {

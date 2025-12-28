@@ -58,7 +58,7 @@ export default defineStore("chat_topic", () => {
             const vId = `${VirtualNodeIdPrefix}${message.fromId}`
             let vNode = chatMessageMap.get(vId)
             if (vNode) {
-              vNode.children.unshift(vNode)
+              vNode.children.push(cacheMsg)
             } else {
               vNode = reactive(
                 wrapMessage(
@@ -69,6 +69,7 @@ export default defineStore("chat_topic", () => {
               )
               chatMessage[message.topicId].unshift(vNode)
               chatMessageMap.set(vId, vNode)
+              vNode.children.push(cacheMsg)
             }
           } else {
             // just fucking insert it because of ordered
@@ -88,7 +89,6 @@ export default defineStore("chat_topic", () => {
       topic.node.requestCount = Math.max(0, topic.node.requestCount - 1)
       cacheMsg.node.finish = true
     }
-    // topic.requestCount = Math.max(0, topic.requestCount - 1)
     // if (message.content.children?.some(child => !!child.reasoning_content)) {
     //   if (!modelsStore.utils.isChatReasonerType(model)) {
     //     model.type.push(ModelType.ChatReasoner)
@@ -126,6 +126,7 @@ export default defineStore("chat_topic", () => {
       const messagesData = await storage.chat.getChatMessages(topic.id)
       chatMessage[topic.id] = assembleMessageTree(messagesData, message => {
         const m = reactive<ChatMessageTree>(wrapMessage(message))
+        m.node.finish = true
         chatMessageMap.set(message.id, m)
         return m
       })

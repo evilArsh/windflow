@@ -1,3 +1,4 @@
+import { platform } from "@electron-toolkit/utils"
 import { useStore } from "@main/hooks/useStore"
 import { ServiceCore } from "@main/types"
 import { IpcChannel, ThemeService, Theme } from "@windflow/shared"
@@ -27,7 +28,9 @@ export class ThemeServiceImpl implements ThemeService, ServiceCore {
   #theme: Theme | undefined
   #store = useStore()
   #onThemeUpdated = () => {
-    this.#mainWindow.setTitleBarOverlay(autoTitleBarOverlay())
+    if (!platform.isMacOS) {
+      this.#mainWindow.setTitleBarOverlay(autoTitleBarOverlay())
+    }
     this.#mainWindow.setBackgroundColor(autoBackgroundColor())
   }
   #init() {
