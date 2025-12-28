@@ -79,12 +79,7 @@ export default defineStore("chat_topic", () => {
         chatMessage[message.topicId].push(cacheMsg)
       }
     }
-    const { completionTokens, promptTokens, status, content, msg } = message
-    cacheMsg.node.completionTokens = completionTokens
-    cacheMsg.node.promptTokens = promptTokens
-    cacheMsg.node.status = status
-    cacheMsg.node.content = content
-    cacheMsg.node.msg = msg
+    Object.assign(cacheMsg.node, message)
     if (code1xx(message.status)) {
       cacheMsg.node.finish = false
     } else if (message.status == 206) {
@@ -170,7 +165,7 @@ export default defineStore("chat_topic", () => {
    * @description 删除一条消息列表的消息
    */
   async function deleteMessage(message: ChatMessageTree) {
-    return withTransaction("rw", ["chatTopic"], async tx => {
+    return withTransaction("rw", ["chatMessage"], async tx => {
       const all = [message, ...message.children]
       all.forEach(child => {
         const msg = unwrapMessage(child)
