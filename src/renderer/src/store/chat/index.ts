@@ -51,14 +51,14 @@ export default defineStore("chat_topic", () => {
         const fromNode = chatMessageMap.get(message.fromId)
         // from node does not exist, jut append to end
         if (!fromNode) {
-          chatMessage[message.topicId].push(cacheMsg)
+          chatMessage[message.topicId].unshift(cacheMsg)
         } else {
           // multiple models request
           if (isArray(fromNode.node.type)) {
             const vId = `${VirtualNodeIdPrefix}${message.fromId}`
             let vNode = chatMessageMap.get(vId)
             if (vNode) {
-              vNode.children.push(vNode)
+              vNode.children.unshift(vNode)
             } else {
               vNode = reactive(
                 wrapMessage(
@@ -67,16 +67,16 @@ export default defineStore("chat_topic", () => {
                   })
                 )
               )
-              chatMessage[message.topicId].push(vNode)
+              chatMessage[message.topicId].unshift(vNode)
               chatMessageMap.set(vId, vNode)
             }
           } else {
             // just fucking insert it because of ordered
-            chatMessage[message.topicId].push(cacheMsg)
+            chatMessage[message.topicId].unshift(cacheMsg)
           }
         }
       } else {
-        chatMessage[message.topicId].push(cacheMsg)
+        chatMessage[message.topicId].unshift(cacheMsg)
       }
     }
     Object.assign(cacheMsg.node, message)

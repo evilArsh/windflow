@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
       <slot v-if="custom"></slot>
       <div v-else-if="chatMode" class="scroll-bar">
         <div ref="scroll" class="scroll-content">
-          <div class="w-100% flex-1 flex flex-col-reverse justify-end">
+          <div class="w-full flex-1 flex flex-col-reverse justify-end">
             <slot></slot>
           </div>
         </div>
@@ -138,7 +138,6 @@ onBeforeUnmount(() => {
   flex: 1;
   position: relative;
   display: flex;
-  flex-direction: column-reverse;
   width: 100%;
 }
 .scroll-content {

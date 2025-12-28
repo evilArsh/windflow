@@ -44,16 +44,16 @@ export const assembleMessageTree = (
         if (!parent) {
           parent = cb(createChatMessage({ id: vId }))
           maps[vId] = parent
-          res.push(parent)
+          res.unshift(parent)
         }
         current.parentId = parent.id
-        parent.children.push(current)
+        parent.children.unshift(current)
         parent.children.sort((a, b) => a.node.index - b.node.index)
       } else {
-        res.push(maps[item.id])
+        res.unshift(maps[item.id])
       }
     } else {
-      res.push(maps[item.id])
+      res.unshift(maps[item.id])
     }
   })
   return res
