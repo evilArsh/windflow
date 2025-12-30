@@ -1,47 +1,59 @@
 appId: com.arch.windflow
-productName: WindFlow
+productName: windflow
 directories:
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!**/.husky/*'
-  - '!src/*'
-  - '!demo/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!*.config.{js,ts,mjs,cjs}'
-  - '!electron-builder.yml'
-  - '!{.editorconfig,.eslintrc-auto-import.json,.lintstagedrc.mjs,components.d.ts,eslint.config.mjs,stats.html}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - "!**/.vscode/*"
+  - "!**/.husky/*"
+  - "!src/*"
+  - "!demo/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!*.config.{js,ts,mjs,cjs}"
+  - "!electron-builder.yml"
+  - "!{.editorconfig,.eslintrc-auto-import.json,.lintstagedrc.mjs,components.d.ts,eslint.config.mjs,stats.html}"
+  - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
 asarUnpack:
   - resources/**
 win:
   executableName: windflow
+  target:
+    - target: portable
+    - target: nsis
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${productName}-windows-${version}-${arch}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  allowToChangeInstallationDirectory: true
+  oneClick: false
+  buildUniversalInstaller: false
+portable:
+  artifactName: ${productName}-windows-${version}-${arch}-portable.${ext}
+  useZip: true
 mac:
   entitlementsInherit: build/entitlements.mac.plist
+  notarize: false
+  artifactName: ${productName}-macos-${version}-${arch}.${ext}
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${name}-${version}.${ext}
+  target:
+    - target: dmg
+    - target: zip
 linux:
+  artifactName: ${productName}-linux-${version}-${arch}.${ext}
   target:
     - AppImage
-    - snap
     - deb
   maintainer: electronjs.org
   category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
+  desktop:
+    entry:
+      StartupWMClass: windflow
 npmRebuild: false
 publish:
   provider: generic

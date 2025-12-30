@@ -24,7 +24,7 @@ function urlTransform(value: string) {
 }
 
 export const rehypeUrlAttributes = () => {
-  return tree => {
+  return (tree: any) => {
     visit(tree, (node, index, parent) => {
       if (isNumber(index) && parent) {
         // ! eg:<img >
@@ -51,7 +51,7 @@ export const rehypeUrlAttributes = () => {
 }
 // --- rehypeHrToBr
 export const rehypeHrToBr = () => {
-  return tree => {
+  return (tree: any) => {
     visit(tree, "element", (node, index, parent) => {
       if (node.tagName === "hr") {
         parent.children.splice(index, 1, {

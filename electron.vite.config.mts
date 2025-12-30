@@ -91,7 +91,7 @@ export default defineConfig({
         globs: ["./src/renderer/src/components/*/index.vue", "./src/components/*/index.vue"],
       }),
       visualizer({
-        open: true,
+        open: false,
         gzipSize: true,
         brotliSize: true,
       }),

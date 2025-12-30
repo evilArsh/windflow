@@ -1,7 +1,7 @@
 import type { InjectionKey, Ref } from "vue"
 import { createApp, defineComponent, h, provide, shallowRef } from "vue"
 import { createPinia } from "pinia"
-import useSvgIcon from "../renderer/src/app/hooks/useSvgIcon"
+import { useSvgIcon } from "../renderer/src/app/hooks/useSvgIcon"
 // import router from "../renderer/src/routes/index"
 // import useI18n from "../renderer/src/app/hooks/useI18n"
 // import useSize from "../renderer/src/app/hooks//useSize"

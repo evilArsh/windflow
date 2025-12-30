@@ -132,8 +132,9 @@ selenium-debug.log
 # local env files
 .env.local
 .env.*.local
-.eslintrc-auto-import.json
-auto-imports.d.ts
-components.d.ts
+# .eslintrc-auto-import.json
+# auto-imports.d.ts
+# components.d.ts
 
 stats.html
+CHANGES.md
