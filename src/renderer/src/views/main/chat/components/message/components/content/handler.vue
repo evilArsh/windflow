@@ -16,7 +16,6 @@ defineEmits<{
 const { t } = useI18n()
 const chatStore = useChatStore()
 
-const topic = computed(() => props.topic)
 const message = computed(() => props.message)
 const isUser = computed(() => props.message.node.content.role === Role.User)
 
@@ -34,13 +33,12 @@ const isFinish = computed(() => {
     : message.value.node.finish
 })
 function terminate(done: CallBackFn) {
-  chatStore.terminate(topic.value.id, message.value.id)
+  chatStore.terminate(message.value.id)
   done()
 }
 async function restart(done: CallBackFn) {
   try {
-    await chatStore.restart(topic.value.id, message.value.id)
-    await chatStore.updateChatTopic(topic.value)
+    await chatStore.restart(message.value.id)
     done()
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
@@ -50,39 +48,16 @@ async function restart(done: CallBackFn) {
 </script>
 <template>
   <div class="flex items-center flex-wrap">
-    <PopConfirm
-      v-if="!isUser"
-      :title="t('chat.terminate')"
-      :confirm-button-text="t('tip.yes')"
-      confirm-button-type="danger"
-      :cancel-button-text="t('btn.cancel')"
-      :disabled="!isProcessing"
-      size="small"
-      :confirm="terminate">
-      <template #reference="{ loading, disabled }">
-        <ContentBox class="m0!" background>
-          <el-button :loading :disabled="!isProcessing || disabled" text size="small" circle plain type="primary">
-            <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
-          </el-button>
-        </ContentBox>
-      </template>
-    </PopConfirm>
-    <PopConfirm
-      :title="t('chat.regenerate')"
-      :confirm-button-text="t('tip.yes')"
-      confirm-button-type="danger"
-      :cancel-button-text="t('btn.cancel')"
-      :disabled="!isFinish"
-      size="small"
-      :confirm="restart">
-      <template #reference="{ loading, disabled }">
-        <ContentBox class="m0!" background>
-          <el-button size="small" :loading :disabled="!isFinish || disabled" circle plain text type="primary">
-            <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
-          </el-button>
-        </ContentBox>
-      </template>
-    </PopConfirm>
+    <ContentBox class="m0!" background>
+      <Button v-if="!isUser" @click="terminate" :disabled="!isProcessing" text size="small" circle plain type="primary">
+        <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
+      </Button>
+    </ContentBox>
+    <ContentBox class="m0!" background>
+      <Button size="small" @click="restart" :disabled="!isFinish" circle plain text type="primary">
+        <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
+      </Button>
+    </ContentBox>
     <ContentBox class="m0!" background>
       <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
         <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>

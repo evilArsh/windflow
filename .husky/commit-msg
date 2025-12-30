@@ -1,1 +1,1 @@
-#npx commitlint --verbose --edit $1
+npx commitlint --verbose --edit $1

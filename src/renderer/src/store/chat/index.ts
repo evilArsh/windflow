@@ -108,11 +108,35 @@ export default defineStore("chat_topic", () => {
   function terminateAll(topicId: string, destroy?: boolean) {
     msgMgr.terminateAll(topicId, destroy)
   }
-  function terminate(topicId: string, messageId: string, destroy?: boolean) {
-    msgMgr.terminate(topicId, messageId, destroy)
+  function terminate(messageId: string, destroy?: boolean) {
+    const wrapMsg = chatMessageMap.get(messageId)
+    if (!wrapMsg) return
+    const msg = unwrapMessage(wrapMsg)
+    msgMgr.terminate(msg.topicId, msg.id, destroy)
+    wrapMsg.children.forEach(m => {
+      const childM = unwrapMessage(m)
+      msgMgr.terminate(childM.topicId, childM.id, destroy)
+    })
   }
-  function restart(topicId: string, messageId: string) {
-    return msgMgr.restart(topicId, messageId)
+  async function restart(messageId: string): Promise<void> {
+    const wrapMsg = chatMessageMap.get(messageId)
+    if (!wrapMsg) return
+    const msg = unwrapMessage(wrapMsg)
+    msgMgr.terminate(msg.topicId, msg.id)
+    wrapMsg.children.forEach(m => {
+      const childM = unwrapMessage(m)
+      msgMgr.terminate(childM.topicId, childM.id)
+    })
+    if (msg.id.startsWith(VirtualNodeIdPrefix)) {
+      await Promise.all(
+        wrapMsg.children.map(m => {
+          const childM = unwrapMessage(m)
+          return msgMgr.restart(childM.topicId, childM.id)
+        })
+      )
+    } else {
+      await msgMgr.restart(msg.topicId, msg.id)
+    }
   }
   function send(topicId: string, content: Content, modelIds: string[]) {
     return msgMgr.send(topicId, content, modelIds)
@@ -231,13 +255,14 @@ export default defineStore("chat_topic", () => {
     topicList.splice(index ?? topicList.length, 0, treeData)
   }
   /**
-   * @param index 插入到缓存中的位置
+   * add a new message to database and modify the `index` value to the maximum value in current `topicId`
+   * @param index postion that inserts to cache array, not database
    */
   async function addChatMessage(msg: ChatMessage, index?: number) {
-    await storage.chat.addChatMessage(msg)
+    await msgMgr.addNewMessages([msg])
     const msgNode = reactive(wrapMessage(msg))
     chatMessageMap.set(msgNode.id, msgNode)
-    chatMessage[msg.topicId].splice(index ?? chatMessage[msg.topicId].length, 0, msgNode)
+    chatMessage[msg.topicId].splice(index ?? 0, 0, msgNode)
   }
   async function updateChatLLMConfig(cnf: ChatLLMConfig) {
     await storage.chat.putChatLLMConfig(cnf)
@@ -291,7 +316,7 @@ export default defineStore("chat_topic", () => {
   return {
     init,
     topicList,
-    chatMessageList: chatMessage,
+    chatMessage,
     chatTTIConfig,
     chatLLMConfig,
     terminateAll,

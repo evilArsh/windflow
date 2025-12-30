@@ -5,7 +5,6 @@ import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { createChatMessage } from "@windflow/core/message"
-import { findMaxMessageIndex } from "@renderer/store/chat/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -13,9 +12,9 @@ const emit = defineEmits<{
   contextClean: []
 }>()
 const chatStore = useChatStore()
-const { chatMessageList } = storeToRefs(chatStore)
+const { chatMessage } = storeToRefs(chatStore)
 const topic = computed(() => props.topic)
-const messages = computed<ChatMessageTree[] | undefined>(() => chatMessageList.value[props.topic.id])
+const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
 
 const shortcut = useShortcut()
 const { t } = useI18n()
@@ -53,13 +52,12 @@ const handler = {
           if (messages.value[0].node.contextFlag === ChatMessageContextFlag.BOUNDARY) {
             await chatStore.deleteMessage(messages.value[0])
           } else {
-            const newMessage = createChatMessage({
-              topicId: props.topic.id,
-              index: findMaxMessageIndex(messages.value),
-              contextFlag: ChatMessageContextFlag.BOUNDARY,
-              content: { role: "", content: "" },
-            })
-            await chatStore.addChatMessage(newMessage)
+            await chatStore.addChatMessage(
+              createChatMessage({
+                topicId: props.topic.id,
+                contextFlag: ChatMessageContextFlag.BOUNDARY,
+              })
+            )
           }
           emit("contextClean")
         }

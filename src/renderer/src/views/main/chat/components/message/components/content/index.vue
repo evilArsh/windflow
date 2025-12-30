@@ -7,13 +7,13 @@ import { useMsgContext } from "../../../../index"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 const chatStore = useChatStore()
-const { chatMessageList } = storeToRefs(chatStore)
+const { chatMessage } = storeToRefs(chatStore)
 
 const props = defineProps<{
   topic: ChatTopic
   context: ReturnType<typeof useMsgContext>
 }>()
-const messages = computed<ChatMessageTree[] | undefined>(() => chatMessageList.value[props.topic.id])
+const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
 </script>
 <template>
   <div v-if="messages" class="flex flex-col-reverse p-1.5rem gap2.5rem">
