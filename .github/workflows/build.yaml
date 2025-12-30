@@ -53,7 +53,7 @@ jobs:
           cache-dependency-path: "pnpm-lock.yaml"
       - name: Install dependencies
         run: |
-          pnpm install -w
+          pnpm install -w --frozen-lockfile
       - name: Build for windows
         if: ${{ startsWith(matrix.platform, 'windows') }}
         run: |
