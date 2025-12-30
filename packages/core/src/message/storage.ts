@@ -6,7 +6,7 @@ const MessageIndexStep = 100
 /**
  * save messages to database, besides set `index` of each message
  */
-export async function saveNewMessages(messages: ChatMessage[]) {
+export async function saveNewMessages(messages: ChatMessage[]): Promise<void> {
   return withTransaction("rw", ["chatMessage"], async t => {
     const messagesByTopic = messages.reduce<Record<string, ChatMessage[]>>((acc, message) => {
       if (!acc[message.topicId]) {
@@ -38,13 +38,13 @@ export async function saveNewMessages(messages: ChatMessage[]) {
   })
 }
 /**
- * insert new messages after `current` message, messages must have the same `topicId` as `current`
+ * insert new messages after `current` message, `messages` must have the same `topicId` as `current`
  */
-export async function insertNewMessages(current: ChatMessage, messages: ChatMessage[]) {
+export async function insertNewMessages(current: ChatMessage, messages: ChatMessage[]): Promise<void> {
   const currentIndex = current.index ?? 0
   const messagesWithIndex = messages.map((message, i) => ({
     ...message,
     index: currentIndex + i + 1,
   }))
-  return storage.chat.bulkAddChatMessage(messagesWithIndex)
+  await storage.chat.bulkAddChatMessage(messagesWithIndex)
 }

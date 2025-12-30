@@ -191,7 +191,7 @@ export class MessageManager {
       topicId,
     })
     const reqInfo = await this.#createResponseMessages(topicId, userMessage.id, modelMetas)
-    await saveNewMessages([userMessage, ...reqInfo.map(i => i.message)])
+    await this.addNewMessages([userMessage, ...reqInfo.map(i => i.message)])
     this.#emitMessage(userMessage)
     const dispatcher = this.#getDispatcher(reqInfo)
     await Promise.all(dispatcher)
@@ -246,7 +246,7 @@ export class MessageManager {
         // all responding msgs were deleted, create new messages
         const modelMetas = (await storage.model.bulkGet(topic.modelIds)).filter(meta => !isUndefined(meta))
         const reqInfo = await this.#createResponseMessages(topicId, currentMsg.id, modelMetas)
-        await insertNewMessages(
+        await this.insertNewMessages(
           currentMsg,
           reqInfo.map(i => i.message)
         )
@@ -298,5 +298,21 @@ export class MessageManager {
     if (isArrayLength(ctx)) {
       ctx.forEach(c => this.terminate(topicId, c.messageId, destroy))
     }
+  }
+  /**
+   * add new messages.
+   * the values of `index` fields of `messages` will be sequentially incremented to the maximum value within each `topicId` group.
+   */
+  addNewMessages(messages: ChatMessage[]): Promise<void> {
+    return saveNewMessages(messages)
+  }
+  /**
+   * insert new messages after `current` message, `messages` must have the same `topicId` as `current`
+   */
+  insertNewMessages(current: ChatMessage, messages: ChatMessage[]): Promise<void> {
+    if (messages.some(m => m.topicId !== current.topicId)) {
+      throw new Error("all messages must have the same topicId as current")
+    }
+    return insertNewMessages(current, messages)
   }
 }
