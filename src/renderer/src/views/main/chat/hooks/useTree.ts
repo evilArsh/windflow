@@ -11,6 +11,7 @@ import useSettingsStore from "@renderer/store/settings"
 import { useThrottleFn } from "@vueuse/core"
 import { cloneTopic, createChatTopic } from "@windflow/core/message"
 import { findMaxTopicIndex } from "@renderer/store/chat/utils"
+import { getDefaultIcon } from "@renderer/components/SvgPicker"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -50,6 +51,7 @@ export const useTree = (
       } else {
         topic = createChatTopic({
           index: findMaxTopicIndex(topicList.value),
+          icon: getDefaultIcon(),
           parentId,
           modelIds: [],
           label: t("chat.addChat"),
