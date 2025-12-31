@@ -1,22 +1,23 @@
-import { SettingKeys } from "@windflow/core/types"
+import { ChatMessage, SettingKeys } from "@windflow/core/types"
 import { useTree } from "./hooks/useTree"
 import { useDlg } from "./hooks/useDlg"
 import { useMenu } from "./hooks/useMenu"
 import useSettingsStore from "@renderer/store/settings"
 import { type ScrollbarInstance } from "element-plus"
 import type { TreeInstance } from "element-plus"
-import { useShortcut, z, CallBackFn } from "@toolmain/shared"
+import { useShortcut, z, CallBackFn, useDialog, cloneDeep } from "@toolmain/shared"
 import { useEventBus } from "@vueuse/core"
 import PQueue from "p-queue"
 import { ScaleConfig, ScaleInstance } from "@toolmain/components"
 import { useTask } from "@renderer/hooks/useTask"
+import { createChatMessage } from "@windflow/core/message"
 
-export const useMsgContext = () => {
+const useMenuToggle = () => {
+  const toggleBus = useEventBus<boolean>("toggle")
+  const showTreeMenu = ref(true) // toggle show left menu
+  const showRightPanel = ref(false) // toggle show right menu
   const settingsStore = useSettingsStore()
   const shortcut = useShortcut()
-  const toggleBus = useEventBus<boolean>("toggle")
-  const showTreeMenu = ref(true) // 左侧菜单是否显示
-  const showRightPanel = ref(false) // 右侧菜单是否展示
   function toggleTreeMenu(toggle?: boolean) {
     showTreeMenu.value = toggle ?? !showTreeMenu.value
     toggleBus.emit(showTreeMenu.value)
@@ -33,7 +34,7 @@ export const useMsgContext = () => {
   }
   function init() {
     settingsStore.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, showTreeMenu, true)
-    settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, true)
+    settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, false)
 
     shortcut.listen("ctrl+b", res => {
       res && toggleTreeMenu()
@@ -42,20 +43,61 @@ export const useMsgContext = () => {
       res && toggleRightPanel()
     })
   }
-  init()
   onBeforeUnmount(() => {
     toggleBus.reset()
   })
+  onBeforeMount(init)
   return {
     showTreeMenu,
     showRightPanel,
     toggleTreeMenu,
     toggleRightPanel,
     watchToggle,
+    unWatchToggle,
+    init,
     emitToggle: (toggle?: boolean) => {
       toggleBus.emit(toggle)
     },
-    unWatchToggle,
+  }
+}
+export const useMessageEdit = () => {
+  const cachedMessage = ref<ChatMessage>(createChatMessage({ id: "" }))
+  const callback = shallowRef<CallBackFn>()
+  const messageDialog = useDialog({
+    width: "70vw",
+    showClose: false,
+  })
+  function updateMessages(messages: ChatMessage) {
+    cachedMessage.value = cloneDeep(messages)
+  }
+  async function wait(): Promise<ChatMessage | undefined> {
+    return new Promise<ChatMessage | undefined>(resolve => {
+      callback.value = (message: ChatMessage | undefined) => {
+        resolve(message)
+      }
+    })
+  }
+  return {
+    cachedMessage,
+    updateMessages,
+    wait,
+    ...messageDialog,
+    onCancel: () => {
+      messageDialog.close()
+      callback.value?.()
+    },
+    onConfirm: () => {
+      messageDialog.close()
+      callback.value?.(cachedMessage.value.id ? cachedMessage.value : undefined)
+    },
+  }
+}
+export const useMsgContext = () => {
+  const menuToggle = useMenuToggle()
+  const messageDialog = useMessageEdit()
+  return {
+    menuToggle,
+    messageDialog,
   }
 }
 export const useMenuContext = (

@@ -31,6 +31,7 @@
     "defaultPrompt": "你是一个实用的AI助手",
     "deleteFailed": "删除失败",
     "editChat": "编辑",
+    "editMessage": "消息编辑",
     "kb": {
       "label": "知识库"
     },

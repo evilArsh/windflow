@@ -4,15 +4,19 @@ import Handler from "./components/handler/index.vue"
 import useChatStore from "@renderer/store/chat"
 import Content from "./components/content/index.vue"
 import RightPanel from "./components/rightPanel/index.vue"
+import { DialogPanel } from "@toolmain/components"
 import { ChatTopicTree } from "@windflow/core/types"
 import { useMsgContext } from "../../index"
+import { isString } from "@toolmain/shared"
 const props = defineProps<{
   topic?: ChatTopicTree
   context: ReturnType<typeof useMsgContext>
 }>()
 const chatStore = useChatStore()
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
-const { showRightPanel, toggleRightPanel } = props.context
+const { showRightPanel, toggleRightPanel } = props.context.menuToggle
+const { props: dlgProps, event: dlgEvent, cachedMessage, onCancel, onConfirm } = props.context.messageDialog
+const { t } = useI18n()
 
 const topic = computed(() => props.topic?.node)
 watch(
@@ -40,6 +44,17 @@ const handler = {
 </script>
 <template>
   <div class="message-container">
+    <el-dialog v-bind="dlgProps" v-on="dlgEvent" :title="t('chat.editMessage')">
+      <DialogPanel class="h-70vh w-full">
+        <div v-for="(child, index) in cachedMessage.content.children" :key="index">
+          <el-input type="textarea" v-if="isString(child.content)" v-model="child.content" />
+        </div>
+        <template #footer>
+          <Button type="primary" @click="onConfirm">{{ t("btn.confirm") }}</Button>
+          <Button @click="onCancel">{{ t("btn.cancel") }}</Button>
+        </template>
+      </DialogPanel>
+    </el-dialog>
     <ContentLayout
       :handler-height="toValue(topic?.inputHeight)"
       @update:handler-height="handler.onHandlerHeightChange"

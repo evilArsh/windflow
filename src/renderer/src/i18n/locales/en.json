@@ -31,6 +31,7 @@
     "defaultPrompt": "you are a helpful assistant",
     "deleteFailed": "Delete failed",
     "editChat": "Edit",
+    "editMessage": "Edit Message",
     "kb": {
       "label": "knowledge base"
     },

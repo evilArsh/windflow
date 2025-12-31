@@ -10,8 +10,8 @@ const props = defineProps<{
   parent?: ChatMessageTree
 }>()
 defineEmits<{
-  edit: []
   delete: [done: CallBackFn]
+  edit: [done: CallBackFn]
 }>()
 const { t } = useI18n()
 const chatStore = useChatStore()
@@ -59,9 +59,9 @@ async function restart(done: CallBackFn) {
       </Button>
     </ContentBox>
     <ContentBox class="m0!" background>
-      <el-button size="small" :disabled="!isFinish" circle plain text type="primary" @click="$emit('edit')">
+      <Button size="small" :disabled="!isFinish" circle plain text type="primary" @click="done => $emit('edit', done)">
         <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
-      </el-button>
+      </Button>
     </ContentBox>
     <PopConfirm
       :title="t('tip.deleteConfirm')"

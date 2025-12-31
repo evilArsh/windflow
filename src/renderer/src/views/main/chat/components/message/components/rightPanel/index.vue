@@ -11,7 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   resizeChange: []
 }>()
-const { emitToggle } = props.context
+const { emitToggle } = props.context.menuToggle
 const { t } = useI18n()
 const resizeStyle = ref<CSSProperties>({
   width: px(300),

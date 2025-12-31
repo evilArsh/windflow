@@ -33,7 +33,7 @@ const {
   currentHover,
 } = useMenuContext(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const msgContext = useMsgContext()
-const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext
+const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext.menuToggle
 async function onCreateNewTopic(done: CallBackFn) {
   await tree.createNewTopic()
   done()
