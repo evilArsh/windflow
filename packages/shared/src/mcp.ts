@@ -1,12 +1,6 @@
 import Ajv, { ErrorObject } from "ajv"
 import AjvErrors from "ajv-errors"
 // import addFormats from "ajv-formats"
-/**
- * @description llm返回的函数调用参数处理
- */
-export function normalizetoolCallArgs(args: string): string {
-  return args.replaceAll("\\", "\\\\")
-}
 export function useSchemaValidate() {
   const ajv = new Ajv({
     coerceTypes: true,

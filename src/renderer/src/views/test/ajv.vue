@@ -17,12 +17,6 @@ function useSchemaValidate() {
     },
   })
   AjvErrors(ajv)
-  /**
-   * @description llm返回的函数调用参数处理
-   */
-  function normalizetoolCallArgs(args: string): string {
-    return args.replaceAll("\\", "\\\\")
-  }
   function validate(tool: Record<string, unknown>, args?: Record<string, unknown>): boolean {
     if (!tool.inputSchema) return true
     const validate = ajv.compile(tool.inputSchema)
@@ -32,7 +26,6 @@ function useSchemaValidate() {
   }
   return {
     validate,
-    normalizetoolCallArgs,
   }
 }
 const call = useSchemaValidate()

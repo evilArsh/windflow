@@ -20,8 +20,8 @@ const useThinking = () => {
     if (manuallyTriggered.value) return
     activeNames.value = "1"
   }
-  function closeCollapse() {
-    if (manuallyTriggered.value) return
+  function closeCollapse(force?: boolean) {
+    if (!force && manuallyTriggered.value) return
     activeNames.value = ""
   }
   function thinkStart() {
@@ -42,7 +42,7 @@ watch(
   (val, oldVal) => {
     if (val[2]) {
       th.thinkStop()
-      th.closeCollapse()
+      th.closeCollapse(true)
       return
     }
     // (no content) && (reasoning_content) && ((no old reasoning_content) || (reasoning_content !== old reasoning_content))

@@ -46,8 +46,10 @@ const handler = {
   <div class="message-container">
     <el-dialog v-bind="dlgProps" v-on="dlgEvent" :title="t('chat.editMessage')">
       <DialogPanel class="h-70vh w-full">
-        <div v-for="(child, index) in cachedMessage.content.children" :key="index">
-          <el-input type="textarea" v-if="isString(child.content)" v-model="child.content" />
+        <div class="flex flex-col gap-1rem">
+          <div v-for="(child, index) in cachedMessage.content.children" :key="index">
+            <el-input type="textarea" autosize v-if="isString(child.content)" v-model="child.content" />
+          </div>
         </div>
         <template #footer>
           <Button type="primary" @click="onConfirm">{{ t("btn.confirm") }}</Button>

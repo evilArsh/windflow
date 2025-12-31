@@ -7,6 +7,7 @@ import {
   ChatTopicTree,
   ChatTTIConfig,
   Content,
+  Role,
 } from "@windflow/core/types"
 import useModelsStore from "@renderer/store/model"
 import { storage, defaultTTIConfig, defaultLLMConfig, chatTopicDefault, withTransaction } from "@windflow/core/storage"
@@ -152,6 +153,14 @@ export default defineStore("chat_topic", () => {
       chatMessage[topic.id] = assembleMessageTree(messagesData, message => {
         const m = reactive<ChatMessageTree>(wrapMessage(message))
         m.node.finish = true
+        m.node.status = 200
+        m.node.content.children?.forEach(message => {
+          if (!message.tool_calls_chain) {
+            message.tool_calls_chain = message.tool_calls?.map(c => {
+              return { content: "", tool_call_id: c.id, role: Role.Tool }
+            })
+          }
+        })
         chatMessageMap.set(message.id, m)
         return m
       })

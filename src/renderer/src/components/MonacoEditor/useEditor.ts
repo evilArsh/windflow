@@ -63,7 +63,7 @@ export default () => {
     const editorInstance = _editor.create(el, {
       model: model,
       minimap: { enabled: false }, // 预览图
-      theme: "vs-dark", // 主题
+      // theme: "vs-dark", // 主题
       multiCursorModifier: "ctrlCmd", // 主键
       scrollbar: {
         verticalScrollbarSize: 8,
