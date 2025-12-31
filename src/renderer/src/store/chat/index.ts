@@ -63,6 +63,7 @@ export default defineStore("chat_topic", () => {
               vNode = reactive(
                 wrapMessage(
                   createChatMessage({
+                    topicId: message.topicId,
                     id: vId,
                   })
                 )

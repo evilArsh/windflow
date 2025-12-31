@@ -138,26 +138,28 @@ function getIndex(
   }
   return findChatMessage(topicId, chatMessageMap)?.findIndex(item => item.id === messageId) ?? -1
 }
-export function removeMessage(message: ChatMessageTree, chatMessageMap: Record<string, ChatMessageTree[]>) {
+export function removeMessage(messageTree: ChatMessageTree, chatMessageMap: Record<string, ChatMessageTree[]>) {
   // it's a nested message, delete it from it's parent's children
-  if (message.parentId) {
-    const parent = findNonNestedMessageById(message.node.topicId, message.parentId, chatMessageMap)
+  if (messageTree.parentId) {
+    const parent = findNonNestedMessageById(messageTree.node.topicId, messageTree.parentId, chatMessageMap)
     if (parent) {
-      const index = getIndex(message.node.topicId, message.node.id, chatMessageMap, parent)
+      const message = unwrapMessage(messageTree)
+      const index = getIndex(message.topicId, message.id, chatMessageMap, parent)
       if (index > -1) {
         parent.children.splice(index, 1)
       } else {
-        console.warn("[removeMessage] child not found", message.node.id)
+        console.warn("[removeMessage] child not found", message.id)
       }
     } else {
-      console.warn("[removeMessage] parent not found", message.node.fromId)
+      console.warn("[removeMessage] parent not found", unwrapMessage(messageTree).fromId)
     }
   } else {
-    const index = getIndex(message.node.topicId, message.node.id, chatMessageMap)
+    const message = unwrapMessage(messageTree)
+    const index = getIndex(message.topicId, message.id, chatMessageMap)
     if (index > -1) {
-      findChatMessage(message.node.topicId, chatMessageMap)?.splice(index, 1)
+      findChatMessage(message.topicId, chatMessageMap)?.splice(index, 1)
     } else {
-      console.warn("[removeMessage] message not found", message.node.id)
+      console.warn("[removeMessage] message not found", message.id)
     }
   }
 }

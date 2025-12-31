@@ -8,7 +8,7 @@ import IconLeftToRight from "~icons/ic/baseline-format-line-spacing"
 import IconGrid from "~icons/ic/baseline-grid-on"
 import Tab from "~icons/ic/outline-folder-copy"
 import Title from "./title.vue"
-import { CSSProperties, isString, msg, errorToText } from "@toolmain/shared"
+import { CSSProperties, isString, msg, errorToText, CallBackFn } from "@toolmain/shared"
 import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
 import { useMsgContext } from "../../../../index"
@@ -152,11 +152,13 @@ const itemStyle = computed<CSSProperties>(() => {
   }
   return {}
 })
-async function del() {
+async function del(done: CallBackFn) {
   try {
     await chatStore.deleteMessage(message.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
+  } finally {
+    done()
   }
 }
 onMounted(() => {
@@ -169,7 +171,7 @@ onMounted(() => {
       <div class="flex-1 flex items-center px-1rem py-.5rem flex-wrap overflow-hidden">
         <Handler hide-edit :topic :message @delete="del"></Handler>
         <ContentBox background class="m0! flex-shrink-0">
-          <el-radio-group v-model="type" size="small" fill="#6cf" @change="onTypeChange">
+          <el-radio-group v-model="type" size="small" @change="onTypeChange">
             <el-radio-button v-for="item in typeList" :label="item.value" :value="item.value" :key="item.value">
               <component :is="item.label"></component>
             </el-radio-button>
