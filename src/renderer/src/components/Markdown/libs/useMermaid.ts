@@ -1,6 +1,6 @@
 import mermaid from "mermaid"
 
-export default () => {
+export const useMermaid = () => {
   function init() {
     mermaid.initialize({
       startOnLoad: true,

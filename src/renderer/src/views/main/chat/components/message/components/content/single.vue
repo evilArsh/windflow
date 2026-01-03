@@ -85,9 +85,9 @@ defineExpose({
     <div v-if="isUser" class="chat-item-content p-1rem reverse">
       <Markdown
         v-if="isString(message.node.content.content)"
-        v-model="message.node.content.content"
+        :content="message.node.content.content"
+        :config="{ forcePlaintext: true }"
         content-class="flex flex-col items-end"
-        ref="md"
         @change="onContentChange"></Markdown>
     </div>
     <div v-else class="chat-item-content p-1rem">
@@ -95,7 +95,7 @@ defineExpose({
       <div v-else-if="isText" class="chat-item-content">
         <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.node.finish"></Thinking>
-          <Markdown v-if="isString(child.content)" v-model="child.content" @change="onContentChange" />
+          <Markdown v-if="isString(child.content)" :content="child.content" @change="onContentChange" />
           <MCPCall :message="child"></MCPCall>
         </div>
         <Error :message></Error>

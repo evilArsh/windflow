@@ -10,9 +10,9 @@ import rehypeMathjax from "rehype-mathjax"
 import rehypeStringify from "rehype-stringify"
 import { rehypeHrToBr, rehypeUrlAttributes } from "./rehypeCode"
 import { normalizeFormula } from "./utils"
-import useMermaid from "../usable/useMermaid"
-import { toVueRuntime } from "./toVueRuntime/index"
-import { Components, JsxElement } from "./toVueRuntime/types"
+import { useMermaid } from "./useMermaid"
+import { toVueRuntime } from "./toVueRuntime"
+import { Components, JsxElement } from "./types"
 export const createProcessor = () => {
   return unified()
     .use(remarkParse)
@@ -32,7 +32,7 @@ export const createProcessor = () => {
       allowDangerousCharacters: false,
     })
 }
-const parser = (components: Components) => {
+export const useParser = (components: Components) => {
   const mermaid = useMermaid()
   const html = shallowRef<JsxElement>()
   const processor = markRaw(createProcessor())
@@ -40,17 +40,18 @@ const parser = (components: Components) => {
   const preHandleContent = (content: string) => {
     return normalizeFormula(content)
   }
-  const parse = (newContent: string) => {
+  const parse = (newContent: string, parseConfig?: ParseConfig) => {
     try {
       const content = preHandleContent(newContent)
       file.value = content
       const hast = processor.runSync(processor.parse(file))
-      if (hast.children.length == 0) {
+      if (!hast.children.length) {
         html.value = h("span", "")
         return
       }
       html.value = toVueRuntime(hast, {
         components,
+        parseConfig,
         ignoreInvalidStyle: true,
         stylePropertyNameCase: "css",
         passKeys: true,
@@ -73,4 +74,3 @@ const parser = (components: Components) => {
     destroy,
   }
 }
-export default parser

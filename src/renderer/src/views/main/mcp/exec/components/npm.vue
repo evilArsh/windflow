@@ -92,7 +92,7 @@ function chooseFile(done: CallBackFn) {
                       <template #header>
                         <el-text>{{ t("mcp.settings.python.uv.onlineDownload") }}</el-text>
                       </template>
-                      <Markdown v-model="doc"></Markdown>
+                      <Markdown :content="doc"></Markdown>
                     </el-card>
                   </div>
                   <template #footer>

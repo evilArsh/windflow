@@ -3,6 +3,10 @@ import type { Element, Nodes, Parents } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Schema } from "property-information"
 
+export type ParseConfig = {
+  forcePlaintext?: boolean
+}
+
 /**
  * Child.
  */

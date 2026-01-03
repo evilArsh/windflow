@@ -35,7 +35,7 @@ pause()
     <el-col :span="20" class="h-full overflow-hidden">
       <div class="flex w-full h-full border-solid border-1px border-gray">
         <ContentLayout>
-          <Markdown v-model="content" />
+          <Markdown :content="content" />
         </ContentLayout>
       </div>
     </el-col>

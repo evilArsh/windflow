@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import useParser from "./worker"
+import { ParseConfig, useParser } from "./libs"
 import CodeBlock from "./components/CodeBlock/index.vue"
-const emit = defineEmits<{
-  "update:modelValue": [string]
-}>()
 const props = defineProps<{
   contentClass?: string
-  modelValue: string
+  content: string
+  /**
+   * parse config
+   */
+  config?: ParseConfig
 }>()
-const content = computed({
-  get: () => props.modelValue,
-  set: value => emit("update:modelValue", value),
-})
-
 const { html, parse, destroy, init } = useParser({
   code: CodeBlock,
 })
@@ -21,12 +17,12 @@ function handleContent(content: string) {
     html.value = h("span", "")
     return
   }
-  parse(content)
+  parse(content, props.config)
 }
-watch(content, handleContent)
+watch(() => props.content, handleContent)
 onMounted(() => {
   init()
-  handleContent(content.value)
+  handleContent(props.content)
 })
 onBeforeUnmount(destroy)
 </script>

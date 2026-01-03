@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { errorToText, useShiki } from "@toolmain/shared"
-import { toVueRuntime } from "../../worker/toVueRuntime"
+import { toVueRuntime } from "../../libs/toVueRuntime"
 import { ElText } from "element-plus"
 const { codeToAst } = useShiki()
 
