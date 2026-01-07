@@ -1,5 +1,5 @@
 import type { Expression, Program } from "estree"
-import type { Element, Nodes, Parents } from "hast"
+import type { Element, Parents } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Schema } from "property-information"
 
@@ -27,11 +27,6 @@ export type Component<ComponentProps> = ClassComponent<ComponentProps> | Functio
  * Create an evaluator that turns ESTree ASTs from embedded MDX into values.
  */
 export type CreateEvaluater = () => Evaluater
-
-/**
- * Create something.
- */
-export type CreateFn = (node: Nodes, type: any, props: Props) => JSX.Element
 
 /**
  * Turn an MDX expression into a value.
@@ -182,11 +177,6 @@ export interface State {
    * Components to swap.
    */
   components: Partial<Components>
-  /**
-   * Function of creating something.
-   */
-  createFn: CreateFn
-
   /**
    * Evaluator that turns ESTree ASTs into values.
    */

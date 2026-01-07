@@ -1,8 +1,8 @@
 import type { Identifier, Literal, MemberExpression } from "estree"
-import type { Element } from "hast"
+import type { Element, Nodes } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Position } from "unist"
-import { Child, CreateFn, Field, State, Style, Props } from "./types"
+import { Child, Field, State, Style, Props } from "./types"
 import { stringify as commas } from "comma-separated-tokens"
 import { ok as assert } from "devlop"
 import { name as isIdentifierName } from "estree-util-is-identifier-name"
@@ -26,33 +26,31 @@ import { isObject, isString } from "@toolmain/shared"
 export const tableElements = new Set(["table", "tbody", "thead", "tfoot", "tr"])
 export const tableCellElement = new Set(["td", "th"])
 
-export function createVnodeFn(): CreateFn {
-  return (_, type, props) => {
-    // ! 在vue中jsx和jsxs都是h函数，并且当vue组件传入时
-    // ! h的用法和hastscript不一样
-    /**
-     * vue普通节点和hastscript
-     * h('div', ['hello', h('span', 'hello')])
-     * vue组件
-     * h(MyComponent, null, {
-     *  default: () => 'default slot',
-     *  foo: () => h('div', 'foo'),
-     *  bar: () => [h('span', 'one'), h('span', 'two')]
-     * })
-     */
-    // 借鉴缓存思路
-    // https://github.com/shikijs/shiki/blob/main/packages/rehype/src/core.ts
-    // console.log(_, type, props)
-    const children: Props["children"] = props.children
-    if (isString(type) || type === Fragment) {
-      delete props.children
-      return h(type, props, children)
-    } else {
-      // ! type: 为传入的 Compomnent
-      return h(type, props, {
-        default: () => children,
-      })
-    }
+export function createVnode(_node: Nodes, type: any, props: Props): JSX.Element {
+  // ! 在vue中jsx和jsxs都是h函数，并且当vue组件传入时
+  // ! h的用法和hastscript不一样
+  /**
+   * vue普通节点和hastscript
+   * h('div', ['hello', h('span', 'hello')])
+   * vue组件
+   * h(MyComponent, null, {
+   *  default: () => 'default slot',
+   *  foo: () => h('div', 'foo'),
+   *  bar: () => [h('span', 'one'), h('span', 'two')]
+   * })
+   */
+  // 借鉴缓存思路
+  // https://github.com/shikijs/shiki/blob/main/packages/rehype/src/core.ts
+  // console.log(_, type, props)
+  const children: Props["children"] = props.children
+  if (isString(type) || type === Fragment) {
+    delete props.children
+    return h(type, props, children)
+  } else {
+    // ! type: 为传入的 Compomnent
+    return h(type, props, {
+      default: () => children,
+    })
   }
 }
 
@@ -117,10 +115,7 @@ export function createElementProps(state: State, node: Element): Props {
  */
 export function addChildren(props: Props, children: Child[]): void {
   if (children.length) {
-    const value = children.length > 1 ? children : children[0]
-    if (value) {
-      props.children = value
-    }
+    props.children = children.length > 1 ? children : children[0]
   }
 }
 

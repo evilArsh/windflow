@@ -8,7 +8,7 @@ import type { Element, Nodes, Parents, Root, Text } from "hast"
 import type { MdxFlowExpressionHast, MdxTextExpressionHast } from "mdast-util-mdx-expression"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { MdxjsEsmHast } from "mdast-util-mdxjs-esm"
-import { Child, CreateFn, State, Options, Props } from "./types"
+import { Child, State, Options, Props } from "./types"
 import { ok as assert } from "devlop"
 import { whitespace } from "hast-util-whitespace"
 import { html, svg } from "property-information"
@@ -20,18 +20,15 @@ import {
   crashEstree,
   createElementProps,
   createJsxElementProps,
-  createVnodeFn,
+  createVnode,
   findComponentFromName,
   tableElements,
 } from "./utils"
 
 export function useVueRuntime(options: Options) {
-  const createFn: CreateFn = createVnodeFn()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const state: State = {
     ancestors: [],
     components: options.components ?? {},
-    createFn,
     evaluater: options.createEvaluater?.(),
     ignoreInvalidStyle: !!options.ignoreInvalidStyle,
     passNode: !!options.passNode,
@@ -39,56 +36,56 @@ export function useVueRuntime(options: Options) {
     stylePropertyNameCase: options.stylePropertyNameCase || "dom",
     tableCellAlignToStyle: !!options.tableCellAlignToStyle,
   }
+  function toVnode(tree: Nodes): JSX.Element {
+    const result = one(tree)
+    // JSX element.
+    if (result && !isString(result)) {
+      return result
+    }
+    // Text node or something that turned into nothing.
+    return createVnode(tree, Fragment, { children: result ?? undefined })
+  }
   /**
    * Create children.
-   * @param state - Info passed around.
    * @param node - Current element.
    */
-  function createChildren(state: State, node: Parents): Child[] {
+  function createChildren(node: Parents): Child[] {
     const children: Child[] = []
     let index = -1
     while (++index < node.children.length) {
       const child = node.children[index]
-      const result = one(state, child)
+      const result = one(child)
       if (!isUndefined(result)) children.push(result)
     }
     return children
   }
   /**
    * Transform a node.
-   *
-   * @param Info passed around.
-   * @param node Current node.
-   * @param key Key.
    */
-  function one(state: State, node: Nodes): Child | undefined {
+  function one(node: Nodes): Child | undefined {
     if (node.type === "element") {
-      return element(state, node)
+      return element(node)
     }
     if (node.type === "root") {
-      return root(state, node)
+      return root(node)
     }
     if (node.type === "text") {
-      return text(state, node)
+      return text(node)
     }
     if (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") {
-      return mdxExpression(state, node)
+      return mdxExpression(node)
     }
     if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") {
-      return mdxJsxElement(state, node)
+      return mdxJsxElement(node)
     }
     if (node.type === "mdxjsEsm") {
-      return mdxEsm(state, node)
+      return mdxEsm(node)
     }
   }
   /**
    * Handle element.
-   *
-   * @param state Info passed around.
-   * @param node Current node.
-   * @param key Key.
    */
-  function element(state: State, node: Element): Child | undefined {
+  function element(node: Element): Child | undefined {
     const parentSchema = state.schema
     let schema = parentSchema
 
@@ -101,7 +98,7 @@ export function useVueRuntime(options: Options) {
     // ! 当传入components后并匹配到了tagName, type是传入的组件
     const type = findComponentFromName(state, node.tagName, false)
     const props = createElementProps(state, node)
-    let children = createChildren(state, node)
+    let children = createChildren(node)
 
     if (tableElements.has(node.tagName)) {
       children = children.filter(function (child) {
@@ -116,27 +113,22 @@ export function useVueRuntime(options: Options) {
     state.ancestors.pop()
     state.schema = parentSchema
 
-    return state.createFn(node, type, props)
+    return createVnode(node, type, props)
   }
 
   /**
    * Handle root.
-   * @param state - Info passed around.
-   * @param node - Current node.
-   * @param key - Key.
    */
-  function root(state: State, node: Root): Child | undefined {
+  function root(node: Root): Child | undefined {
     const props: Props = {}
-    addChildren(props, createChildren(state, node))
-    return state.createFn(node, Fragment, props)
+    addChildren(props, createChildren(node))
+    return createVnode(node, Fragment, props)
   }
 
   /**
    * Handle text.
-   * @param _ - Info passed around.
-   * @param node - Current node.
    */
-  function text(_: State, node: Text): Child | undefined {
+  function text(node: Text): Child | undefined {
     return node.value
   }
 
@@ -145,7 +137,7 @@ export function useVueRuntime(options: Options) {
    * @param state - Info passed around.
    * @param node - Current node.
    */
-  function mdxExpression(state: State, node: MdxFlowExpressionHast | MdxTextExpressionHast): Child | undefined {
+  function mdxExpression(node: MdxFlowExpressionHast | MdxTextExpressionHast): Child | undefined {
     if (node.data && node.data.estree && state.evaluater) {
       const program = node.data.estree
       const expression = program.body[0]
@@ -157,10 +149,8 @@ export function useVueRuntime(options: Options) {
 
   /**
    * Handle MDX ESM.
-   * @param state - Info passed around.
-   * @param node - Current node.
    */
-  function mdxEsm(state: State, node: MdxjsEsmHast): Child | undefined {
+  function mdxEsm(node: MdxjsEsmHast): Child | undefined {
     if (node.data?.estree && state.evaluater) {
       return state.evaluater.evaluateProgram(node.data.estree) as Child | undefined
     }
@@ -173,7 +163,7 @@ export function useVueRuntime(options: Options) {
    * @param node - Current node.
    * @param key - Key.
    */
-  function mdxJsxElement(state: State, node: MdxJsxFlowElementHast | MdxJsxTextElementHast): Child | undefined {
+  function mdxJsxElement(node: MdxJsxFlowElementHast | MdxJsxTextElementHast): Child | undefined {
     const parentSchema = state.schema
     let schema = parentSchema
 
@@ -186,7 +176,7 @@ export function useVueRuntime(options: Options) {
 
     const type = node.name === null ? Fragment : findComponentFromName(state, node.name, true)
     const props = createJsxElementProps(state, node)
-    const children = createChildren(state, node)
+    const children = createChildren(node)
 
     addNode(state, props, type, node)
     addChildren(props, children)
@@ -195,6 +185,7 @@ export function useVueRuntime(options: Options) {
     state.ancestors.pop()
     state.schema = parentSchema
 
-    return state.createFn(node, type, props)
+    return createVnode(node, type, props)
   }
+  return { toVnode }
 }
