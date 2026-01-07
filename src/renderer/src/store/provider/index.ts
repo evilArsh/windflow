@@ -31,7 +31,10 @@ export default defineStore("provider", () => {
     return metas[providerName]
   }
   async function init() {
-    const defaultData = providerDefault(providerSvgIcon)
+    const defaultData = providerDefault().map(p => {
+      p.logo = getIconHTML(providerSvgIcon, p.name.toLowerCase())
+      return p
+    })
     for (const key in metas) {
       delete metas[key]
     }

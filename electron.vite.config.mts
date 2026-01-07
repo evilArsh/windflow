@@ -56,6 +56,7 @@ export default defineConfig({
         { find: "@renderer", replacement: path.resolve("src/renderer/src") },
         { find: "@windflow/shared", replacement: path.resolve("packages/shared/src") },
         { find: "@windflow/core", replacement: path.resolve("packages/core/src") },
+        { find: "@windflow/markdown", replacement: path.resolve("packages/markdown/src") },
       ],
     },
     plugins: [

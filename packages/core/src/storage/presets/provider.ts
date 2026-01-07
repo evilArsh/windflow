@@ -1,13 +1,11 @@
-import { IconifyJSON } from "@iconify/types"
-import { getIconHTML } from "@renderer/components/SvgPicker"
 import { ModelType, ProviderMeta, ModelActiveStatus } from "@windflow/core/types"
 import { uniqueId } from "@toolmain/shared"
-export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] => {
+export const providerDefault = (): ProviderMeta[] => {
   return [
     {
       id: uniqueId(),
       name: "deepseek",
-      logo: getIconHTML(providerSvgIcon, "deepseek"),
+      logo: "",
       alias: "深度求索",
       api: {
         doc: "https://api-docs.deepseek.com/zh-cn/",
@@ -25,7 +23,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       id: uniqueId(),
       name: "siliconflow",
       alias: "硅基流动",
-      logo: getIconHTML(providerSvgIcon, "siliconflow"),
+      logo: "",
       api: {
         doc: "https://docs.siliconflow.cn/cn/api-reference",
         url: "https://api.siliconflow.cn/v1",
@@ -49,7 +47,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       id: uniqueId(),
       name: "volcengine",
       alias: "火山引擎",
-      logo: getIconHTML(providerSvgIcon, "volcengine"),
+      logo: "",
       api: {
         doc: "https://www.volcengine.com/docs/82379/1263272",
         url: "https://ark.cn-beijing.volces.com/api/v3",
@@ -71,7 +69,7 @@ export const providerDefault = (providerSvgIcon: IconifyJSON): ProviderMeta[] =>
       id: uniqueId(),
       name: "openai",
       alias: "OpenAI",
-      logo: getIconHTML(providerSvgIcon, "openai"),
+      logo: "",
       api: {
         doc: "https://platform.openai.com/docs/api-reference",
         url: "https://api.openai.com/v1",

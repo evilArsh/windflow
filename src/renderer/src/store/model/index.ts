@@ -62,7 +62,10 @@ export default defineStore("model", () => {
     models.length = 0
     cache.clear()
     const data = await storage.model.fetch()
-    const defaultData = modelsDefault(providerSvgIcon)
+    const defaultData = modelsDefault().map(m => {
+      m.icon = getIconHTML(providerSvgIcon, m.subProviderName.toLowerCase())
+      return m
+    })
     data.forEach(v => {
       if (!v.icon) {
         v.icon = getModelLogo(v)

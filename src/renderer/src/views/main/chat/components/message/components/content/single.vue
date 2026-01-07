@@ -86,7 +86,7 @@ defineExpose({
       <Markdown
         v-if="isString(message.node.content.content)"
         :content="message.node.content.content"
-        :config="{ forcePlaintext: true }"
+        force-plaintext
         content-class="flex flex-col items-end"
         @change="onContentChange"></Markdown>
     </div>

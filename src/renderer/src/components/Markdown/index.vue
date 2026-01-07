@@ -1,30 +1,45 @@
 <script setup lang="ts">
-import { ParseConfig, useParser } from "./libs"
+import { VNode } from "vue"
 import CodeBlock from "./components/CodeBlock/index.vue"
+import { useMarkdownWorker, useMermaid, toVnode, MDWorkerMessageCore, Options } from "@windflow/markdown"
 const props = defineProps<{
   contentClass?: string
   content: string
   /**
-   * parse config
+   * force render string to plaintext
    */
-  config?: ParseConfig
+  forcePlaintext?: boolean
 }>()
-const { html, parse, destroy, init } = useParser({
-  code: CodeBlock,
+const id = useId()
+const mermaid = useMermaid()
+const mdWorker = useMarkdownWorker()
+const html = shallowRef<VNode>()
+const vnodeOptions = shallowRef<Options>({
+  components: {
+    code: CodeBlock,
+  },
 })
-function handleContent(content: string) {
+function onParseContent(content: string) {
   if (!content) {
     html.value = h("span", "")
     return
   }
-  parse(content, props.config)
+  mdWorker.emit(id, { type: "Parse", markdown: content })
 }
-watch(() => props.content, handleContent)
+function onParseResponse(event: MDWorkerMessageCore) {
+  if (event.type === "ParseResponse") {
+    html.value = toVnode(event.node, vnodeOptions.value)
+  }
+}
+watch(() => props.content, onParseContent)
 onMounted(() => {
-  init()
-  handleContent(props.content)
+  mermaid.init()
+  onParseContent(props.content)
+  mdWorker.on(id, onParseResponse)
 })
-onBeforeUnmount(destroy)
+onBeforeUnmount(() => {
+  mdWorker.emit(id, { type: "Dispose" })
+})
 </script>
 <template>
   <div class="markdown-container">

@@ -321,6 +321,9 @@ catalogs:
     '@vueuse/core':
       specifier: ^14.1.0
       version: 14.1.0
+    character-entities:
+      specifier: ^2.0.2
+      version: 2.0.2
     comma-separated-tokens:
       specifier: ^2.0.3
       version: 2.0.3
@@ -412,6 +415,9 @@ catalogs:
       specifier: ^4.6.3
       version: 4.6.4
 
+overrides:
+  decode-named-character-reference: file:./src/renderer/patchs/decode-named-character-reference
+
 importers:
 
   .:
@@ -458,6 +464,9 @@ importers:
       '@windflow/core':
         specifier: workspace:^
         version: link:packages/core
+      '@windflow/markdown':
+        specifier: workspace:^
+        version: link:packages/markdown
       '@windflow/shared':
         specifier: workspace:^
         version: link:packages/shared
@@ -476,6 +485,9 @@ importers:
       chance:
         specifier: catalog:common
         version: 1.1.13
+      character-entities:
+        specifier: catalog:web
+        version: 2.0.2
       comma-separated-tokens:
         specifier: catalog:web
         version: 2.0.3
@@ -833,6 +845,113 @@ importers:
       '@toolmain/shared':
         specifier: catalog:common
         version: 1.3.3(@vueuse/core@14.1.0(vue@3.5.26(typescript@5.9.3)))(axios@1.13.2)(element-plus@2.13.0(vue@3.5.26(typescript@5.9.3)))(vue-i18n@11.2.7(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))
+      axios:
+        specifier: catalog:common
+        version: 1.13.2
+      chance:
+        specifier: catalog:common
+        version: 1.1.13
+      dexie:
+        specifier: catalog:web
+        version: 4.2.1
+      openai:
+        specifier: catalog:web
+        version: 6.15.0(ws@8.18.3)(zod@3.25.76)
+      p-queue:
+        specifier: catalog:common
+        version: 9.0.1
+    devDependencies:
+      type-fest:
+        specifier: catalog:dev
+        version: 5.3.1
+
+  packages/markdown:
+    dependencies:
+      '@toolmain/shared':
+        specifier: catalog:common
+        version: 1.3.3(@vueuse/core@14.1.0(vue@3.5.26(typescript@5.9.3)))(axios@1.13.2)(element-plus@2.13.0(vue@3.5.26(typescript@5.9.3)))(vue-i18n@11.2.7(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))
+      comma-separated-tokens:
+        specifier: catalog:web
+        version: 2.0.3
+      devlop:
+        specifier: catalog:dev
+        version: 1.1.0
+      estree-util-is-identifier-name:
+        specifier: catalog:web
+        version: 3.0.0
+      hast-util-whitespace:
+        specifier: catalog:web
+        version: 3.0.0
+      html-url-attributes:
+        specifier: catalog:web
+        version: 3.0.1
+      mermaid:
+        specifier: catalog:web
+        version: 11.12.2
+      property-information:
+        specifier: catalog:web
+        version: 7.1.0
+      rehype-mathjax:
+        specifier: catalog:web
+        version: 7.1.0
+      rehype-stringify:
+        specifier: catalog:web
+        version: 10.0.1
+      remark-emoji:
+        specifier: catalog:web
+        version: 5.0.2
+      remark-gfm:
+        specifier: catalog:web
+        version: 4.0.1
+      remark-math:
+        specifier: catalog:web
+        version: 6.0.0
+      remark-parse:
+        specifier: catalog:web
+        version: 11.0.0
+      remark-rehype:
+        specifier: catalog:web
+        version: 11.1.2
+      remark-squeeze-paragraphs:
+        specifier: catalog:web
+        version: 6.0.0
+      space-separated-tokens:
+        specifier: catalog:web
+        version: 2.0.2
+      style-to-js:
+        specifier: catalog:web
+        version: 1.1.21
+      unified:
+        specifier: catalog:web
+        version: 11.0.5
+      unist-util-visit:
+        specifier: catalog:web
+        version: 5.0.0
+      vfile:
+        specifier: catalog:web
+        version: 6.0.3
+      vfile-message:
+        specifier: catalog:web
+        version: 4.0.3
+      vue:
+        specifier: catalog:web
+        version: 3.5.26(typescript@5.9.3)
+    devDependencies:
+      '@types/estree':
+        specifier: catalog:dev
+        version: 1.0.8
+      '@types/hast':
+        specifier: catalog:dev
+        version: 3.0.4
+      mdast-util-mdx-expression:
+        specifier: catalog:dev
+        version: 2.0.1
+      mdast-util-mdx-jsx:
+        specifier: catalog:dev
+        version: 3.2.0
+      mdast-util-mdxjs-esm:
+        specifier: catalog:dev
+        version: 2.0.1
 
   packages/shared:
     dependencies:
@@ -3744,8 +3863,8 @@ packages:
   decimal.js@10.6.0:
     resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
 
-  decode-named-character-reference@1.2.0:
-    resolution: {integrity: sha512-c6fcElNV6ShtZXmsgNgFFV5tVX2PaV4g+MOAkb8eXHvn6sryJBrZa9r0zV6+dtTyoCKxtDy5tyQ5ZwQuidtd+Q==}
+  decode-named-character-reference@file:src/renderer/patchs/decode-named-character-reference:
+    resolution: {directory: src/renderer/patchs/decode-named-character-reference, type: directory}
 
   decompress-response@6.0.0:
     resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
@@ -10752,9 +10871,7 @@ snapshots:
 
   decimal.js@10.6.0: {}
 
-  decode-named-character-reference@1.2.0:
-    dependencies:
-      character-entities: 2.0.2
+  decode-named-character-reference@file:src/renderer/patchs/decode-named-character-reference: {}
 
   decompress-response@6.0.0:
     dependencies:
@@ -12700,7 +12817,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
-      decode-named-character-reference: 1.2.0
+      decode-named-character-reference: file:src/renderer/patchs/decode-named-character-reference
       devlop: 1.1.0
       mdast-util-to-string: 4.0.0
       micromark: 4.0.2
@@ -12895,7 +13012,7 @@ snapshots:
 
   micromark-core-commonmark@2.0.3:
     dependencies:
-      decode-named-character-reference: 1.2.0
+      decode-named-character-reference: file:src/renderer/patchs/decode-named-character-reference
       devlop: 1.1.0
       micromark-factory-destination: 2.0.1
       micromark-factory-label: 2.0.1
@@ -13038,7 +13155,7 @@ snapshots:
 
   micromark-util-decode-string@2.0.1:
     dependencies:
-      decode-named-character-reference: 1.2.0
+      decode-named-character-reference: file:src/renderer/patchs/decode-named-character-reference
       micromark-util-character: 2.1.1
       micromark-util-decode-numeric-character-reference: 2.0.2
       micromark-util-symbol: 2.0.1
@@ -13076,7 +13193,7 @@ snapshots:
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.4.3
-      decode-named-character-reference: 1.2.0
+      decode-named-character-reference: file:src/renderer/patchs/decode-named-character-reference
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.3
       micromark-factory-space: 2.0.1
@@ -13467,7 +13584,7 @@ snapshots:
       '@types/unist': 2.0.11
       character-entities-legacy: 3.0.0
       character-reference-invalid: 2.0.1
-      decode-named-character-reference: 1.2.0
+      decode-named-character-reference: file:src/renderer/patchs/decode-named-character-reference
       is-alphanumerical: 2.0.1
       is-decimal: 2.0.1
       is-hexadecimal: 2.0.1

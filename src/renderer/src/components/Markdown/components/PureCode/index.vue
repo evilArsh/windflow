@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { errorToText, useShiki } from "@toolmain/shared"
-import { toVueRuntime } from "../../libs/toVueRuntime"
+import { toVnode } from "@windflow/markdown"
 import { ElText } from "element-plus"
 const { codeToAst } = useShiki()
 
@@ -20,12 +20,7 @@ watchEffect(() => {
   } else {
     codeToAst(props.code, props.lang)
       .then(res => {
-        vnode.value = toVueRuntime(res, {
-          ignoreInvalidStyle: true,
-          stylePropertyNameCase: "css",
-          passKeys: true,
-          passNode: true,
-        })
+        vnode.value = toVnode(res)
       })
       .catch(err => (vnode.value = h(ElText, { type: "danger" }, { default: () => errorToText(err) })))
   }

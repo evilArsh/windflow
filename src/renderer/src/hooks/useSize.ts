@@ -1,6 +1,6 @@
 import { App } from "vue"
 
-export const useSize = async (app: App<Element>) => {
+export const createSize = () => {
   const setRootFontSize = () => {
     const w = window.innerWidth
     let fontSize: number
@@ -19,11 +19,14 @@ export const useSize = async (app: App<Element>) => {
     }
     document.documentElement.style.fontSize = `${fontSize}px`
   }
-  setRootFontSize()
 
-  window.addEventListener("resize", setRootFontSize)
-
-  app.onUnmount(() => {
-    window.removeEventListener("resize", setRootFontSize)
-  })
+  return {
+    install: (app: App<Element>) => {
+      setRootFontSize()
+      window.addEventListener("resize", setRootFontSize)
+      app.onUnmount(() => {
+        window.removeEventListener("resize", setRootFontSize)
+      })
+    },
+  }
 }

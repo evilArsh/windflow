@@ -7,9 +7,9 @@ import {
   ModelMeta,
   Role,
 } from "@windflow/core/types"
-import { defaultMessage } from "@windflow/core/storage/presets/chat"
+import { defaultMessage } from "@windflow/core/storage"
 import { cloneDeep, isArrayLength, isNumber, merge, toNumber, uniqueId } from "@toolmain/shared"
-import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models/utils"
+import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
 export function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
   const part: Partial<ChatTopic> = {

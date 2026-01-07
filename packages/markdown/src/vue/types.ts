@@ -3,33 +3,15 @@ import type { Element, Nodes, Parents } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Schema } from "property-information"
 
-export type ParseConfig = {
-  forcePlaintext?: boolean
-}
+export type Child = JSX.Element | string | undefined
 
-/**
- * Child.
- */
-export type Child = JsxElement | string | null | undefined
-
-/**
- * Possible components to use.
- *
- * Each key is a tag name typed in `JSX.IntrinsicElements`.
- * Each value is either a different tag name, or a component accepting the
- * corresponding props (and an optional `node` prop if `passNode` is on).
- *
- * You can access props at `JSX.IntrinsicElements`.
- * For example, to find props for `a`, use `JSX.IntrinsicElements['a']`.
- */
-// Note: this type has to be in `.ts` or `.d.ts`, otherwise TSC hardcodes
-// react into the `.d.ts` file.
 export type Components = {
-  [TagName in keyof JsxIntrinsicElements]:
-    | Component<JsxIntrinsicElements[TagName] & ExtraProps>
-    | keyof JsxIntrinsicElements
+  [TagName in keyof JSX.IntrinsicElements]?:
+    | Component<JSX.IntrinsicElements[TagName] & ExtraProps>
+    | keyof JSX.IntrinsicElements
 }
 
+export type ClassComponent<ComponentProps> = new (props: ComponentProps) => JSX.ElementClass
 /**
  * Function or class component.
  *
@@ -47,21 +29,9 @@ export type Component<ComponentProps> = ClassComponent<ComponentProps> | Functio
 export type CreateEvaluater = () => Evaluater
 
 /**
- * Create something in development or production.
+ * Create something.
  */
-export type Create = (node: Nodes, type: any, props: Props) => JsxElement
-
-/**
- * Class component: given props, returns an instance.
- *
- * @typeParam ComponentProps
- *   Props type.
- * @param props
- *   Props.
- * @returns
- *   Instance.
- */
-export type ClassComponent<ComponentProps> = new (props: ComponentProps) => JsxElementClass
+export type CreateFn = (node: Nodes, type: any, props: Props) => JSX.Element
 
 /**
  * Turn an MDX expression into a value.
@@ -117,31 +87,7 @@ export type Fragment = unknown
  * @returns
  *   Result.
  */
-export type FunctionComponent<ComponentProps> = (props: ComponentProps) => JsxElement | string | null | undefined
-
-/**
- * Conditional type for a class.
- */
-//@ts-expect-error: conditionally defined;
-// it used to be possible to detect that with `any extends X ? X : Y`
-// but no longer.
-export type JsxElementClass = JSX.ElementClass
-
-/**
- * Conditional type for a node object.
- */
-//@ts-expect-error: conditionally defined;
-// it used to be possible to detect that with `any extends X ? X : Y`
-// but no longer.
-export type JsxElement = JSX.Element
-
-/**
- * Conditional type for a record of tag names to corresponding props.
- */
-//@ts-expect-error: conditionally defined;
-// it used to be possible to detect that with `any extends X ? X : Y`
-// but no longer.
-export type JsxIntrinsicElements = JSX.IntrinsicElements
+export type FunctionComponent<ComponentProps> = (props: ComponentProps) => JSX.Element | string | undefined
 
 /**
  * Configuration.
@@ -150,33 +96,20 @@ export interface OptionsBase {
   /**
    * Components to use (optional).
    */
-  components?: Partial<Components> | null | undefined
+  components?: Components
   /**
    * Create an evaluator that turns ESTree ASTs into values (optional).
    */
-  createEvaluater?: CreateEvaluater | null | undefined
-  /**
-   * File path to the original source file (optional).
-   *
-   * Passed in source info to `jsxDEV` when using the automatic runtime with
-   * `development: true`.
-   */
-  filePath?: string | null | undefined
+  createEvaluater?: CreateEvaluater
   /**
    * Ignore invalid CSS in `style` props (default: `false`);
    * the default behavior is to throw an error.
    */
-  ignoreInvalidStyle?: boolean | null | undefined
-  /**
-   * Generate keys to optimize frameworks that support them (default: `true`).
-   *
-   * > 👉 **Note**: Solid currently fails if keys are passed.
-   */
-  passKeys?: boolean | null | undefined
+  ignoreInvalidStyle?: boolean
   /**
    * Pass the hast element node to components (default: `false`).
    */
-  passNode?: boolean | null | undefined
+  passNode?: boolean
   /**
    * Whether `tree` is in the `'html'` or `'svg'` space (default: `'html'`).
    *
@@ -184,17 +117,17 @@ export interface OptionsBase {
    * automatically switches to and from the SVG space when entering and exiting
    * it.
    */
-  space?: Space | null | undefined
+  space?: Space
   /**
    * Specify casing to use for property names in `style` objects (default:
    * `'dom'`).
    */
-  stylePropertyNameCase?: StylePropertyNameCase | null | undefined
+  stylePropertyNameCase?: StylePropertyNameCase
   /**
    * Turn obsolete `align` props on `td` and `th` into CSS `style` props
    * (default: `true`).
    */
-  tableCellAlignToStyle?: boolean | null | undefined
+  tableCellAlignToStyle?: boolean
 }
 
 export type Options = OptionsBase
@@ -205,7 +138,7 @@ export type Options = OptionsBase
 export interface Props {
   [prop: string]: Array<Child> | Child | Element | MdxJsxFlowElementHast | MdxJsxTextElementHast | Value | undefined
   children?: Array<Child> | Child
-  node?: Element | MdxJsxFlowElementHast | MdxJsxTextElementHast | undefined
+  node?: Element | MdxJsxFlowElementHast | MdxJsxTextElementHast
 }
 
 /**
@@ -215,15 +148,15 @@ export interface Source {
   /**
    * Column where thing starts (0-indexed).
    */
-  columnNumber: number | undefined
+  columnNumber?: number
   /**
    * Name of source file.
    */
-  fileName: string | undefined
+  fileName?: string
   /**
    * Line where thing starts (1-indexed).
    */
-  lineNumber: number | undefined
+  lineNumber?: number
 }
 
 /**
@@ -250,26 +183,18 @@ export interface State {
    */
   components: Partial<Components>
   /**
-   * Create something in development or production.
+   * Function of creating something.
    */
-  create: Create
+  createFn: CreateFn
 
   /**
    * Evaluator that turns ESTree ASTs into values.
    */
-  evaluater: Evaluater | undefined
-  /**
-   * File path.
-   */
-  filePath: string | undefined
+  evaluater?: Evaluater
   /**
    * Ignore invalid CSS in `style` props.
    */
   ignoreInvalidStyle: boolean
-  /**
-   * Generate keys to optimize frameworks that support them.
-   */
-  passKeys: boolean
   /**
    * Pass `node` to components.
    */

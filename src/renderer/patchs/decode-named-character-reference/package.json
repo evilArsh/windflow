@@ -1,0 +1,18 @@
+{
+  "name": "decode-named-character-reference",
+  "version": "1.2.0",
+  "description": "",
+  "license": "MIT",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    "deno": "./index.js",
+    "edge-light": "./index.js",
+    "react-native": "./index.js",
+    "worker": "./index.js",
+    "workerd": "./index.js",
+    "browser": "./index.js",
+    "default": "./index.js"
+  }
+}

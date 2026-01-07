@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import I18n from "./i18n.vue"
-import { NavPage, SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windflow/core/types"
 import { useI18n } from "vue-i18n"
 import IMdiChatProcessing from "~icons/mdi/chat-processing"
 import ICardGiftcard from "~icons/ic/round-card-giftcard"
@@ -11,6 +11,7 @@ import { useI18nWatch } from "@toolmain/shared"
 import { Theme } from "@windflow/shared"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
+import { NavPage } from "./type"
 const { t } = useI18n()
 const router = useRouter()
 const settingsStore = useSettingsStore()

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { Element } from "hast"
-import { getLang } from "../../libs/utils"
+import { getLang } from "@windflow/markdown"
 import { isUndefined } from "@toolmain/shared"
 const props = defineProps<{
   children?: string
   node?: Element
 }>()
 const Code = defineAsyncComponent(() => import("./code.vue"))
+// inline code
 const RawCode = defineAsyncComponent(() => import("./rawCode.vue"))
 const code = ref("")
 const lang = ref("")

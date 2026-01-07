@@ -28,7 +28,7 @@ import type {
 import { usePartialData } from "../compatible/utils"
 import { AbortError, HttpCodeError } from "../compatible/error"
 import { nonStreamParse, streamParse } from "./stream"
-import { Stream } from "openai/core/streaming.mjs"
+import { Stream } from "openai/core/streaming"
 
 export function useHandler(): RequestHandler {
   let abortController = new AbortController()

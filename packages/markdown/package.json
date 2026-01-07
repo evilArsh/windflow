@@ -1,0 +1,45 @@
+{
+  "name": "@windflow/markdown",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {},
+  "exports": {},
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@toolmain/shared": "catalog:common",
+    "mermaid": "catalog:web",
+    "unified": "catalog:web",
+    "vfile": "catalog:web",
+    "remark-parse": "catalog:web",
+    "remark-math": "catalog:web",
+    "remark-gfm": "catalog:web",
+    "remark-emoji": "catalog:web",
+    "remark-squeeze-paragraphs": "catalog:web",
+    "remark-rehype": "catalog:web",
+    "rehype-mathjax": "catalog:web",
+    "rehype-stringify": "catalog:web",
+    "unist-util-visit": "catalog:web",
+    "html-url-attributes": "catalog:web",
+    "property-information": "catalog:web",
+    "comma-separated-tokens": "catalog:web",
+    "estree-util-is-identifier-name": "catalog:web",
+    "devlop": "catalog:dev",
+    "hast-util-whitespace": "catalog:web",
+    "space-separated-tokens": "catalog:web",
+    "style-to-js": "catalog:web",
+    "vfile-message": "catalog:web"
+  },
+  "devDependencies": {
+    "@types/hast": "catalog:dev",
+    "@types/estree": "catalog:dev",
+    "mdast-util-mdx-jsx": "catalog:dev",
+    "mdast-util-mdx-expression": "catalog:dev",
+    "mdast-util-mdxjs-esm": "catalog:dev"
+  },
+  "peerDependencies": {
+    "vue": "catalog:web"
+  }
+}

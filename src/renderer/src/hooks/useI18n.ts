@@ -1,10 +1,10 @@
 import { App } from "vue"
-import { createI18n } from "vue-i18n"
+import { createI18n as _createI18n } from "vue-i18n"
 import en from "@renderer/i18n/locales/en.json"
 import zh from "@renderer/i18n/locales/zh.json"
 
-export const useI18n = async (app: App<Element>) => {
-  const i18n = createI18n({
+export const createI18n = () => {
+  const i18n = _createI18n({
     legacy: false,
     locale: "zh",
     fallbackLocale: "en",
@@ -13,5 +13,9 @@ export const useI18n = async (app: App<Element>) => {
       zh,
     },
   })
-  app.use(i18n)
+  return {
+    install: (app: App<Element>) => {
+      app.use(i18n)
+    },
+  }
 }

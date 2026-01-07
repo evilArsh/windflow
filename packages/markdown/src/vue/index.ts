@@ -10,7 +10,7 @@ import type { MdxFlowExpressionHast, MdxTextExpressionHast } from "mdast-util-md
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { MdxjsEsmHast } from "mdast-util-mdxjs-esm"
 import type { Position } from "unist"
-import { Child, Create, Field, JsxElement, State, Style, Options, Props } from "./types"
+import { Child, CreateFn, Field, State, Style, Options, Props } from "./types"
 import { stringify as commas } from "comma-separated-tokens"
 import { ok as assert } from "devlop"
 import { name as isIdentifierName } from "estree-util-is-identifier-name"
@@ -20,10 +20,8 @@ import { stringify as spaces } from "space-separated-tokens"
 import styleToJs from "style-to-js"
 import { VFileMessage } from "vfile-message"
 import { h, Fragment } from "vue"
-import { isObject, isString } from "@toolmain/shared"
+import { isObject, isString, isUndefined } from "@toolmain/shared"
 
-const emptyMap: Map<string, number> = new Map()
-const cap = /[A-Z]/g
 // `react-dom` triggers a warning for *any* white space in tables.
 // To follow GFM, `mdast-util-to-hast` injects line endings between elements.
 // Other tools might do so too, but they don’t do here, so we remove all of
@@ -36,8 +34,6 @@ const cap = /[A-Z]/g
 // See: <https://github.com/rehypejs/rehype-react/pull/45>.
 const tableElements = new Set(["table", "tbody", "thead", "tfoot", "tr"])
 const tableCellElement = new Set(["td", "th"])
-const docs = "https://github.com/syntax-tree/hast-util-to-jsx-runtime"
-
 /**
  * Transform a hast tree to preact, react, solid, svelte, vue, etc.,
  * with an automatic JSX runtime.
@@ -45,24 +41,21 @@ const docs = "https://github.com/syntax-tree/hast-util-to-jsx-runtime"
  * @param tree Tree to transform.
  * @param options Configuration (required).
  */
-export function toVueRuntime(tree: Nodes, options: Options): JsxElement {
+export function toVueRuntime(tree: Nodes, options: Options): JSX.Element {
   if (!options) {
     throw new TypeError("Expected `Fragment` in options")
   }
-  const filePath = options.filePath ?? undefined
-  const create: Create = createVnode(filePath)
+  const createFn: CreateFn = createVnodeFn()
   const state: State = {
     ancestors: [],
-    components: options.components || {},
-    create,
-    evaluater: options.createEvaluater ? options.createEvaluater() : undefined,
-    filePath,
-    ignoreInvalidStyle: options.ignoreInvalidStyle || false,
-    passKeys: options.passKeys !== false,
-    passNode: options.passNode || false,
+    components: options.components ?? {},
+    createFn,
+    evaluater: options.createEvaluater?.(),
+    ignoreInvalidStyle: !!options.ignoreInvalidStyle,
+    passNode: !!options.passNode,
     schema: options.space === "svg" ? svg : html,
     stylePropertyNameCase: options.stylePropertyNameCase || "dom",
-    tableCellAlignToStyle: options.tableCellAlignToStyle !== false,
+    tableCellAlignToStyle: !!options.tableCellAlignToStyle,
   }
   const result = one(state, tree)
   // JSX element.
@@ -70,10 +63,10 @@ export function toVueRuntime(tree: Nodes, options: Options): JsxElement {
     return result
   }
   // Text node or something that turned into nothing.
-  return state.create(tree, Fragment, { children: result ?? undefined })
+  return state.createFn(tree, Fragment, { children: result ?? undefined })
 }
 
-function createVnode(_: string | undefined): Create {
+function createVnodeFn(): CreateFn {
   return (_, type, props) => {
     // ! 在vue中jsx和jsxs都是h函数，并且当vue组件传入时
     // ! h的用法和hastscript不一样
@@ -89,8 +82,8 @@ function createVnode(_: string | undefined): Create {
      */
     // 借鉴缓存思路
     // https://github.com/shikijs/shiki/blob/main/packages/rehype/src/core.ts
-    const children = props.children
     // console.log(_, type, props)
+    const children: Props["children"] = props.children
     if (isString(type) || type === Fragment) {
       delete props.children
       return h(type, props, children)
@@ -148,7 +141,7 @@ function element(state: State, node: Element): Child | undefined {
     state.schema = schema
   }
   state.ancestors.push(node)
-  // ! 当传入components后并匹配到了tagName,type是传入的函数
+  // ! 当传入components后并匹配到了tagName, type是传入的组件
   const type = findComponentFromName(state, node.tagName, false)
   const props = createElementProps(state, node)
   let children = createChildren(state, node)
@@ -166,7 +159,7 @@ function element(state: State, node: Element): Child | undefined {
   state.ancestors.pop()
   state.schema = parentSchema
 
-  return state.create(node, type, props)
+  return state.createFn(node, type, props)
 }
 
 /**
@@ -178,7 +171,7 @@ function element(state: State, node: Element): Child | undefined {
 function root(state: State, node: Root): Child | undefined {
   const props: Props = {}
   addChildren(props, createChildren(state, node))
-  return state.create(node, Fragment, props)
+  return state.createFn(node, Fragment, props)
 }
 
 /**
@@ -216,7 +209,7 @@ function addNode(
  * @param children - Children.
  */
 function addChildren(props: Props, children: Child[]): void {
-  if (children.length > 0) {
+  if (children.length) {
     const value = children.length > 1 ? children : children[0]
     if (value) {
       props.children = value
@@ -282,7 +275,7 @@ function mdxJsxElement(state: State, node: MdxJsxFlowElementHast | MdxJsxTextEle
   state.ancestors.pop()
   state.schema = parentSchema
 
-  return state.create(node, type, props)
+  return state.createFn(node, type, props)
 }
 
 /**
@@ -294,7 +287,6 @@ function createElementProps(state: State, node: Element): Props {
   const props: Props = {}
   let alignValue: string | undefined
   let prop: string
-
   for (prop in node.properties) {
     if (prop !== "children" && Object.hasOwn(node.properties, prop)) {
       const result = createProperty(state, prop, node.properties[prop])
@@ -308,11 +300,18 @@ function createElementProps(state: State, node: Element): Props {
       }
     }
   }
-
   if (alignValue) {
     // Assume style is an object.
-    const style = props.style || (props.style = {})
-    style[state.stylePropertyNameCase === "css" ? "text-align" : "textAlign"] = alignValue
+    if (!props.style) props.style = {}
+    if (isObject(props.style)) {
+      const key: string = state.stylePropertyNameCase === "css" ? "text-align" : "textAlign"
+      props.style = {
+        ...props.style,
+        [key]: alignValue,
+      }
+    } else {
+      throw new Error("props.style is unknown type")
+    }
   }
 
   return props
@@ -345,8 +344,7 @@ function createJsxElementProps(state: State, node: MdxJsxFlowElementHast | MdxJs
       // For JSX, the author is responsible of passing in the correct values.
       const name = attribute.name
       let value: unknown
-
-      if (attribute.value && isObject(attribute.value)) {
+      if (isObject(attribute.value)) {
         if (attribute.value.data && attribute.value.data.estree && state.evaluater) {
           const program = attribute.value.data.estree
           const expression = program.body[0]
@@ -358,9 +356,8 @@ function createJsxElementProps(state: State, node: MdxJsxFlowElementHast | MdxJs
       } else {
         value = attribute.value === null ? true : attribute.value
       }
-
       // Assume a prop.
-      props[name] = value
+      props[name] = value as any
     }
   }
 
@@ -375,29 +372,10 @@ function createJsxElementProps(state: State, node: MdxJsxFlowElementHast | MdxJs
 function createChildren(state: State, node: Parents): Child[] {
   const children: Child[] = []
   let index = -1
-  // Note: test this when Solid doesn't want to merge my upcoming PR.
-  /* c8 ignore next */
-  const countsByName: Map<string, number> = state.passKeys ? new Map() : emptyMap
-
   while (++index < node.children.length) {
     const child = node.children[index]
-
-    if (state.passKeys) {
-      const name =
-        child.type === "element"
-          ? child.tagName
-          : child.type === "mdxJsxFlowElement" || child.type === "mdxJsxTextElement"
-            ? child.name
-            : undefined
-
-      if (name) {
-        const count = countsByName.get(name) || 0
-        countsByName.set(name, count + 1)
-      }
-    }
-
     const result = one(state, child)
-    if (result !== undefined) children.push(result)
+    if (!isUndefined(result)) children.push(result)
   }
 
   return children
@@ -456,9 +434,6 @@ function parseStyle(state: State, value: string): Style {
       ruleId: "style",
       source: "hast-util-to-jsx-runtime",
     })
-    message.file = state.filePath || undefined
-    message.url = docs + "#cannot-parse-style-attribute"
-
     throw message
   }
 }
@@ -527,9 +502,6 @@ function crashEstree(state: State, place?: Position): never {
     ruleId: "mdx-estree",
     source: "hast-util-to-jsx-runtime",
   })
-  message.file = state.filePath || undefined
-  message.url = docs + "#cannot-handle-mdx-estrees-without-createevaluater"
-
   throw message
 }
 
@@ -555,7 +527,7 @@ function transformStylesToCssCasing(domCasing: Style): Style {
  * @param from
  */
 function transformStyleToCssCasing(from: string): string {
-  let to = from.replace(cap, toDash)
+  let to = from.replace(/[A-Z]/g, toDash)
   // Handle `ms-xxx` -> `-ms-xxx`.
   if (to.slice(0, 3) === "ms-") to = "-" + to
   return to

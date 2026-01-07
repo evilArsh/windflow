@@ -11,7 +11,12 @@
     "target": "ESNext",
     "module": "ESNext",
     "allowImportingTsExtensions": false,
-    "types": ["node", "electron-vite/node", "vite/client", "@toolmain/shared"],
+    "types": [
+      "node",
+      "electron-vite/node",
+      "vite/client",
+      "@toolmain/shared"
+    ],
     "strictNullChecks": true,
     "baseUrl": ".",
     "paths": {

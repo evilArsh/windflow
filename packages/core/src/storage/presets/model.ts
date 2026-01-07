@@ -1,9 +1,5 @@
 import { ModelMeta, ModelType } from "@windflow/core/types"
-import { IconifyJSON } from "@iconify/types"
-// TODO: refactor
-import { getIconHTML } from "@renderer/components/SvgPicker"
-
-export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
+export const modelsDefault = (): ModelMeta[] => {
   return [
     {
       id: `deepseek_deepseek-chat`,
@@ -11,7 +7,6 @@ export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
       type: [ModelType.Chat],
       providerName: "deepseek",
       subProviderName: "deepseek",
-      icon: getIconHTML(providerSvgIcon, "deepseek"),
       active: false,
     },
     {
@@ -20,7 +15,6 @@ export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: "deepseek",
       subProviderName: "deepseek",
-      icon: getIconHTML(providerSvgIcon, "deepseek"),
       active: false,
     },
     {
@@ -29,7 +23,6 @@ export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: "volcengine",
       subProviderName: "deepseek",
-      icon: getIconHTML(providerSvgIcon, "deepseek"),
       active: false,
     },
     {
@@ -38,7 +31,6 @@ export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
       type: [ModelType.Chat],
       providerName: "volcengine",
       subProviderName: "deepseek",
-      icon: getIconHTML(providerSvgIcon, "deepseek"),
       active: false,
     },
     {
@@ -47,7 +39,6 @@ export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: "volcengine",
       subProviderName: "deepseek",
-      icon: getIconHTML(providerSvgIcon, "deepseek"),
       active: false,
     },
     {
@@ -56,7 +47,6 @@ export const modelsDefault = (providerSvgIcon: IconifyJSON): ModelMeta[] => {
       type: [ModelType.ChatReasoner],
       providerName: "volcengine",
       subProviderName: "deepseek",
-      icon: getIconHTML(providerSvgIcon, "deepseek"),
       active: false,
     },
   ]

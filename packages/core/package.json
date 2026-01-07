@@ -9,6 +9,14 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@toolmain/shared": "catalog:common"
+    "@toolmain/shared": "catalog:common",
+    "openai": "catalog:web",
+    "p-queue": "catalog:common",
+    "dexie": "catalog:web",
+    "chance": "catalog:common",
+    "axios": "catalog:common"
+  },
+  "devDependencies": {
+    "type-fest": "catalog:dev"
   }
 }

@@ -14,6 +14,7 @@ export default mergeConfig(
         { find: "@preload", replacement: path.resolve("src/preload") },
         { find: "@windflow/shared", replacement: path.resolve("packages/shared/src") },
         { find: "@windflow/core", replacement: path.resolve("packages/core/src") },
+        { find: "@windflow/markdown", replacement: path.resolve("packages/markdown/src") },
         { find: "@renderer", replacement: path.resolve("src/renderer/src") },
       ],
     },
@@ -30,7 +31,11 @@ export default mergeConfig(
             // },
           },
           test: {
-            include: ["src/renderer/**/*.{test,spec}.ts", "packages/core/**/*.{test,spec}.ts"],
+            include: [
+              "src/renderer/**/*.{test,spec}.ts",
+              "packages/core/**/*.{test,spec}.ts",
+              "packages/markdown/**/*.{test,spec}.ts",
+            ],
             name: "unit-web",
             environment: "jsdom",
             setupFiles: ["vitest-browser-vue"],
