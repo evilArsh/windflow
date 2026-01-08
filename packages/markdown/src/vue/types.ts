@@ -2,27 +2,13 @@ import type { Expression, Program } from "estree"
 import type { Element, Parents } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Schema } from "property-information"
+import { Component, VNode } from "vue"
 
-export type Child = JSX.Element | string | undefined
+export type Child = VNode | string
 
 export type Components = {
-  [TagName in keyof JSX.IntrinsicElements]?:
-    | Component<JSX.IntrinsicElements[TagName] & ExtraProps>
-    | keyof JSX.IntrinsicElements
+  [TagName in keyof JSX.IntrinsicElements]?: Component | keyof JSX.IntrinsicElements
 }
-
-export type ClassComponent<ComponentProps> = new (props: ComponentProps) => JSX.ElementClass
-/**
- * Function or class component.
- *
- * You can access props at `JsxIntrinsicElements`.
- * For example, to find props for `a`, use `JsxIntrinsicElements['a']`.
- *
- * @typeParam ComponentProps
- *   Props type.
- */
-export type Component<ComponentProps> = ClassComponent<ComponentProps> | FunctionComponent<ComponentProps>
-
 /**
  * Create an evaluator that turns ESTree ASTs from embedded MDX into values.
  */
@@ -52,42 +38,14 @@ export interface Evaluater {
 }
 
 /**
- * Extra fields we pass.
- */
-export interface ExtraProps {
-  /**
-   * Node (hast),
-   * passed when `passNode` is on.
-   */
-  node?: Element | undefined
-}
-
-/**
  * Property field.
  */
 export type Field = [string, Value]
 
 /**
- * Represent the children, typically a symbol.
- */
-export type Fragment = unknown
-
-/**
- * Basic functional component: given props, returns an element.
- *
- * @typeParam ComponentProps
- *   Props type.
- * @param props
- *   Props.
- * @returns
- *   Result.
- */
-export type FunctionComponent<ComponentProps> = (props: ComponentProps) => JSX.Element | string | undefined
-
-/**
  * Configuration.
  */
-export interface OptionsBase {
+export interface Options {
   /**
    * Components to use (optional).
    */
@@ -125,8 +83,6 @@ export interface OptionsBase {
   tableCellAlignToStyle?: boolean
 }
 
-export type Options = OptionsBase
-
 /**
  * Properties and children.
  */
@@ -134,24 +90,6 @@ export interface Props {
   [prop: string]: Array<Child> | Child | Element | MdxJsxFlowElementHast | MdxJsxTextElementHast | Value | undefined
   children?: Array<Child> | Child
   node?: Element | MdxJsxFlowElementHast | MdxJsxTextElementHast
-}
-
-/**
- * Info about source.
- */
-export interface Source {
-  /**
-   * Column where thing starts (0-indexed).
-   */
-  columnNumber?: number
-  /**
-   * Name of source file.
-   */
-  fileName?: string
-  /**
-   * Line where thing starts (1-indexed).
-   */
-  lineNumber?: number
 }
 
 /**
@@ -199,6 +137,11 @@ export interface State {
   stylePropertyNameCase: StylePropertyNameCase
   /**
    * Turn obsolete `align` props on `td` and `th` into CSS `style` props.
+   *
+   * eg:
+   * ```html
+   * <td align="center"> => <td style="text-align: center"></td>
+   * ```
    */
   tableCellAlignToStyle: boolean
 }

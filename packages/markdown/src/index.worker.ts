@@ -46,7 +46,7 @@ function useTasker() {
     }
     ctx.control = {}
     ctx.queue.clear()
-    console.log(`[task remove] id: ${id}`)
+    // console.log(`[task remove] id: ${id}`)
     context.delete(id)
   }
   function getContext() {

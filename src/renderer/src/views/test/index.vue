@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap20px flex-col">
+  <div class="flex gap20px flex-col flex-1">
     <ContentBox>
       <el-input-number></el-input-number>
     </ContentBox>

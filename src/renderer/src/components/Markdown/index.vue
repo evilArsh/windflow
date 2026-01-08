@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { VNode } from "vue"
 import CodeBlock from "./components/CodeBlock/index.vue"
-import { useMarkdownWorker, useMermaid, toVnode, MDWorkerMessageCore, Options } from "@windflow/markdown"
+import { useMarkdownWorker, useMermaid, useVueRuntime, MDWorkerMessageCore } from "@windflow/markdown"
 const props = defineProps<{
   contentClass?: string
   content: string
@@ -10,11 +10,11 @@ const props = defineProps<{
    */
   forcePlaintext?: boolean
 }>()
+const html = shallowRef<VNode>()
 const id = useId()
 const mermaid = useMermaid()
 const mdWorker = useMarkdownWorker()
-const html = shallowRef<VNode>()
-const vnodeOptions = shallowRef<Options>({
+const rt = useVueRuntime({
   components: {
     code: CodeBlock,
   },
@@ -28,7 +28,7 @@ function onParseContent(content: string) {
 }
 function onParseResponse(event: MDWorkerMessageCore) {
   if (event.type === "ParseResponse") {
-    html.value = toVnode(event.node, vnodeOptions.value)
+    html.value = rt.toVnode(event.node)
   }
 }
 watch(() => props.content, onParseContent)
@@ -39,6 +39,7 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   mdWorker.emit(id, { type: "Dispose" })
+  rt.dispose()
 })
 </script>
 <template>

@@ -7,6 +7,7 @@ export * from "./parser"
 export * from "./types"
 export * from "./utils"
 export * from "./vue/types"
+export * from "./vue/index"
 export const MarkdownWorkerKey: InjectionKey<MDWorkerExpose> = Symbol("MarkdownWorker")
 
 class MDWorkerExposeImpl implements MDWorkerExpose {

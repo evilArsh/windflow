@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { errorToText, useShiki } from "@toolmain/shared"
-import { toVnode } from "@windflow/markdown"
+import { useVueRuntime } from "@windflow/markdown"
 import { ElText } from "element-plus"
 const { codeToAst } = useShiki()
 
@@ -8,7 +8,7 @@ const props = defineProps<{
   code: string
   lang: string
 }>()
-
+const rt = useVueRuntime()
 const Mermaid = defineAsyncComponent(() => import("../Mermaid/index.vue"))
 const vnode = shallowRef<VNode>()
 watchEffect(() => {
@@ -20,7 +20,7 @@ watchEffect(() => {
   } else {
     codeToAst(props.code, props.lang)
       .then(res => {
-        vnode.value = toVnode(res)
+        vnode.value = rt.toVnode(res)
       })
       .catch(err => (vnode.value = h(ElText, { type: "danger" }, { default: () => errorToText(err) })))
   }

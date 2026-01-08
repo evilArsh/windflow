@@ -1,5 +1,5 @@
 import type { Identifier, Literal, MemberExpression } from "estree"
-import type { Element, Nodes } from "hast"
+import type { Element } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Position } from "unist"
 import { Child, Field, State, Style, Props } from "./types"
@@ -10,7 +10,7 @@ import { find } from "property-information"
 import { stringify as spaces } from "space-separated-tokens"
 import styleToJs from "style-to-js"
 import { VFileMessage } from "vfile-message"
-import { h, Fragment } from "vue"
+import { Fragment } from "vue"
 import { isObject, isString } from "@toolmain/shared"
 
 // `react-dom` triggers a warning for *any* white space in tables.
@@ -25,34 +25,6 @@ import { isObject, isString } from "@toolmain/shared"
 // See: <https://github.com/rehypejs/rehype-react/pull/45>.
 export const tableElements = new Set(["table", "tbody", "thead", "tfoot", "tr"])
 export const tableCellElement = new Set(["td", "th"])
-
-export function createVnode(_node: Nodes, type: any, props: Props): JSX.Element {
-  // ! 在vue中jsx和jsxs都是h函数，并且当vue组件传入时
-  // ! h的用法和hastscript不一样
-  /**
-   * vue普通节点和hastscript
-   * h('div', ['hello', h('span', 'hello')])
-   * vue组件
-   * h(MyComponent, null, {
-   *  default: () => 'default slot',
-   *  foo: () => h('div', 'foo'),
-   *  bar: () => [h('span', 'one'), h('span', 'two')]
-   * })
-   */
-  // 借鉴缓存思路
-  // https://github.com/shikijs/shiki/blob/main/packages/rehype/src/core.ts
-  // console.log(_, type, props)
-  const children: Props["children"] = props.children
-  if (isString(type) || type === Fragment) {
-    delete props.children
-    return h(type, props, children)
-  } else {
-    // ! type: 为传入的 Compomnent
-    return h(type, props, {
-      default: () => children,
-    })
-  }
-}
 
 /**
  * Add `node` to props.
@@ -144,14 +116,13 @@ export function findComponentFromName(state: State, name: string, allowExpressio
     const identifiers = name.split(".")
     let index = -1
     let node: Identifier | Literal | MemberExpression | undefined
-
     while (++index < identifiers.length) {
       const prop: Identifier | Literal = isIdentifierName(identifiers[index])
-        ? { type: "Identifier", name: identifiers[index] }
-        : { type: "Literal", value: identifiers[index] }
+        ? { type: "Identifier", name: identifiers[index] } // 标识符
+        : { type: "Literal", value: identifiers[index] } // 字面值
       node = node
         ? {
-            type: "MemberExpression",
+            type: "MemberExpression", // 成员表达式
             object: node,
             property: prop,
             computed: Boolean(index && prop.type === "Literal"),
@@ -159,7 +130,6 @@ export function findComponentFromName(state: State, name: string, allowExpressio
           }
         : prop
     }
-
     assert(node, "always a result")
     result = node
   } else {
