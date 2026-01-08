@@ -1,7 +1,7 @@
 import type { InjectionKey, Ref } from "vue"
 import { createApp, defineComponent, h, provide, shallowRef } from "vue"
 import { createPinia } from "pinia"
-import { useSvgIcon } from "../renderer/src/app/hooks/useSvgIcon"
+import { createSvgIcon } from "@renderer/hooks/useSvgIcon"
 // import router from "../renderer/src/routes/index"
 // import useI18n from "../renderer/src/app/hooks/useI18n"
 // import useSize from "../renderer/src/app/hooks//useSize"
@@ -18,7 +18,7 @@ export function mount<V>(Comp: V) {
   // useShiki(app)
   // useI18n(app)
   // useSize(app)
-  useSvgIcon(app)
+  app.use(createSvgIcon())
   const unmount = () => app.unmount()
   const comp = app.mount(el) as any as VM<V>
   comp.unmount = unmount

@@ -1,7 +1,7 @@
 import { App, InjectionKey } from "vue"
 import { EventBus, useEvent } from "@toolmain/shared"
 import { MDWorkerExpose, MDWorkerMessage, MDWorkerMessageCore } from "./types"
-import MDWorker from "./index.worker?worker"
+import MDWorker from "./index.worker.ts?worker"
 
 export * from "./parser"
 export * from "./types"

@@ -48,6 +48,14 @@ export default defineConfig({
       strictPort: true,
       open: false,
     },
+    worker: {
+      format: "es",
+      rollupOptions: {
+        output: {
+          format: "es",
+        },
+      },
+    },
     build: {
       sourcemap: false,
     },
