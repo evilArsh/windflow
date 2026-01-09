@@ -3,19 +3,48 @@ productName: windflow
 directories:
   buildResources: build
 files:
-  - "!**/.vscode/*"
+  - "**/*"
+  - "!.*"
+  - "!**/._*"
+  - "!**/._*"
+  - "!**/.git/*"
+  - "!**/.github/*"
   - "!**/.husky/*"
-  - "!src/*"
+  - "!**/.vscode/*"
   - "!demo/*"
-  - "!electron.vite.config.{js,ts,mjs,cjs}"
-  - "!*.config.{js,ts,mjs,cjs}"
+  - "!docs"
+  - "!packages"
+  - "!scripts"
+  - "!src"
+  - "!*.md"
+  - "!{.editorconfig,.eslintrc-auto-import.json,.lintstagedrc.mjs,components.d.ts,eslint.config.mjs,stats.html,commitlint.config.mjs}"
+  - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.mjs,dev-app-update.yml,CHANGELOG.md,README.md,README.zh.md}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json,tsconfig.base.json}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml,pnpm-workspace.yaml}"
+  - "!{uno.config.ts,auto-imports.d.ts}"
+  - "!electron.vite.config.{js,ts,mjs,mts,cjs}"
   - "!electron-builder.yml"
-  - "!{.editorconfig,.eslintrc-auto-import.json,.lintstagedrc.mjs,components.d.ts,eslint.config.mjs,stats.html}"
-  - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
-  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
-  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  - "!**/{test,tests,__tests__,coverage}/**"
+  - "!**/node_modules/.cache/*"
+  - "!*.config.{js,ts,mjs,cjs}"
+  - "!**/*.{map,ts,tsx,jsx,less,scss,sass,css.d.ts,d.cts,d.mts,md,markdown,yaml,yml}"
+  - "!**/{example,examples}/**"
+  - "!vitest.config.mts"
+  - "!**/*.{spec,test}.{js,cjs,mjs,ts,tsx}"
+  - "!**/*.min.*.map"
+  - "!**/*.d.ts"
+  - "!**/{.DS_Store}"
+  # - "!node_modules/@lancedb/lancedb-*/**"
+  # - "!node_modules/@napi-rs/**/*"
+  - "!node_modules/@esbuild/**/*"
+  - "!node_modules/@rollup/**/*"
 asarUnpack:
   - resources/**
+  # - "!node_modules/@esbuild/**/*"
+  # - "!node_modules/@rollup/**/*"
+  # - "!node_modules/jszip/**/**"
+beforePack: scripts/before-pack.cjs
+# afterPack: scripts/after-pack.js
 win:
   executableName: windflow
   target:

@@ -64,6 +64,7 @@ export default defineConfig([
       "**/rollup.config.{js,mjs,cjs}",
       "yarn.lock",
       "package-lock.json",
+      "scripts/*.{js,cjs,mjs}",
       "uno.config.{ts,mts,js,mjs}",
       "electron.vite.config.{ts,mts,js,mjs}",
     ],
