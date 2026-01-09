@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Run electron-builder",
+      "runtimeExecutable": "electron-builder",
+      "cwd": "${workspaceFolder}",
+      "args": ["--win", "--config", "${workspaceRoot}/electron-builder.yml"]
+    },
+    {
       "name": "Debug Main Process",
       "type": "node",
       "request": "launch",
