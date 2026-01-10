@@ -1,7 +1,7 @@
 <template>
   <div class="flex gap20px flex-col flex-1">
     <ContentBox>
-      <el-input-number></el-input-number>
+      <el-input type="textarea" v-model="str"></el-input>
     </ContentBox>
     <ContentBox>
       <el-button circle round>按钮</el-button>
@@ -33,6 +33,7 @@
   </div>
 </template>
 <script lang="ts" setup>
+const str = ref("")
 onMounted(() => {})
 </script>
 
