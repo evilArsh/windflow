@@ -51,6 +51,9 @@ export class MessageManager {
       modelMeta,
       providerMeta,
       value => {
+        if (ctx.handler?.getSignal().aborted) {
+          return
+        }
         const { data, status, msg } = value
         message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
         message.promptTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.prompt_tokens), 0)
@@ -207,6 +210,7 @@ export class MessageManager {
     if (!currentMsg) return []
     if (currentMsg.content.role === Role.User) {
       this.#emitMessage(currentMsg)
+      // get user message's responding messages
       const msgs = await storage.chat.getMessagesByFromId(topicId, messageId)
       if (msgs.length) {
         const reqInfo: Array<{
