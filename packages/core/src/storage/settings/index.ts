@@ -2,6 +2,7 @@ import { QueryParams, SettingKeys, Settings, SettingsValue } from "@windflow/cor
 import { cloneDeep } from "@toolmain/shared"
 import PQueue from "p-queue"
 import { resolveDb } from "../utils"
+import { db } from "../index"
 
 const queue = new PQueue({ concurrency: 1 })
 export async function get(id: SettingKeys, params?: QueryParams) {
@@ -13,6 +14,6 @@ export async function add(data: Settings<SettingsValue>, params?: QueryParams) {
 export async function put(data: Settings<SettingsValue>, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).settings.put(cloneDeep(data)))
 }
-export async function fetch(params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).settings.toArray())
+export async function fetch() {
+  return queue.add(async () => db.settings.toArray())
 }

@@ -17,14 +17,14 @@ export async function bulkAddChatTopics(datas: ChatTopic[], params?: QueryParams
 export async function putChatTopic(data: ChatTopic, params?: QueryParams) {
   return topicQueue.add(async () => resolveDb(params).chatTopic.put(cloneDeep(data)))
 }
-export async function getTopic(topicId: string, params?: QueryParams) {
-  return topicQueue.add(async () => resolveDb(params).chatTopic.get(topicId))
+export async function getTopic(topicId: string) {
+  return topicQueue.add(async () => db.chatTopic.get(topicId))
 }
 export async function addChatLLMConfig(data: ChatLLMConfig, params?: QueryParams) {
   return configQueue.add(async () => resolveDb(params).chatLLMConfig.add(cloneDeep(data)))
 }
-export async function getChatLLMConfig(topicId: string, params?: QueryParams) {
-  return configQueue.add(async () => resolveDb(params).chatLLMConfig.where("topicId").equals(topicId).first())
+export async function getChatLLMConfig(topicId: string) {
+  return configQueue.add(async () => db.chatLLMConfig.where("topicId").equals(topicId).first())
 }
 export async function putChatLLMConfig(data: ChatLLMConfig, params?: QueryParams) {
   return configQueue.add(async () => resolveDb(params).chatLLMConfig.put(cloneDeep(data)))
@@ -36,8 +36,8 @@ export async function addChatTTIConfig(data: ChatTTIConfig, params?: QueryParams
 export async function putChatTTIConfig(data: ChatTTIConfig, params?: QueryParams) {
   return configQueue.add(async () => resolveDb(params).chatTTIConfig.put(cloneDeep(data)))
 }
-export async function getChatTTIConfig(topicId: string, params?: QueryParams) {
-  return configQueue.add(async () => resolveDb(params).chatTTIConfig.where("topicId").equals(topicId).first())
+export async function getChatTTIConfig(topicId: string) {
+  return configQueue.add(async () => db.chatTTIConfig.where("topicId").equals(topicId).first())
 }
 
 export async function addChatMessage(data: ChatMessage, params?: QueryParams) {
@@ -55,14 +55,14 @@ export async function bulkAddChatMessage(data: ChatMessage[], params?: QueryPara
 /**
  * @description get all messages of a topic and sort by `index`
  */
-export async function getChatMessages(topicId: string, params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.where("topicId").equals(topicId).sortBy("index"))
+export async function getChatMessages(topicId: string) {
+  return msgQueue.add(async () => db.chatMessage.where("topicId").equals(topicId).sortBy("index"))
 }
 /**
  * @description get message by `messageId` in a topic
  */
-export async function getChatMessage(messageId: string, params?: QueryParams): Promise<ChatMessage | undefined> {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.where("id").equals(messageId).first())
+export async function getChatMessage(messageId: string): Promise<ChatMessage | undefined> {
+  return msgQueue.add(async () => db.chatMessage.where("id").equals(messageId).first())
 }
 export async function deleteChatMessage(messageId: string, params?: QueryParams) {
   return msgQueue.add(async () => resolveDb(params).chatMessage.delete(messageId))
@@ -88,23 +88,23 @@ export async function bulkDeleteChatTopic(data: ChatTopic[]) {
 /**
  * get a message that has the max value of `index` field in `topicId`
  */
-export async function getMaxIndexMessage(topicId: string, params?: QueryParams) {
+export async function getMaxIndexMessage(topicId: string) {
   return msgQueue.add(async () =>
-    resolveDb(params).chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
+    db.chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
   )
 }
 /**
  * get messages by `fromId`, which response to the same question
  */
-export async function getMessagesByFromId(topicId: string, fromId: string, params?: QueryParams) {
+export async function getMessagesByFromId(topicId: string, fromId: string) {
   return msgQueue.add(async () =>
-    resolveDb(params)
-      .chatMessage.where("topicId")
+    db.chatMessage
+      .where("topicId")
       .equals(topicId)
       .and(m => m.fromId === fromId)
       .toArray()
   )
 }
-export async function fetch(params?: QueryParams) {
-  return topicQueue.add(async () => resolveDb(params).chatTopic.toCollection().sortBy("index"))
+export async function fetch() {
+  return topicQueue.add(async () => db.chatTopic.toCollection().sortBy("index"))
 }
