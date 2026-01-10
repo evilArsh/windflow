@@ -83,6 +83,7 @@ export function getIsolatedMessages(messages: ChatMessage[], messageId: string):
     if (startDone && endDone) break
   }
   start = Math.max(0, start + 1)
+  end = Math.min(messages.length, end, index)
   return messages.slice(start, end)
 }
 /**

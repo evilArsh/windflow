@@ -127,7 +127,7 @@ export function findNonNestedMessageById(
   if (!rawMessages) return
   return rawMessages.find(item => item.id === messageId)
 }
-function getIndex(
+export function getIndex(
   topicId: string,
   messageId: string,
   chatMessageMap: Record<string, ChatMessageTree[]>,
