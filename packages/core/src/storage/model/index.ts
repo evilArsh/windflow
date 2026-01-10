@@ -3,6 +3,7 @@ import { cloneDeep } from "@toolmain/shared"
 import PQueue from "p-queue"
 import { UpdateSpec } from "dexie"
 import { resolveDb } from "../utils"
+import { db } from "../index"
 
 const queue = new PQueue({ concurrency: 1 })
 
@@ -24,15 +25,15 @@ export async function bulkUpdate(
 ) {
   return queue.add(async () => resolveDb(params).model.bulkUpdate(keysAndChanges))
 }
-export async function get(modelId: string, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.get(modelId))
+export async function get(modelId: string) {
+  return queue.add(async () => db.model.get(modelId))
 }
-export async function bulkGet(modelIds: string[], params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.bulkGet(modelIds))
+export async function bulkGet(modelIds: string[]) {
+  return queue.add(async () => db.model.bulkGet(modelIds))
 }
-export async function anyOf(modelIds: string[], params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.where("id").anyOf(modelIds).toArray())
+export async function anyOf(modelIds: string[]) {
+  return queue.add(async () => db.model.where("id").anyOf(modelIds).toArray())
 }
-export async function fetch(params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.toArray())
+export async function fetch() {
+  return queue.add(async () => db.model.toArray())
 }

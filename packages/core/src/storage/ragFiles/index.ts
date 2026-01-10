@@ -3,6 +3,7 @@ import { cloneDeep } from "@toolmain/shared"
 import PQueue from "p-queue"
 import { resolveDb } from "../utils"
 import { RAGLocalFileInfo } from "@windflow/shared"
+import { db } from "../index"
 
 const queue = new PQueue({ concurrency: 1 })
 export async function put(data: RAGLocalFileInfo, params?: QueryParams) {
@@ -20,22 +21,22 @@ export async function remove(id: string, params?: QueryParams) {
 export async function removeByTopicId(topicId: string, params?: QueryParams) {
   return queue.add(async () => resolveDb(params).ragFiles.where("topicId").equals(topicId).delete())
 }
-export async function get(id: string, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).ragFiles.get(id))
+export async function get(id: string) {
+  return queue.add(async () => db.ragFiles.get(id))
 }
-export async function getAllByTopicId(topicId: string, params?: QueryParams) {
+export async function getAllByTopicId(topicId: string) {
   return queue.add(async () =>
-    resolveDb(params)
-      .ragFiles.where({
+    db.ragFiles
+      .where({
         topicId,
       })
       .toArray()
   )
 }
-export async function fileExist(topicId: string, filePath: string, params?: QueryParams) {
+export async function fileExist(topicId: string, filePath: string) {
   return queue.add(async () => {
-    const count = await resolveDb(params)
-      .ragFiles.where({
+    const count = await db.ragFiles
+      .where({
         topicId,
         path: filePath,
       })
