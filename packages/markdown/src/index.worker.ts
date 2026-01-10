@@ -26,7 +26,7 @@ function useTasker() {
     ctx.queue.add(
       async ({ signal }) => {
         try {
-          console.log(`[task start] id: ${id}, taskId: ${tId}`)
+          // console.log(`[task start] id: ${id}, taskId: ${tId}`)
           await task(signal)
         } catch (error) {
           console.log(`[task failed] id: ${id}, taskId: ${tId}`, error)
@@ -40,8 +40,8 @@ function useTasker() {
   function remove(id: string) {
     const ctx = context.get(id)
     if (!ctx) return
-    for (const [key, value] of Object.entries(ctx.control)) {
-      console.log(`[task end] id: ${id} taskId: ${key}`)
+    for (const [_key, value] of Object.entries(ctx.control)) {
+      // console.log(`[task end] id: ${id} taskId: ${key}`)
       value.abort()
     }
     ctx.control = {}

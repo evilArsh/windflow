@@ -18,6 +18,7 @@ import {
   findChatLLMConfig,
   findChatMessage,
   findChatTTIConfig,
+  getIndex,
   removeMessage,
   topicToTree,
   unwrapMessage,
@@ -74,8 +75,12 @@ export default defineStore("chat_topic", () => {
               vNode.children.push(cacheMsg)
             }
           } else {
-            // just fucking insert it because of ordered
-            chatMessage[message.topicId].unshift(cacheMsg)
+            const fromIndex = getIndex(topic.id, fromNode.id, chatMessage)
+            if (fromIndex > -1) {
+              chatMessage[message.topicId].splice(fromIndex, 0, cacheMsg)
+            } else {
+              chatMessage[message.topicId].unshift(cacheMsg)
+            }
           }
         }
       } else {
