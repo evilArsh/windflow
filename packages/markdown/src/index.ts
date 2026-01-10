@@ -1,5 +1,5 @@
 import { App, InjectionKey } from "vue"
-import { EventBus, useEvent } from "@toolmain/shared"
+import { EventBus, isNull, useEvent } from "@toolmain/shared"
 import { MDWorkerExpose, MDWorkerMessage, MDWorkerMessageCore } from "./types"
 import MDWorker from "./index.worker.ts?worker"
 
@@ -13,13 +13,29 @@ export const MarkdownWorkerKey: InjectionKey<MDWorkerExpose> = Symbol("MarkdownW
 class MDWorkerExposeImpl implements MDWorkerExpose {
   #worker: Worker
   #event: EventBus<Record<string, any>>
+  #pendingMessages: MDWorkerMessage[]
+  #animationFrameId: number | null = null
+
   constructor(worker: Worker) {
     this.#worker = worker
     this.#event = useEvent()
+    this.#pendingMessages = []
     this.#worker.addEventListener("message", (e: MessageEvent<MDWorkerMessage>) => {
-      this.#event.emit(e.data.id, e.data)
+      this.#pendingMessages.push(e.data)
+      if (isNull(this.#animationFrameId)) {
+        this.#animationFrameId = requestAnimationFrame(this.#processPendingMessages.bind(this))
+      }
     })
   }
+
+  #processPendingMessages() {
+    for (let i = 0; i < this.#pendingMessages.length; i++) {
+      const message = this.#pendingMessages[i]
+      this.#event.emit(message.id, message)
+    }
+    this.#animationFrameId = null
+  }
+
   emit(id: string, event: MDWorkerMessageCore) {
     this.#worker.postMessage({ id, ...event })
     if (event.type === "Dispose") {
@@ -30,6 +46,7 @@ class MDWorkerExposeImpl implements MDWorkerExpose {
     this.#event.on(id, callback)
   }
   terminate() {
+    this.#animationFrameId && cancelAnimationFrame(this.#animationFrameId)
     this.#event.removeAllListeners()
     this.#worker.terminate()
   }
