@@ -1,5 +1,5 @@
 <p align='center'>
-<img src='./resources/icon.png' width="150" height="150" alt="WindFlow Icon" />
+<img src='./resources/icon.png' width="150" height="150" alt="windflow Icon" />
 </p>
 
 ![vue](https://img.shields.io/badge/vue-3.x-brightgreen.svg) ![vite](https://img.shields.io/badge/vite-7.x-blue.svg) ![electron](https://img.shields.io/badge/electron-38.x-brightgreen.svg)
@@ -8,9 +8,76 @@
   <a href="./README.zh.md">中文</a> / <a href="./README.md">English</a>
 </div>
 
-# WindFlow
+# windflow
 
-🍃 WindFlow - Power your automated workflows with multiple AI providers
+🍃 windflow - Power your automated workflows with multiple AI providers
+
+## 🧽 Download
+
+<div align=left>
+<table>
+    <thead align=left>
+        <tr>
+            <th>OS</th>
+            <th>Download</th>
+        </tr>
+    </thead>
+    <tbody align=left>
+        <tr>
+        <tr>
+            <td>Windows</td>
+            <td>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows"></a><br>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows"></a>
+            </td>
+        </tr>
+        <tr>
+            <td>macOS</td>
+            <td>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/DMG-Apple%20Silicon-%23000000.svg?logo=apple"></a><br>
+                <!-- <a href="https://github.com/evilArsh/windflow/releases/download/v$$VERSION$$/windflow-$$VERSION$$-macos-amd64.dmg"><img src="https://img.shields.io/badge/DMG-Intel%20X64-%2300A9E0.svg?logo=apple"></a><br> -->
+            </td>
+        </tr>
+        <tr>
+            <td>Linux</td>
+            <td>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux"> </a><br>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian"> </a><br>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+## ⚙️ Installation
+
+### Prerequisites
+
+- Node.js >= 22.10.0
+- pnpm >= 10.12.4
+- Git
+
+### Setup Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/evilArsh/windflow.git
+cd windflow
+
+# Install dependencies
+pnpm i -r
+
+# Start development server
+pnpm dev
+```
+
+### 📦 Building for Production
+
+```bash
+# Package for specific platforms
+pnpm build:win    # Windows
+pnpm build:mac    # macOS
+pnpm build:linux  # Linux
+```
 
 ## 🌟 Features
 
@@ -33,57 +100,38 @@
 - **Extensible Architecture**: Plugin system for adding custom tools and integrations
 - **Performance Monitoring**: Track token usage and performance metrics
 
-## 📝TODO LIST
-
-- [ ] Core workflow support
-- [ ] Rewrite core services with rust and running in wasm/wasi
-
 ## 👀 Preview
 
 ![chat](./docs/preview.png)
 
 ![chat-dark](./docs/preview-dark.png)
 
-## ⚙️ Installation
-
-### Prerequisites
-
-- Node.js >= 22.10.0
-- pnpm >= 10.12.4
-- Git
-
-### Setup Development Environment
-
-```bash
-# Clone the repository
-git clone https://github.com/evilArsh/windflow.git
-cd windflow
-
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-```
-
-### 📦 Building for Production
-
-```bash
-# Type checking
-pnpm typecheck
-
-# Build the application
-pnpm build
-
-# Package for specific platforms
-pnpm build:win    # Windows
-pnpm build:mac    # macOS
-pnpm build:linux  # Linux
-```
-
 ## 🏗️ Architecture
 
-WindFlow follows a typical Electron multi-process architecture:
+windflow follows a typical Electron multi-process architecture:
+
+### Main Packages
+
+The project is organized into several main packages:
+
+#### @windflow/core
+
+Core LLM logic and services for the application:
+
+- **Message handling**: Context management, hooks, storage, and utilities for chat interactions
+- **Models**: Core model management and utilities
+- **Providers**: Integrations with multiple LLM providers (OpenAI, DeepSeek, SiliconFlow, VolcEngine, etc.)
+- **Storage**: Comprehensive storage solutions for chats, embeddings, knowledge bases, MCP tools, models, presets, providers, RAG files, and settings
+- **Types**: Type definitions for AI, chat, knowledge, provider, request, and storage systems
+
+#### @windflow/markdown
+
+Markdown processing and rendering utilities:
+
+- **Vue integration**: Specialized caching, types, and utilities for Vue-based markdown rendering
+- **Processing pipeline**: Powered by unified, remark, and rehype ecosystems
+- **Features**: Supports math formulas, GFM (GitHub Flavored Markdown), emojis, HTML conversion, and more
+- **Worker-based**: Includes dedicated worker for efficient markdown processing
 
 ### Renderer Process
 
@@ -121,7 +169,7 @@ Provides customizable UI appearance:
 
 ## 🤝 Contributing
 
-We welcome contributions to WindFlow! Here's how you can help:
+We welcome contributions to windflow! Here's how you can help:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)

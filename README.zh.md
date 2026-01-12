@@ -1,12 +1,16 @@
 <p align='center'>
-<img src='./resources/icon.png' width="150" height="150" alt="WindFlow Icon" />
+<img src='./resources/icon.png' width="150" height="150" alt="windflow 图标" />
 </p>
 
 ![vue](https://img.shields.io/badge/vue-3.x-brightgreen.svg) ![vite](https://img.shields.io/badge/vite-7.x-blue.svg) ![electron](https://img.shields.io/badge/electron-38.x-brightgreen.svg)
 
-# WindFlow
+<div align="center">
+  <a href="./README.zh.md">中文</a> / <a href="./README.md">English</a>
+</div>
 
-🍃 WindFlow - 通过多个AI提供商增强您的自动化工作流程
+# windflow
+
+🍃 windflow - 使用多个AI供应商增强您的自动化工作流
 
 ## 🌟 功能特性
 
@@ -35,6 +39,42 @@
 
 ![chat-dark](./docs/preview-dark.png)
 
+## 🧽 下载
+
+<div align=left>
+<table>
+    <thead align=left>
+        <tr>
+            <th>操作系统</th>
+            <th>下载</th>
+        </tr>
+    </thead>
+    <tbody align=left>
+        <tr>
+        <tr>
+            <td>Windows</td>
+            <td>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows"></a><br>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows"></a>
+            </td>
+        </tr>
+        <tr>
+            <td>macOS</td>
+            <td>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/DMG-Apple%20Silicon-%23000000.svg?logo=apple"></a><br>
+                <!-- <a href="https://github.com/evilArsh/windflow/releases/download/v$$VERSION$$/windflow-$$VERSION$$-macos-amd64.dmg"><img src="https://img.shields.io/badge/DMG-Intel%20X64-%2300A9E0.svg?logo=apple"></a><br> -->
+            </td>
+        </tr>
+        <tr>
+            <td>Linux</td>
+            <td>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux"> </a><br>
+                <a href="https://github.com/evilArsh/windflow/releases"><img src="https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian"> </a><br>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 ## ⚙️ 安装
 
 ### 先决条件
@@ -51,7 +91,7 @@ git clone https://github.com/evilArsh/windflow.git
 cd windflow
 
 # 安装依赖
-pnpm install
+pnpm i -r
 
 # 启动开发服务器
 pnpm dev
@@ -60,12 +100,6 @@ pnpm dev
 ### 📦 生产构建
 
 ```bash
-# 类型检查
-pnpm typecheck
-
-# 构建应用程序
-pnpm build
-
 # 为特定平台打包
 pnpm build:win    # Windows
 pnpm build:mac    # macOS
@@ -74,41 +108,72 @@ pnpm build:linux  # Linux
 
 ## 🏗️ 架构
 
-WindFlow采用典型的Electron多进程架构：
+windflow 遵循典型的 Electron 多进程架构：
+
+### 主要包
+
+项目组织为几个主要包：
+
+#### @windflow/core
+
+应用程序的核心业务逻辑和服务：
+
+- **消息处理**: 用于聊天交互的上下文管理、钩子函数、存储和实用工具
+- **模型**: 核心模型管理和实用工具
+- **提供商**: 与多个 LLM 提供商的集成（OpenAI、DeepSeek、SiliconFlow、VolcEngine 等）
+- **存储**: 用于聊天、嵌入、知识库、MCP 工具、模型、预设、提供商、RAG 文件和设置的全面存储解决方案
+- **类型**: AI、聊天、知识、提供商、请求和存储系统的类型定义
+
+#### @windflow/markdown
+
+Markdown 处理和渲染实用工具：
+
+- **Vue 集成**: 专用于基于 Vue 的 Markdown 渲染的专门缓存、类型和实用工具
+- **处理管道**: 由 unified、remark 和 rehype 生态系统提供支持
+- **功能**: 支持数学公式、GFM（GitHub 风格 Markdown）、表情符号、HTML 转换等
+- **基于 Worker**: 包含专门的 worker 以实现高效的 Markdown 处理
+
+#### @windflow/shared
+
+应用程序间共享的类型和实用工具：
+
+- **类型定义**: 环境变量、事件总线、文件类型、MCP（模型上下文协议）、RAG 和主题设置
+- **实用工具**: 环境助手、服务定义、MCP 协议实现
+- **跨包实用工具**: 其他包使用的公共函数和常量
 
 ### 渲染进程
 
-- **Vue 3前端**: 使用Composition API构建的现代响应式UI
-- **Pinia状态管理**: 应用程序数据的集中状态管理
+- **Vue 3 前端**: 使用组合式 API 构建的现代响应式 UI
+- **Pinia 状态管理**: 应用数据的集中状态管理
 - **Element Plus UI**: 功能丰富的组件库
-- **Monaco编辑器**: 具有语法高亮的高级代码编辑器
+- **Monaco 编辑器**: 具有语法高亮的高级代码编辑器
 
-### 核心组件
+### 关键组件
 
 #### RAG (检索增强生成) 服务
 
-RAG服务支持本地知识库的创建和查询：
+RAG 服务启用本地知识库的创建和查询：
 
-- 多种格式的文档解析 (Word, PDF, CSV, Excel)
+- 多种格式的文档解析（Word、PDF、CSV、Excel）
 - 文本分块和向量嵌入
-- 使用LanceDB的本地向量数据库
+- 使用 LanceDB 的本地向量数据库
 - 用于上下文感知响应的相似性搜索
 
 #### MCP (模型上下文协议) 服务
 
-通过标准化协议扩展AI功能：
+通过标准化协议扩展 AI 功能：
 
 - 与外部工具和服务集成
-- AI工具的标准化通信协议
-- 支持stdio、HTTP和SSE传输
+- AI 工具的标准化通信协议
+- 支持 stdio、HTTP 和 SSE 传输
 
 #### 主题服务
 
-提供可定制的UI外观：
+提供可定制的 UI 外观：
 
 - 浅色、深色和系统主题
 - 自动标题栏覆盖适配
-- 原生主题更改检测
+- 原生主题变更检测
 
 ## 🤝 贡献
 
