@@ -39,21 +39,26 @@ jobs:
           else
             echo "version=$(echo "$(git describe --tags --abbrev=0)" | sed 's/^v//')" >> $GITHUB_OUTPUT
           fi
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          cache: true
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: "24.12.0"
-          cache: "pnpm"
-          package-manager-cache: true
-          cache-dependency-path: "pnpm-lock.yaml"
+          node-version: 24
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup pnpm store path
+        id: pnpm-store
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path -s)" >> $GITHUB_OUTPUT
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
       - name: Install dependencies
         run: |
-          pnpm install -w --frozen-lockfile
+          pnpm install -w -r
       - name: Build for windows
         if: ${{ startsWith(matrix.platform, 'windows') }}
         run: |
@@ -83,6 +88,7 @@ jobs:
             ./dist/*.AppImage
             ./dist/*.deb
             ./dist/*.blockmap
+            ./dist/latest*.yml
           overwrite: true
   changelog:
     permissions: write-all
