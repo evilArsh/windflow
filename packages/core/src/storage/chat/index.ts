@@ -46,6 +46,10 @@ export async function addChatMessage(data: ChatMessage, params?: QueryParams) {
 export async function putChatMessage(data: ChatMessage, params?: QueryParams) {
   return msgQueue.add(async () => resolveDb(params).chatMessage.put(cloneDeep(data)))
 }
+export async function updateChatMessage(id: string, data: Partial<ChatMessage>, params?: QueryParams) {
+  delete data.id
+  return msgQueue.add(async () => resolveDb(params).chatMessage.update(id, cloneDeep(data)))
+}
 export async function bulkPutChatMessage(data: ChatMessage[], params?: QueryParams) {
   return msgQueue.add(async () => resolveDb(params).chatMessage.bulkPut(cloneDeep(data)))
 }

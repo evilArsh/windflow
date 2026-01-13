@@ -52,6 +52,8 @@ export class MessageManager {
       providerMeta,
       value => {
         if (ctx.handler?.getSignal().aborted) {
+          message.status = 499
+          this.#emitMessage(message, ctx.id)
           return
         }
         const { data, status, msg } = value

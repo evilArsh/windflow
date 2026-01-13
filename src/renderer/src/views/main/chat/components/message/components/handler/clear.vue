@@ -26,7 +26,6 @@ const handler = {
         confirmButtonText: t("btn.confirm"),
         cancelButtonText: t("btn.cancel"),
         cancelButtonClass: "mx-1rem",
-        modal: false,
       })
       return true
     } catch (_e) {
