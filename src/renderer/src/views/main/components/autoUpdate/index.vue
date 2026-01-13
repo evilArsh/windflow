@@ -37,7 +37,7 @@ const ev = {
     open()
   },
   onUpdateEvent(data: AutoUpdateStatusEvent) {
-    console.log("[updateEvent]", data)
+    // console.log("[updateEvent]", data)
     switch (data.type) {
       case "UpdateAvailable":
         Object.assign(info.value, data)
