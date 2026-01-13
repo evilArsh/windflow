@@ -43,8 +43,15 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+      - name: Force git to use HTTPS instead of SSH
+        shell: bash
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com:" && \
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - name: Setup pnpm store path
         id: pnpm-store
         shell: bash
