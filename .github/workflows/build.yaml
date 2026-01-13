@@ -72,18 +72,21 @@ jobs:
           pnpm build:win
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for macos
         if: ${{ startsWith(matrix.platform, 'macos') }}
         run: |
           pnpm build:mac
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for linux
         if: ${{ startsWith(matrix.platform, 'linux') }}
         run: |
           pnpm build:linux
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
