@@ -85,5 +85,10 @@ linux:
       StartupWMClass: windflow
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://resources.vivcode.cn/windflow/auto-updates
+  provider: github
+  owner: evilArsh
+  repo: windflow
+  releaseType: release
+  private: false
+  timeout: 0
+

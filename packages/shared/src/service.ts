@@ -46,6 +46,9 @@ export const IpcChannel = {
   RagRestart: "rag.restart",
   RagRemoveById: "rag.removeById",
   RagRemoveByTopicId: "rag.removeByTopicId",
+
+  AutoUpdateCheckUpdate: "autoUpdate.checkUpdate",
+  AutoUpdateQuitAndInstall: "autoUpdate.quitAndInstall",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -121,4 +124,9 @@ export interface RAGService {
    * remove all datas which belongs to `topicId`
    */
   removeByTopicId: (topicId: string) => Promise<StatusResponse>
+}
+
+export interface AutoUpdateService {
+  checkUpdate: (feedUrl?: string) => Promise<void>
+  quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => void
 }

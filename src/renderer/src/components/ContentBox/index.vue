@@ -12,6 +12,7 @@ const {
   needLock = false,
   stillLock = false,
   background = false,
+  round = false,
   // disabled = false,
 } = defineProps<{
   wrapStyle?: CSSProperties
@@ -39,6 +40,7 @@ const {
    * 是否有背景
    */
   background?: boolean
+  round?: boolean
   /**
    * 是否禁用
    */
@@ -81,7 +83,7 @@ watch(
 <template>
   <div
     class="comp-content-box"
-    :class="[{ active, normal, background }, wrapClass]"
+    :class="[{ active, normal, background, round }, wrapClass]"
     :style="wrapStyle"
     @click="handle.click">
     <div v-if="$slots.header" class="box-header">
@@ -145,6 +147,9 @@ watch(
   gap: var(--ai-gap-base);
   background-color: var(--box-bg-color);
   border: solid var(--box-border-size) var(--box-border-color);
+  &.round {
+    border-radius: var(--el-border-radius-round);
+  }
   &.background {
     background-color: var(--box-bg-background-color);
     &:hover {

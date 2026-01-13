@@ -2,6 +2,10 @@
   "app": {
     "name": "AI Assistant"
   },
+  "autoUpdate": {
+    "newVersionAvailable": "New Version",
+    "releaseTitle": "New Version"
+  },
   "btn": {
     "add": "Add",
     "cancel": "Cancel",
@@ -14,6 +18,7 @@
     "mcpList": "Configuration List",
     "new": "New",
     "pin": "Pin",
+    "quitAndInstall": "Install Now",
     "refresh": "Refresh",
     "retry": "Retry",
     "save": "Save",

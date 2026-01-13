@@ -2,6 +2,10 @@
   "app": {
     "name": "AI 助手"
   },
+  "autoUpdate": {
+    "newVersionAvailable": "新版本可用",
+    "releaseTitle": "新版本"
+  },
   "btn": {
     "add": "添加",
     "cancel": "取消",
@@ -14,6 +18,7 @@
     "mcpList": "配置列表",
     "new": "新增",
     "pin": "置顶",
+    "quitAndInstall": "立即安装",
     "refresh": "刷新",
     "retry": "重试",
     "save": "保存",

@@ -2,13 +2,11 @@ packages:
   - demo/*
   - packages/*
 
-overrides:
-  "decode-named-character-reference": "file:./src/renderer/patchs/decode-named-character-reference"
 catalogs:
   common:
-    "@toolmain/components": ^1.2.21
-    "@toolmain/libs": ^1.1.12
-    "@toolmain/shared": ^1.3.3
+    '@toolmain/components': ^1.2.21
+    '@toolmain/libs': ^1.1.12
+    '@toolmain/shared': ^1.3.3
     ajv: ^8.17.1
     ajv-errors: ^3.0.0
     apache-arrow: ^21.1.0
@@ -21,31 +19,31 @@ catalogs:
     nanoid: ^5.1.6
     p-queue: ^9.0.1
   dev:
-    "@babel/types": ~7.28.5
-    "@commitlint/config-conventional": ^20.0.0
-    "@eslint/js": ^9.39.1
-    "@iconify/json": ^2.2.412
-    "@iconify/types": ^2.0.0
-    "@rollup/plugin-json": ^6.1.0
-    "@types/chance": ^1.1.7
-    "@types/estree": ^1.0.8
-    "@types/hash-sum": ^1.0.2
-    "@types/hast": ^3.0.4
-    "@types/lodash.merge": ^4.6.9
-    "@types/mime-types": ^3.0.1
-    "@types/node": ^24.10.1
-    "@types/pdf-parse": ^1.1.5
-    "@types/sqlstring": ^2.3.2
-    "@types/unist": ^3.0.3
-    "@typescript-eslint/eslint-plugin": ^8.48.0
-    "@unocss/preset-icons": ^66.5.9
-    "@vitejs/plugin-vue": ^6.0.2
-    "@vitejs/plugin-vue-jsx": ^5.1.2
-    "@vitest/browser": ^4.0.14
-    "@vitest/browser-playwright": ^4.0.14
-    "@vitest/coverage-v8": ^4.0.14
-    "@vitest/ui": ^4.0.14
-    "@vue/test-utils": ^2.4.6
+    '@babel/types': ~7.28.5
+    '@commitlint/config-conventional': ^20.0.0
+    '@eslint/js': ^9.39.1
+    '@iconify/json': ^2.2.412
+    '@iconify/types': ^2.0.0
+    '@rollup/plugin-json': ^6.1.0
+    '@types/chance': ^1.1.7
+    '@types/estree': ^1.0.8
+    '@types/hash-sum': ^1.0.2
+    '@types/hast': ^3.0.4
+    '@types/lodash.merge': ^4.6.9
+    '@types/mime-types': ^3.0.1
+    '@types/node': ^24.10.1
+    '@types/pdf-parse': ^1.1.5
+    '@types/sqlstring': ^2.3.2
+    '@types/unist': ^3.0.3
+    '@typescript-eslint/eslint-plugin': ^8.48.0
+    '@unocss/preset-icons': ^66.5.9
+    '@vitejs/plugin-vue': ^6.0.2
+    '@vitejs/plugin-vue-jsx': ^5.1.2
+    '@vitest/browser': ^4.0.14
+    '@vitest/browser-playwright': ^4.0.14
+    '@vitest/coverage-v8': ^4.0.14
+    '@vitest/ui': ^4.0.14
+    '@vue/test-utils': ^2.4.6
     commitlint: ^20.1.0
     csstype: ^3.2.3
     devlop: ^1.1.0
@@ -93,14 +91,15 @@ catalogs:
     vue-eslint-parser: ^10.2.0
     vue-tsc: ^3.1.5
   node:
-    "@electron-toolkit/preload": ^3.0.2
-    "@electron-toolkit/utils": ^4.0.0
-    "@file-type/xml": ^0.4.4
-    "@lancedb/lancedb": ^0.22.3
-    "@modelcontextprotocol/sdk": ^1.23.0
+    '@electron-toolkit/preload': ^3.0.2
+    '@electron-toolkit/utils': ^4.0.0
+    '@file-type/xml': ^0.4.4
+    '@lancedb/lancedb': ^0.22.3
+    '@modelcontextprotocol/sdk': ^1.23.0
     csv-parser: ^3.2.0
     electron-log: ^5.4.3
     electron-store: ^11.0.2
+    electron-updater: ^6.7.3
     electron-window-state: ^5.0.3
     exceljs: ^4.4.0
     execa: ^9.6.0
@@ -109,10 +108,10 @@ catalogs:
     pdf-parse: ^2.4.5
     sqlstring: ^2.3.3
   web:
-    "@iconify/utils": ^3.1.0
-    "@shikijs/monaco": ^3.17.0
-    "@unocss/reset": 66.5.11
-    "@vueuse/core": ^14.1.0
+    '@iconify/utils': ^3.1.0
+    '@shikijs/monaco': ^3.17.0
+    '@unocss/reset': 66.5.11
+    '@vueuse/core': ^14.1.0
     character-entities: ^2.0.2
     comma-separated-tokens: ^2.0.3
     dexie: ^4.2.1
@@ -150,8 +149,11 @@ ignoredBuiltDependencies:
   - vue-demi
 
 onlyBuiltDependencies:
-  - "@parcel/watcher"
+  - '@parcel/watcher'
   - electron
   - electron-winstaller
   - msw
   - protobufjs
+
+overrides:
+  decode-named-character-reference: file:./src/renderer/patchs/decode-named-character-reference

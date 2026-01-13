@@ -35,7 +35,7 @@ const useLLM = () => {
 const { raw, parsed, stream } = useLLM()
 </script>
 <template>
-  <el-tabs v-model="tabs.current" type="border-card" class="db-tabs wh-full" tab-position="left">
+  <el-tabs v-model="tabs.current" class="db-tabs wh-full">
     <el-tab-pane label="llm" name="llm">
       <DialogPanel class="wh-full">
         <template #header>

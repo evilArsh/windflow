@@ -1,3 +1,9 @@
-provider: generic
-url: https//localhost:9527/auto-updates
-updaterCacheDirName: app-updater
+# provider: generic
+# url: http://localhost/static/
+# updaterCacheDirName: app-updater
+provider: github
+owner: evilArsh
+repo: windflow
+releaseType: release
+private: false
+timeout: 0

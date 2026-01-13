@@ -6,6 +6,7 @@ import { FileServiceImpl } from "./File"
 import { EventBusImpl } from "./EventBus"
 import { ThemeServiceImpl } from "./Theme"
 import { RAGServiceImpl } from "./Rag"
+import { AutoUpdateServiceImpl } from "./AutoUpdate"
 
 export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const bus = new EventBusImpl(mainWindow)
@@ -13,6 +14,7 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const file = new FileServiceImpl()
   const theme = new ThemeServiceImpl(mainWindow)
   const rag = new RAGServiceImpl(bus)
+  const autoUpdate = new AutoUpdateServiceImpl(bus)
 
   function dispose() {
     theme.dispose()
@@ -20,6 +22,7 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
     mcp.dispose()
     file.dispose()
     rag.dispose()
+    autoUpdate.dispose()
   }
   function registerIpc(): void {
     theme.registerIpc()
@@ -27,6 +30,7 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
     mcp.registerIpc()
     file.registerIpc()
     rag.registerIpc()
+    autoUpdate.registerIpc()
   }
   return {
     dispose,
