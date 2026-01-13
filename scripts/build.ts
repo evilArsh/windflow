@@ -34,7 +34,7 @@ async function buildUnpack() {
   try {
     await runBuild()
     console.log("[building] unpack start")
-    await execa("electron-builder", ["--dir", "--config", "electron-builder.yml"], {
+    await execa("electron-builder", ["--dir", "--config", "electron-builder.yml", "--publish", "never"], {
       cwd: resolve(__dirname, ".."),
       stdio: "inherit",
     })
@@ -49,7 +49,7 @@ async function buildWin() {
   try {
     await runBuild()
     console.log("[building] windows start")
-    await execa("electron-builder", ["--win", "--config", "electron-builder.yml"], {
+    await execa("electron-builder", ["--win", "--config", "electron-builder.yml", "--publish", "never"], {
       cwd: resolve(__dirname, ".."),
       stdio: "inherit",
     })
@@ -64,7 +64,7 @@ async function buildMac() {
   try {
     await runBuild()
     console.log("[building] mac start")
-    await execa("electron-builder", ["--mac", "--config", "electron-builder.yml"], {
+    await execa("electron-builder", ["--mac", "--config", "electron-builder.yml", "--publish", "never"], {
       cwd: resolve(__dirname, ".."),
       stdio: "inherit",
     })
@@ -79,7 +79,7 @@ async function buildLinux() {
   try {
     await runBuild()
     console.log("[building] linux start")
-    await execa("electron-builder", ["--linux", "--config", "electron-builder.yml"], {
+    await execa("electron-builder", ["--linux", "--config", "electron-builder.yml", "--publish", "never"], {
       cwd: resolve(__dirname, ".."),
       stdio: "inherit",
     })
