@@ -1,6 +1,6 @@
 {
   "name": "windflow",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Power your automated workflows with multiple AI providers",
   "main": "./out/main/index.js",
   "author": "windflow <arshdebian@163.com>",
@@ -132,6 +132,7 @@
     "devlop": "catalog:dev",
     "electron": "catalog:dev",
     "electron-builder": "catalog:dev",
+    "electron-updater": "catalog:node",
     "electron-vite": "catalog:dev",
     "eslint": "catalog:dev",
     "eslint-config-prettier": "catalog:dev",
