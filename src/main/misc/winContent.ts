@@ -1,5 +1,5 @@
 import { isHTTPUrl } from "@toolmain/shared"
-import { BrowserWindow, globalShortcut } from "electron"
+import { BrowserWindow, globalShortcut, app } from "electron"
 
 function openExternalWindow(mainWindow: BrowserWindow, url: string) {
   const parentBounds = mainWindow.getBounds()
@@ -20,6 +20,7 @@ function openExternalWindow(mainWindow: BrowserWindow, url: string) {
   })
   externalWindow.loadURL(url)
 }
+
 export function presetWindowContent(mainWindow: BrowserWindow) {
   // 拦截所有导航（包括 window.location 跳转）
   mainWindow.webContents.on("will-navigate", (event, url) => {
@@ -40,6 +41,11 @@ export function presetWindowContent(mainWindow: BrowserWindow) {
     return { action: "allow" }
   })
 
+  mainWindow.on("close", e => {
+    e.preventDefault()
+    mainWindow.hide()
+    app.dock?.hide()
+  })
   globalShortcut.register("CommandOrControl+Shift+I", () => {
     if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isFocused()) {
       mainWindow.webContents.toggleDevTools()

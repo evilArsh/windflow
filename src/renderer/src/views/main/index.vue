@@ -1,19 +1,24 @@
 <script lang="ts" setup>
 import Navbar from "./components/nav/index.vue"
 import Debugger from "./components/debugger/index.vue"
+import AutoUpdate from "./components/autoUpdate/index.vue"
 onMounted(() => {})
 </script>
 <template>
   <div class="main-container">
-    <div class="main-aside">
-      <Navbar></Navbar>
+    <div class="main-content-header">
+      <div class="flex-shrink-0 flex-y-center gap-1rem justify-start">
+        <div id="mainContentHeaderSlot"></div>
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex-shrink-0 flex-y-center gap-1rem">
+        <AutoUpdate></AutoUpdate>
+        <Debugger></Debugger>
+      </div>
     </div>
     <div class="main-content">
-      <div class="main-content-header">
-        <div class="flex items-center gap-1rem justify-start">
-          <div id="mainContentHeaderSlot"></div>
-        </div>
-        <Debugger></Debugger>
+      <div class="main-aside">
+        <Navbar></Navbar>
       </div>
       <div class="main-content-inner">
         <router-view></router-view>
@@ -29,6 +34,7 @@ onMounted(() => {})
   height: 100%;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
   .main-aside {
     overflow: hidden;
     display: flex;
@@ -37,8 +43,8 @@ onMounted(() => {})
     flex: 1;
     overflow: hidden;
     display: flex;
-    flex-direction: column;
-    gap: var(--ai-gap-base);
+    // flex-direction: column;
+    // gap: var(--ai-gap-base);
   }
   .main-content-header {
     -webkit-app-region: drag;
@@ -48,12 +54,14 @@ onMounted(() => {})
     border-bottom-left-radius: var(--el-border-radius-base);
     display: flex;
     align-items: center;
+    position: relative;
+    z-index: 99999;
   }
   .main-content-inner {
     flex: 1;
     overflow: hidden;
     display: flex;
-    margin: 0 var(--ai-gap-base) var(--ai-gap-base) 0;
+    padding: var(--ai-gap-base) var(--ai-gap-base) var(--ai-gap-base) 0;
     border-radius: var(--el-border-radius-base);
   }
 }

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from "electron"
+import { app, shell, BrowserWindow, Tray } from "electron"
 import { join } from "path"
 import { electronApp, optimizer, is } from "@electron-toolkit/utils"
 import windowStateKeeper from "electron-window-state"
@@ -6,7 +6,8 @@ import icon from "../../resources/icon.png?asset"
 import { registerService } from "./services"
 import { ServiceCore } from "./types"
 import { autoBackgroundColor, autoTitleBarOverlay } from "./services/Theme"
-import { presetWindowContent } from "./misc"
+import { presetWindowContent } from "./misc/winContent"
+import { createTray } from "./misc/tray"
 import { useEnv } from "./hooks/useEnv"
 function createWindow(): BrowserWindow {
   const mainWindowState = windowStateKeeper({
@@ -30,10 +31,11 @@ function createWindow(): BrowserWindow {
     movable: true,
     icon,
     webPreferences: {
+      // allowRunningInsecureContent: false,
+      // webSecurity: true,
       devTools: true,
       preload: join(__dirname, "../preload/index.mjs"),
       sandbox: false,
-      webSecurity: false,
       contextIsolation: true,
       webviewTag: true,
     },
@@ -56,13 +58,13 @@ function createWindow(): BrowserWindow {
 
 function init() {
   let serviceCore: ServiceCore | undefined
+  let tray: Tray | undefined
   if (!app.requestSingleInstanceLock()) {
     app.quit()
     process.exit(0)
   } else {
     app.whenReady().then(() => {
       useEnv().init()
-
       electronApp.setAppUserModelId("com.arch.windflow")
       // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
       app.on("browser-window-created", (_, window) => {
@@ -75,8 +77,11 @@ function init() {
       serviceCore = registerService(mainWindow)
       serviceCore.registerIpc()
       presetWindowContent(mainWindow)
+      tray = createTray(mainWindow)
     })
     app.on("window-all-closed", () => {
+      tray?.destroy()
+      tray = undefined
       if (process.platform !== "darwin") {
         app.quit()
       }
