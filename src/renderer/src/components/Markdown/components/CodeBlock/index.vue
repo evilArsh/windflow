@@ -2,20 +2,18 @@
 import type { Element } from "hast"
 import { getLang } from "@windflow/markdown"
 import { isUndefined } from "@toolmain/shared"
+import Code from "./code.vue"
+import RawCode from "./rawCode.vue"
 const props = defineProps<{
   children?: string
   node?: Element
 }>()
-const Code = defineAsyncComponent(() => import("./code.vue"))
-// inline code
-const RawCode = defineAsyncComponent(() => import("./rawCode.vue"))
 const code = ref("")
 const lang = ref("")
 const vnode = shallowRef<VNode>()
 watchEffect(() => {
   if (!props.node) return
   if (isUndefined(props.children)) return
-  // console.log("[props]", props)
   lang.value = getLang(props.node)
   code.value = props.children
 

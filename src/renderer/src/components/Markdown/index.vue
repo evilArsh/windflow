@@ -20,7 +20,7 @@ const rt = useVueRuntime({
   },
 })
 function onParseContent(content: string) {
-  if (!content) {
+  if (!content || /^\n+$/.test(content)) {
     html.value = h("span", "")
     return
   }
