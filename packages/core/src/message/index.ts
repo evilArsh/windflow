@@ -45,6 +45,7 @@ export class MessageManager {
     const rawContexts = getIsolatedMessages(messages, messageId)
     const contexts = getMessageContexts(topic, rawContexts)
     message.status = 100
+    message.finish = false
     this.#emitMessage(message, ctx.id)
     const newHandler = await provider.chat(
       contexts,
@@ -304,6 +305,30 @@ export class MessageManager {
     if (isArrayLength(ctx)) {
       ctx.forEach(c => this.terminate(topicId, c.messageId, destroy))
     }
+  }
+  /**
+   * generate a title for the topic according to the topic's messages
+   */
+  async summarize(contextId: string) {
+    const ctx = this.#ctx.get(contextId)
+    if (!ctx) return
+    const { modelMeta, providerMeta, provider, topicId } = ctx
+    if (!(modelMeta && providerMeta && provider)) {
+      console.warn("[summarize] stopped while lack of necessary info")
+      return
+    }
+    const topic = await storage.chat.getTopic(topicId)
+    if (!topic) return
+    const messages = await storage.chat.getChatMessages(topicId)
+    const contexts = getMessageContexts(topic, messages)
+    if (!contexts.length) return
+    provider.summarize(JSON.stringify(contexts), modelMeta, providerMeta, value => {
+      if (isString(value.data.content)) {
+        topic.label = value.data.content
+        storage.chat.putChatTopic(topic)
+        this.#ev.emit("topic", { data: topic })
+      }
+    })
   }
   /**
    * add new messages.

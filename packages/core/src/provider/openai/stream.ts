@@ -14,7 +14,7 @@ export async function streamParse(
   const tmpItems: ResponseOutputItem[] = []
   tmpItems.length = 0
   for await (const chunk of response) {
-    console.log(`[${chunk.type}]`, chunk)
+    // console.log(`[${chunk.type}]`, chunk)
     switch (chunk.type) {
       case "response.output_item.added": {
         tmpItems.push(chunk.item)

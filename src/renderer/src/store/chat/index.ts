@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import {
+  ChatEventResponseTopic,
   ChatLLMConfig,
   ChatMessage,
   ChatMessageTree,
@@ -7,11 +8,12 @@ import {
   ChatTopicTree,
   ChatTTIConfig,
   Content,
+  ModelType,
   Role,
 } from "@windflow/core/types"
 import useModelsStore from "@renderer/store/model"
 import { storage, defaultTTIConfig, defaultLLMConfig, chatTopicDefault, withTransaction } from "@windflow/core/storage"
-import { cloneDeep, code1xx, isArray, isArrayLength, uniqueId } from "@toolmain/shared"
+import { cloneDeep, code1xx, code2xx, isArray, isArrayLength, uniqueId } from "@toolmain/shared"
 import {
   assembleMessageTree,
   assembleTopicTree,
@@ -27,6 +29,7 @@ import {
 } from "./utils"
 import { useMessage } from "@renderer/hooks/useMessage"
 import { createChatMessage } from "@windflow/core/message"
+import { isChatReasonerType } from "@windflow/core/models"
 
 export default defineStore("chat_topic", () => {
   const modelsStore = useModelsStore()
@@ -41,7 +44,13 @@ export default defineStore("chat_topic", () => {
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const msgMgr = useMessage()
   const { t } = useI18n()
-  function _onReceiveMessage(message: ChatMessage, _contextId?: string) {
+  function _onReceiveTopic(ev: ChatEventResponseTopic) {
+    const { data } = ev
+    const current = topicMap.get(data.id)
+    if (!current) return
+    current.node.label = ev.data.label
+  }
+  function _onReceiveMessage(message: ChatMessage, contextId?: string) {
     const topic = topicMap.get(message.topicId)
     let cacheMsg = chatMessageMap.get(message.id)
     if (!topic) return
@@ -96,22 +105,24 @@ export default defineStore("chat_topic", () => {
     } else {
       topic.node.requestCount = Math.max(0, topic.node.requestCount - 1)
       cacheMsg.node.finish = true
+
+      if (code2xx(message.status)) {
+        // auto detect reasoning model
+        if (message.content.children?.some(child => !!child.reasoning_content)) {
+          storage.model.get(message.modelId).then(model => {
+            if (!model) return
+            if (model && !isChatReasonerType(model)) {
+              model.type.push(ModelType.ChatReasoner)
+              modelsStore.put(model)
+            }
+          })
+        }
+        // auto summarize a topic title
+        if (contextId && topic.node.label === window.defaultTopicTitle) {
+          msgMgr.summarize(contextId)
+        }
+      }
     }
-    // if (message.content.children?.some(child => !!child.reasoning_content)) {
-    //   if (!modelsStore.utils.isChatReasonerType(model)) {
-    //     model.type.push(ModelType.ChatReasoner)
-    //     modelsStore.put(model)
-    //   }
-    // }
-    // if (message.parentId) return // 多模型请求时不总结标题
-    // if (topic.label === window.defaultTopicTitle && chatContext.provider) {
-    //   chatContext.provider.summarize(JSON.stringify(message), model, providerMeta, value => {
-    //     if (isString(value.data.content)) {
-    //       topic.label = value.data.content
-    //       api.putChatTopic(topic)
-    //     }
-    //   })
-    // }
   }
   function terminateAll(topicId: string, destroy?: boolean) {
     msgMgr.terminateAll(topicId, destroy)
@@ -331,6 +342,7 @@ export default defineStore("chat_topic", () => {
     )
     msgMgr.removeAllListener()
     msgMgr.on("message", data => _onReceiveMessage(data.data, data.contextId))
+    msgMgr.on("topic", _onReceiveTopic)
   }
   return {
     init,

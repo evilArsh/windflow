@@ -209,9 +209,22 @@ export interface ChatContextManager {
 }
 
 export type ChatEventResponseMessage = {
+  /**
+   * if a message is `Role.User` type, it has no context
+   */
   contextId?: string
   data: ChatMessage
 }
+export type ChatEventResponseTopic = {
+  data: ChatTopic
+}
 export interface ChatEventResponse {
+  /**
+   * emit when a message's content changed
+   */
   message: (response: ChatEventResponseMessage) => void
+  /**
+   * emit when a topic meta info changed
+   */
+  topic: (response: ChatEventResponseTopic) => void
 }
