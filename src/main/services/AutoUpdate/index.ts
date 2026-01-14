@@ -1,4 +1,4 @@
-import { ServiceCore } from "@/main/types"
+import { ServiceCore } from "@main/types"
 import { AutoUpdateAvailable, AutoUpdateService, EventBus, EventKey, IpcChannel } from "@windflow/shared"
 import { autoUpdater, UpdateCheckResult, UpdateInfo } from "electron-updater"
 import { ipcMain, app } from "electron"

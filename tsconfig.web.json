@@ -31,7 +31,7 @@
     "noEmit": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      // "@/*": ["src/*"],
       "@renderer/*": ["src/renderer/src/*"],
       "@windflow/core/*": ["packages/core/src/*"],
       "@windflow/markdown": ["packages/markdown/src/index.ts"],

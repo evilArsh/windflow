@@ -20,7 +20,7 @@
     "strictNullChecks": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      // "@/*": ["src/*"],
       "@main/*": ["src/main/*"],
       "@preload/*": ["src/preload/*"],
       "@windflow/shared": ["packages/shared/src/index.ts"]
