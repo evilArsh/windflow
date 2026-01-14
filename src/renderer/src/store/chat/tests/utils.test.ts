@@ -1,4 +1,4 @@
-import { useInjectedSetup } from "@/tests/mount"
+import { useInjectedSetup } from "../../../../../tests/mount"
 import { describe, it } from "vitest"
 // import {
 //   ChatMessageTree,

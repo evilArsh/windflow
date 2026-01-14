@@ -40,6 +40,7 @@ export default defineStore("chat_topic", () => {
   const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const msgMgr = useMessage()
+  const { t } = useI18n()
   function _onReceiveMessage(message: ChatMessage, _contextId?: string) {
     const topic = topicMap.get(message.topicId)
     let cacheMsg = chatMessageMap.get(message.id)
@@ -146,6 +147,9 @@ export default defineStore("chat_topic", () => {
     }
   }
   function send(topicId: string, content: Content, modelIds: string[]) {
+    if (!modelIds.length) {
+      throw new Error(t("error.emptyModels"))
+    }
     return msgMgr.send(topicId, content, modelIds)
   }
   /**
