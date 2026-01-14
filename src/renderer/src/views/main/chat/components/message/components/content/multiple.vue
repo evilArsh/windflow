@@ -8,10 +8,11 @@ import IconLeftToRight from "~icons/ic/baseline-format-line-spacing"
 import IconGrid from "~icons/ic/baseline-grid-on"
 import Tab from "~icons/ic/outline-folder-copy"
 import Title from "./title.vue"
-import { CSSProperties, isString, msg, errorToText, CallBackFn } from "@toolmain/shared"
+import { CSSProperties, isString, errorToText, CallBackFn } from "@toolmain/shared"
 import type { Primitive } from "type-fest"
 import { useThrottleFn } from "@vueuse/core"
 import { useMsgContext } from "../../../../index"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   message: ChatMessageTree
   topic: ChatTopic

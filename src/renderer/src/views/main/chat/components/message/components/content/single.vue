@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
-import { CallBackFn, code1xx, errorToText, isString, msg, msgError } from "@toolmain/shared"
+import { CallBackFn, code1xx, errorToText, isString } from "@toolmain/shared"
 import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
@@ -13,6 +13,7 @@ import Error from "./error.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@windflow/core/types"
 import { useMsgContext } from "../../../../index"
+import { msg, msgError } from "@renderer/utils"
 const props = defineProps<{
   message: ChatMessageTree
   parent?: ChatMessageTree

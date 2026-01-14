@@ -3,8 +3,9 @@ import { Knowledge } from "@windflow/core/types"
 import useRagFilesStore from "../ragFiles/index"
 import useEmbeddingStore from "@renderer/store/embedding"
 import { storage, withTransaction } from "@windflow/core/storage"
-import { cloneDeep, code5xx, msgError, uniqueId } from "@toolmain/shared"
+import { cloneDeep, code5xx, uniqueId } from "@toolmain/shared"
 import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo, EventKey } from "@windflow/shared"
+import { msgError } from "@renderer/utils"
 export default defineStore("knowledge", () => {
   const ragFilesStore = useRagFilesStore()
   const embeddingStore = useEmbeddingStore()

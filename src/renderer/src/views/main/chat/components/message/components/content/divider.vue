@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
-import { CallBackFn, errorToText, msg } from "@toolmain/shared"
+import { CallBackFn, errorToText } from "@toolmain/shared"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   message: ChatMessageTree
   topic: ChatTopic

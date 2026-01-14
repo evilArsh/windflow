@@ -2,13 +2,14 @@
 import { ChatTopic } from "@windflow/core/types"
 import useMcpStore from "@renderer/store/mcp"
 import { storeToRefs } from "pinia"
-import { CallBackFn, msg, errorToText } from "@toolmain/shared"
+import { CallBackFn, errorToText } from "@toolmain/shared"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import MCPForm from "@renderer/views/main/mcp/index/components/form/form.vue"
 import { MCPClientStatus, MCPServerParam } from "@windflow/shared"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { Spinner } from "@toolmain/components"
 import Shell from "./shell.vue"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

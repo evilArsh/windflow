@@ -2,9 +2,10 @@
 import useRagFilesStore from "@renderer/store/ragFiles"
 import useKnowledgeStore from "@renderer/store/knowledge"
 import { RAGFileStatus, RAGLocalFileInfo } from "@windflow/shared"
-import { CallBackFn, msgError, errorToText, cloneDeep } from "@toolmain/shared"
+import { CallBackFn, errorToText, cloneDeep } from "@toolmain/shared"
 import { filesize } from "filesize"
 import { Spinner } from "@toolmain/components"
+import { msgError } from "@renderer/utils"
 
 const props = defineProps<{
   fileList: RAGLocalFileInfo[]

@@ -2,7 +2,7 @@
 import useMcpStore from "@renderer/store/mcp"
 import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@windflow/shared"
 import { storeToRefs } from "pinia"
-import { msg, useDialog, CallBackFn, errorToText } from "@toolmain/shared"
+import { useDialog, CallBackFn, errorToText } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import Form from "./components/form/form.vue"
@@ -14,6 +14,7 @@ import Schema from "./components/tools/schema.vue"
 import Prompt from "./components/tools/prompt.vue"
 import Resource from "./components/tools/resource.vue"
 import ResourceTpl from "./components/tools/resourceTpl.vue"
+import { msg } from "@renderer/utils"
 const mcp = useMcpStore()
 const { servers } = storeToRefs(mcp)
 const { t } = useI18n()

@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import useMcpStore from "@renderer/store/mcp"
 import { useSchemaValidate, MCPServerParam } from "@windflow/shared"
-import { CallBackFn, errorToText, isArrayLength, msg, msgError } from "@toolmain/shared"
+import { CallBackFn, errorToText, isArrayLength } from "@toolmain/shared"
+import { msg, msgError } from "@renderer/utils"
 import { storeToRefs } from "pinia"
 import { assembleParam, McpServerInnerSchema, McpServersSchema } from "../helper"
 import { DialogPanel } from "@toolmain/components"

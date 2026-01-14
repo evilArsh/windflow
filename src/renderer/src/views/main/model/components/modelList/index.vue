@@ -3,13 +3,13 @@ import { ProviderMeta, ModelMeta, ModelActiveStatus } from "@windflow/core/types
 import useModelStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import { storeToRefs } from "pinia"
-import { ElMessage } from "element-plus"
 import ApiConfig from "./apiConfig.vue"
 import Detail from "./detail.vue"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn, errorToText, msg, msgWarning, useDialog } from "@toolmain/shared"
+import { CallBackFn, errorToText, useDialog } from "@toolmain/shared"
 import { CombineTableProps } from "@renderer/components/Table/types"
 import { useDataFilter } from "./dataFilter"
+import { msg, msgError, msgWarning } from "@renderer/utils"
 const { t } = useI18n()
 const props = defineProps<{
   providerName: string
@@ -66,8 +66,9 @@ const ev = {
       }
       done?.()
     } catch (e) {
+      console.log(e)
       done?.()
-      ElMessage.error(errorToText(e))
+      msgError(errorToText(e))
     }
   },
   async onModelChange(row?: ModelMeta, done?: CallBackFn): Promise<boolean> {

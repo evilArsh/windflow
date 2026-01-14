@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useRequest } from "@windflow/core/provider"
 import { ChatMessageTree } from "@windflow/core/types"
-import { errorToText, isBase64Image, isString, msg } from "@toolmain/shared"
+import { errorToText, isBase64Image, isString } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
+import { msg } from "@renderer/utils"
 
 const props = defineProps<{
   message: ChatMessageTree

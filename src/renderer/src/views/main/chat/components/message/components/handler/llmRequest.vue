@@ -4,10 +4,11 @@ import useChatStore from "@renderer/store/chat"
 import useSettings from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
-import { cloneDeep, errorToText, msg } from "@toolmain/shared"
+import { cloneDeep, errorToText } from "@toolmain/shared"
 import { Spinner } from "@toolmain/components"
 import Shell from "./shell.vue"
 import { defaultLLMConfig } from "@windflow/core/storage"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

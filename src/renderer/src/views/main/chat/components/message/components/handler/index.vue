@@ -10,7 +10,8 @@ import useChatStore from "@renderer/store/chat"
 import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
-import { errorToText, isFunction, msg, useShortcut } from "@toolmain/shared"
+import { errorToText, isFunction, useShortcut } from "@toolmain/shared"
+import { msg } from "@renderer/utils"
 import { useThrottleFn } from "@vueuse/core"
 const emit = defineEmits<{
   messageSend: []

@@ -2,7 +2,7 @@ import type Node from "element-plus/es/components/tree/src/model/node"
 import { useTask } from "@renderer/hooks/useTask"
 import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
-import { errorToText, isArray, msg } from "@toolmain/shared"
+import { errorToText, isArray } from "@toolmain/shared"
 import { TreeInstance, ScrollbarInstance, ElMessage, NodeDropType, TreeNodeData } from "element-plus"
 import { storeToRefs } from "pinia"
 import { Reactive } from "vue"
@@ -12,6 +12,7 @@ import { useThrottleFn } from "@vueuse/core"
 import { cloneTopic, createChatTopic } from "@windflow/core/message"
 import { findMaxTopicIndex } from "@renderer/store/chat/utils"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
+import { msg } from "@renderer/utils"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,

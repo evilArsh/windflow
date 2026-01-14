@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@windflow/core/types"
-import { errorToText, isArrayLength, msg, useShortcut } from "@toolmain/shared"
+import { errorToText, isArrayLength, useShortcut } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { createChatMessage } from "@windflow/core/message"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

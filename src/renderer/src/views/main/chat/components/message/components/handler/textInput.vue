@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import useChatStore from "@renderer/store/chat"
 import { ChatTopic } from "@windflow/core/types"
-import { errorToText, msg } from "@toolmain/shared"
+import { errorToText } from "@toolmain/shared"
 import { useThrottleFn } from "@vueuse/core"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

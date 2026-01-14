@@ -8,8 +8,9 @@ import { storeToRefs } from "pinia"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { Knowledge } from "@windflow/core/types"
-import { cloneDeep, useDialog, CallBackFn, errorToText, msgError, uniqueId } from "@toolmain/shared"
+import { cloneDeep, useDialog, CallBackFn, errorToText, uniqueId } from "@toolmain/shared"
 import { SettingKeys } from "@windflow/core/types"
+import { msgError } from "@renderer/utils"
 import { RAGLocalFileInfo } from "@windflow/shared"
 const router = useRouter()
 const addFormRef = useTemplateRef("addForm")

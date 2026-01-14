@@ -1,4 +1,5 @@
-import { code2xx, errorToText, msg, CallBackFn, isArrayLength } from "@toolmain/shared"
+import { code2xx, errorToText, CallBackFn, isArrayLength } from "@toolmain/shared"
+import { msg } from "@renderer/utils"
 
 export async function chooseFile(): Promise<string> {
   if (window.api) {

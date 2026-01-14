@@ -5,8 +5,9 @@ import useKnowledgeStore from "@renderer/store/knowledge"
 import { Knowledge } from "@windflow/core/types"
 import { RAGLocalFileInfo } from "@windflow/shared"
 import { DialogPanel } from "@toolmain/components"
-import { CallBackFn, errorToText, msgError } from "@toolmain/shared"
+import { CallBackFn, errorToText } from "@toolmain/shared"
 import { storeToRefs } from "pinia"
+import { msgError } from "@renderer/utils"
 import FileItem from "./fileItem.vue"
 const emit = defineEmits<{
   (e: "edit", knowledgeId: string, fileList: RAGLocalFileInfo[], done: CallBackFn): void

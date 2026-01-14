@@ -2,9 +2,10 @@
 import { ChatTopic } from "@windflow/core/types"
 import ModelSelect from "../message/components/handler/modelSelect.vue"
 import SvgPicker from "@renderer/components/SvgPicker/index.vue"
-import { errorToText, msg } from "@toolmain/shared"
+import { errorToText } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
 import { useThrottleFn } from "@vueuse/core"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()

@@ -2,7 +2,8 @@
 import useSettingsStore from "@renderer/store/settings"
 import useChatStore from "@renderer/store/chat"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
-import { errorToText, msg } from "@toolmain/shared"
+import { errorToText } from "@toolmain/shared"
+import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
 }>()
