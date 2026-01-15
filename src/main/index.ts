@@ -60,10 +60,19 @@ function createWindow(): BrowserWindow {
 function init() {
   let serviceCore: ServiceCore | undefined
   let tray: Tray | undefined
+  let mainWindow: BrowserWindow | undefined
   if (!app.requestSingleInstanceLock()) {
+    console.log("requestSingleInstanceLock")
     app.quit()
     process.exit(0)
   } else {
+    app.on("second-instance", () => {
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore()
+        mainWindow.show()
+        mainWindow.focus()
+      }
+    })
     app.whenReady().then(() => {
       useEnv().init()
       electronApp.setAppUserModelId("com.arch.windflow")
@@ -74,7 +83,7 @@ function init() {
       app.on("activate", function () {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
       })
-      const mainWindow = createWindow()
+      mainWindow = createWindow()
       serviceCore = registerService(mainWindow)
       serviceCore.registerIpc()
       presetWindowContent(mainWindow)
