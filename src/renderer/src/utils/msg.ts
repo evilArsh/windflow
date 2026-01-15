@@ -19,7 +19,10 @@ export function msg(...args: Parameters<typeof gMsg>) {
           offset: MessageHeadOffset,
           type: args[1],
         }
-      : args[1]
+      : {
+          ...args[1],
+          offset: MessageHeadOffset,
+        }
   gMsg(args[0], props)
 }
 /**

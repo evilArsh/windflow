@@ -35,7 +35,7 @@ const svgSrc = computed(() =>
     <slot></slot>
     <div v-if="!isUser && !hideToken" class="flex items-center flex-wrap">
       <ContentBox>
-        <el-text type="info" size="small">token:</el-text>
+        <el-text type="info" size="small">tokens:</el-text>
         <ContentBox wrap-class="m0! p0!" normal>
           <i-material-symbols-arrow-upward-alt class="text-1.2rem"></i-material-symbols-arrow-upward-alt>
           <el-text type="info" size="small"> {{ toNumber(message.promptTokens) }}</el-text>

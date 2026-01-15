@@ -10,6 +10,7 @@ import { CallBackFn, errorToText, useDialog } from "@toolmain/shared"
 import { CombineTableProps } from "@renderer/components/Table/types"
 import { useDataFilter } from "./dataFilter"
 import { msg, msgError, msgWarning } from "@renderer/utils"
+import { useModelHelper } from "./helper"
 const { t } = useI18n()
 const props = defineProps<{
   providerName: string
@@ -41,6 +42,8 @@ const { providerMetas } = storeToRefs(providerStore)
 const provider = computed<ProviderMeta | undefined>(() => providerMetas.value[props.providerName])
 const { keyword, loading, list, modelTypeKeys, subProviders, currentPage, pageSize, total, onQuery, onList } =
   useDataFilter(provider)
+const { beforeActiveChange } = useModelHelper()
+
 const tableProps = shallowReactive<CombineTableProps>({
   stripe: true,
   border: true,
@@ -215,7 +218,7 @@ onMounted(onQuery)
         </el-table-column>
         <el-table-column width="80" :label="t('provider.model.active')" align="center">
           <template #default="{ row }">
-            <el-switch v-model="row.active" @change="ev.onModelChange(row)" />
+            <el-switch v-model="row.active" @change="ev.onModelChange(row)" :before-change="beforeActiveChange(row)" />
           </template>
         </el-table-column>
         <el-table-column width="80" :label="t('provider.model.icon')" align="center">
@@ -232,9 +235,13 @@ onMounted(onQuery)
         </el-table-column>
         <el-table-column :label="t('provider.model.type')">
           <template #default="{ row }: { row: ModelMeta }">
-            <div class="flex flex-wrap gap0.5rem">
+            <div v-if="row.type.length" class="flex flex-wrap gap0.5rem">
               <el-tag v-for="type in row.type" :key="type" type="primary">{{ t(`modelType.${type}`) }}</el-tag>
             </div>
+            <el-button v-else @click="ev.onOpenModelConfig(row)" size="small" link type="info">
+              {{ t("btn.addModelType") }}
+              <i class="i-material-symbols-arrow-outward"></i>
+            </el-button>
           </template>
         </el-table-column>
       </Table>

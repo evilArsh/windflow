@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { ModelMeta, ModelType } from "@windflow/core/types"
+import { ModelMeta } from "@windflow/core/types"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, cloneDeep, isArrayLength } from "@toolmain/shared"
 import { Arrayable } from "@vueuse/core"
 import { FormItemRule } from "element-plus"
+import { useModelHelper } from "./helper"
 const { t } = useI18n()
 const emit = defineEmits<{
   close: []
@@ -37,6 +38,7 @@ const rules = shallowReactive<Partial<Record<string, Arrayable<FormItemRule>>>>(
     },
   ],
 })
+const { modelTypes, onTypeGroupChange, beforeActiveChange } = useModelHelper()
 function init() {
   if (props.model) {
     tmodel.value = cloneDeep(props.model)
@@ -78,7 +80,7 @@ onMounted(init)
         <SvgPicker v-model="tmodel.icon"></SvgPicker>
       </el-form-item>
       <el-form-item :label="t('provider.model.active')" prop="active">
-        <el-switch v-model="tmodel.active" />
+        <el-switch v-model="tmodel.active" :before-change="beforeActiveChange(tmodel)" />
       </el-form-item>
       <el-form-item prop="type">
         <template #label>
@@ -93,9 +95,9 @@ onMounted(init)
             </el-tooltip>
           </el-space>
         </template>
-        <el-checkbox-group v-model="tmodel.type">
-          <el-checkbox v-for="(item, index) in ModelType" :key="index" :label="item">
-            {{ t(`modelType.${item}`) }}
+        <el-checkbox-group v-model="tmodel.type" @change="e => onTypeGroupChange(e, tmodel)">
+          <el-checkbox v-for="(item, index) in modelTypes" :key="index" :value="item.value" :disabled="item.disabled">
+            {{ t(`modelType.${item.value}`) }}
           </el-checkbox>
         </el-checkbox-group>
       </el-form-item>
