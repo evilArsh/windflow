@@ -1,13 +1,9 @@
 {
-  "app": {
-    "name": "AI Assistant"
-  },
-  "autoUpdate": {
-    "newVersionAvailable": "New Version",
-    "releaseTitle": "New Version"
-  },
+  "app": { "name": "AI Assistant" },
+  "autoUpdate": { "newVersionAvailable": "New Version Available", "releaseTitle": "New Version" },
   "btn": {
     "add": "Add",
+    "addModelType": "Add Model Type",
     "cancel": "Cancel",
     "chooseFile": "Choose File",
     "clear": "Clear",
@@ -24,78 +20,71 @@
     "save": "Save",
     "send": "Send({shortcut})",
     "sync": "Sync",
-    "upload": "upload"
+    "upload": "Upload File"
   },
   "chat": {
     "addChat": "New Chat",
-    "addFailed": "Add failed",
+    "addFailed": "Add Failed",
     "cleanContext": "Clear Context({shortcut})",
     "cleanMessage": "Clear Chat({shortcut})",
     "context": "Chat Context",
     "contextDivider": "Context Cleared",
-    "defaultPrompt": "you are a helpful assistant",
-    "deleteFailed": "Delete failed",
+    "defaultPrompt": "You are a helpful AI assistant",
+    "deleteFailed": "Delete Failed",
     "editChat": "Edit",
     "editMessage": "Edit Message",
-    "kb": {
-      "label": "knowledge base"
-    },
+    "kb": { "label": "Knowledge Base" },
     "llm": {
       "btnCoverGlobal": "Override Global Config",
       "btnMore": "More Actions",
       "btnReset": "Reset",
       "btnRestoreGlobal": "Use Global Config",
       "frequencyPenalty": "Content Richness",
-      "frequencyPenaltyExp": "Positive values (e.g. 1.0): Suppress repetition of high-frequency words to make output more diverse and avoid mechanical repetition. Negative values (e.g. -1.0): Allow more repetition, suitable for texts requiring emphasis or fixed expressions.",
+      "frequencyPenaltyExp": "Positive values (e.g., 1.0): Suppress repetition of high-frequency words to make output more diverse and avoid mechanical repetition. Negative values (e.g., -1.0): Allow more repetition, suitable for texts requiring emphasis or fixed expressions.",
       "label": "Model Configuration",
-      "maxTokensExp": "Maximum output tokens, different models may support different amounts",
+      "maxTokensExp": "Maximum output tokens. Different models may support different amounts.",
       "max_tokens": "Max Output Tokens",
-      "presencePenaltyExp": "Positive values (e.g. 1.0): Encourage the model to mention new content, avoid staying on discussed topics, suitable for open-ended conversations or exploratory texts. Negative values (e.g. -1.0): Allow the model to focus on current topics, reduce jumping, suitable for in-depth discussions or coherent narratives.",
+      "presencePenaltyExp": "Positive values (e.g., 1.0): Encourage the model to mention new content, avoid staying on discussed topics, suitable for open-ended conversations or exploratory texts. Negative values (e.g., -1.0): Allow the model to focus on current topics, reduce jumping, suitable for in-depth discussions or coherent narratives.",
       "presence_penalty": "Topic Freshness",
       "stream": "Stream Output",
-      "streamExp": "Whether the model outputs in stream",
+      "streamExp": "Whether the model outputs in a stream.",
       "temperature": "Model Temperature",
-      "temperatureExp": "Higher values make output more random and diverse, lower values make output more stable. It's recommended to adjust either temperature or top_p, not both simultaneously.",
+      "temperatureExp": "Higher values make output more random and diverse; lower values make output more stable. It's recommended to adjust either temperature or top_p, not both simultaneously.",
       "topP": "Model Precision",
-      "topPExp": "Higher values allow more possibilities; lower values keep only highest probability candidates. Not recommended to modify together with temperature."
+      "topPExp": "Higher values allow more possibilities; lower values keep only the highest probability candidates. Not recommended to modify together with temperature."
     },
     "mcp": {
-      "addFailed": "Add failed",
+      "addFailed": "Add Failed",
       "clone": "Clone",
-      "delFailed": "Delete failed",
-      "label": "Tool",
+      "delFailed": "Delete Failed",
+      "label": "Tools",
       "restart": "Restart"
     },
-    "mcpCall": {
-      "arguments": "Request Parameters",
-      "content": "Request Result"
-    },
-    "messageCreateFailed": "Create message failed",
+    "mcpCall": { "arguments": "Request Parameters", "content": "Request Result" },
+    "messageCreateFailed": "Message Creation Failed",
     "messageRecord": "Chat History",
-    "model": {
-      "label": "Model Selection"
-    },
+    "model": { "label": "Model Selection" },
     "regenerate": "Regenerate",
-    "right": {
-      "prompt": "Prompt"
-    },
+    "right": { "history": "History", "knowledge": "Knowledge Base", "prompt": "Prompt" },
     "search": "Search",
     "settings": {
       "inputLabel": "Input Settings",
       "label": "Settings",
+      "maxContextLength": "Max Context Messages",
+      "maxContextLengthExp": "Maximum number of message contexts to carry in a request.",
       "messageLabel": "Message Settings",
-      "shortcut": "Shortcut"
+      "shortcut": "Chat Shortcut"
     },
     "terminate": "Terminate",
     "thinking": "Deep Thinking",
     "thinkingComplete": "Thinking Complete",
-    "topicSwitching": "Node Switching",
+    "topicSwitching": "Topic Switching",
     "tti": {
       "guidanceScale": "Guidance Scale",
-      "guidanceScaleExp": "This value is used to control the degree of match between the generated image and the given prompt. The higher the value, the more the generated image will tend to strictly match the text prompt. The lower the value, the more creative and diverse the generated image will be, potentially containing more unexpected elements.",
+      "guidanceScaleExp": "This value controls how closely the generated image matches the given prompt. Higher values make the image adhere more strictly to the text prompt. Lower values make the image more creative and diverse, potentially containing more unexpected elements.",
       "imageSize": "Image Size",
       "inferenceSteps": "Inference Steps",
-      "inferenceStepsExp": "More steps take longer time",
+      "inferenceStepsExp": "More steps take longer.",
       "label": "Image Generation Config",
       "n": "Generation Count",
       "negativePrompt": "Negative Prompt",
@@ -103,51 +92,61 @@
     }
   },
   "embedding": {
-    "embedding": "embedding provider",
-    "search": "search"
+    "deleteWithKnowledgeBind": "This embedding model is bound to {count} knowledge base(s) and cannot be deleted. Knowledge base(s): {name}",
+    "editTitle": "Embedding Information",
+    "embeddingProvider": "Embedding Provider",
+    "name": "Name",
+    "rerankProvider": "Rerank Provider",
+    "search": "Search"
   },
   "error": {
-    "emptyModels": "no models found",
-    "messageNotInTopic": "message not belong to current topic",
-    "noMessages": "no messages collection"
+    "emptyModels": "No models found",
+    "messageNotInTopic": "User message does not belong to the current chat",
+    "noMessages": "No message collection found"
   },
   "form": {
+    "addNewEmbedding": "Add Embedding Model",
     "emptyValueNotAllowed": "Cannot have empty value",
-    "selectFieldNotNull": "field is requred and not null",
-    "stringFieldNotNull": "field is required and not null",
+    "selectFieldNotNull": "This field is required",
+    "stringFieldNotNull": "This field is required and cannot be empty",
     "urlInvalid": "Not a valid URL address",
     "valueRequired": "This value is required"
   },
   "knowledge": {
-    "dimensionsDesc": "dimensions of the embedding vector",
+    "detail": "Details",
+    "dimensions": "Vector Dimensions",
+    "dimensionsDesc": "The dimensions of the vector when embedding content.",
     "editTitle": "Knowledge Base Information",
-    "embedding": "embedding model",
-    "embeddingConfigNotFound": "No embedding config found",
-    "embeddingNotFound": "embedding model not  found",
-    "emptyEmbeddingId": "empty Embedding model, please choose one",
-    "fileList": "file list",
-    "knowledgeIdNotFound": "knowledge id not found",
-    "maxFileChunks": "maxFileChunks",
-    "maxFileChunksDesc": "split text into chunks, the chunks of text must less than the value,if exceed,file will be truncated",
-    "maxInputs": "maxInputs",
-    "maxInputsDesc": "max inputs array length when using embedding api",
-    "maxTokensDesc": "max tokens of each chunk",
-    "menu": {
-      "embeddingList": "embedding config"
+    "embedding": "Embedding Model",
+    "embeddingConfigNotFound": "Embedding configuration not found",
+    "embeddingNotFound": "Embedding model not found",
+    "emptyEmbeddingId": "Please select an embedding model first",
+    "fileList": "File List",
+    "form": {
+      "needApiKey": "Please complete the API configuration for this provider's embedding model",
+      "needEmbeddingModel": "Please select a valid embedding model",
+      "needProvider": "Please select the correct model provider"
     },
-    "name": "name",
-    "search": "search knowledge",
-    "subTitle": "Knowledge Service Config",
-    "title": "Knowledge",
-    "type": "type"
+    "knowledgeIdNotFound": "Knowledge base ID not found",
+    "maxFileChunks": "Max File Chunks",
+    "maxFileChunksDesc": "When splitting a file into chunks, specify the maximum number of chunks. If exceeded, the file will be truncated.",
+    "maxInputs": "Max Inputs",
+    "maxInputsDesc": "When splitting a file into multiple chunks for embedding, specify the number of chunks to batch request per API call.",
+    "maxTokens": "Max Tokens",
+    "maxTokensDesc": "When splitting a file into multiple chunks for embedding, the maximum tokens per chunk.",
+    "menu": { "embeddingList": "Embedding Model Configuration", "list": "Knowledge Base List" },
+    "name": "Name",
+    "restartRagEmbedding": "Reprocessing will re-read files and overwrite old data.",
+    "search": "Search Knowledge Base",
+    "subTitle": "Knowledge Base Service Configuration",
+    "title": "Knowledge Base",
+    "type": "Type"
   },
-  "lang": {
-    "en": "English",
-    "zh": "简体中文"
-  },
+  "lang": { "en": "English", "zh": "简体中文" },
   "mcp": {
     "add": "Add",
-    "args": "Parameters",
+    "addNew": { "copy": "Configuration File", "form": "Form Add" },
+    "args": "Arguments",
     "command": "Command",
     "cwd": "Working Directory",
     "desc": "Description",
@@ -155,25 +154,19 @@
     "edit": "Edit",
     "enable": "Enable",
     "env": "Environment Variables",
-    "label": "alias",
-    "menu": {
-      "env": "Environment Config",
-      "market": "Discover",
-      "servers": "Service List"
-    },
+    "label": "Label",
+    "menu": { "env": "Environment Configuration", "market": "Discover", "servers": "Service List" },
     "name": "Name",
-    "schema": {
-      "noDescription": "No description",
-      "params": "Parameters"
-    },
+    "schema": { "noDescription": "No description", "params": "Parameters" },
     "search": "Search MCP Service",
     "service": {
-      "connecting": "Tool {service} starting",
+      "configList": "Configuration List",
+      "connecting": "Tool {service} starting...",
       "deleteConfirm": "Restart?",
-      "disabled": "Tool disabled, please enable first",
-      "disconnected": "Tool {service} failed to start {message}",
+      "disabled": "Tool is disabled. Please enable it first.",
+      "disconnected": "Tool {service} failed to start: {message}",
       "tabs": {
-        "config": "Config",
+        "config": "Configuration",
         "prompt": "Prompt",
         "resource": "Resource",
         "resourceTemplates": "Resource Templates",
@@ -183,129 +176,103 @@
     "settings": {
       "js": {
         "bun": {
-          "desc": "bun command is used to download and execute libraries from npm repository, as an alternative to npx command",
-          "lack": "Missing bun runtime environment on this machine, please download",
-          "lackTitle": "bun missing",
-          "title": "bun command config",
-          "version": "Current bun version available on this machine"
+          "desc": "The bun command is used to download and execute libraries from the npm repository, as an alternative to the npx command.",
+          "lack": "Missing bun runtime environment on this machine. Please download it.",
+          "lackTitle": "Bun Missing",
+          "title": "Bun Command Configuration",
+          "version": "Current bun version available on this machine."
         },
         "npmMirror": {
-          "desc": "Select appropriate npm mirror address to accelerate npx command execution",
+          "desc": "Select an appropriate npm mirror address to accelerate npx command execution.",
           "title": "npm Mirror"
         },
         "test": "Test Command",
-        "title": "Js Environment"
+        "title": "JavaScript Environment"
       },
       "python": {
         "mirror": {
-          "desc": "Select appropriate python mirror source to accelerate uv command execution",
-          "title": "python Mirror Source"
+          "desc": "Select an appropriate Python mirror source to accelerate uv command execution.",
+          "title": "Python Mirror Source"
         },
         "title": "Python Environment",
         "uv": {
-          "desc": "Used to execute python packages",
-          "lack": "Missing uv runtime environment on this machine, please download",
-          "lackTitle": "uv missing",
+          "desc": "Used to execute Python packages.",
+          "lack": "Missing uv runtime environment on this machine. Please download it.",
+          "lackTitle": "uv Missing",
           "manualChoose": "Manual Select",
           "onlineDownload": "Official Download",
           "test": "Test Command",
-          "title": "uv command config",
-          "version": "Current uv version available on this machine"
+          "title": "uv Command Configuration",
+          "version": "Current uv version available on this machine."
         }
       }
     },
     "status": "Status",
-    "subTitle": "MCP Service Config",
-    "timeout": "connection timeout",
+    "subTitle": "MCP Service Configuration",
+    "timeout": "Connection Timeout",
     "title": "MCP",
     "type": "Type",
-    "url": "url"
+    "url": "URL"
   },
-  "model": {
-    "subTitle": "Model and Provider Settings",
-    "title": "Model"
-  },
+  "model": { "subTitle": "Model and Provider Settings", "title": "Model" },
   "modelType": {
     "Chat": "Chat",
-    "ChatReasoner": "Chat-Reasoner",
+    "ChatReasoner": "Chat Reasoner",
     "Embedding": "Embedding",
-    "ImageToImage": "ImageToImage",
-    "ImageToText": "ImageToText",
+    "ImageToImage": "Image to Image",
+    "ImageToText": "Image to Text",
     "Models": "List Models",
     "Rerank": "Rerank",
     "Reranker": "Reranker",
-    "SpeechToText": "SpeechToText",
-    "TextToImage": "TextToImage",
-    "TextToSpeech": "TextToSpeech",
-    "TextToVideo": "TextToVideo"
+    "SpeechToText": "Speech to Text",
+    "TextToImage": "Text to Image",
+    "TextToSpeech": "Text to Speech",
+    "TextToVideo": "Text to Video"
   },
-  "nav": {
-    "chat": "Chat",
-    "knowledge": "knowledge",
-    "mcp": "MCP",
-    "modelSetting": "Model"
-  },
-  "notify": {
-    "title": {
-      "error": "Error",
-      "info": "Info",
-      "warning": "Warning"
-    }
-  },
+  "nav": { "chat": "Chat", "knowledge": "Knowledge Base", "mcp": "MCP", "modelSetting": "Model" },
+  "notify": { "title": { "error": "Error", "info": "Info", "warning": "Warning" } },
   "provider": {
-    "apiInfo": "API Config",
+    "apiInfo": "API Configuration",
     "apiKey": "API Key",
     "apiUrl": "API URL",
+    "emptyModelType": "Please select a model type first",
     "model": {
-      "action": "action",
-      "active": "Active",
+      "action": "Action",
+      "active": "Use",
       "activeStatus": "Active Status",
       "activeStatusActive": "Active",
       "activeStatusAll": "All",
       "activeStatusInactive": "Inactive",
       "icon": "Icon",
       "name": "Model",
-      "searchKeyword": "model search",
+      "searchKeyword": "Model Search",
       "subProvider": "Model Identifier",
       "type": "Type",
-      "typeDesc": "plaese choose the correct types of this model"
+      "typeDesc": "Please set the correct type for this model."
     },
-    "modelConfig": "Model Config",
-    "notFound": "current provider {name} not supported",
+    "modelConfig": "Model Configuration",
+    "notFound": "The provider {name} is currently not supported.",
     "providerName": "Provider"
   },
-  "request": {
-    "failed": "Request failed",
-    "status401": "Authentication failed, please check configuration"
-  },
+  "request": { "failed": "Request Failed", "status401": "Authentication failed. Please check your configuration." },
   "tip": {
     "deleteConfirm": "Delete {message}?",
-    "deleteFailed": "Delete {message} failed",
+    "deleteFailed": "Failed to delete {message}",
     "emptyConfirm": "Clear {message}?",
-    "initError": "Init Error",
+    "initError": "Initialization Error",
     "inputPlaceholder": "Enter your question",
     "loading": "Loading...",
     "noContent": "No Content",
-    "regenerate": "re-generate?",
+    "regenerate": "Regenerate?",
     "reset": "Reset?",
-    "saveSuccess": "Save successful",
+    "saveSuccess": "Saved Successfully",
     "selectAll": "Select All",
-    "selectModel": "Please select model",
+    "selectModel": "Please select a model",
+    "terminate": "Terminate?",
     "tip": "Tip",
     "yes": "Yes"
   },
-  "topic": {
-    "icon": "Icon",
-    "model": "Model",
-    "prompt": "Prompt",
-    "title": "Title"
-  },
-  "upload": {
-    "text": "Drop file here or click to upload"
-  },
-  "window": {
-    "api": {
-      "notFound": "This feature is only supported in desktop version"
-    }
-  }
+  "topic": { "edit": "Edit", "icon": "Icon", "model": "Model", "prompt": "Prompt", "title": "Title" },
+  "upload": { "text": "Drop files here or click to upload" },
+  "window": { "api": { "notFound": "This feature is only supported in the desktop version." } }
 }

@@ -8,6 +8,7 @@
   },
   "btn": {
     "add": "添加",
+    "addModelType": "设置模型类型",
     "cancel": "取消",
     "chooseFile": "选择文件",
     "clear": "清空",
@@ -280,6 +281,7 @@
     "apiInfo": "接口配置",
     "apiKey": "API Key",
     "apiUrl": "API 地址",
+    "emptyModelType": "请先选择该模型的类型",
     "model": {
       "action": "操作",
       "active": "使用",
@@ -292,7 +294,7 @@
       "searchKeyword": "模型搜索",
       "subProvider": "模型标识",
       "type": "类型",
-      "typeDesc": "请选择该模型正确的类型"
+      "typeDesc": "请设置该模型正确的类型"
     },
     "modelConfig": "模型配置",
     "notFound": "当前提供商{name}暂未被支持",
