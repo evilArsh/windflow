@@ -9,6 +9,7 @@ import { autoBackgroundColor, autoTitleBarOverlay } from "./services/Theme"
 import { presetWindowContent } from "./misc/winContent"
 import { createTray } from "./misc/tray"
 import { useEnv } from "./hooks/useEnv"
+
 function createWindow(): BrowserWindow {
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1366,
@@ -87,7 +88,11 @@ function init() {
       }
     })
     app.on("will-quit", () => {
-      serviceCore?.dispose()
+      console.log("[will-quit]")
+    })
+    app.on("before-quit", async () => {
+      console.log("[before-quit]")
+      await serviceCore?.dispose()
     })
   }
 }

@@ -378,7 +378,7 @@ export class MCPServiceImpl implements MCPService, ServiceCore {
       return this.testEnv(args)
     })
   }
-  dispose() {
-    this.#context.dispose()
+  async dispose() {
+    return this.#context.dispose()
   }
 }

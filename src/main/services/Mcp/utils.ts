@@ -181,10 +181,8 @@ export function useMCPContext() {
       ctx.reference = ctx.reference.filter(item => item !== topicId)
     }
   }
-  function dispose() {
-    context.forEach(ctx => {
-      ctx.client?.close()
-    })
+  async function dispose() {
+    await Promise.allSettled(Array.from(context.values()).map(ctx => ctx.client?.close()))
     context.clear()
   }
   return {

@@ -16,13 +16,13 @@ export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const rag = new RAGServiceImpl(bus)
   const autoUpdate = new AutoUpdateServiceImpl(bus)
 
-  function dispose() {
+  async function dispose() {
     theme.dispose()
     bus.dispose()
-    mcp.dispose()
     file.dispose()
     rag.dispose()
     autoUpdate.dispose()
+    await mcp.dispose()
   }
   function registerIpc(): void {
     theme.registerIpc()

@@ -19,8 +19,7 @@ export function createTray(mainWindow: BrowserWindow) {
     {
       label: "Quit",
       click: () => {
-        const windows = BrowserWindow.getAllWindows()
-        windows.forEach(window => {
+        BrowserWindow.getAllWindows().forEach(window => {
           window.destroy()
         })
       },
