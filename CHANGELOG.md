@@ -1,3 +1,19 @@
+## v0.7.7
+
+- feat(model): enhance model detail validation and UI improvements
+- feat(main): add single instance lock and window focus on second instance
+- feat(i18n): improve English locale consistency and clarity
+- feat(ui): remove line clamp from model name display
+- feat: improve app shutdown process and cleanup
+- chore(ci): streamline build workflow and update dependencies
+- feat(core): add topic summarization and message finish flag
+- feat: update CSP, commitlint config, and add validation for empty models
+- feat(chat): centralize message utility imports in Vue components
+- feat: update import paths and tsconfig alias for better module resolution
+- chore(deps): update multiple dependencies to latest versions
+- fix: delete update log
+- chore: update changelog for v0.7.6
+
 ## v0.7.6
 
 - feat: add GitHub workflow permissions and disable auto-publishing
