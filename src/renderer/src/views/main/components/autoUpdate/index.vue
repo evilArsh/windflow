@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
               <el-text type="info" size="small">{{ t("btn.cancel") }}</el-text>
             </template> -->
           </ContentBox>
-          <div class="flex-1 overflow-auto"></div>
+          <div class="flex-1 overflow-auto" v-html="info.releaseNotes"></div>
         </div>
         <template #footer>
           <div class="flex justify-end">
