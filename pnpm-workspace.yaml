@@ -21,8 +21,8 @@ catalogs:
   dev:
     '@babel/types': ~7.28.6
     '@commitlint/config-conventional': ^20.3.1
-    '@eslint/js': ^9.39.1
-    '@iconify/json': ^2.2.427
+    '@eslint/js': ^9.39.2
+    '@iconify/json': ^2.2.428
     '@iconify/types': ^2.0.0
     '@rollup/plugin-json': ^6.1.0
     '@types/chance': ^1.1.7
@@ -36,9 +36,9 @@ catalogs:
     '@types/sqlstring': ^2.3.2
     '@types/unist': ^3.0.3
     '@typescript-eslint/eslint-plugin': ^8.53.0
-    '@unocss/preset-icons': ^66.5.12
-    '@vitejs/plugin-vue': ^6.0.2
-    '@vitejs/plugin-vue-jsx': ^5.1.2
+    '@unocss/preset-icons': ^66.6.0
+    '@vitejs/plugin-vue': ^6.0.3
+    '@vitejs/plugin-vue-jsx': ^5.1.3
     '@vitest/browser': ^4.0.17
     '@vitest/browser-playwright': ^4.0.17
     '@vitest/coverage-v8': ^4.0.17
@@ -48,25 +48,25 @@ catalogs:
     csstype: ^3.2.3
     devlop: ^1.1.0
     electron: ^39.2.7
-    electron-builder: ^26.4.0
+    electron-builder: ^26.0.20
     electron-vite: ^5.0.0
-    eslint: ^9.39.1
+    eslint: ^9.39.2
     eslint-config-prettier: ^10.1.8
     eslint-plugin-import: ^2.32.0
     eslint-plugin-n: ^17.23.2
-    eslint-plugin-prettier: ^5.5.4
+    eslint-plugin-prettier: ^5.5.5
     eslint-plugin-promise: ^7.2.1
     eslint-plugin-vue: ^10.6.2
     globals: ^17.0.0
     husky: ^9.1.7
-    jsdom: ^27.2.0
+    jsdom: ^27.4.0
     lint-staged: ^16.2.7
     mdast-util-mdx-expression: ^2.0.1
     mdast-util-mdx-jsx: ^3.2.0
     mdast-util-mdxjs-esm: ^2.0.1
     msw: ^2.12.7
     playwright: ^1.57.0
-    prettier: ^3.7.2
+    prettier: ^3.8.0
     prettier-eslint: ^16.4.2
     rollup: ^4.55.1
     rollup-plugin-dts: ^6.3.0
@@ -76,13 +76,13 @@ catalogs:
     style-value-types: ^5.1.2
     terser: ^5.44.1
     tsx: ^4.21.0
-    type-fest: ^5.4.0
+    type-fest: ^5.4.1
     typescript: ^5.9.3
     typescript-eslint: ^8.53.0
-    unocss: ^66.5.12
-    unplugin-auto-import: ^20.3.0
-    unplugin-icons: ~22.5.0
-    unplugin-vue-components: ^30.0.0
+    unocss: ^66.6.0
+    unplugin-auto-import: ^21.0.0
+    unplugin-icons: ^23.0.1
+    unplugin-vue-components: ^31.0.0
     vite: ^7.3.1
     vite-node: ^5.2.0
     vite-plugin-vue-devtools: ^8.0.5
@@ -102,7 +102,7 @@ catalogs:
     electron-updater: ^6.7.3
     electron-window-state: ^5.0.3
     exceljs: ^4.4.0
-    execa: ^9.6.0
+    execa: ^9.6.1
     file-type: ^21.3.0
     mammoth: ^1.11.0
     pdf-parse: ^2.4.5
@@ -110,7 +110,7 @@ catalogs:
   web:
     '@iconify/utils': ^3.1.0
     '@shikijs/monaco': ^3.21.0
-    '@unocss/reset': 66.5.12
+    '@unocss/reset': 66.6.0
     '@vueuse/core': ^14.1.0
     character-entities: ^2.0.2
     comma-separated-tokens: ^2.0.3
@@ -120,7 +120,7 @@ catalogs:
     hast-util-whitespace: ^3.0.0
     hotkeys-js: ^4.0.0
     html-url-attributes: ^3.0.1
-    mermaid: ^11.12.1
+    mermaid: ^11.12.2
     monaco-editor: ^0.55.1
     openai: ^6.16.0
     pinia: ^3.0.4
@@ -140,15 +140,13 @@ catalogs:
     unist-util-visit: ^5.0.0
     vfile: ^6.0.3
     vfile-message: ^4.0.3
-    vue: ^3.5.25
+    vue: ^3.5.26
     vue-i18n: ^11.2.8
-    vue-router: ^4.6.3
-
-ignoredBuiltDependencies:
-  - esbuild
-  - vue-demi
+    vue-router: ^4.6.4
 
 onlyBuiltDependencies:
+  - esbuild
+  - vue-demi
   - '@parcel/watcher'
   - electron
   - electron-winstaller

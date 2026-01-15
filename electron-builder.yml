@@ -34,15 +34,8 @@ files:
   - "!**/*.min.*.map"
   - "!**/*.d.ts"
   - "!**/{.DS_Store}"
-  # - "!node_modules/@lancedb/lancedb-*/**"
-  # - "!node_modules/@napi-rs/**/*"
-  - "!node_modules/@esbuild/**/*"
-  - "!node_modules/@rollup/**/*"
 asarUnpack:
   - resources/**
-  # - "!node_modules/@esbuild/**/*"
-  # - "!node_modules/@rollup/**/*"
-  # - "!node_modules/jszip/**/**"
 beforePack: scripts/before-pack.cjs
 # afterPack: scripts/after-pack.js
 win:
@@ -91,4 +84,3 @@ publish:
   releaseType: release
   private: false
   timeout: 0
-

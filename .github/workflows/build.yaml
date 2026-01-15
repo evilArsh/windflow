@@ -10,9 +10,8 @@ on:
   push:
     tags:
       - "v*.*.*"
-
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -42,33 +41,22 @@ jobs:
           else
             echo "version=$(echo "$(git describe --tags --abbrev=0)" | sed 's/^v//')" >> $GITHUB_OUTPUT
           fi
+      - name: Install pnpm
+        uses: pnpm/action-setup@master
+        with:
+          version: 10
+          # https://github.com/pnpm/action-setup/issues/201
+          cache: true
       - name: Setup node
         uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Force git to use HTTPS instead of SSH
-        shell: bash
-        run: |
-          git config --global url."https://github.com/".insteadOf "ssh://git@github.com:" && \
-          git config --global url."https://github.com/".insteadOf "git@github.com:"
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - name: Setup pnpm store path
-        id: pnpm-store
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path -s)" >> $GITHUB_OUTPUT
-      - name: Cache pnpm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          cache: "pnpm"
+          package-manager-cache: true
+          cache-dependency-path: "pnpm-lock.yaml"
       - name: Install dependencies
         run: |
-          pnpm install -w -r
+          pnpm install -r
       - name: Build for windows
         if: ${{ startsWith(matrix.platform, 'windows') }}
         run: |
@@ -202,8 +190,8 @@ jobs:
           done
       - name: Release
         uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
         with:
-          if: github.ref_type == 'tag'
           files: ./dist/*
           body_path: "./release.md"
           draft: false
