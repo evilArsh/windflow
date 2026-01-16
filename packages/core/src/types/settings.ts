@@ -82,6 +82,10 @@ export enum SettingKeys {
    */
   ProviderCurrentSettingActive = "provider.currentSettingActive",
   /**
+   * 提供商搜索条件栏显隐
+   */
+  ProviderSearchBar = "provider.searchBar",
+  /**
    * 知识库子菜单宽度配置
    */
   KnowledgeSubNav = "knowledge.subNav",

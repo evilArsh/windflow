@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ProviderMeta, ModelMeta, ModelActiveStatus } from "@windflow/core/types"
+import { ProviderMeta, ModelMeta, ModelActiveStatus, SettingKeys } from "@windflow/core/types"
 import useModelStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
+import useSettingsStore from "@renderer/store/settings"
 import { storeToRefs } from "pinia"
 import ApiConfig from "./apiConfig.vue"
 import Detail from "./detail.vue"
@@ -12,6 +13,7 @@ import { useDataFilter } from "./dataFilter"
 import { msg, msgError, msgWarning } from "@renderer/utils"
 import { useModelHelper } from "./helper"
 const { t } = useI18n()
+const settingsStore = useSettingsStore()
 const props = defineProps<{
   providerName: string
 }>()
@@ -52,6 +54,7 @@ const tableProps = shallowReactive<CombineTableProps>({
   height: "100%",
 })
 const tempMeta = shallowRef<ModelMeta>()
+const collapseNames = ref<string[]>(["2"])
 const ev = {
   async onRefreshModel(done?: CallBackFn) {
     try {
@@ -125,7 +128,7 @@ const useIcon = () => {
   return { current, onIconClick, onModelIconChange }
 }
 const { current, onIconClick, onModelIconChange } = useIcon()
-
+settingsStore.dataWatcher<string[]>(SettingKeys.ProviderSearchBar, collapseNames, [])
 onMounted(onQuery)
 </script>
 <template>
@@ -147,24 +150,62 @@ onMounted(onQuery)
     </el-dialog>
     <div class="model-setting">
       <DialogPanel class="w-full h-auto grow-0! shrink! basis-auto!">
-        <el-form :model="provider" label-width="10rem" class="w-full">
-          <el-form-item :label="t('provider.apiUrl')">
-            <el-input v-model="provider.api.url" @input="ev.onProviderChange(provider)" />
-          </el-form-item>
-          <el-form-item :label="t('provider.apiKey')">
-            <el-input
-              v-model="provider.api.key"
-              show-password
-              @input="ev.onProviderChange(provider)"
-              @change="_ => ev.onRefreshModel()" />
-          </el-form-item>
-          <el-form-item label="">
-            <el-button size="small" @click="ev.onOpenApiConfig">
-              <i-ic-outline-settings class="text-1.4rem"></i-ic-outline-settings>
-              <span>{{ t("provider.apiInfo") }}</span>
-            </el-button>
-          </el-form-item>
-        </el-form>
+        <el-collapse v-model="collapseNames" expand-icon-position="left">
+          <el-collapse-item :title="t('provider.apiInfo')" name="1">
+            <el-form :model="provider" label-width="10rem" class="w-full">
+              <el-form-item :label="t('provider.apiUrl')">
+                <el-input v-model="provider.api.url" @input="ev.onProviderChange(provider)" />
+              </el-form-item>
+              <el-form-item :label="t('provider.apiKey')">
+                <el-input
+                  v-model="provider.api.key"
+                  show-password
+                  @input="ev.onProviderChange(provider)"
+                  @change="_ => ev.onRefreshModel()" />
+              </el-form-item>
+              <el-form-item label="">
+                <el-button size="small" @click="ev.onOpenApiConfig">
+                  <i-ic-outline-settings class="text-1.4rem"></i-ic-outline-settings>
+                  <span>{{ t("provider.apiInfo") }}</span>
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-collapse-item>
+          <el-collapse-item :title="t('provider.model.searchKeyword')" name="2">
+            <el-form label-width="10rem">
+              <el-form-item :label="t('provider.model.type')">
+                <el-select v-model="provider.selectedTypes" multiple filterable>
+                  <el-option
+                    v-for="key in modelTypeKeys"
+                    :key="key"
+                    :label="t(`modelType.${key}`)"
+                    :value="key"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item :label="t('provider.model.subProvider')">
+                <el-select v-model="provider.selectedSubProviders" multiple filterable>
+                  <el-option v-for="item in subProviders" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item :label="t('provider.model.activeStatus')">
+                <el-radio-group v-model="provider.activeStatus">
+                  <el-radio-button :value="ModelActiveStatus.All">
+                    {{ t("provider.model.activeStatusAll") }}
+                  </el-radio-button>
+                  <el-radio-button :value="ModelActiveStatus.Active">
+                    {{ t("provider.model.activeStatusActive") }}
+                  </el-radio-button>
+                  <el-radio-button :value="ModelActiveStatus.Inactive">
+                    {{ t("provider.model.activeStatusInactive") }}
+                  </el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item :label="t('provider.model.searchKeyword')">
+                <el-input v-model="keyword"> </el-input>
+              </el-form-item>
+            </el-form>
+          </el-collapse-item>
+        </el-collapse>
       </DialogPanel>
       <Table
         v-loading="loading"
@@ -174,40 +215,7 @@ onMounted(onQuery)
         v-model:page-size="pageSize"
         @change="onList"
         :table-props="tableProps">
-        <template #header>
-          <el-form label-width="10rem">
-            <el-form-item :label="t('provider.model.type')">
-              <el-select v-model="provider.selectedTypes" multiple filterable>
-                <el-option
-                  v-for="key in modelTypeKeys"
-                  :key="key"
-                  :label="t(`modelType.${key}`)"
-                  :value="key"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="t('provider.model.subProvider')">
-              <el-select v-model="provider.selectedSubProviders" multiple filterable>
-                <el-option v-for="item in subProviders" :key="item" :label="item" :value="item"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="t('provider.model.activeStatus')">
-              <el-radio-group v-model="provider.activeStatus">
-                <el-radio-button :value="ModelActiveStatus.All">
-                  {{ t("provider.model.activeStatusAll") }}
-                </el-radio-button>
-                <el-radio-button :value="ModelActiveStatus.Active">
-                  {{ t("provider.model.activeStatusActive") }}
-                </el-radio-button>
-                <el-radio-button :value="ModelActiveStatus.Inactive">
-                  {{ t("provider.model.activeStatusInactive") }}
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item :label="t('provider.model.searchKeyword')">
-              <el-input v-model="keyword"> </el-input>
-            </el-form-item>
-          </el-form>
-        </template>
+        <template #header> </template>
         <el-table-column width="100" :label="t('provider.model.action')" align="center">
           <template #default="{ row }">
             <el-button size="small" @click="ev.onOpenModelConfig(row)" link type="primary">
