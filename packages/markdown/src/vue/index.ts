@@ -62,15 +62,13 @@ export function useVueRuntime(options?: Options) {
      *  bar: () => [h('span', 'one'), h('span', 'two')]
      * })
      */
-    // 借鉴缓存思路
-    // https://github.com/shikijs/shiki/blob/main/packages/rehype/src/core.ts
-    // console.log(_node, type, props)
     const children: Props["children"] = props.children
     if (isString(type) || type === Fragment) {
       delete props.children
       return h(type, props, children)
     } else {
       // ! type: 为传入的 Compomnent
+      // ! props: including `children` property
       return h(type, props, {
         default: () => children,
       })

@@ -16,15 +16,26 @@ const mermaid = useMermaid()
 const mdWorker = useMarkdownWorker()
 const rt = useVueRuntime({
   components: {
-    code: CodeBlock,
+    code: {
+      extraProps: { forcePlaintext: props.forcePlaintext },
+      node: CodeBlock,
+    },
   },
 })
+// function wrapPlaintext(content: string) {
+//   return `\`\`\`plaintext
+// ${content}
+// \`\`\``
+// }
 function onParseContent(content: string) {
   if (!content || /^\n+$/.test(content)) {
     html.value = h("span", "")
     return
   }
-  mdWorker.emit(id, { type: "Parse", markdown: content })
+  mdWorker.emit(id, {
+    type: "Parse",
+    markdown: content,
+  })
 }
 function onParseResponse(event: MDWorkerMessageCore) {
   if (event.type === "ParseResponse") {
