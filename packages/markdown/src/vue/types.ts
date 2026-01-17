@@ -7,7 +7,13 @@ import { Component, VNode } from "vue"
 export type Child = VNode | string
 
 export type Components = {
-  [TagName in keyof JSX.IntrinsicElements]?: Component | keyof JSX.IntrinsicElements
+  [TagName in keyof JSX.IntrinsicElements]?: {
+    /**
+     * pass to custom element node, for example a vue imported component
+     */
+    extraProps?: ExtraProps
+    node: Component | keyof JSX.IntrinsicElements
+  }
 }
 /**
  * Create an evaluator that turns ESTree ASTs from embedded MDX into values.
@@ -87,7 +93,15 @@ export interface Options {
  * Properties and children.
  */
 export interface Props {
-  [prop: string]: Array<Child> | Child | Element | MdxJsxFlowElementHast | MdxJsxTextElementHast | Value | undefined
+  [prop: string]:
+    | Array<Child>
+    | Child
+    | Element
+    | MdxJsxFlowElementHast
+    | MdxJsxTextElementHast
+    | Value
+    | undefined
+    | ExtraProps
   children?: Array<Child> | Child
   node?: Element | MdxJsxFlowElementHast | MdxJsxTextElementHast
 }
@@ -114,7 +128,7 @@ export interface State {
   /**
    * Components to swap.
    */
-  components: Partial<Components>
+  components: Components
   /**
    * Evaluator that turns ESTree ASTs into values.
    */
@@ -163,3 +177,10 @@ export type Style = Record<string, string>
  * Primitive property value and `Style` map.
  */
 export type Value = Style | boolean | number | string
+
+/**
+ * Props that deliver to custom Component
+ */
+export type ExtraProps = {
+  [x: string]: unknown
+}
