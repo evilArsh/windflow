@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { Element } from "hast"
-import { getLang } from "@windflow/markdown"
+import { ExtraProps, getLang } from "@windflow/markdown"
 import { isUndefined } from "@toolmain/shared"
 import Code from "./code.vue"
 import RawCode from "./rawCode.vue"
 const props = defineProps<{
   children?: string
   node?: Element
+  extraProps?: ExtraProps
 }>()
 const code = ref("")
 const lang = ref("")
@@ -21,6 +22,7 @@ watchEffect(() => {
     vnode.value = h(Code, {
       lang: lang.value,
       code: code.value,
+      forcePlaintext: !!props.extraProps?.forcePlaintext,
     })
   } else {
     vnode.value = h(RawCode, {

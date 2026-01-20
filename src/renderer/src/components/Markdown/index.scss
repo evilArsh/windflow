@@ -1,24 +1,6 @@
 pre {
   counter-reset: line;
 }
-.shiki {
-  code {
-    span.line {
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    span.line::before {
-      counter-increment: line;
-      content: counter(line);
-      display: inline-block;
-      width: 2em;
-      margin-right: 1em;
-      color: var(--el-text-color-regular);
-      text-align: right;
-      user-select: none;
-    }
-  }
-}
 .markdown-container {
   position: relative;
   line-height: 1.5;

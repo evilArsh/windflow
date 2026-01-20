@@ -36,6 +36,15 @@ $$`
 }
 
 /**
+ * wrap content as code block
+ */
+export function wrapAsCode(content: string, lang: string) {
+  return `\`\`\`${lang}
+${content}
+\`\`\``
+}
+
+/**
  * @description 获取代码块语言
  */
 export const getLang = (node?: Element): string => {

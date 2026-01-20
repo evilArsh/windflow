@@ -84,6 +84,7 @@
     },
     "search": "搜索",
     "settings": {
+      "forcePlaintext": "用户消息渲染成Markdown",
       "inputLabel": "输入设置",
       "label": "设置",
       "maxContextLength": "最大消息上下文个数",

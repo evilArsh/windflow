@@ -6,14 +6,16 @@ import { Component, VNode } from "vue"
 
 export type Child = VNode | string
 
+export type ComponentMeta = {
+  /**
+   * pass to custom element node, for example a vue imported component
+   */
+  extraProps?: ExtraProps
+  node: Component
+}
+
 export type Components = {
-  [TagName in keyof JSX.IntrinsicElements]?: {
-    /**
-     * pass to custom element node, for example a vue imported component
-     */
-    extraProps?: ExtraProps
-    node: Component | keyof JSX.IntrinsicElements
-  }
+  [TagName in keyof JSX.IntrinsicElements]?: ComponentMeta
 }
 /**
  * Create an evaluator that turns ESTree ASTs from embedded MDX into values.
