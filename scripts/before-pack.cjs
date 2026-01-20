@@ -1,10 +1,10 @@
 const { Arch } = require("electron-builder")
 
 const platformMapping = {
-  darwin: ["x64", "arm64", "arm"],
-  win32: ["x64", "arm64", "arm"],
-  linux: ["x64", "arm64", "arm", "riscv64"],
-  android: ["x64", "arm64", "arm"],
+  darwin: ["x64", "arm64"],
+  win32: ["x64", "arm64"],
+  linux: ["x64", "arm64", "riscv64"],
+  android: ["x64", "arm64"],
 }
 function getArchString(arch) {
   switch (arch) {
