@@ -53,7 +53,18 @@ const handler = {
             v-if="isString(cachedMessage.content.content) && cachedMessage.content.content"
             v-model="cachedMessage.content.content" />
           <div v-for="(child, index) in cachedMessage.content.children" :key="index">
-            <el-input type="textarea" autosize v-if="isString(child.content)" v-model="child.content" />
+            <el-input
+              type="textarea"
+              style="
+                --el-input-border-color: transparent;
+                --el-border-color: transparent;
+                --el-input-hover-border-color: transparent;
+                --el-input-focus-border-color: transparent;
+              "
+              autosize
+              resize="none"
+              v-if="isString(child.content)"
+              v-model="child.content" />
           </div>
         </div>
         <template #footer>
