@@ -1,3 +1,16 @@
+## v0.7.8
+
+- fix: platform map error
+- feat: comment out macOS notarization in electron-builder config
+- feat: add macOS notarization setup with placeholder script
+- feat(chat): emit render finish event and throttle affix updates
+- feat(chat): remove borders from child message textareas
+- feat(markdown): add plaintext rendering option and improve component handling
+- feat(markdown): enhance Vue runtime component configuration
+- feat(provider): add search bar visibility setting and collapse UI for model config
+- feat(autoUpdate): display release notes in update dialog
+- chore: update changelog for v0.7.7
+
 ## v0.7.7
 
 - feat(model): enhance model detail validation and UI improvements
