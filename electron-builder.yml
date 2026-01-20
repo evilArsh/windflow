@@ -38,6 +38,7 @@ asarUnpack:
   - resources/**
 beforePack: scripts/before-pack.cjs
 # afterPack: scripts/after-pack.js
+# afterSign: scripts/notarize.js
 win:
   executableName: windflow
   target:
