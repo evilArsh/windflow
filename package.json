@@ -1,6 +1,6 @@
 {
   "name": "windflow",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "Power your automated workflows with multiple AI providers",
   "main": "./out/main/index.js",
   "author": "windflow <arshdebian@163.com>",
@@ -100,6 +100,7 @@
   "devDependencies": {
     "@babel/types": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
+    "@electron/notarize": "catalog:dev",
     "@eslint/js": "catalog:dev",
     "@iconify/json": "catalog:dev",
     "@iconify/types": "catalog:dev",
