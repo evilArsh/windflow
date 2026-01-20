@@ -9,6 +9,9 @@ import {
   wrapAsCode,
   Components,
 } from "@windflow/markdown"
+const emit = defineEmits<{
+  renderFinish: []
+}>()
 const props = defineProps<{
   contentClass?: string
   content: string
@@ -63,6 +66,9 @@ onMounted(() => {
   mermaid.init()
   onParseContent(props.content)
   mdWorker.on(id, onParseResponse)
+})
+onUpdated(() => {
+  emit("renderFinish")
 })
 onBeforeUnmount(() => {
   mdWorker.emit(id, { type: "Dispose" })

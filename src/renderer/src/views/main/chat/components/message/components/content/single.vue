@@ -15,6 +15,7 @@ import useChatStore from "@renderer/store/chat"
 import { Role } from "@windflow/core/types"
 import { useMsgContext } from "../../../../index"
 import { msg, msgError } from "@renderer/utils"
+import { useThrottleFn } from "@vueuse/core"
 const props = defineProps<{
   message: ChatMessageTree
   parent?: ChatMessageTree
@@ -38,10 +39,6 @@ const isImage = computed(() => message.value.node.type === "image")
 const isPartial = computed(() => code1xx(message.value.node.status) || message.value.node.status == 206)
 
 const forcePlaintext = ref(false)
-
-async function onContentChange() {
-  chatStore.updateChatMessage(props.message.node)
-}
 async function onContentDelete(m: ChatMessageTree, done: CallBackFn) {
   try {
     await chatStore.deleteMessage(m)
@@ -66,19 +63,22 @@ async function onEdit(done: CallBackFn) {
     done()
   }
 }
-const updateAffix = () => {
-  nextTick(() => affixRef.value?.update())
+const onUpdateAffix = () => {
+  nextTick(() => {
+    affixRef.value?.update()
+  })
 }
+const onMarkdownFinish = useThrottleFn(onUpdateAffix, 200, true, true)
 onMounted(() => {
-  props.context.menuToggle.watchToggle(updateAffix)
+  props.context.menuToggle.watchToggle(onUpdateAffix)
 })
 onBeforeUnmount(() => {
-  props.context.menuToggle.unWatchToggle(updateAffix)
+  props.context.menuToggle.unWatchToggle(onUpdateAffix)
 })
 settingsStore.dataBind(SettingKeys.ChatForcePlaintext, forcePlaintext)
 
 defineExpose({
-  update: updateAffix,
+  update: onUpdateAffix,
 })
 </script>
 <template>
@@ -95,15 +95,15 @@ defineExpose({
         v-if="isString(message.node.content.content)"
         :content="message.node.content.content"
         :force-plaintext
-        content-class="flex flex-col items-end"
-        @change="onContentChange"></Markdown>
+        @render-finish="onMarkdownFinish"
+        content-class="flex flex-col items-end"></Markdown>
     </div>
     <div v-else class="chat-item-content p-1rem">
       <Image v-if="isImage" :message :parent></Image>
       <div v-else-if="isText" class="chat-item-content">
         <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.node.finish"></Thinking>
-          <Markdown v-if="isString(child.content)" :content="child.content" @change="onContentChange" />
+          <Markdown v-if="isString(child.content)" :content="child.content" @render-finish="onMarkdownFinish" />
           <MCPCall :message="child"></MCPCall>
         </div>
         <Error :message></Error>
