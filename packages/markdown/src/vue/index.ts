@@ -8,7 +8,7 @@ import type { Element, Nodes, Parents, Root, Text } from "hast"
 import type { MdxFlowExpressionHast, MdxTextExpressionHast } from "mdast-util-mdx-expression"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { MdxjsEsmHast } from "mdast-util-mdxjs-esm"
-import { Child, State, Options, Props } from "./types"
+import { Child, State, Options, Props, ComponentMeta, Components } from "./types"
 import { ok as assert } from "devlop"
 import { whitespace } from "hast-util-whitespace"
 import { html, svg } from "property-information"
@@ -24,6 +24,7 @@ import {
   tableElements,
 } from "./utils"
 import { useCache } from "./cache"
+import { isObject } from "@vueuse/core"
 
 export function useVueRuntime(options?: Options) {
   const state: State = {
@@ -37,7 +38,13 @@ export function useVueRuntime(options?: Options) {
     tableCellAlignToStyle: options?.tableCellAlignToStyle ?? true,
   }
   const cache = useCache()
-  function toVnode(tree: Nodes): VNode {
+  function toVnode(tree: Nodes, componentsMap?: Components): VNode {
+    if (componentsMap) {
+      if (!state.components) state.components = {}
+      Object.entries(componentsMap).forEach(([key, value]) => {
+        state.components[key] = Object.assign(state.components[key] ?? {}, value)
+      })
+    }
     const result = one(tree)
     // JSX element.
     if (result && !isString(result)) {
@@ -49,12 +56,13 @@ export function useVueRuntime(options?: Options) {
   function dispose() {
     cache.clear()
   }
-  function createVnode(_node: Nodes, type: any, props: Props): VNode {
+  function createVnode(_node: Nodes, type: unknown, props: Props): VNode {
     // ! 在vue中jsx和jsxs都是h函数，并且当vue组件传入时
     // ! h的用法和hastscript不一样
     /**
      * vue普通节点和hastscript
      * h('div', ['hello', h('span', 'hello')])
+     *
      * vue组件
      * h(MyComponent, null, {
      *  default: () => 'default slot',
@@ -67,11 +75,21 @@ export function useVueRuntime(options?: Options) {
       delete props.children
       return h(type, props, children)
     } else {
-      // ! type: 为传入的 Compomnent
-      // ! props: including `children` property
-      return h(type, props, {
-        default: () => children,
-      })
+      if (isObject(type) && Object.hasOwn(type, "node")) {
+        // props includes `children` property
+        const t = type as ComponentMeta
+        return h(
+          t.node,
+          {
+            ...props,
+            extraProps: t.extraProps,
+          },
+          {
+            default: () => children,
+          }
+        )
+      }
+      return h("span", null, "unknown component type")
     }
   } /**
    * Create children.
@@ -131,7 +149,18 @@ export function useVueRuntime(options?: Options) {
       state.schema = schema
     }
     state.ancestors.push(node)
-    // ! 当传入components后并匹配到了tagName, type是传入的组件
+    /**
+     * type:
+     * 1. string
+     * 2. Components, 当传入components后并匹配到了tagName, type是传入的 `Components`
+     * ```
+     * {
+     *   extraProps?: ExtraProps
+     *   node: Component
+     * }
+     * ```
+     * 3. etc.
+     */
     const type = findComponentFromName(state, node.tagName, false)
     const props = createElementProps(state, node)
     let children = createChildren(node)
@@ -142,12 +171,12 @@ export function useVueRuntime(options?: Options) {
       })
     }
 
-    // ! add node to props
+    // add node to props
     addNode(state, props, type, node)
-    // ! add children to props
+    // add children to props
     addChildren(props, children)
 
-    //! restore status
+    // restore status
     state.ancestors.pop()
     state.schema = parentSchema
 

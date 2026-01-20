@@ -5,13 +5,15 @@ import PureCode from "../PureCode/index.vue"
 defineProps<{
   code: string
   lang: string
+  forcePlaintext?: boolean
 }>()
 const { downloadCode } = useDownload()
 const id = useId()
 </script>
 <template>
-  <div class="markdown-code-block">
-    <el-card class="code-block" shadow="never">
+  <div class="markdown-code-block" :class="{ forcePlaintext }">
+    <PureCode v-if="forcePlaintext" :code :lang :force-plaintext></PureCode>
+    <el-card v-else class="code-block" shadow="never">
       <template #header>
         <div class="code-block-header">
           <el-tag type="primary">{{ lang }}</el-tag>
@@ -44,6 +46,33 @@ const id = useId()
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+  .shiki {
+    code {
+      span.line {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      span.line::before {
+        counter-increment: line;
+        content: counter(line);
+        display: inline-block;
+        width: 2em;
+        margin-right: 1em;
+        color: var(--el-text-color-regular);
+        text-align: right;
+        user-select: none;
+      }
+    }
+  }
+  &.forcePlaintext {
+    .shiki {
+      code {
+        span.line::before {
+          display: none;
+        }
+      }
+    }
   }
 }
 </style>

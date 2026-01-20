@@ -26,6 +26,10 @@ export enum SettingKeys {
    */
   ChatSendShortcut = "chat.sendShortcut",
   /**
+   * 将用户消息渲染成markdown
+   */
+  ChatForcePlaintext = "chat.forcePlaintext",
+  /**
    * 清除聊天上下文
    */
   ChatCleanContext = "chat.cleanContext",

@@ -32,12 +32,12 @@ export const tableCellElement = new Set(["td", "th"])
 export function addNode(
   state: State,
   props: Props,
-  type: any,
+  type: unknown,
   node: Element | MdxJsxFlowElementHast | MdxJsxTextElementHast
 ): void {
   // If this is swapped out for a component:
-  // ! 当tagName有component单独处理时,eg:components: { code: Component},type为Component
-  // ! node为当前tagName的hast,会被传入type为Component的node属性中
+  // 当tagName有component单独处理时, eg:components: { code: Components }, type 为 ComponentMeta
+  // node为当前tagName的hast,会被传入type为Component的node属性中
   if (!isString(type) && type !== Fragment && state.passNode) {
     props.node = node
   }

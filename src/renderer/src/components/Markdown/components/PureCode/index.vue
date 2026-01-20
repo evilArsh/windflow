@@ -7,6 +7,7 @@ const { codeToAst } = useShiki()
 const props = defineProps<{
   code: string
   lang: string
+  forcePlaintext?: boolean
 }>()
 const rt = useVueRuntime()
 const Mermaid = defineAsyncComponent(() => import("../Mermaid/index.vue"))
@@ -18,11 +19,20 @@ watchEffect(() => {
       lang: props.lang,
     })
   } else {
-    codeToAst(props.code, props.lang)
+    codeToAst(props.code, props.lang, props.forcePlaintext ? "none" : undefined)
       .then(res => {
         vnode.value = rt.toVnode(res)
       })
-      .catch(err => (vnode.value = h(ElText, { type: "danger" }, { default: () => errorToText(err) })))
+      .catch(
+        err =>
+          (vnode.value = h(
+            ElText,
+            {
+              type: "danger",
+            },
+            { default: () => errorToText(err) }
+          ))
+      )
   }
 })
 </script>

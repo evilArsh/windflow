@@ -1,6 +1,11 @@
 {
-  "app": { "name": "AI Assistant" },
-  "autoUpdate": { "newVersionAvailable": "New Version Available", "releaseTitle": "New Version" },
+  "app": {
+    "name": "AI Assistant"
+  },
+  "autoUpdate": {
+    "newVersionAvailable": "New Version Available",
+    "releaseTitle": "New Version"
+  },
   "btn": {
     "add": "Add",
     "addModelType": "Add Model Type",
@@ -33,7 +38,9 @@
     "deleteFailed": "Delete Failed",
     "editChat": "Edit",
     "editMessage": "Edit Message",
-    "kb": { "label": "Knowledge Base" },
+    "kb": {
+      "label": "Knowledge Base"
+    },
     "llm": {
       "btnCoverGlobal": "Override Global Config",
       "btnMore": "More Actions",
@@ -60,14 +67,24 @@
       "label": "Tools",
       "restart": "Restart"
     },
-    "mcpCall": { "arguments": "Request Parameters", "content": "Request Result" },
+    "mcpCall": {
+      "arguments": "Request Parameters",
+      "content": "Request Result"
+    },
     "messageCreateFailed": "Message Creation Failed",
     "messageRecord": "Chat History",
-    "model": { "label": "Model Selection" },
+    "model": {
+      "label": "Model Selection"
+    },
     "regenerate": "Regenerate",
-    "right": { "history": "History", "knowledge": "Knowledge Base", "prompt": "Prompt" },
+    "right": {
+      "history": "History",
+      "knowledge": "Knowledge Base",
+      "prompt": "Prompt"
+    },
     "search": "Search",
     "settings": {
+      "forcePlaintext": "Render user  message as Markdown",
       "inputLabel": "Input Settings",
       "label": "Settings",
       "maxContextLength": "Max Context Messages",
@@ -134,7 +151,10 @@
     "maxInputsDesc": "When splitting a file into multiple chunks for embedding, specify the number of chunks to batch request per API call.",
     "maxTokens": "Max Tokens",
     "maxTokensDesc": "When splitting a file into multiple chunks for embedding, the maximum tokens per chunk.",
-    "menu": { "embeddingList": "Embedding Model Configuration", "list": "Knowledge Base List" },
+    "menu": {
+      "embeddingList": "Embedding Model Configuration",
+      "list": "Knowledge Base List"
+    },
     "name": "Name",
     "restartRagEmbedding": "Reprocessing will re-read files and overwrite old data.",
     "search": "Search Knowledge Base",
@@ -142,10 +162,16 @@
     "title": "Knowledge Base",
     "type": "Type"
   },
-  "lang": { "en": "English", "zh": "简体中文" },
+  "lang": {
+    "en": "English",
+    "zh": "简体中文"
+  },
   "mcp": {
     "add": "Add",
-    "addNew": { "copy": "Configuration File", "form": "Form Add" },
+    "addNew": {
+      "copy": "Configuration File",
+      "form": "Form Add"
+    },
     "args": "Arguments",
     "command": "Command",
     "cwd": "Working Directory",
@@ -155,9 +181,16 @@
     "enable": "Enable",
     "env": "Environment Variables",
     "label": "Label",
-    "menu": { "env": "Environment Configuration", "market": "Discover", "servers": "Service List" },
+    "menu": {
+      "env": "Environment Configuration",
+      "market": "Discover",
+      "servers": "Service List"
+    },
     "name": "Name",
-    "schema": { "noDescription": "No description", "params": "Parameters" },
+    "schema": {
+      "noDescription": "No description",
+      "params": "Parameters"
+    },
     "search": "Search MCP Service",
     "service": {
       "configList": "Configuration List",
@@ -214,7 +247,10 @@
     "type": "Type",
     "url": "URL"
   },
-  "model": { "subTitle": "Model and Provider Settings", "title": "Model" },
+  "model": {
+    "subTitle": "Model and Provider Settings",
+    "title": "Model"
+  },
   "modelType": {
     "Chat": "Chat",
     "ChatReasoner": "Chat Reasoner",
@@ -229,8 +265,19 @@
     "TextToSpeech": "Text to Speech",
     "TextToVideo": "Text to Video"
   },
-  "nav": { "chat": "Chat", "knowledge": "Knowledge Base", "mcp": "MCP", "modelSetting": "Model" },
-  "notify": { "title": { "error": "Error", "info": "Info", "warning": "Warning" } },
+  "nav": {
+    "chat": "Chat",
+    "knowledge": "Knowledge Base",
+    "mcp": "MCP",
+    "modelSetting": "Model"
+  },
+  "notify": {
+    "title": {
+      "error": "Error",
+      "info": "Info",
+      "warning": "Warning"
+    }
+  },
   "provider": {
     "apiInfo": "API Configuration",
     "apiKey": "API Key",
@@ -254,7 +301,10 @@
     "notFound": "The provider {name} is currently not supported.",
     "providerName": "Provider"
   },
-  "request": { "failed": "Request Failed", "status401": "Authentication failed. Please check your configuration." },
+  "request": {
+    "failed": "Request Failed",
+    "status401": "Authentication failed. Please check your configuration."
+  },
   "tip": {
     "deleteConfirm": "Delete {message}?",
     "deleteFailed": "Failed to delete {message}",
@@ -272,7 +322,19 @@
     "tip": "Tip",
     "yes": "Yes"
   },
-  "topic": { "edit": "Edit", "icon": "Icon", "model": "Model", "prompt": "Prompt", "title": "Title" },
-  "upload": { "text": "Drop files here or click to upload" },
-  "window": { "api": { "notFound": "This feature is only supported in the desktop version." } }
+  "topic": {
+    "edit": "Edit",
+    "icon": "Icon",
+    "model": "Model",
+    "prompt": "Prompt",
+    "title": "Title"
+  },
+  "upload": {
+    "text": "Drop files here or click to upload"
+  },
+  "window": {
+    "api": {
+      "notFound": "This feature is only supported in the desktop version."
+    }
+  }
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
+import { ChatMessageTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { CallBackFn, code1xx, errorToText, isString } from "@toolmain/shared"
+import useSettingsStore from "@renderer/store/settings"
 import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Markdown from "@renderer/components/Markdown/index.vue"
@@ -22,6 +23,7 @@ const props = defineProps<{
   context: ReturnType<typeof useMsgContext>
 }>()
 
+const settingsStore = useSettingsStore()
 const affixRef = useTemplateRef("affix")
 
 const chatStore = useChatStore()
@@ -34,6 +36,9 @@ const isUser = computed(() => message.value.node.content.role === Role.User)
 const isText = computed(() => !message.value.node.type || message.value.node.type === "text")
 const isImage = computed(() => message.value.node.type === "image")
 const isPartial = computed(() => code1xx(message.value.node.status) || message.value.node.status == 206)
+
+const forcePlaintext = ref(false)
+
 async function onContentChange() {
   chatStore.updateChatMessage(props.message.node)
 }
@@ -70,6 +75,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   props.context.menuToggle.unWatchToggle(updateAffix)
 })
+settingsStore.dataBind(SettingKeys.ChatForcePlaintext, forcePlaintext)
+
 defineExpose({
   update: updateAffix,
 })
@@ -87,7 +94,7 @@ defineExpose({
       <Markdown
         v-if="isString(message.node.content.content)"
         :content="message.node.content.content"
-        force-plaintext
+        :force-plaintext
         content-class="flex flex-col items-end"
         @change="onContentChange"></Markdown>
     </div>
