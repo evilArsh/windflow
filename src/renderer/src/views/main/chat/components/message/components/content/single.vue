@@ -91,8 +91,11 @@ defineExpose({
       </Affix>
     </template>
     <div v-if="isUser" class="chat-item-content p-1rem reverse">
+      <p v-if="!forcePlaintext || !isString(message.node.content.content)">
+        {{ message.node.content.content }}
+      </p>
       <Markdown
-        v-if="isString(message.node.content.content)"
+        v-else
         :content="message.node.content.content"
         :force-plaintext
         @render-finish="onMarkdownFinish"
