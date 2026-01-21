@@ -128,7 +128,7 @@
     "csstype": "catalog:dev",
     "devlop": "catalog:dev",
     "electron": "catalog:dev",
-    "electron-builder": "^26.0.20",
+    "electron-builder": "^26.4.0",
     "electron-updater": "catalog:node",
     "electron-vite": "catalog:dev",
     "eslint": "catalog:dev",
