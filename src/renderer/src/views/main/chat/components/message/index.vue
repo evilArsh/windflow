@@ -49,6 +49,12 @@ const handler = {
         <div class="flex flex-col gap-1rem">
           <el-input
             type="textarea"
+            style="
+              --el-input-border-color: transparent;
+              --el-border-color: transparent;
+              --el-input-hover-border-color: transparent;
+              --el-input-focus-border-color: transparent;
+            "
             autosize
             v-if="isString(cachedMessage.content.content) && cachedMessage.content.content"
             v-model="cachedMessage.content.content" />
