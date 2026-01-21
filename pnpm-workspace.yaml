@@ -111,6 +111,7 @@ catalogs:
   web:
     '@iconify/utils': ^3.1.0
     '@shikijs/monaco': ^3.21.0
+    '@slorber/remark-comment': ^1.0.0
     '@unocss/reset': 66.6.0
     '@vueuse/core': ^14.1.0
     character-entities: ^2.0.2
