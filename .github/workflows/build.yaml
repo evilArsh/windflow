@@ -136,7 +136,7 @@ jobs:
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "chore: update changelog for ${{ github.ref_name }}"
+          git commit -m "ci: update changelog for ${{ github.ref_name }}"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -172,9 +172,9 @@ jobs:
           previous_tag=$(git describe --tags --abbrev=0 $latest_tag^ 2>/dev/null || echo "")
 
           if [ -z "$previous_tag" ]; then
-            git log --pretty=format:"- %s" $latest_tag > release.md
+            git log --pretty=format:"- %s" --grep="^ci:" --invert-grep $latest_tag > release.md
           else
-            git log --pretty=format:"- %s" $previous_tag..$latest_tag > release.md
+            git log --pretty=format:"- %s" --grep="^ci:" --invert-grep $previous_tag..$latest_tag > release.md
           fi
       - name: Patch release.md
         run: |
