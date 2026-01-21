@@ -91,15 +91,14 @@ defineExpose({
       </Affix>
     </template>
     <div v-if="isUser" class="chat-item-content p-1rem reverse">
-      <p v-if="!forcePlaintext || !isString(message.node.content.content)">
+      <p class="flex flex-col items-end" v-if="!forcePlaintext || !isString(message.node.content.content)">
         {{ message.node.content.content }}
       </p>
       <Markdown
         v-else
         :content="message.node.content.content"
         :force-plaintext
-        @render-finish="onMarkdownFinish"
-        content-class="flex flex-col items-end"></Markdown>
+        @render-finish="onMarkdownFinish"></Markdown>
     </div>
     <div v-else class="chat-item-content p-1rem">
       <Image v-if="isImage" :message :parent></Image>
