@@ -12,6 +12,7 @@ import { isArray, isString, isNumber } from "@toolmain/shared"
 import { visit } from "unist-util-visit"
 import { urlAttributes } from "html-url-attributes"
 import type { Element } from "hast"
+import remarkComment from "@slorber/remark-comment"
 
 /**
  * @description 统一处理公式格式
@@ -130,6 +131,7 @@ export const rehypeHrToBr = () => {
 export const createProcessor = () => {
   return unified()
     .use(remarkParse)
+    .use(remarkComment)
     .use(remarkMath, { singleDollarTextMath: true })
     .use(remarkSqueezeParagraphs)
     .use(remarkGfm)

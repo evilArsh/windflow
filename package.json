@@ -36,6 +36,7 @@
     "@lancedb/lancedb": "catalog:node",
     "@modelcontextprotocol/sdk": "catalog:node",
     "@shikijs/monaco": "catalog:web",
+    "@slorber/remark-comment": "catalog:web",
     "@toolmain/components": "catalog:common",
     "@toolmain/libs": "catalog:common",
     "@toolmain/shared": "catalog:common",

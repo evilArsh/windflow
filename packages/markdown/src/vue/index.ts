@@ -39,6 +39,9 @@ export function useVueRuntime(options?: Options) {
   }
   const cache = useCache()
   function toVnode(tree: Nodes, componentsMap?: Components): VNode {
+    if (tree.type === "root" && !tree.children.length) {
+      return createVnode(tree, Fragment, { children: undefined })
+    }
     if (componentsMap) {
       if (!state.components) state.components = {}
       Object.entries(componentsMap).forEach(([key, value]) => {
