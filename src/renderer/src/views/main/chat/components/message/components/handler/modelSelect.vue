@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import useModelStore from "@renderer/store/model"
-import Shell from "./shell.vue"
+import Shell from "./components/shell.vue"
 import { storeToRefs } from "pinia"
 import type { ModelMeta, ChatTopic } from "@windflow/core/types"
 import useProviderStore from "@renderer/store/provider"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { isArrayLength } from "@toolmain/shared"
 import { isASRType, isChatReasonerType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
+import Group from "./components/group.vue"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()
@@ -78,29 +79,25 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
     </template>
     <template #default>
       <div class="h-40rem w-full flex">
-        <el-checkbox-group
-          v-model="data.modelIds"
-          @change="emit('change', data)"
-          class="line-height-unset! w-full text-inherit">
+        <el-checkbox-group v-model="data.modelIds" @change="emit('change', data)" class="w-full text-inherit">
           <div class="select-wrap">
-            <ContentBox v-for="(item, provider) in activeModels" normal :key="provider">
-              <template #icon>
-                <Svg class="text-2.5rem" :src="providerStore.getProviderLogo(provider)"></Svg>
-              </template>
-              <el-text type="primary">{{ provider }}</el-text>
-              <template #footer>
-                <div class="flex flex-col gap5px">
-                  <div v-for="model in item" :key="model.id">
-                    <ContentBox background class="m0!">
+            <Group>
+              <ContentBox v-for="(item, provider) in activeModels" normal :key="provider">
+                <template #icon>
+                  <Svg class="text-2.5rem" :src="providerStore.getProviderLogo(provider)"></Svg>
+                </template>
+                <el-text type="primary">{{ provider }}</el-text>
+                <template #footer>
+                  <Group>
+                    <ContentBox v-for="model in item" :key="model.id" class="setting-box">
                       <el-checkbox :value="model.id" :label="model.modelName">
                         <ModelName :data="model"></ModelName>
                       </el-checkbox>
                     </ContentBox>
-                    <el-divider class="my-.25rem!"></el-divider>
-                  </div>
-                </div>
-              </template>
-            </ContentBox>
+                  </Group>
+                </template>
+              </ContentBox>
+            </Group>
           </div>
         </el-checkbox-group>
       </div>
@@ -108,6 +105,7 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
   </Shell>
 </template>
 <style lang="scss" scoped>
+@use "./components/common.scss";
 .select-wrap {
   display: flex;
   flex-direction: column;

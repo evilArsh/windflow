@@ -8,8 +8,9 @@ import MCPForm from "@renderer/views/main/mcp/index/components/form/form.vue"
 import { MCPClientStatus, MCPServerParam } from "@windflow/shared"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { Spinner } from "@toolmain/components"
-import Shell from "./shell.vue"
+import Shell from "./components/shell.vue"
 import { msg } from "@renderer/utils"
+import Group from "./components/group.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -131,76 +132,75 @@ const serverHandler = {
       <el-text>{{ t("chat.mcp.label") }}</el-text>
     </template>
     <template #default>
-      <div class="w-full h-40rem flex">
-        <el-scrollbar v-if="!visible" class="w-full">
-          <div>
-            <div v-for="server in filterServers" :key="server.id">
-              <ContentBox background>
-                <template #icon>
-                  <el-switch
-                    class="mcp-status-switch"
-                    size="small"
-                    :model-value="isCurrentActive(server)"
-                    :loading="server.status === MCPClientStatus.Connecting"
-                    :active-value="true"
-                    :inactive-value="false"
-                    @click.stop="serverHandler.onServerToggle(server)" />
-                </template>
-                <McpName :data="server"></McpName>
-                <template #end>
-                  <div class="flex items-center">
-                    <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.mcp.clone')">
-                      <ContentBox class="flex-grow-0!" @click.stop="onClick(server)">
-                        <i class="i-ep-copy-document"></i>
+      <div class="w-full h-40rem">
+        <template v-if="!visible">
+          <Group>
+            <ContentBox class="setting-box" v-for="server in filterServers" :key="server.id">
+              <template #icon>
+                <el-switch
+                  class="mcp-status-switch"
+                  size="small"
+                  :model-value="isCurrentActive(server)"
+                  :loading="server.status === MCPClientStatus.Connecting"
+                  :active-value="true"
+                  :inactive-value="false"
+                  @click.stop="serverHandler.onServerToggle(server)" />
+              </template>
+              <McpName :data="server"></McpName>
+              <template #end>
+                <div class="flex items-center">
+                  <el-tooltip :show-after="1000" placement="bottom" :content="t('chat.mcp.clone')">
+                    <ContentBox class="flex-grow-0!" @click.stop="onClick(server)">
+                      <el-button text link>
+                        <i class="i-ep-copy-document text-1.4rem"></i>
+                      </el-button>
+                    </ContentBox>
+                  </el-tooltip>
+                  <el-popconfirm
+                    v-if="isCurrentActive(server)"
+                    :title="t('mcp.service.deleteConfirm')"
+                    :teleported="false">
+                    <template #reference>
+                      <ContentBox class="flex-grow-0!">
+                        <el-button text link type="warning">
+                          <i class="i-ep-refresh text-1.4rem"></i>
+                        </el-button>
                       </ContentBox>
-                    </el-tooltip>
-                    <el-popconfirm
-                      v-if="isCurrentActive(server)"
-                      :title="t('mcp.service.deleteConfirm')"
-                      :teleported="false">
-                      <template #reference>
-                        <ContentBox class="flex-grow-0!">
-                          <el-button text link type="warning">
-                            <i class="i-ep-refresh text-1.4rem"></i>
-                          </el-button>
-                        </ContentBox>
-                      </template>
-                      <template #actions="{ cancel }">
-                        <div class="flex justify-between">
-                          <Button type="danger" size="small" @click="done => serverHandler.restart(done, server)">
-                            {{ t("tip.yes") }}
-                          </Button>
-                          <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
-                        </div>
-                      </template>
-                    </el-popconfirm>
-                    <el-popconfirm
-                      v-if="server.modifyTopic == topic.id"
-                      :title="t('tip.deleteConfirm')"
-                      :teleported="false">
-                      <template #reference>
-                        <ContentBox class="flex-grow-0!">
-                          <el-button text link type="danger">
-                            <i class="i-ep-delete text-1.4rem"></i>
-                          </el-button>
-                        </ContentBox>
-                      </template>
-                      <template #actions="{ cancel }">
-                        <div class="flex justify-between">
-                          <Button type="danger" size="small" @click="done => serverHandler.del(done, server)">
-                            {{ t("tip.yes") }}
-                          </Button>
-                          <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
-                        </div>
-                      </template>
-                    </el-popconfirm>
-                  </div>
-                </template>
-              </ContentBox>
-              <el-divider class="my-.25rem!"></el-divider>
-            </div>
-          </div>
-        </el-scrollbar>
+                    </template>
+                    <template #actions="{ cancel }">
+                      <div class="flex justify-between">
+                        <Button type="danger" size="small" @click="done => serverHandler.restart(done, server)">
+                          {{ t("tip.yes") }}
+                        </Button>
+                        <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+                      </div>
+                    </template>
+                  </el-popconfirm>
+                  <el-popconfirm
+                    v-if="server.modifyTopic == topic.id"
+                    :title="t('tip.deleteConfirm')"
+                    :teleported="false">
+                    <template #reference>
+                      <ContentBox class="flex-grow-0!">
+                        <el-button text link type="danger">
+                          <i class="i-ep-delete text-1.4rem"></i>
+                        </el-button>
+                      </ContentBox>
+                    </template>
+                    <template #actions="{ cancel }">
+                      <div class="flex justify-between">
+                        <Button type="danger" size="small" @click="done => serverHandler.del(done, server)">
+                          {{ t("tip.yes") }}
+                        </Button>
+                        <el-button size="small" @click="cancel">{{ t("btn.cancel") }}</el-button>
+                      </div>
+                    </template>
+                  </el-popconfirm>
+                </div>
+              </template>
+            </ContentBox>
+          </Group>
+        </template>
         <MCPForm
           v-else
           shadow="always"
@@ -214,6 +214,7 @@ const serverHandler = {
   </Shell>
 </template>
 <style lang="scss">
+@use "./components/common.scss";
 .mcp-status-switch {
   .el-switch__action {
     .el-icon.is-loading {

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
+import Group from "../components/group.vue"
 defineProps<{
   topic: ChatTopic
 }>()
@@ -13,10 +14,12 @@ settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "e
 settingsStore.dataWatcher<boolean>(SettingKeys.ChatForcePlaintext, forcePlaintext, false)
 </script>
 <template>
-  <div class="flex flex-col w-full">
-    <el-divider class="my-.25rem!"></el-divider>
-    <ContentBox>
-      <el-text>{{ t("chat.settings.shortcut") }}</el-text>
+  <Group>
+    <ContentBox class="setting-box">
+      <template #icon>
+        <i-ic-baseline-send></i-ic-baseline-send>
+      </template>
+      <el-text size="small">{{ t("chat.settings.shortcut") }}</el-text>
       <template #footer>
         <el-select v-model="sendShortcut" size="small" :teleported="false">
           <el-option v-for="item in ['enter', 'ctrl+enter', 'shift+enter']" :key="item" :value="item">
@@ -25,13 +28,17 @@ settingsStore.dataWatcher<boolean>(SettingKeys.ChatForcePlaintext, forcePlaintex
         </el-select>
       </template>
     </ContentBox>
-    <el-divider class="my-.25rem!"></el-divider>
-    <ContentBox>
-      <el-text>{{ t("chat.settings.forcePlaintext") }}</el-text>
+    <ContentBox class="setting-box">
+      <template #icon>
+        <i-ic-baseline-auto-fix-high></i-ic-baseline-auto-fix-high>
+      </template>
+      <el-text size="small">{{ t("chat.settings.forcePlaintext") }}</el-text>
       <template #footer>
         <el-switch v-model="forcePlaintext"></el-switch>
       </template>
     </ContentBox>
-  </div>
+  </Group>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@use "../components/common.scss";
+</style>

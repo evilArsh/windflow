@@ -2,7 +2,8 @@
 import { ChatTopic } from "@windflow/core/types"
 import Global from "./global.vue"
 import Message from "./message.vue"
-import Shell from "../shell.vue"
+import Shell from "../components/shell.vue"
+import Group from "../components/group.vue"
 defineProps<{
   topic: ChatTopic
 }>()
@@ -19,19 +20,21 @@ const { t } = useI18n()
       <el-text>{{ t("chat.settings.label") }}</el-text>
     </template>
     <template #default>
-      <div class="w-full h-40rem flex flex-col gap-1rem">
-        <ContentBox>
-          <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
-          <template #footer>
-            <Message :topic></Message>
-          </template>
-        </ContentBox>
-        <ContentBox>
-          <el-text type="primary">{{ t("chat.settings.inputLabel") }}</el-text>
-          <template #footer>
-            <Global :topic></Global>
-          </template>
-        </ContentBox>
+      <div class="w-full h-40rem">
+        <Group>
+          <ContentBox normal>
+            <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
+            <template #footer>
+              <Message :topic></Message>
+            </template>
+          </ContentBox>
+          <ContentBox normal>
+            <el-text type="primary">{{ t("chat.settings.inputLabel") }}</el-text>
+            <template #footer>
+              <Global :topic></Global>
+            </template>
+          </ContentBox>
+        </Group>
       </div>
     </template>
   </Shell>

@@ -4,6 +4,7 @@ import useChatStore from "@renderer/store/chat"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import { errorToText } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
+import Group from "../components/group.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -22,10 +23,12 @@ async function updateTopic() {
 }
 </script>
 <template>
-  <div class="flex flex-col w-full">
-    <el-divider class="my-.25rem!"></el-divider>
-    <ContentBox>
-      <el-text>{{ t("chat.settings.maxContextLength") }}</el-text>
+  <Group>
+    <ContentBox class="setting-box">
+      <template #icon>
+        <i-ic-outline-featured-play-list></i-ic-outline-featured-play-list>
+      </template>
+      <el-text size="small">{{ t("chat.settings.maxContextLength") }}</el-text>
       <template #end>
         <el-tooltip
           :teleported="false"
@@ -48,7 +51,8 @@ async function updateTopic() {
         </div>
       </template>
     </ContentBox>
-    <el-divider class="my-.25rem!"></el-divider>
-  </div>
+  </Group>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@use "../components/common.scss";
+</style>
