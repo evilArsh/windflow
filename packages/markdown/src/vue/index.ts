@@ -74,7 +74,10 @@ export function useVueRuntime(options?: Options) {
      * })
      */
     const children: Props["children"] = props.children
-    if (isString(type) || type === Fragment) {
+    if (type === Fragment) {
+      delete props.children
+      return h("div", props, children)
+    } else if (isString(type)) {
       delete props.children
       return h(type, props, children)
     } else {
