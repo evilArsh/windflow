@@ -31,6 +31,7 @@ catalogs:
     '@types/hash-sum': ^1.0.2
     '@types/hast': ^3.0.4
     '@types/lodash.merge': ^4.6.9
+    '@types/mdast': ^4.0.4
     '@types/mime-types': ^3.0.1
     '@types/node': ^25.0.9
     '@types/pdf-parse': ^1.1.5
@@ -111,7 +112,6 @@ catalogs:
   web:
     '@iconify/utils': ^3.1.0
     '@shikijs/monaco': ^3.21.0
-    '@slorber/remark-comment': ^1.0.0
     '@unocss/reset': 66.6.0
     '@vueuse/core': ^14.1.0
     character-entities: ^2.0.2
@@ -127,14 +127,19 @@ catalogs:
     openai: ^6.16.0
     pinia: ^3.0.4
     property-information: ^7.1.0
+    rehype-format: ^5.0.1
     rehype-mathjax: ^7.1.0
     rehype-stringify: ^10.0.1
+    remark-directive: ^4.0.0
     remark-emoji: ^5.0.2
+    remark-frontmatter: ^5.0.0
     remark-gfm: ^4.0.1
     remark-math: ^6.0.0
+    remark-mdx: ^3.1.1
     remark-parse: ^11.0.0
     remark-rehype: ^11.1.2
     remark-squeeze-paragraphs: ^6.0.0
+    remark-toc: ^9.0.0
     shiki: ^3.21.0
     space-separated-tokens: ^2.0.2
     style-to-js: ^1.1.21

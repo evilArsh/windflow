@@ -3,16 +3,21 @@ import { unified } from "unified"
 import remarkParse from "remark-parse"
 import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
+import remarkDirective from "remark-directive"
+import remarkToc from "remark-toc"
+// import remarkMdx from "remark-mdx"
 import remarkEmoji from "remark-emoji"
-import remarkSqueezeParagraphs from "remark-squeeze-paragraphs"
 import remarkRehype from "remark-rehype"
+import remarkSqueezeParagraphs from "remark-squeeze-paragraphs"
+import rehypeFormat from "rehype-format"
 import rehypeMathjax from "rehype-mathjax"
+import remarkFrontmatter from "remark-frontmatter"
 import rehypeStringify from "rehype-stringify"
 import { isArray, isString, isNumber } from "@toolmain/shared"
 import { visit } from "unist-util-visit"
 import { urlAttributes } from "html-url-attributes"
 import type { Element } from "hast"
-import remarkComment from "@slorber/remark-comment"
+import { Root } from "mdast"
 
 /**
  * @description 统一处理公式格式
@@ -86,13 +91,13 @@ function urlTransform(value: string) {
   return ""
 }
 
-export const rehypeUrlAttributes = () => {
+const rehypeUrlAttributes = () => {
   return (tree: any) => {
     visit(tree, (node, index, parent) => {
       if (isNumber(index) && parent) {
         // ! eg:<img >
         if (node.type === "raw") {
-          console.log("[visit raw]", node)
+          // console.log("[visit raw]", node)
           parent.children[index] = { type: "text", value: node.value }
           return
         }
@@ -113,7 +118,7 @@ export const rehypeUrlAttributes = () => {
   }
 }
 // --- rehypeHrToBr
-export const rehypeHrToBr = () => {
+const rehypeHrToBr = () => {
   return (tree: any) => {
     visit(tree, "element", (node, index, parent) => {
       if (node.tagName === "hr") {
@@ -127,26 +132,37 @@ export const rehypeHrToBr = () => {
     })
   }
 }
+function remarkCustom() {
+  return function (_tree: Root) {
+    // visit(tree, function (node) {
+    //   if (node.type === "containerDirective" || node.type === "leafDirective" || node.type === "textDirective") {
+    //     const data = node.data || (node.data = {})
+    //     const hast = h(node.name, node.attributes || {})
+    //     data.hName = hast.tagName
+    //     data.hProperties = hast.properties
+    //   }
+    // })
+  }
+}
 
 export const createProcessor = () => {
+  // .use(remarkMdx)
   return unified()
     .use(remarkParse)
-    .use(remarkComment)
+    .use(remarkDirective)
+    .use(remarkFrontmatter)
+    .use(remarkCustom)
+    .use(remarkGfm)
     .use(remarkMath, { singleDollarTextMath: true })
     .use(remarkSqueezeParagraphs)
-    .use(remarkGfm)
+    .use(remarkToc)
     .use(remarkEmoji)
-    .use(remarkRehype, {
-      allowDangerousHtml: false,
-      allowDangerousCharacters: false,
-    })
+    .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeMathjax)
     .use(rehypeHrToBr)
     .use(rehypeUrlAttributes)
-    .use(rehypeStringify, {
-      allowDangerousHtml: false,
-      allowDangerousCharacters: false,
-    })
+    .use(rehypeFormat)
+    .use(rehypeStringify)
 }
 
 export const useMermaid = () => {
