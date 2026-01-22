@@ -1,3 +1,17 @@
+## v0.7.9
+
+- feat: bump version to 0.7.9
+- feat(markdown): update remark/rehype dependenciesl, add new remark/rehype plugins
+- feat(markdown): improve Vue runtime and CodeBlock component performance
+- feat(markdown): replace empty root fragment with span element
+- feat(markdown): add remark-comment plugin and handle empty root nodes
+- feat(chat): apply consistent flex layout to user message content
+- ci: exclude ci commits from release notes generation
+- feat(chat): conditionally render plaintext or markdown in user messages
+- perf: improve the accuracy of `Affix`
+- chore(deps): update multiple dependencies to latest versions
+- chore: update changelog for v0.7.8
+
 ## v0.7.8
 
 - fix: platform map error
