@@ -7,7 +7,7 @@ import { storeToRefs } from "pinia"
 import FileItem from "@renderer/views/main/knowledge/components/fileItem.vue"
 import { RAGLocalFileInfo } from "@windflow/shared"
 import { errorToText } from "@toolmain/shared"
-import Shell from "./shell.vue"
+import Shell from "./components/shell.vue"
 import { msgError } from "@renderer/utils"
 
 import { CollapseActiveName } from "element-plus"

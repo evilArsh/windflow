@@ -7,9 +7,10 @@ import { storeToRefs } from "pinia"
 import { useThrottleFn } from "@vueuse/core"
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { Spinner } from "@toolmain/components"
-import Shell from "./shell.vue"
+import Shell from "./components/shell.vue"
 import { defaultTTIConfig } from "@windflow/core/storage"
 import { msg } from "@renderer/utils"
+import Group from "./components/group.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -128,100 +129,102 @@ function onRandSeed() {
         <el-empty></el-empty>
       </div>
       <div v-else class="tti-wrap h-40rem w-full flex flex-col">
-        <el-divider class="my-.25rem!"></el-divider>
-        <ContentBox>
-          <el-text>{{ t("chat.tti.imageSize") }}</el-text>
-          <template #footer>
-            <el-select size="small" v-model="config.size" @change="update" :teleported="false" append-to=".size-anchor">
-              <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </template>
-        </ContentBox>
-        <el-divider class="my-.25rem!"></el-divider>
-        <ContentBox>
-          <el-text>{{ t("chat.tti.seed") }}</el-text>
-          <template #footer>
-            <el-input size="small" readonly v-model="config.seed">
-              <template #append>
-                <i-ep-refresh @click="onRandSeed" class="text-1.2rem"></i-ep-refresh>
-              </template>
-            </el-input>
-          </template>
-        </ContentBox>
-        <el-divider class="my-.25rem!"></el-divider>
-        <ContentBox>
-          <el-text>{{ t("chat.tti.n") }}</el-text>
-          <template #footer>
-            <div class="px-1.5rem w-full flex">
-              <el-slider size="small" show-input @change="update" v-model="config.n" :min="1" :max="4"></el-slider>
-            </div>
-          </template>
-        </ContentBox>
-        <el-divider class="my-.25rem!"></el-divider>
-        <ContentBox>
-          <el-text>{{ t("chat.tti.inferenceSteps") }}</el-text>
-          <template #end>
-            <el-tooltip
-              popper-class="max-w-25rem"
-              :teleported="false"
-              :content="t('chat.tti.inferenceStepsExp')"
-              placement="top">
-              <i-material-symbols-help-outline></i-material-symbols-help-outline>
-            </el-tooltip>
-          </template>
-          <template #footer>
-            <div class="px-1.5rem w-full flex">
-              <el-slider
+        <Group>
+          <ContentBox class="setting-box">
+            <el-text>{{ t("chat.tti.imageSize") }}</el-text>
+            <template #footer>
+              <el-select
+                size="small"
+                v-model="config.size"
+                @change="update"
+                :teleported="false"
+                append-to=".size-anchor">
+                <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </template>
+          </ContentBox>
+          <ContentBox class="setting-box">
+            <el-text>{{ t("chat.tti.seed") }}</el-text>
+            <template #footer>
+              <el-input size="small" readonly v-model="config.seed">
+                <template #append>
+                  <i-ep-refresh @click="onRandSeed" class="text-1.2rem"></i-ep-refresh>
+                </template>
+              </el-input>
+            </template>
+          </ContentBox>
+          <ContentBox class="setting-box">
+            <el-text>{{ t("chat.tti.n") }}</el-text>
+            <template #footer>
+              <div class="px-1.5rem w-full flex">
+                <el-slider size="small" show-input @change="update" v-model="config.n" :min="1" :max="4"></el-slider>
+              </div>
+            </template>
+          </ContentBox>
+          <ContentBox class="setting-box">
+            <el-text>{{ t("chat.tti.inferenceSteps") }}</el-text>
+            <template #end>
+              <el-tooltip
+                popper-class="max-w-25rem"
+                :teleported="false"
+                :content="t('chat.tti.inferenceStepsExp')"
+                placement="top">
+                <i-material-symbols-help-outline></i-material-symbols-help-outline>
+              </el-tooltip>
+            </template>
+            <template #footer>
+              <div class="px-1.5rem w-full flex">
+                <el-slider
+                  size="small"
+                  @change="update"
+                  show-input
+                  v-model="config.num_inference_steps"
+                  :min="1"
+                  :max="100"></el-slider>
+              </div>
+            </template>
+          </ContentBox>
+          <ContentBox class="setting-box">
+            <el-text>{{ t("chat.tti.guidanceScale") }}</el-text>
+            <template #end>
+              <el-tooltip
+                popper-class="max-w-25rem"
+                :teleported="false"
+                :content="t('chat.tti.guidanceScaleExp')"
+                placement="top">
+                <i-material-symbols-help-outline></i-material-symbols-help-outline>
+              </el-tooltip>
+            </template>
+            <template #footer>
+              <div class="px-1.5rem w-full flex">
+                <el-slider
+                  size="small"
+                  @change="update"
+                  show-input
+                  v-model="config.guidance_scale"
+                  :min="0"
+                  :max="20"></el-slider>
+              </div>
+            </template>
+          </ContentBox>
+          <ContentBox class="setting-box">
+            <el-text>{{ t("chat.tti.negativePrompt") }}</el-text>
+            <template #footer>
+              <el-input
                 size="small"
                 @change="update"
-                show-input
-                v-model="config.num_inference_steps"
-                :min="1"
-                :max="100"></el-slider>
-            </div>
-          </template>
-        </ContentBox>
-        <el-divider class="my-.25rem!"></el-divider>
-        <ContentBox>
-          <el-text>{{ t("chat.tti.guidanceScale") }}</el-text>
-          <template #end>
-            <el-tooltip
-              popper-class="max-w-25rem"
-              :teleported="false"
-              :content="t('chat.tti.guidanceScaleExp')"
-              placement="top">
-              <i-material-symbols-help-outline></i-material-symbols-help-outline>
-            </el-tooltip>
-          </template>
-          <template #footer>
-            <div class="px-1.5rem w-full flex">
-              <el-slider
-                size="small"
-                @change="update"
-                show-input
-                v-model="config.guidance_scale"
-                :min="0"
-                :max="20"></el-slider>
-            </div>
-          </template>
-        </ContentBox>
-        <el-divider class="my-.25rem!"></el-divider>
-        <ContentBox>
-          <el-text>{{ t("chat.tti.negativePrompt") }}</el-text>
-          <template #footer>
-            <el-input
-              size="small"
-              @change="update"
-              type="textarea"
-              v-model="config.negative_prompt"
-              autosize></el-input>
-          </template>
-        </ContentBox>
+                type="textarea"
+                v-model="config.negative_prompt"
+                autosize></el-input>
+            </template>
+          </ContentBox>
+        </Group>
       </div>
     </template>
   </Shell>
 </template>
 <style lang="scss" scoped>
+@use "./components/common.scss";
 .tti-wrap {
   :deep(.el-form-item__label) {
     line-height: unset;
