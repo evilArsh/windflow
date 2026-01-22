@@ -13,7 +13,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Abbrs: typeof import('./src/components/Abbrs/index.vue')['default']
-    Affix: typeof import('./src/components/Affix/index.vue')['default']
     Button: typeof import('./src/components/Button/index.vue')['default']
     ContentBox: typeof import('./src/components/ContentBox/index.vue')['default']
     ContentLayout: typeof import('./src/components/ContentLayout/index.vue')['default']
@@ -134,7 +133,6 @@ declare module 'vue' {
 // For TSX support
 declare global {
   const Abbrs: typeof import('./src/components/Abbrs/index.vue')['default']
-  const Affix: typeof import('./src/components/Affix/index.vue')['default']
   const Button: typeof import('./src/components/Button/index.vue')['default']
   const ContentBox: typeof import('./src/components/ContentBox/index.vue')['default']
   const ContentLayout: typeof import('./src/components/ContentLayout/index.vue')['default']
