@@ -8,7 +8,7 @@ export default defineStore("settings", () => {
   const settings = reactive<Record<string, Settings<SettingsValue>>>({})
   const updateValue = (id: string, val: Settings<SettingsValue>) => {
     const data = settings[id]
-    if (data) {
+    if (!isUndefined(data)) {
       data.value = val.value
     } else {
       settings[id] = val
@@ -115,20 +115,25 @@ export default defineStore("settings", () => {
   /**
    * sync settings data to `target`
    */
-  function dataBind<T extends SettingsValue>(id: SettingKeys, target: Ref<T> | Reactive<T>) {
-    const watcher = watch(
-      () => settings[id],
-      val => {
-        if (!val) return
-        if (isRef(target)) {
-          target.value = val.value as T
-        } else {
-          Object.assign(target, val.value)
-        }
-      },
-      { deep: true, immediate: true }
-    )
+  function dataBind<T extends SettingsValue>(
+    id: SettingKeys,
+    target?: Ref<T> | Reactive<T>
+  ): { data: Ref<T | undefined> } {
+    const bindValue = ref()
+    const syncData = (val?: Settings<SettingsValue>) => {
+      bindValue.value = val?.value
+      if (isUndefined(val) || !target) return
+      if (isRef(target)) {
+        target.value = val.value as T
+      } else {
+        Object.assign(target, val.value)
+      }
+    }
+    const watcher = watch(() => settings[id], syncData, { deep: true, immediate: true })
     onBeforeUnmount(watcher.stop)
+    return {
+      data: bindValue,
+    }
   }
   async function init() {
     // need pre-load data rather than loading when using, because of possibly UI rendering lag
