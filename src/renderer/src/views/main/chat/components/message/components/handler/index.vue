@@ -66,7 +66,7 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
 <template>
   <div class="chat-input-container">
     <div class="chat-input-header">
-      <div class="flex items-center gap-1rem c-[--el-text-color-regular]">
+      <div class="flex items-center gap-1.5rem c-[--el-text-color-regular]">
         <ModelSelect :topic @change="handler.onTopicUpdate" />
         <LLMRequestConfig :topic></LLMRequestConfig>
         <TextToImage :topic></TextToImage>

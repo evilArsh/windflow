@@ -56,7 +56,12 @@ const cache = reactive({
   mode: "" as "add" | "edit" | "view",
   emForm: util.getDefaultKbForm(),
   keyword: "",
-  currentId: "",
+})
+const { data: currentId } = settingsStore.dataWatcher<string>(SettingKeys.EmbeddingId, null, "", id => {
+  if (!id) return
+  const em = embeddings.value.find(v => v.id === id)
+  if (!em) return
+  current.value = em
 })
 const filterEmbeddings = computed<RAGEmbeddingConfig[]>(() =>
   embeddings.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
@@ -85,7 +90,7 @@ const ev = {
       if (!em) {
         cache.emForm.id = uniqueId()
         await embeddingStore.add(cache.emForm)
-        cache.currentId = cache.emForm.id
+        currentId.value = cache.emForm.id
       } else {
         Object.assign(em, cache.emForm)
         await embeddingStore.update(em)
@@ -116,18 +121,13 @@ const ev = {
     }
   },
   onEmbeddingChoose(em: RAGEmbeddingConfig) {
-    cache.currentId = em.id
+    currentId.value = em.id
   },
   onFormEnterConfirm() {
     formConfirmRef.value?.click()
   },
 }
-settingsStore.dataWatcher<string>(SettingKeys.EmbeddingId, toRef(cache, "currentId"), "", id => {
-  if (!id) return
-  const em = embeddings.value.find(v => v.id === id)
-  if (!em) return
-  current.value = em
-})
+
 onMounted(() => {
   route.query.command == "add" && ev.onOpenDlg("add")
 })

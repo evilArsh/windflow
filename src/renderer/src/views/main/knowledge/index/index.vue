@@ -51,7 +51,6 @@ const cache = reactive({
   // list filter keyword
   keyword: "",
   currentFileNum: 0,
-  currentId: "",
   current: null as Knowledge | null,
 })
 const cacheEv = {
@@ -68,6 +67,15 @@ const cacheEv = {
 const filterKnowledges = computed(() =>
   knowledges.value.filter(v => v.name.includes(cache.keyword) || v.id.includes(cache.keyword))
 )
+const { data: currentId } = settingsStore.dataWatcher<string>(SettingKeys.KnowledgeId, null, "", id => {
+  const kb = knowledges.value.find(v => v.id === id)
+  if (!id || !kb) {
+    cache.current = null
+    return
+  }
+  cache.current = kb
+  cacheEv.fetchCurrentFiles(kb.id)
+})
 const ev = {
   onAddNew(done: CallBackFn) {
     if (embeddings.value.length == 1) {
@@ -94,7 +102,7 @@ const ev = {
       if (!kb) {
         cache.kbForm.id = uniqueId()
         await knowledgeStore.add(cache.kbForm)
-        cache.currentId = cache.kbForm.id
+        currentId.value = cache.kbForm.id
       } else {
         Object.assign(kb, cache.kbForm)
         await knowledgeStore.update(kb)
@@ -136,18 +144,9 @@ const ev = {
   },
 
   onKnowledgeChoose(kb?: Knowledge) {
-    cache.currentId = kb?.id ?? ""
+    currentId.value = kb?.id ?? ""
   },
 }
-settingsStore.dataWatcher<string>(SettingKeys.KnowledgeId, toRef(cache, "currentId"), cache.currentId, id => {
-  const kb = knowledges.value.find(v => v.id === id)
-  if (!id || !kb) {
-    cache.current = null
-    return
-  }
-  cache.current = kb
-  cacheEv.fetchCurrentFiles(kb.id)
-})
 </script>
 <template>
   <ContentLayout custom>

@@ -28,38 +28,35 @@ const useConfigComponent = () => {
 }
 const { getComponent } = useConfigComponent()
 
-const ev = {
-  onCardClick(name: string) {
-    cache.currentProviderName = name
-  },
-  toggleNav(_?: MouseEvent) {
-    cache.showSubNav = !cache.showSubNav
-  },
-}
-const cache = reactive({
-  currentProviderName: "",
-  currentProvider: undefined as ProviderMeta | undefined,
-  showSubNav: true,
-})
-settingsStore.dataWatcher<string | undefined>(
+const currentProvider = ref<ProviderMeta>()
+const { data: currentProviderName } = settingsStore.dataWatcher<string>(
   SettingKeys.ProviderCurrentSettingActive,
-  toRef(cache, "currentProviderName"),
+  null,
   "",
   name => {
     if (!name) {
-      cache.currentProvider = undefined
+      currentProvider.value = undefined
     } else {
-      cache.currentProvider = providerStore.findProviderMeta(name)
+      currentProvider.value = providerStore.findProviderMeta(name)
     }
   }
 )
-settingsStore.dataWatcher<boolean>(SettingKeys.ModelToggleSubNav, toRef(cache, "showSubNav"), true)
+const { data: showSubNav } = settingsStore.dataWatcher<boolean>(SettingKeys.ModelToggleSubNav, null, true)
+const ev = {
+  onCardClick(name: string) {
+    currentProviderName.value = name
+  },
+  toggleNav(_?: MouseEvent) {
+    showSubNav.value = !showSubNav.value
+  },
+}
+
 shortcut.listen("ctrl+b", res => {
   res && ev.toggleNav()
 })
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.ModelSubNav" :hide-submenu="!cache.showSubNav">
+  <SubNavLayout :id="SettingKeys.ModelSubNav" :hide-submenu="!showSubNav">
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">
@@ -67,11 +64,11 @@ shortcut.listen("ctrl+b", res => {
             <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("model.title") }}</el-text>
               <template #end>
-                <teleport to="#mainContentHeaderSlot" defer :disabled="cache.showSubNav">
+                <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
                   <ContentBox @click="ev.toggleNav" background>
                     <i-material-symbols-right-panel-close-outline
                       class="text-1.6rem"
-                      v-if="!cache.showSubNav"></i-material-symbols-right-panel-close-outline>
+                      v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
                     <i-material-symbols-left-panel-close-outline
                       class="text-1.6rem"
                       v-else></i-material-symbols-left-panel-close-outline>
@@ -90,7 +87,7 @@ shortcut.listen("ctrl+b", res => {
             <ContentBox
               v-for="meta in providerMetas"
               :key="meta.name"
-              :default-lock="cache.currentProvider?.name == meta.name"
+              :default-lock="currentProvider?.name == meta.name"
               still-lock
               :background="false"
               @click="ev.onCardClick(meta.name)">
@@ -103,9 +100,9 @@ shortcut.listen("ctrl+b", res => {
     </template>
     <template #content>
       <component
-        :key="cache.currentProvider?.name"
-        :is="getComponent(cache.currentProvider?.name)"
-        :provider-name="cache.currentProvider?.name" />
+        :key="currentProvider?.name"
+        :is="getComponent(currentProvider?.name)"
+        :provider-name="currentProvider?.name" />
     </template>
   </SubNavLayout>
 </template>

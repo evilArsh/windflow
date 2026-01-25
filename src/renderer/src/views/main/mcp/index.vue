@@ -11,10 +11,13 @@ const { t } = useI18n()
 
 const shortcut = useShortcut()
 const settingsStore = useSettingsStore()
-const currentRoute = ref("")
 const router = useRouter()
 const route = useRoute()
 const menus = shallowRef<{ icon: Component; title: string; path: string }[]>([])
+const { data: currentRoute } = settingsStore.dataWatcher<string>(SettingKeys.MCPSubRoute, null, route.path, path => {
+  router.push(path)
+})
+const { data: showSubNav } = settingsStore.dataWatcher<boolean>(SettingKeys.MCPToggleSubNav, null, true)
 const routes = {
   toPath: (path: string) => {
     currentRoute.value = path
@@ -27,24 +30,17 @@ useI18nWatch(() => {
     { icon: IDisplaySettingsOutline, title: t("mcp.menu.env"), path: "/main/mcp/exec" },
   ]
 })
-const cache = reactive({
-  showSubNav: true,
-})
 const ev = {
   toggleNav(_?: MouseEvent) {
-    cache.showSubNav = !cache.showSubNav
+    showSubNav.value = !showSubNav.value
   },
 }
-settingsStore.dataWatcher<string>(SettingKeys.MCPSubRoute, currentRoute, route.path, path => {
-  router.push(path)
-})
-settingsStore.dataWatcher<boolean>(SettingKeys.MCPToggleSubNav, toRef(cache, "showSubNav"), true)
 shortcut.listen("ctrl+b", res => {
   res && ev.toggleNav()
 })
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.MCPSubNav" :hide-submenu="!cache.showSubNav">
+  <SubNavLayout :id="SettingKeys.MCPSubNav" :hide-submenu="!showSubNav">
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">
@@ -52,11 +48,11 @@ shortcut.listen("ctrl+b", res => {
             <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("mcp.title") }}</el-text>
               <template #end>
-                <teleport to="#mainContentHeaderSlot" defer :disabled="cache.showSubNav">
+                <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
                   <ContentBox @click="ev.toggleNav" background>
                     <i-material-symbols-right-panel-close-outline
                       class="text-1.6rem"
-                      v-if="!cache.showSubNav"></i-material-symbols-right-panel-close-outline>
+                      v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
                     <i-material-symbols-left-panel-close-outline
                       class="text-1.6rem"
                       v-else></i-material-symbols-left-panel-close-outline>
