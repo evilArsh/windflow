@@ -37,8 +37,6 @@ const isUser = computed(() => message.value.node.content.role === Role.User)
 const isText = computed(() => !message.value.node.type || message.value.node.type === "text")
 const isImage = computed(() => message.value.node.type === "image")
 const isPartial = computed(() => code1xx(message.value.node.status) || message.value.node.status == 206)
-
-const forcePlaintext = ref(false)
 async function onContentDelete(m: ChatMessageTree, done: CallBackFn) {
   try {
     await chatStore.deleteMessage(m)
@@ -75,7 +73,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   props.context.menuToggle.unWatchToggle(onUpdateAffix)
 })
-settingsStore.dataBind(SettingKeys.ChatForcePlaintext, forcePlaintext)
+const { data: forcePlaintext } = settingsStore.dataBind<boolean>(SettingKeys.ChatForcePlaintext)
 
 defineExpose({
   update: onUpdateAffix,
@@ -97,7 +95,7 @@ defineExpose({
       <Markdown
         v-else
         :content="message.node.content.content"
-        :force-plaintext
+        :force-plaintext="!!forcePlaintext"
         @render-finish="onMarkdownFinish"></Markdown>
     </div>
     <div v-else class="chat-item-content p-1rem">
