@@ -17,9 +17,34 @@ const router = useRouter()
 const settingsStore = useSettingsStore()
 const defaultPath = "/main/chat"
 
-const defaultRoute = ref("")
 const task = useTask(new PQueue({ concurrency: 1 }))
 const pageNav = shallowRef<NavPage[]>([])
+
+const menuEv = {
+  onSelect: (path: string) => {
+    if (task.pending()) return
+    task.getQueue().add(async () => {
+      if (path.startsWith(defaultRoute.value) && defaultRoute.value) return
+      const current = pageNav.value.find(v => path.startsWith(v.index))
+      defaultRoute.value = current?.index ?? defaultPath
+      menuEv.onRouteChange(path)
+    })
+  },
+  onRouteChange(path: string) {
+    router.replace({
+      path,
+    })
+  },
+}
+const { data: defaultRoute } = settingsStore.dataWatcher<string>(
+  SettingKeys.DefaultRoute,
+  null,
+  "/main/chat",
+  (path, old) => {
+    if (old && path.startsWith(old)) return
+    menuEv.onRouteChange(path)
+  }
+)
 useI18nWatch(() => {
   pageNav.value = [
     {
@@ -44,44 +69,27 @@ useI18nWatch(() => {
     },
   ]
 })
-const menuEv = {
-  onSelect: (path: string) => {
-    if (task.pending()) return
-    task.getQueue().add(async () => {
-      if (path.startsWith(defaultRoute.value) && defaultRoute.value) return
-      const current = pageNav.value.find(v => path.startsWith(v.index))
-      defaultRoute.value = current?.index ?? defaultPath
-      menuEv.onRouteChange(path)
-    })
-  },
-  onRouteChange(path: string) {
-    router.replace({
-      path,
-    })
-  },
-}
+
 const useStatus = () => {
-  const dark = ref(false)
-  function setTheme(dark: boolean) {
-    if (dark) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
+  const { data: dark } = settingsStore.dataWatcher<boolean>(
+    SettingKeys.GlobalThemeDark,
+    null,
+    false,
+    (dark: boolean) => {
+      if (dark) {
+        document.documentElement.classList.add("dark")
+      } else {
+        document.documentElement.classList.remove("dark")
+      }
     }
-  }
+  )
   function toggleDark() {
     dark.value = !dark.value
     window.api.theme.setTheme(dark.value ? Theme.dark : Theme.light)
   }
-  return { dark, setTheme, toggleDark }
+  return { dark, toggleDark }
 }
 const status = useStatus()
-
-settingsStore.dataWatcher<boolean>(SettingKeys.GlobalThemeDark, toRef(status, "dark"), false, status.setTheme)
-settingsStore.dataWatcher<string>(SettingKeys.DefaultRoute, defaultRoute, "/main/chat", (path, old) => {
-  if (old && path.startsWith(old)) return
-  menuEv.onRouteChange(path)
-})
 </script>
 <template>
   <el-card class="nav-container" body-class="nav-container-body" shadow="never">

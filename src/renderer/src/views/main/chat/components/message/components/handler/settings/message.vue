@@ -11,9 +11,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const chatStore = useChatStore()
 const topic = computed(() => props.topic)
-const sendShortcut = ref("")
 const settingsStore = useSettingsStore()
-settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
 async function updateTopic() {
   try {
     await chatStore.updateChatTopic(topic.value)
@@ -21,6 +19,7 @@ async function updateTopic() {
     msg({ code: 500, msg: errorToText(error) })
   }
 }
+const { data: forcePlaintext } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatForcePlaintext, null, false)
 </script>
 <template>
   <Group>
@@ -49,6 +48,15 @@ async function updateTopic() {
             :max="999"
             :step="1"></el-slider>
         </div>
+      </template>
+    </ContentBox>
+    <ContentBox class="setting-box">
+      <template #icon>
+        <i-ic-baseline-auto-fix-high></i-ic-baseline-auto-fix-high>
+      </template>
+      <el-text size="small">{{ t("chat.settings.forcePlaintext") }}</el-text>
+      <template #footer>
+        <el-switch v-model="forcePlaintext"></el-switch>
       </template>
     </ContentBox>
   </Group>

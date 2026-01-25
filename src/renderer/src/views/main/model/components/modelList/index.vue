@@ -54,7 +54,7 @@ const tableProps = shallowReactive<CombineTableProps>({
   height: "100%",
 })
 const tempMeta = shallowRef<ModelMeta>()
-const collapseNames = ref<string[]>(["2"])
+const { data: collapseNames } = settingsStore.dataWatcher<string[]>(SettingKeys.ProviderSearchBar, null, [])
 const ev = {
   async onRefreshModel(done?: CallBackFn) {
     try {
@@ -128,7 +128,6 @@ const useIcon = () => {
   return { current, onIconClick, onModelIconChange }
 }
 const { current, onIconClick, onModelIconChange } = useIcon()
-settingsStore.dataWatcher<string[]>(SettingKeys.ProviderSearchBar, collapseNames, [])
 onMounted(onQuery)
 </script>
 <template>

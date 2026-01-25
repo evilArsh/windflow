@@ -14,9 +14,11 @@ import { createChatMessage } from "@windflow/core/message"
 
 const useMenuToggle = () => {
   const toggleBus = useEventBus<boolean>("toggle")
-  const showTreeMenu = ref(true) // toggle show left menu
-  const showRightPanel = ref(false) // toggle show right menu
   const settingsStore = useSettingsStore()
+  // toggle show left menu
+  const { data: showTreeMenu } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, null, true)
+  // toggle show right menu
+  const { data: showRightPanel } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, null, false)
   const shortcut = useShortcut()
   function toggleTreeMenu(toggle?: boolean) {
     showTreeMenu.value = toggle ?? !showTreeMenu.value
@@ -33,9 +35,6 @@ const useMenuToggle = () => {
     toggleBus.off(callback)
   }
   function init() {
-    settingsStore.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, showTreeMenu, true)
-    settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, showRightPanel, false)
-
     shortcut.listen("ctrl+b", res => {
       res && toggleTreeMenu()
     })

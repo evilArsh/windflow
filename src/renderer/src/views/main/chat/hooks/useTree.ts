@@ -24,9 +24,7 @@ export const useTree = (
   const chatStore = useChatStore()
   const { topicList } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
-  const currentNodeKey = ref("")
   const currentTopic = ref<ChatTopicTree>()
-  const defaultExpandedKeys = ref<string[]>([])
   const searchKeyword = ref("")
   const treeProps = reactive({
     label: "label",
@@ -34,6 +32,23 @@ export const useTree = (
     isLeaf: "isLeaf",
   })
   const currentHover = ref("") // 鼠标移动过的节点
+  const { data: defaultExpandedKeys } = settingsStore.dataWatcher<string[]>(
+    SettingKeys.ChatDefaultExpandedKeys,
+    null,
+    []
+  )
+  const { data: currentNodeKey } = settingsStore.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, null, "", key => {
+    if (!key) {
+      return
+    }
+    nextTick(() => {
+      const topicTree = treeRef.value?.getCurrentNode()
+      if (topicTree) {
+        task.getQueue().add(async () => setCurrentTopic(topicTree as ChatTopicTree))
+        chatStore.refreshChatTopicModelIds(topicTree.node)
+      }
+    })
+  })
   // 新增聊天
   async function createNew(parentId?: string) {
     try {
@@ -161,19 +176,6 @@ export const useTree = (
   function clearCurrentHover() {
     currentHover.value = ""
   }
-  settingsStore.dataWatcher<string[]>(SettingKeys.ChatDefaultExpandedKeys, defaultExpandedKeys, [])
-  settingsStore.dataWatcher<string>(SettingKeys.ChatCurrentNodeKey, currentNodeKey, "", key => {
-    if (!key) {
-      return
-    }
-    nextTick(() => {
-      const topicTree = treeRef.value?.getCurrentNode()
-      if (topicTree) {
-        task.getQueue().add(async () => setCurrentTopic(topicTree as ChatTopicTree))
-        chatStore.refreshChatTopicModelIds(topicTree.node)
-      }
-    })
-  })
   return {
     selectedTopic,
     currentTopic,

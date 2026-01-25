@@ -2,7 +2,7 @@
 import { DialogPanel } from "@toolmain/components"
 </script>
 <template>
-  <el-popover placement="top" :width="500" trigger="click" popper-style="--el-popover-padding: 0">
+  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
     <template #reference>
       <slot name="reference"></slot>
     </template>

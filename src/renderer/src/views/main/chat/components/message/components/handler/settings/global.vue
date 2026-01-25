@@ -8,10 +8,7 @@ defineProps<{
 const { t } = useI18n()
 const settingsStore = useSettingsStore()
 
-const sendShortcut = ref("")
-const forcePlaintext = ref(false)
-settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, sendShortcut, "enter")
-settingsStore.dataWatcher<boolean>(SettingKeys.ChatForcePlaintext, forcePlaintext, false)
+const { data: sendShortcut } = settingsStore.dataWatcher<string>(SettingKeys.ChatSendShortcut, null, "enter")
 </script>
 <template>
   <Group>
@@ -26,15 +23,6 @@ settingsStore.dataWatcher<boolean>(SettingKeys.ChatForcePlaintext, forcePlaintex
             {{ item }}
           </el-option>
         </el-select>
-      </template>
-    </ContentBox>
-    <ContentBox class="setting-box">
-      <template #icon>
-        <i-ic-baseline-auto-fix-high></i-ic-baseline-auto-fix-high>
-      </template>
-      <el-text size="small">{{ t("chat.settings.forcePlaintext") }}</el-text>
-      <template #footer>
-        <el-switch v-model="forcePlaintext"></el-switch>
       </template>
     </ContentBox>
   </Group>

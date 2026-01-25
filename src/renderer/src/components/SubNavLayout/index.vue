@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys, SettingsValue } from "@windflow/core/types"
+import { SettingKeys } from "@windflow/core/types"
 import { CSSProperties } from "@toolmain/shared"
 import { Resize } from "@toolmain/components"
 const emit = defineEmits<{
@@ -14,8 +14,7 @@ const props = defineProps<{
 const settingsStore = useSettingsStore()
 
 const hideSub = computed<CSSProperties>(() => (props.hideSubmenu ? { display: "none" } : {}))
-const handlerStyle = ref<CSSProperties>({})
-settingsStore.dataWatcher<Record<string, SettingsValue>>(props.id, handlerStyle, {
+const { data: handlerStyle } = settingsStore.dataWatcher<Record<string, string | number>>(props.id, null, {
   width: "300px",
 })
 </script>

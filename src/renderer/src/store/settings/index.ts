@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { SettingKeys, Settings, SettingsValue } from "@windflow/core/types"
 import { Reactive } from "vue"
-import { isArray, isFunction, isNull, isObject, isString, isUndefined } from "@toolmain/shared"
+import { cloneDeep, isArray, isFunction, isNull, isObject, isString, isUndefined } from "@toolmain/shared"
 import { storage } from "@windflow/core/storage"
 
 export default defineStore("settings", () => {
@@ -40,14 +40,18 @@ export default defineStore("settings", () => {
     updateValue(data.id, data)
   }
   /**
-   * monitoring `wrapData` value, and sync new value to database which is related to `id`
+   * monitoring `wrapData` value, and sync new value to database which is related to `id`,
+   *
+   * if `wrapData` was null, only monitor the return value
    */
   function dataWatcher<T extends SettingsValue>(
     id: SettingKeys,
-    wrapData: Ref<T> | Reactive<T> | (() => T),
+    wrapData: Ref<T> | Reactive<T> | (() => T) | null,
     defaultValue: T,
     callBack?: (data: T, old?: T) => void
-  ) {
+  ): { data: Ref<T> } {
+    const innerDefault = cloneDeep(defaultValue)
+    const bindValue = ref(innerDefault) as Ref<T>
     const unwrap = (data: Ref<T> | Reactive<T> | (() => T)): T => {
       return isRef(data) || isFunction(data) ? toValue(data) : (toRaw(data) as T)
     }
@@ -59,6 +63,11 @@ export default defineStore("settings", () => {
       return false
     }
     const updateWrapData = (val: T) => {
+      bindValue.value = val
+      if (isNull(wrapData)) {
+        callBack?.(val)
+        return
+      }
       if (isRef(wrapData)) {
         wrapData.value = val
       } else if (isReactive(wrapData)) {
@@ -70,32 +79,37 @@ export default defineStore("settings", () => {
         callBack?.(val)
       }
     }
-    if (!settings[id]) {
-      settings[id] = { id, value: defaultValue } as Settings<T>
+    const syncData = (newVal: Ref<T> | Reactive<T> | (() => T), oldVal?: Ref<T> | Reactive<T> | (() => T)) => {
+      settings[id].value = unwrap(newVal)
       update(settings[id])
-      updateWrapData(defaultValue)
+      callBack?.((settings[id] as Settings<T>).value, isUndefined(oldVal) ? undefined : unwrap(oldVal))
+    }
+    if (!settings[id]) {
+      settings[id] = { id, value: innerDefault } as Settings<T>
+      update(settings[id])
+      updateWrapData(innerDefault)
     } else {
       const cacheValue = settings[id] as Settings<T>
       // if cached value was not set, use the default value and update cache
       const f = isFalsy(cacheValue.value)
-      const df = isFalsy(defaultValue)
-      const val = f && !df ? defaultValue : cacheValue.value
+      const df = isFalsy(innerDefault)
+      const val = f && !df ? innerDefault : cacheValue.value
       updateWrapData(val)
       if (f && !df) {
         settings[id].value = val
         update(settings[id])
       }
     }
-    const watcher = watch(
-      wrapData,
-      (val, old) => {
-        settings[id].value = unwrap(val)
-        update(settings[id])
-        callBack?.((settings[id] as Settings<T>).value, isUndefined(old) ? undefined : unwrap(old))
-      },
-      { deep: true, immediate: true }
-    )
-    onBeforeUnmount(watcher.stop)
+    if (!isNull(wrapData)) {
+      // sync wrapData
+      const watcher = watch(wrapData, syncData, { deep: true, immediate: true })
+      onBeforeUnmount(watcher.stop)
+    }
+    const watcherBind = watch(bindValue, syncData, { deep: true })
+    onBeforeUnmount(watcherBind.stop)
+    return {
+      data: bindValue,
+    }
   }
 
   /**

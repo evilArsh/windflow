@@ -11,10 +11,19 @@ const { t } = useI18n()
 const settingsStore = useSettingsStore()
 
 const shortcut = useShortcut()
-const currentRoute = ref("")
 const router = useRouter()
 const route = useRoute()
 const menus = shallowRef<{ icon: Component; title: string; path: string }[]>([])
+const { data: currentRoute } = settingsStore.dataWatcher<string>(
+  SettingKeys.KnowledgeSubRoute,
+  null,
+  route.path,
+  path => {
+    path && router.push(path)
+  }
+)
+const { data: showSubNav } = settingsStore.dataWatcher<boolean>(SettingKeys.KnowledgeToggleSubNav, null, true)
+
 const routes = {
   toPath: (path: string) => {
     currentRoute.value = path
@@ -26,18 +35,11 @@ useI18nWatch(() => {
     { icon: IBookmark, title: t("knowledge.menu.embeddingList"), path: "/main/knowledge/embedding" },
   ]
 })
-const cache = reactive({
-  showSubNav: true,
-})
 const ev = {
   toggleNav(_?: MouseEvent) {
-    cache.showSubNav = !cache.showSubNav
+    showSubNav.value = !showSubNav.value
   },
 }
-settingsStore.dataWatcher<string>(SettingKeys.KnowledgeSubRoute, currentRoute, route.path, path => {
-  path && router.push(path)
-})
-settingsStore.dataWatcher<boolean>(SettingKeys.KnowledgeToggleSubNav, toRef(cache, "showSubNav"), true)
 shortcut.listen("ctrl+b", res => {
   res && ev.toggleNav()
 })
@@ -46,7 +48,7 @@ router.afterEach(to => {
 })
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.KnowledgeSubNav" :hide-submenu="!cache.showSubNav">
+  <SubNavLayout :id="SettingKeys.KnowledgeSubNav" :hide-submenu="!showSubNav">
     <template #submenu>
       <el-scrollbar>
         <div class="flex flex-col p1rem">
@@ -54,11 +56,11 @@ router.afterEach(to => {
             <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("knowledge.title") }}</el-text>
               <template #end>
-                <teleport to="#mainContentHeaderSlot" defer :disabled="cache.showSubNav">
+                <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
                   <ContentBox @click="ev.toggleNav" background>
                     <i-material-symbols-right-panel-close-outline
                       class="text-1.6rem"
-                      v-if="!cache.showSubNav"></i-material-symbols-right-panel-close-outline>
+                      v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
                     <i-material-symbols-left-panel-close-outline
                       class="text-1.6rem"
                       v-else></i-material-symbols-left-panel-close-outline>
