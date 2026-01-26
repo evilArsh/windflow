@@ -1,3 +1,14 @@
+## v0.7.11
+
+- chore(release): bump version from 0.7.10 to 0.7.11
+- feat(chat): refactor settings UI and add new item component
+- feat(settings): refactor dataBind to return reactive data and improve null safety
+- refactor(settings): refactor dataWatcher to support null wrapData
+- feat: reduce minimum window size for improved usability
+- feat(icons): add new icon components for enhanced UI functionality
+- feat(chat): add reusable UI components for message handler actions
+- ci: update changelog for v0.7.10
+
 ## v0.7.10
 
 - chore: bump version to 0.7.10
