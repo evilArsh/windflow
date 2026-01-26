@@ -207,6 +207,8 @@ watch(
     align-items: center;
   }
   .box-end {
+    display: flex;
+    align-items: center;
     flex-shrink: 0;
   }
 }

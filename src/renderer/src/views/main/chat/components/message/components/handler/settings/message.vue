@@ -5,6 +5,7 @@ import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import { errorToText } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
 import Group from "../components/group.vue"
+import Item from "../components/item.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -23,11 +24,14 @@ const { data: forcePlaintext } = settingsStore.dataWatcher<boolean>(SettingKeys.
 </script>
 <template>
   <Group>
-    <ContentBox class="setting-box">
-      <template #icon>
-        <i-ic-outline-featured-play-list></i-ic-outline-featured-play-list>
-      </template>
-      <el-text size="small">{{ t("chat.settings.maxContextLength") }}</el-text>
+    <Item :title="t('chat.settings.maxContextLength')" icon-class="i-ic-outline-featured-play-list">
+      <el-slider
+        @change="updateTopic"
+        show-input
+        v-model="topic.maxContextLength"
+        :min="1"
+        :max="999"
+        :step="1"></el-slider>
       <template #end>
         <el-tooltip
           :teleported="false"
@@ -37,30 +41,10 @@ const { data: forcePlaintext } = settingsStore.dataWatcher<boolean>(SettingKeys.
           <i-material-symbols-help-outline></i-material-symbols-help-outline>
         </el-tooltip>
       </template>
-      <template #footer>
-        <div class="px-1rem w-full flex items-center">
-          <el-slider
-            size="small"
-            @change="updateTopic"
-            show-input
-            v-model="topic.maxContextLength"
-            :min="1"
-            :max="999"
-            :step="1"></el-slider>
-        </div>
-      </template>
-    </ContentBox>
-    <ContentBox class="setting-box">
-      <template #icon>
-        <i-ic-baseline-auto-fix-high></i-ic-baseline-auto-fix-high>
-      </template>
-      <el-text size="small">{{ t("chat.settings.forcePlaintext") }}</el-text>
-      <template #footer>
-        <el-switch v-model="forcePlaintext"></el-switch>
-      </template>
-    </ContentBox>
+    </Item>
+    <Item :title="t('chat.settings.forcePlaintext')" icon-class="i-ic-baseline-auto-fix-high">
+      <el-switch v-model="forcePlaintext"></el-switch>
+    </Item>
   </Group>
 </template>
-<style lang="scss" scoped>
-@use "../components/common.scss";
-</style>
+<style lang="scss" scoped></style>

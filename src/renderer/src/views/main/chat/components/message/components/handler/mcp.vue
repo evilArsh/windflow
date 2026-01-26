@@ -129,7 +129,7 @@ const serverHandler = {
     </template>
     <!-- <Button size="small" @click="serverHandler.test">测试</Button> -->
     <template #header>
-      <el-text>{{ t("chat.mcp.label") }}</el-text>
+      <el-text type="primary">{{ t("chat.mcp.label") }}</el-text>
     </template>
     <template #default>
       <div class="w-full h-40rem">
