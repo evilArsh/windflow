@@ -10,6 +10,7 @@ import Shell from "./components/shell.vue"
 import { defaultLLMConfig } from "@windflow/core/storage"
 import { msg } from "@renderer/utils"
 import Group from "./components/group.vue"
+import Item from "./components/item.vue"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -91,11 +92,11 @@ const { loading, dropList, onCommand, update } = useEvent()
     <template #header>
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-.5rem">
-          <el-text>{{ t("chat.llm.label") }}</el-text>
+          <el-text type="primary">{{ t("chat.llm.label") }}</el-text>
           <Spinner class="text-1.2rem" v-model="loading"></Spinner>
         </div>
         <el-dropdown :teleported="false" @command="onCommand">
-          <el-button plain text size="small" type="info">
+          <el-button plain text type="info">
             {{ t("chat.llm.btnMore") }}
             <i-ep-arrow-down class="ml-.5rem text-1.2rem"></i-ep-arrow-down>
           </el-button>
@@ -115,11 +116,8 @@ const { loading, dropList, onCommand, update } = useEvent()
       </div>
       <div v-else class="h-40rem w-full">
         <Group>
-          <ContentBox class="setting-box">
-            <div class="flex gap-.5rem">
-              <el-text>{{ t("chat.llm.stream") }}</el-text>
-              <!-- <el-text type="primary">stream</el-text> -->
-            </div>
+          <Item :title="t('chat.llm.stream')" icon-class="i-ic-baseline-flood">
+            <el-switch @change="update" v-model="config.stream"></el-switch>
             <template #end>
               <el-tooltip
                 :teleported="false"
@@ -129,17 +127,15 @@ const { loading, dropList, onCommand, update } = useEvent()
                 <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </template>
-            <template #footer>
-              <div class="px-1rem w-full flex">
-                <el-switch size="small" @change="update" v-model="config.stream"></el-switch>
-              </div>
-            </template>
-          </ContentBox>
-          <ContentBox class="setting-box">
-            <div class="flex gap-.5rem">
-              <el-text>{{ t("chat.llm.max_tokens") }}</el-text>
-              <!-- <el-text type="primary">max_tokens</el-text> -->
-            </div>
+          </Item>
+          <Item :title="t('chat.llm.max_tokens')" icon-class="i-ic-baseline-format-color-text">
+            <el-slider
+              @change="update"
+              show-input
+              v-model="config.max_tokens"
+              :min="1024"
+              :max="102400"
+              :step="1"></el-slider>
             <template #end>
               <el-tooltip
                 :teleported="false"
@@ -149,24 +145,15 @@ const { loading, dropList, onCommand, update } = useEvent()
                 <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </template>
-            <template #footer>
-              <div class="px-1rem w-full flex">
-                <el-slider
-                  size="small"
-                  @change="update"
-                  show-input
-                  v-model="config.max_tokens"
-                  :min="1024"
-                  :max="102400"
-                  :step="1"></el-slider>
-              </div>
-            </template>
-          </ContentBox>
-          <ContentBox class="setting-box">
-            <div class="flex gap-.5rem">
-              <el-text>{{ t("chat.llm.temperature") }}</el-text>
-              <!-- <el-text type="primary">temperature</el-text> -->
-            </div>
+          </Item>
+          <Item :title="t('chat.llm.temperature')" icon-class="i-ic-twotone-whatshot">
+            <el-slider
+              @change="update"
+              show-input
+              v-model="config.temperature"
+              :min="0"
+              :max="2"
+              :step="0.1"></el-slider>
             <template #end>
               <el-tooltip
                 :teleported="false"
@@ -176,24 +163,9 @@ const { loading, dropList, onCommand, update } = useEvent()
                 <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </template>
-            <template #footer>
-              <div class="px-1rem w-full flex">
-                <el-slider
-                  size="small"
-                  @change="update"
-                  show-input
-                  v-model="config.temperature"
-                  :min="0"
-                  :max="2"
-                  :step="0.1"></el-slider>
-              </div>
-            </template>
-          </ContentBox>
-          <ContentBox class="setting-box">
-            <div class="flex gap-.5rem">
-              <el-text>{{ t("chat.llm.topP") }}</el-text>
-              <!-- <el-text type="primary">top_p</el-text> -->
-            </div>
+          </Item>
+          <Item :title="t('chat.llm.topP')" icon-class="i-ic-baseline-my-location">
+            <el-slider show-input v-model="config.top_p" :min="0" :max="1" :step="0.1"></el-slider>
             <template #end>
               <el-tooltip
                 :teleported="false"
@@ -203,17 +175,15 @@ const { loading, dropList, onCommand, update } = useEvent()
                 <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </template>
-            <template #footer>
-              <div class="px-1rem w-full flex">
-                <el-slider size="small" show-input v-model="config.top_p" :min="0" :max="1" :step="0.1"></el-slider>
-              </div>
-            </template>
-          </ContentBox>
-          <ContentBox class="setting-box">
-            <div class="flex gap-.5rem">
-              <el-text>{{ t("chat.llm.frequencyPenalty") }}</el-text>
-              <!-- <el-text type="primary">frequency_penalty</el-text> -->
-            </div>
+          </Item>
+          <Item :title="t('chat.llm.frequencyPenalty')" icon-class="i-ic-sharp-wb-incandescent">
+            <el-slider
+              @change="update"
+              show-input
+              v-model="config.frequency_penalty"
+              :min="-2"
+              :max="2"
+              :step="0.1"></el-slider>
             <template #end>
               <el-tooltip
                 :teleported="false"
@@ -223,24 +193,15 @@ const { loading, dropList, onCommand, update } = useEvent()
                 <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </template>
-            <template #footer>
-              <div class="px-1rem w-full flex">
-                <el-slider
-                  size="small"
-                  @change="update"
-                  show-input
-                  v-model="config.frequency_penalty"
-                  :min="-2"
-                  :max="2"
-                  :step="0.1"></el-slider>
-              </div>
-            </template>
-          </ContentBox>
-          <ContentBox class="setting-box">
-            <div class="flex gap-.5rem">
-              <el-text>{{ t("chat.llm.presence_penalty") }}</el-text>
-              <!-- <el-text type="primary">presence_penalty</el-text> -->
-            </div>
+          </Item>
+          <Item :title="t('chat.llm.presence_penalty')" icon-class="i-ic-baseline-troubleshoot">
+            <el-slider
+              @change="update"
+              show-input
+              v-model="config.presence_penalty"
+              :min="-2"
+              :max="2"
+              :step="0.1"></el-slider>
             <template #end>
               <el-tooltip
                 :teleported="false"
@@ -250,24 +211,9 @@ const { loading, dropList, onCommand, update } = useEvent()
                 <i-material-symbols-help-outline></i-material-symbols-help-outline>
               </el-tooltip>
             </template>
-            <template #footer>
-              <div class="px-1rem w-full flex">
-                <el-slider
-                  size="small"
-                  @change="update"
-                  show-input
-                  v-model="config.presence_penalty"
-                  :min="-2"
-                  :max="2"
-                  :step="0.1"></el-slider>
-              </div>
-            </template>
-          </ContentBox>
+          </Item>
         </Group>
       </div>
     </template>
   </Shell>
 </template>
-<style lang="scss" scoped>
-@use "./components/common.scss";
-</style>

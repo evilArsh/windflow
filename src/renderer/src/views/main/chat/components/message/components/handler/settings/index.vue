@@ -17,7 +17,7 @@ const { t } = useI18n()
       </ContentBox>
     </template>
     <template #header>
-      <el-text>{{ t("chat.settings.label") }}</el-text>
+      <el-text type="primary">{{ t("chat.settings.label") }}</el-text>
     </template>
     <template #default>
       <div class="w-full h-40rem">
@@ -39,4 +39,3 @@ const { t } = useI18n()
     </template>
   </Shell>
 </template>
-<style lang="scss" scoped></style>

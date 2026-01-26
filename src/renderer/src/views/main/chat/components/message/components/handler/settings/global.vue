@@ -2,6 +2,7 @@
 import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Group from "../components/group.vue"
+import Item from "../components/item.vue"
 defineProps<{
   topic: ChatTopic
 }>()
@@ -12,21 +13,12 @@ const { data: sendShortcut } = settingsStore.dataWatcher<string>(SettingKeys.Cha
 </script>
 <template>
   <Group>
-    <ContentBox class="setting-box">
-      <template #icon>
-        <i-ic-baseline-send></i-ic-baseline-send>
-      </template>
-      <el-text size="small">{{ t("chat.settings.shortcut") }}</el-text>
-      <template #footer>
-        <el-select v-model="sendShortcut" size="small" :teleported="false">
-          <el-option v-for="item in ['enter', 'ctrl+enter', 'shift+enter']" :key="item" :value="item">
-            {{ item }}
-          </el-option>
-        </el-select>
-      </template>
-    </ContentBox>
+    <Item :title="t('chat.settings.shortcut')" icon-class="i-ic-baseline-send">
+      <el-select v-model="sendShortcut" :teleported="false">
+        <el-option v-for="item in ['enter', 'ctrl+enter', 'shift+enter']" :key="item" :value="item">
+          {{ item }}
+        </el-option>
+      </el-select>
+    </Item>
   </Group>
 </template>
-<style lang="scss" scoped>
-@use "../components/common.scss";
-</style>

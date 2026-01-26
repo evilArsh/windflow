@@ -75,7 +75,7 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
       </ContentBox>
     </template>
     <template #header>
-      <el-text>{{ t("chat.model.label") }}</el-text>
+      <el-text type="primary">{{ t("chat.model.label") }}</el-text>
     </template>
     <template #default>
       <div class="h-40rem w-full flex">

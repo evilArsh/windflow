@@ -122,7 +122,7 @@ watch(topic, ev.refreshKnowledges, {
       </ContentBox>
     </template>
     <template #header>
-      <el-text>{{ t("chat.kb.label") }}</el-text>
+      <el-text type="primary">{{ t("chat.kb.label") }}</el-text>
       <Spinner :model-value="toValue(status.loading)"></Spinner>
     </template>
     <template #default>
