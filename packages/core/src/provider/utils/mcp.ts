@@ -38,7 +38,6 @@ export async function callTools(tools: LLMToolCall[]): Promise<Message[]> {
       const result = await window.api.mcp.callTool(tool.serverId, tool.function.name, parse(tool.function.arguments))
       results.push({
         role: Role.Tool,
-        // patch deepseek
         content: json5.stringify(result.data.content),
         tool_call_id: tool.id,
       })
