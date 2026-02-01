@@ -18,6 +18,7 @@ const emit = defineEmits<{
   contextClean: []
 }>()
 const props = defineProps<{
+  simple?: boolean
   topic: ChatTopic
 }>()
 const topic = computed(() => props.topic)
@@ -58,7 +59,8 @@ const {
   taskPending,
 } = shortcut.listen("enter", handler.onSend, {
   beforeTrigger: e => {
-    return !taskPending.value && (e.target as HTMLElement).tagName.toLowerCase() === "textarea"
+    const tname = (e.target as HTMLElement).tagName.toLowerCase()
+    return !taskPending.value && (tname === "textarea" || tname === "text")
   },
 })
 settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
@@ -74,23 +76,28 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
         <KnowledgeBase :topic></KnowledgeBase>
         <Settings :topic></Settings>
       </div>
+      <div id="mini-input-area" class="flex flex-1 items-center justify-end gap[var(--ai-gap-base)]"></div>
       <Clear :topic="topic" @context-clean="emit('contextClean')"></Clear>
     </div>
-    <TextInput :topic="topic" />
-    <div class="chat-input-actions">
-      <Button link size="small" type="default" plain @click="done => triggerSend(done)">
-        {{ t("btn.send", { shortcut: sendShortcut }) }}
-      </Button>
-    </div>
+    <teleport defer :disabled="!simple" to="#mini-input-area">
+      <TextInput :type="simple ? 'text' : 'textarea'" :topic="topic" />
+      <div class="chat-input-actions">
+        <Button link size="small" type="default" plain @click="done => triggerSend(done)">
+          {{ t("btn.send", { shortcut: sendShortcut }) }}
+        </Button>
+      </div>
+    </teleport>
   </div>
 </template>
 <style lang="scss" scoped>
 .chat-input-container {
-  --chat-input-actions-bg-color: transparent;
+  --chat-input-bg-color: transparent;
+  --chat-input-padding: var(--ai-gap-medium);
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--ai-gap-base);
+  padding: var(--chat-input-padding);
   .chat-input-header {
     flex-shrink: 0;
     display: flex;
@@ -101,7 +108,7 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
   .chat-input-actions {
     flex-shrink: 0;
     display: flex;
-    background-color: var(--chat-input-actions-bg-color);
+    background-color: var(--chat-input-bg-color);
     justify-content: flex-end;
     gap: var(--ai-gap-base);
   }

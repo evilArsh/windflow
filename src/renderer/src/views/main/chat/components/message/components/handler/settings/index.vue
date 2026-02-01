@@ -29,7 +29,7 @@ const { t } = useI18n()
             </template>
           </ContentBox>
           <ContentBox normal>
-            <el-text type="primary">{{ t("chat.settings.inputLabel") }}</el-text>
+            <el-text type="primary">{{ t("chat.settings.inputShortcutLabel") }}</el-text>
             <template #footer>
               <Global :topic></Global>
             </template>

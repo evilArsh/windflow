@@ -1,17 +1,21 @@
 <script lang="ts" setup>
-import { CSSProperties, px, toNumber } from "@toolmain/shared"
+import { CSSProperties, isUndefined, px, toNumber } from "@toolmain/shared"
 import { Resize } from "@toolmain/components"
+import { useElementBounding } from "@vueuse/core"
 const emit = defineEmits<{
   (e: "update:handlerHeight", height: number): void
   (e: "scroll", x: number, y: number): void
+  (e: "minHandlerHeightReached", status: boolean): void
 }>()
 
 const {
   handlerHeight = 0,
+  minHandlerHeight = 0,
   custom = false,
   chatMode = false,
 } = defineProps<{
-  handlerHeight?: string | number
+  handlerHeight?: number
+  minHandlerHeight?: number
   /**
    * 自定义模式下不预设默认插槽内容
    */
@@ -26,7 +30,41 @@ const {
 
 const scrollRef = useTemplateRef("scroll")
 const scrollElRef = useTemplateRef("scrollEl")
-
+const handlerRef = useTemplateRef("handler")
+const { height: realHandlerHeight } = useElementBounding(handlerRef)
+const handlerStyle = ref<CSSProperties>({
+  height: px(toNumber(handlerHeight)),
+})
+const handlerMinHeight = ref<CSSProperties>({
+  minHeight: px(toNumber(minHandlerHeight)),
+})
+watch(
+  () => handlerHeight,
+  v => {
+    if (!isUndefined(v)) {
+      handlerStyle.value.height = px(toNumber(v))
+    }
+  }
+)
+watch(
+  () => handlerStyle.value.height,
+  v => {
+    if (!isUndefined(v)) {
+      emit("update:handlerHeight", toNumber(v))
+    }
+  }
+)
+watch(
+  realHandlerHeight,
+  v => {
+    if (toNumber(v) <= toNumber(minHandlerHeight)) {
+      emit("minHandlerHeightReached", true)
+    } else {
+      emit("minHandlerHeightReached", false)
+    }
+  },
+  { immediate: true }
+)
 const height = computed(() => {
   if (chatMode) {
     return toNumber(scrollRef.value?.scrollHeight)
@@ -64,32 +102,9 @@ const scrollHdl = {
     emit("scroll", x, y)
   },
 }
-const handlerStyle = ref<CSSProperties>({
-  height: px(toNumber(handlerHeight)),
-})
-
 const onAfterScale = () => {
   scrollElRef.value?.update()
 }
-
-watch(
-  () => handlerHeight,
-  v => {
-    if (v) {
-      handlerStyle.value.height = px(toNumber(v))
-    }
-  }
-)
-
-watch(
-  () => handlerStyle.value.height,
-  v => {
-    if (v) {
-      emit("update:handlerHeight", toNumber(v))
-    }
-  }
-)
-
 defineExpose({
   scrollToBottom: scrollHdl.toBottom,
   scrollTo: scrollHdl.to,
@@ -126,7 +141,7 @@ onBeforeUnmount(() => {
       </el-scrollbar>
       <slot v-if="$slots.contentRight" name="contentRight"></slot>
     </div>
-    <div v-if="$slots.handler" class="content-handler" :style="handlerStyle">
+    <div v-if="$slots.handler" ref="handler" class="content-handler" :style="[handlerStyle, handlerMinHeight]">
       <Resize v-model="handlerStyle" @after-scale="onAfterScale" size="8px" direction="top" />
       <slot name="handler"></slot>
     </div>
@@ -155,7 +170,6 @@ onBeforeUnmount(() => {
   }
 }
 .content-container {
-  --content-header-height: 4rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -164,10 +178,9 @@ onBeforeUnmount(() => {
   border-radius: var(--el-border-radius-base);
   .content-header {
     position: relative;
-    // z-index: 200;
     flex-shrink: 0;
     display: flex;
-    flex-basis: var(--content-header-height);
+    flex-basis: var(--ai-header-height);
     background-color: var(--el-bg-color);
     border-bottom: 1px solid var(--el-border-color-light);
     height: var(--ai-header-height);
@@ -189,8 +202,8 @@ onBeforeUnmount(() => {
     display: flex;
     background-color: var(--el-bg-color);
     border-top: 1px solid var(--el-border-color-light);
-    padding: 1rem;
-    min-height: 15rem;
+    // padding: var(--content-handler-padding);
+    // min-height: calc(var(--ai-header-height) + var(--content-handler-padding));
   }
 }
 </style>

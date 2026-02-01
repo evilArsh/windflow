@@ -85,12 +85,13 @@
     "search": "Search",
     "settings": {
       "forcePlaintext": "Render user  message as Markdown",
-      "inputLabel": "Input Settings",
+      "inputShortcutLabel": "Input Shortcut Settings",
+      "inputSimpleShortcut": "Simple Input",
       "label": "Settings",
       "maxContextLength": "Max Context Messages",
       "maxContextLengthExp": "Maximum number of message contexts to carry in a request.",
       "messageLabel": "Message Settings",
-      "shortcut": "Chat Shortcut"
+      "sendShortcut": "Send Message"
     },
     "terminate": "Terminate",
     "thinking": "Deep Thinking",
