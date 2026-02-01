@@ -5,29 +5,24 @@ import useChatStore from "@renderer/store/chat"
 import Content from "./components/content/index.vue"
 import RightPanel from "./components/rightPanel/index.vue"
 import { DialogPanel } from "@toolmain/components"
-import { ChatTopicTree } from "@windflow/core/types"
+import { ChatTopicTree, SettingKeys } from "@windflow/core/types"
+import useSettingsStore from "@renderer/store/settings"
 import { useMsgContext } from "../../index"
-import { isString } from "@toolmain/shared"
+import { isString, toNumber, useShortcut } from "@toolmain/shared"
 const props = defineProps<{
   topic?: ChatTopicTree
   context: ReturnType<typeof useMsgContext>
 }>()
+const settingsStore = useSettingsStore()
+const shortcut = useShortcut()
 const chatStore = useChatStore()
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
 const { showRightPanel, toggleRightPanel } = props.context.menuToggle
 const { props: dlgProps, event: dlgEvent, cachedMessage, onCancel, onConfirm } = props.context.messageDialog
 const { t } = useI18n()
-
+const minHandlerHeight = ref(50)
+const simpleMode = computed(() => toNumber(topic.value?.inputHeight) <= toValue(minHandlerHeight))
 const topic = computed(() => props.topic?.node)
-watch(
-  topic,
-  val => {
-    if (!val) return
-    window.setTimeout(handler.onToBottom)
-  },
-  { immediate: true }
-)
-
 const handler = {
   onToBottom: () => {
     setTimeout(() => {
@@ -41,6 +36,19 @@ const handler = {
     }
   },
 }
+watch(
+  topic,
+  val => {
+    if (!val) return
+    window.setTimeout(handler.onToBottom)
+  },
+  { immediate: true }
+)
+const { key: simpleShortcut } = shortcut.listen("", (active: boolean) => {
+  if (!active) return
+  handler.onHandlerHeightChange(minHandlerHeight.value)
+})
+settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
 </script>
 <template>
   <div class="message-container">
@@ -80,6 +88,7 @@ const handler = {
       </DialogPanel>
     </el-dialog>
     <ContentLayout
+      :min-handler-height
       :handler-height="toValue(topic?.inputHeight)"
       @update:handler-height="handler.onHandlerHeightChange"
       ref="contentLayout"
@@ -107,7 +116,11 @@ const handler = {
         </div>
       </template>
       <template v-if="topic" #handler>
-        <Handler :topic @message-send="handler.onToBottom" @context-clean="handler.onToBottom"></Handler>
+        <Handler
+          :simple="simpleMode"
+          :topic
+          @message-send="handler.onToBottom"
+          @context-clean="handler.onToBottom"></Handler>
       </template>
     </ContentLayout>
     <RightPanel v-show="showRightPanel" :context :topic></RightPanel>

@@ -85,12 +85,13 @@
     "search": "搜索",
     "settings": {
       "forcePlaintext": "用户消息渲染成Markdown",
-      "inputLabel": "输入设置",
+      "inputShortcutLabel": "输入快捷键",
+      "inputSimpleShortcut": "简易聊天框",
       "label": "设置",
       "maxContextLength": "最大消息上下文个数",
       "maxContextLengthExp": "请求时携带的消息上下文最大个数",
       "messageLabel": "消息设置",
-      "shortcut": "聊天快捷键"
+      "sendShortcut": "发送消息"
     },
     "terminate": "终止",
     "thinking": "深度思考中",

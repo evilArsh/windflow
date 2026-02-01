@@ -6,6 +6,7 @@ import { useThrottleFn } from "@vueuse/core"
 import { msg } from "@renderer/utils"
 const props = defineProps<{
   topic: ChatTopic
+  type: "text" | "textarea"
 }>()
 const { t } = useI18n()
 const chatStore = useChatStore()
@@ -26,10 +27,10 @@ const onInput = useThrottleFn(async () => {
       @input="onInput"
       style="display: flex"
       :autosize="false"
-      clearable
+      :clearable="false"
       autofocus
       resize="none"
-      type="textarea"
+      :type
       v-model="topic.content"
       :placeholder="t('tip.inputPlaceholder')"></el-input>
   </div>
