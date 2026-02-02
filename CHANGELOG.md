@@ -1,3 +1,16 @@
+## v0.7.12
+
+- feat(chat): complete message sending shortcut
+- fix(chat): ensure the correct order when creating or modifying topics
+- feat(chat): add new chat and sub-chat shortcut settings
+- fix(chat): fix send shortcut condition and improve dialog button layout
+- fix(chat): fix thinking component collapse logic
+- fix(ui): update ContentBox background and remove redundant props
+- perf(chat): improve input handling and shortcut configuration
+- feat(chat): add simple mode shortcut and improve content layout resizing
+- perf(ui): improve MCP tool call display and markdown word wrapping
+- ci: update changelog for v0.7.11
+
 ## v0.7.11
 
 - chore(release): bump version from 0.7.10 to 0.7.11
