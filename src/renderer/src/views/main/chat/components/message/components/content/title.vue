@@ -20,7 +20,7 @@ const svgSrc = computed(() =>
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse: isUser }">
-    <ContentBox v-if="!hideLogo" class="m0! flex-shrink-0" background>
+    <ContentBox v-if="!hideLogo" class="m0! flex-shrink-0">
       <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
     </ContentBox>
     <div class="chat-item-title" :class="{ reverse: isUser }">

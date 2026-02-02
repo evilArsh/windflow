@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
               :placeholder="t('chat.search')"
               clearable />
             <teleport to="#toggleMenu" defer :disabled="showTreeMenu">
-              <ContentBox @click="_ => toggleTreeMenu()" background>
+              <ContentBox @click="_ => toggleTreeMenu()">
                 <i-material-symbols-right-panel-close-outline
                   v-if="showTreeMenu"></i-material-symbols-right-panel-close-outline>
                 <i-material-symbols-left-panel-close-outline v-else></i-material-symbols-left-panel-close-outline>

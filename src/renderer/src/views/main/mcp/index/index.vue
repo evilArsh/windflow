@@ -136,7 +136,6 @@ const ev = {
               style="--el-card-padding: 1rem">
               <template #header>
                 <ContentBox
-                  background
                   :default-lock="current?.id === server.id"
                   still-lock
                   @click.stop="serverHandler.onCardClick(server)">

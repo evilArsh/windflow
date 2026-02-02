@@ -1,7 +1,7 @@
 <template>
   <el-popover v-model:visible="toggle" placement="right" trigger="click">
     <template #reference>
-      <ContentBox background>
+      <ContentBox>
         <i-ic-baseline-translate class="text-1.4rem"></i-ic-baseline-translate>
       </ContentBox>
     </template>

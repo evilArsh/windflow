@@ -49,17 +49,17 @@ async function restart(done: CallBackFn) {
 </script>
 <template>
   <div class="flex items-center flex-wrap">
-    <ContentBox class="m0!" background>
+    <ContentBox class="m0!">
       <Button v-if="!isUser" @click="terminate" :disabled="!isProcessing" text size="small" circle plain type="primary">
         <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
       </Button>
     </ContentBox>
-    <ContentBox class="m0!" background>
+    <ContentBox class="m0!">
       <Button size="small" @click="restart" :disabled="!isFinish" circle plain text type="primary">
         <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
       </Button>
     </ContentBox>
-    <ContentBox class="m0!" background>
+    <ContentBox class="m0!">
       <Button size="small" :disabled="!isFinish" circle plain text type="primary" @click="done => $emit('edit', done)">
         <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
       </Button>
@@ -73,7 +73,7 @@ async function restart(done: CallBackFn) {
       size="small"
       :confirm="done => $emit('delete', done)">
       <template #reference="{ loading, disabled }">
-        <ContentBox class="m0!" background>
+        <ContentBox class="m0!">
           <el-button size="small" :loading :disabled="!isFinish || disabled" circle plain text type="danger">
             <i-solar-trash-bin-trash-outline class="text-1.4rem"></i-solar-trash-bin-trash-outline>
           </el-button>

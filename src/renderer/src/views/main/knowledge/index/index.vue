@@ -205,7 +205,6 @@ const ev = {
               <ContentBox
                 v-for="kb in filterKnowledges"
                 :key="kb.id"
-                background
                 :default-lock="cache.current?.id === kb.id"
                 still-lock
                 @click="ev.onKnowledgeChoose(kb)">

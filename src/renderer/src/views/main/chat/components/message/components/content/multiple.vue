@@ -171,7 +171,7 @@ onMounted(() => {
     <template #header>
       <div class="flex-1 flex items-center px-1rem py-.5rem flex-wrap overflow-hidden">
         <Handler hide-edit :topic :message @delete="del"></Handler>
-        <ContentBox background class="m0! flex-shrink-0">
+        <ContentBox class="m0! flex-shrink-0">
           <el-radio-group v-model="type" size="small" @change="onTypeChange">
             <el-radio-button v-for="item in typeList" :label="item.value" :value="item.value" :key="item.value">
               <component :is="item.label"></component>
