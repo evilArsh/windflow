@@ -175,6 +175,3 @@ export function getAllNodes(current: ChatTopicTree): ChatTopic[] {
 export function findMaxMessageIndex(messages: ChatMessageTree[]): number {
   return Math.max(0, ...messages.map(item => item.node.index))
 }
-export function findMaxTopicIndex(topic: ChatTopicTree[]): number {
-  return Math.max(0, ...topic.map(item => item.node.index))
-}

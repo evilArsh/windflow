@@ -257,6 +257,9 @@ export default defineStore("chat_topic", () => {
       chatMessage[topic.id].length = 0
     }
   }
+  async function bulkPutChatTopic(topics: ChatTopic[]) {
+    return storage.chat.bulkPutChatTopic(topics)
+  }
   async function updateChatTopic(topic: ChatTopic) {
     return storage.chat.putChatTopic(topic)
   }
@@ -268,6 +271,8 @@ export default defineStore("chat_topic", () => {
    * @param append 是否添加到 `topicList` 缓存列表末尾
    */
   async function addChatTopic(topic: ChatTopic, append?: boolean): Promise<ChatTopicTree> {
+    const m = await storage.chat.getMaxIndexTopic(topic.parentId)
+    topic.index = m ? m.index + 1 : 0
     await storage.chat.addChatTopic(topic)
     const treeNode = reactive(topicToTree(topic))
     topicMap.set(treeNode.id, treeNode)
@@ -303,7 +308,10 @@ export default defineStore("chat_topic", () => {
     chatTTIConfig[cnf.topicId] = cnf
   }
   async function removeChatTopic(nodes: ChatTopic[]) {
-    return storage.chat.bulkDeleteChatTopic(nodes)
+    await storage.chat.bulkDeleteChatTopic(nodes)
+    nodes.forEach(node => {
+      topicMap.delete(node.id)
+    })
   }
   /**
    * 删除 `topicId` 下的消息列表
@@ -359,6 +367,7 @@ export default defineStore("chat_topic", () => {
     deleteAllMessage,
     refreshChatTopicModelIds,
     loadChatTopicData,
+    bulkPutChatTopic,
     updateChatTopic,
     updateChatMessage,
     addChatMessage,
