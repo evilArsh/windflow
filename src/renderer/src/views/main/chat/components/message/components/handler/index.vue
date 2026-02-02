@@ -64,7 +64,7 @@ const {
 } = shortcut.listen("", handler.onSend, {
   beforeTrigger: e => {
     const tname = (e.target as HTMLElement).tagName.toLowerCase()
-    return !taskPending.value && (tname === "textarea" || tname === "text")
+    return !taskPending.value && (tname === "textarea" || tname === "input")
   },
 })
 settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
