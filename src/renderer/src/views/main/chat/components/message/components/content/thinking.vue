@@ -21,8 +21,9 @@ const useThinking = () => {
     activeNames.value = "1"
   }
   function closeCollapse(force?: boolean) {
-    if (!force && manuallyTriggered.value) return
-    activeNames.value = ""
+    if (force || !manuallyTriggered.value) {
+      activeNames.value = ""
+    }
   }
   function thinkStart() {
     thinking.value = true
@@ -31,10 +32,12 @@ const useThinking = () => {
     thinking.value = false
   }
   function onCollapseChange(val: CollapseModelValue) {
-    manuallyTriggered.value = true
     activeNames.value = val as CollapseActiveName
   }
-  return { activeNames, thinking, openCollapse, closeCollapse, thinkStart, thinkStop, onCollapseChange }
+  function onClick() {
+    manuallyTriggered.value = true
+  }
+  return { activeNames, thinking, openCollapse, closeCollapse, thinkStart, thinkStop, onCollapseChange, onClick }
 }
 const { activeNames, thinking, ...th } = useThinking()
 watch(
@@ -45,14 +48,14 @@ watch(
       th.closeCollapse(true)
       return
     }
-    // (no content) && (reasoning_content) && ((no old reasoning_content) || (reasoning_content !== old reasoning_content))
+    // no_content && reasoning_content && [ no_old_reasoning_content || reasoning_content !== old_reasoning_content ]
     if (!val[0] && val[1] && (!oldVal[1] || val[1] !== oldVal[1])) {
       th.thinkStart()
+      th.openCollapse()
     } else {
       th.thinkStop()
       th.closeCollapse()
     }
-    th.openCollapse()
   },
   { immediate: true }
 )
@@ -62,7 +65,8 @@ watch(
     v-if="reasoning_content"
     class="w-full"
     border="solid 1px [var(--el-collapse-border-color)]"
-    :model-value="activeNames"
+    v-model="activeNames"
+    @click.stop="th.onClick"
     @update:model-value="th.onCollapseChange"
     accordion
     expand-icon-position="right">
