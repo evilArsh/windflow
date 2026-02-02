@@ -7,15 +7,11 @@ import { storeToRefs } from "pinia"
 import EditTopic from "./components/editTopic/index.vue"
 import MenuHandle from "./components/menuHandle/index.vue"
 import { useMenuContext, useMsgContext } from "./index"
-import useSettingsStore from "@renderer/store/settings"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { errorToText, isFunction, useShortcut } from "@toolmain/shared"
+import { CallBackFn } from "@toolmain/shared"
 import { ScaleInstance, Spinner, ScalePanel } from "@toolmain/components"
-import { msgError } from "@renderer/utils"
 const { t } = useI18n()
-const shortcut = useShortcut()
 const chatStore = useChatStore()
-const settingsStore = useSettingsStore()
 const { topicList } = storeToRefs(chatStore)
 const scaleRef = useTemplateRef<ScaleInstance>("scale")
 const scrollRef = useTemplateRef("scroll")
@@ -38,24 +34,10 @@ const {
 } = useMenuContext(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const msgContext = useMsgContext()
 const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext.menuToggle
-async function onCreateNewTopic(active: boolean, _key: string, done?: unknown) {
-  try {
-    if (!active) return
-    await tree.createNewTopic()
-  } catch (error) {
-    msgError(errorToText(error))
-  } finally {
-    isFunction(done) && done()
-  }
+async function onCreateNewTopic(done: CallBackFn) {
+  await tree.createNewTopic()
+  done()
 }
-const {
-  key: newChatShortcut,
-  trigger: triggerNewTopic,
-  taskPending,
-} = shortcut.listen("", onCreateNewTopic, {
-  beforeTrigger: () => !taskPending.value,
-})
-settingsStore.dataBind(SettingKeys.ChatNewChat, newChatShortcut)
 onMounted(() => {
   window.addEventListener("resize", dlg.clickMask)
 })
@@ -82,7 +64,7 @@ onBeforeUnmount(() => {
               </ContentBox>
             </teleport>
           </div>
-          <Button @click="done => triggerNewTopic(done)">
+          <Button @click="onCreateNewTopic">
             <i class="text-1.4rem i-ep-plus"></i>
             <el-text>{{ t("chat.addChat") }}</el-text>
           </Button>

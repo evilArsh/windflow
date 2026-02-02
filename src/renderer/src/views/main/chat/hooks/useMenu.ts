@@ -1,13 +1,15 @@
 import { ChatTopicTree } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
 import { toNumber, CallBackFn, errorToText } from "@toolmain/shared"
-import { TreeInstance, ElMessage } from "element-plus"
+import { TreeInstance } from "element-plus"
 import useChatStore from "@renderer/store/chat"
+
 import { Reactive } from "vue"
 import { useDlg } from "./useDlg"
 import { useTree } from "./useTree"
 import { useTask } from "@renderer/hooks/useTask"
 import { getAllNodes } from "@renderer/store/chat/utils"
+import { msgError, msgWarning } from "@renderer/utils"
 
 export const useMenu = (
   editTopicRef: Readonly<Ref<{ bounding: () => DOMRect | undefined } | null>>,
@@ -33,7 +35,7 @@ export const useMenu = (
     try {
       if (treeCtx.selectedTopic.value) {
         if (task.pending()) {
-          ElMessage.warning(t("chat.topicSwitching"))
+          msgWarning(t("chat.topicSwitching"))
           return
         }
         const nodes = getAllNodes(treeCtx.selectedTopic.value)
@@ -57,23 +59,23 @@ export const useMenu = (
       dlg.clickMask()
       done()
     } catch (error) {
-      ElMessage.error(errorToText(error))
+      msgError(errorToText(error))
       dlg.clickMask()
       done()
     }
   }
   // 新增子聊天
-  async function onAdd(done: CallBackFn) {
+  async function onAdd(done?: CallBackFn) {
     try {
       if (treeCtx.selectedTopic.value) {
         await treeCtx.createNewTopic(treeCtx.selectedTopic.value.id)
       }
       dlg.clickMask()
-      done()
+      done?.()
     } catch (error) {
       dlg.clickMask()
-      ElMessage.error(errorToText(error))
-      done()
+      msgError(errorToText(error))
+      done?.()
     }
   }
   // 点击icon快速编辑

@@ -2,7 +2,7 @@ import type Node from "element-plus/es/components/tree/src/model/node"
 import { useTask } from "@renderer/hooks/useTask"
 import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
-import { errorToText, isArray } from "@toolmain/shared"
+import { errorToText, isArray, toNumber, useShortcut } from "@toolmain/shared"
 import { TreeInstance, ScrollbarInstance, NodeDropType, TreeNodeData } from "element-plus"
 import { storeToRefs } from "pinia"
 import { Reactive } from "vue"
@@ -10,7 +10,6 @@ import useChatStore from "@renderer/store/chat"
 import useSettingsStore from "@renderer/store/settings"
 import { useThrottleFn } from "@vueuse/core"
 import { cloneTopic, createChatTopic } from "@windflow/core/message"
-import { findMaxTopicIndex } from "@renderer/store/chat/utils"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { msg, msgError, msgWarning } from "@renderer/utils"
 export const useTree = (
@@ -20,6 +19,7 @@ export const useTree = (
   panelConfig: Reactive<ScaleConfig>
 ) => {
   const { t } = useI18n()
+  const shortcut = useShortcut()
   const settingsStore = useSettingsStore()
   const chatStore = useChatStore()
   const { topicList } = storeToRefs(chatStore)
@@ -62,11 +62,9 @@ export const useTree = (
         topic = cloneTopic(selectedTopic.value.node, {
           parentId,
           label: t("chat.addChat"),
-          index: findMaxTopicIndex(selectedTopic.value.children),
         })
       } else {
         topic = createChatTopic({
-          index: findMaxTopicIndex(topicList.value),
           icon: getDefaultIcon(),
           parentId,
           modelIds: [],
@@ -79,7 +77,7 @@ export const useTree = (
         treeRef.value?.append(newNode, parentId)
       } else {
         chatStore.cachePushChatTopicTree(newNode)
-        setTimeout(() => scrollRef.value?.scrollTo(0, scrollRef.value.wrapRef?.clientHeight), 0)
+        setTimeout(() => scrollRef.value?.scrollTo(0, toNumber(treeRef.value?.el$?.getBoundingClientRect().height)), 0)
       }
       currentNodeKey.value = newNode.id
     } catch (error) {
@@ -118,16 +116,18 @@ export const useTree = (
           : dropNode.parent.data.children
         : topicList.value
       const currentIndex = siblings.findIndex(item => item.id === dropNode.data.node.id)
+      const tempNodes: ChatTopic[] = []
       siblings
         .slice(dropType === "before" ? currentIndex : currentIndex + 1)
         .reduce<number>((prev: number, item: ChatTopicTree) => {
           if (item.node.index <= prev) {
             item.node.index += 1
-            chatStore.updateChatTopic(item.node)
+            tempNodes.push(item.node)
           }
           return item.node.index
         }, draggingNode.data.node.index)
-      chatStore.updateChatTopic(draggingNode.data.node)
+      tempNodes.push(draggingNode.data.node)
+      chatStore.bulkPutChatTopic(tempNodes)
     } else if (dropType === "inner") {
       draggingNode.data.node.parentId = dropNode.data.node.id
       draggingNode.data.node.index = dropNode.data.children.length
@@ -176,6 +176,32 @@ export const useTree = (
   function clearCurrentHover() {
     currentHover.value = ""
   }
+  const { key: newSubChatShortcut, taskPending: taskNewSubChatPending } = shortcut.listen(
+    "",
+    async (active, _key) => {
+      if (!active) return
+      if (currentTopic.value) {
+        // assume that current topic is the selected topic
+        setSelectedTopic(currentTopic.value)
+        return createNew(currentTopic.value.node.id)
+      }
+    },
+    { beforeTrigger: () => !taskNewSubChatPending.value }
+  )
+  const { key: newChatShortcut, taskPending: taskNewChatPending } = shortcut.listen(
+    "",
+    async (active: boolean) => {
+      try {
+        if (!active) return
+        return createNew(currentTopic.value?.node.parentId ?? undefined)
+      } catch (error) {
+        msgError(errorToText(error))
+      }
+    },
+    { beforeTrigger: () => !taskNewChatPending.value }
+  )
+  settingsStore.dataBind(SettingKeys.ChatNewSubChat, newSubChatShortcut)
+  settingsStore.dataBind(SettingKeys.ChatNewChat, newChatShortcut)
   return {
     selectedTopic,
     currentTopic,
