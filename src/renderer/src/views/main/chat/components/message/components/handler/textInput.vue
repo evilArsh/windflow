@@ -11,6 +11,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const chatStore = useChatStore()
 const topic = computed(() => props.topic)
+const inputRef = useTemplateRef("input")
 const onInput = useThrottleFn(async () => {
   try {
     await chatStore.updateChatTopic(topic.value)
@@ -18,17 +19,25 @@ const onInput = useThrottleFn(async () => {
     msg({ code: 500, msg: errorToText(error) })
   }
 })
+const onAutoFocus = () => {
+  requestAnimationFrame(() => {
+    inputRef.value?.focus()
+  })
+}
+watch(topic, onAutoFocus)
+watch(() => props.type, onAutoFocus)
+onMounted(onAutoFocus)
 </script>
 <template>
   <div class="chat-input">
     <el-input
+      ref="input"
       class="textarea"
       input-style="border: none;height: 100%"
       @input="onInput"
       style="display: flex"
       :autosize="false"
       :clearable="false"
-      autofocus
       resize="none"
       :type
       v-model="topic.content"

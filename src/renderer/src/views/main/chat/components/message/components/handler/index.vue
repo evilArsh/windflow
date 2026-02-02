@@ -16,6 +16,7 @@ import { useThrottleFn } from "@vueuse/core"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []
+  toggleSimpleInput: []
 }>()
 const props = defineProps<{
   simple?: boolean
@@ -52,12 +53,15 @@ const handler = {
       msg({ code: 500, msg: errorToText(error) })
     }
   }),
+  onToggleSimpleInput() {
+    emit("toggleSimpleInput")
+  },
 }
 const {
   key: sendShortcut,
   trigger: triggerSend,
   taskPending,
-} = shortcut.listen("enter", handler.onSend, {
+} = shortcut.listen("", handler.onSend, {
   beforeTrigger: e => {
     const tname = (e.target as HTMLElement).tagName.toLowerCase()
     return !taskPending.value && (tname === "textarea" || tname === "text")
@@ -76,15 +80,23 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
         <KnowledgeBase :topic></KnowledgeBase>
         <Settings :topic></Settings>
       </div>
-      <div id="mini-input-area" class="flex flex-1 items-center justify-end gap[var(--ai-gap-base)]"></div>
+      <div id="mini-input-area" class="flex flex-1 items-center justify-bewteen gap[var(--ai-gap-base)]"></div>
+      <ContentBox @click="handler.onToggleSimpleInput">
+        <i-ic-round-keyboard-arrow-down
+          :class="simple ? 'rotate-180deg' : ''"
+          class="text-1.6rem c-[--el-text-color-regular]"></i-ic-round-keyboard-arrow-down>
+      </ContentBox>
       <Clear :topic="topic" @context-clean="emit('contextClean')"></Clear>
     </div>
     <teleport defer :disabled="!simple" to="#mini-input-area">
       <TextInput :type="simple ? 'text' : 'textarea'" :topic="topic" />
       <div class="chat-input-actions">
-        <Button link size="small" type="default" plain @click="done => triggerSend(done)">
-          {{ t("btn.send", { shortcut: sendShortcut }) }}
-        </Button>
+        <div class="flex items-center"></div>
+        <div class="flex items-center">
+          <Button link size="small" type="default" plain @click="done => triggerSend(done)">
+            {{ t("btn.send", { shortcut: sendShortcut }) }}
+          </Button>
+        </div>
       </div>
     </teleport>
   </div>
@@ -109,7 +121,8 @@ settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
     flex-shrink: 0;
     display: flex;
     background-color: var(--chat-input-bg-color);
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: var(--ai-gap-base);
   }
 }
