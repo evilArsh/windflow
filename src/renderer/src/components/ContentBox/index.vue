@@ -126,7 +126,7 @@ watch(
   --box-bg-hover-color: var(--el-fill-color-dark);
   --box-bg-active-color: var(--el-fill-color-darker);
 
-  --box-bg-background-color: transparent;
+  --box-bg-background-color: var(--el-color-info-light-9);
   --box-bg-background-hover-color: var(--el-color-info-light-7);
   --box-bg-background-active-color: var(--el-color-info-light-5);
 

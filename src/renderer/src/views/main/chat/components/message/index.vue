@@ -35,6 +35,13 @@ const handler = {
       chatStore.updateChatTopic(topic.value)
     }
   },
+  onToggleSimpleInput() {
+    if (simpleMode.value) {
+      handler.onHandlerHeightChange(minHandlerHeight.value * 4)
+    } else {
+      handler.onHandlerHeightChange(minHandlerHeight.value)
+    }
+  },
 }
 watch(
   topic,
@@ -46,11 +53,7 @@ watch(
 )
 const { key: simpleShortcut } = shortcut.listen("", (active: boolean) => {
   if (!active) return
-  if (simpleMode.value) {
-    handler.onHandlerHeightChange(minHandlerHeight.value * 4)
-  } else {
-    handler.onHandlerHeightChange(minHandlerHeight.value)
-  }
+  handler.onToggleSimpleInput()
 })
 settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
 </script>
@@ -94,7 +97,7 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
               <slot name="leftHandler"></slot>
             </div>
             <div class="flex items-center gap1rem">
-              <ContentBox @click="_ => toggleRightPanel()" background>
+              <ContentBox @click="_ => toggleRightPanel()">
                 <i-material-symbols-left-panel-close-outline
                   v-if="!showRightPanel"></i-material-symbols-left-panel-close-outline>
                 <i-material-symbols-right-panel-close-outline v-else></i-material-symbols-right-panel-close-outline>
@@ -113,6 +116,7 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
         <Handler
           :simple="simpleMode"
           :topic
+          @toggle-simple-input="handler.onToggleSimpleInput"
           @message-send="handler.onToBottom"
           @context-clean="handler.onToBottom"></Handler>
       </template>

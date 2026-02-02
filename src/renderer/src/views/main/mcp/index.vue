@@ -49,7 +49,7 @@ shortcut.listen("ctrl+b", res => {
               <el-text class="text-2.6rem! font-600">{{ t("mcp.title") }}</el-text>
               <template #end>
                 <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
-                  <ContentBox @click="ev.toggleNav" background>
+                  <ContentBox @click="ev.toggleNav">
                     <i-material-symbols-right-panel-close-outline
                       class="text-1.6rem"
                       v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
@@ -70,7 +70,6 @@ shortcut.listen("ctrl+b", res => {
               :key="menu.path"
               :default-lock="currentRoute == menu.path"
               still-lock
-              :background="false"
               @click="routes.toPath(menu.path)">
               <template #icon><component :is="menu.icon"></component></template>
               <el-text>{{ menu.title }}</el-text>

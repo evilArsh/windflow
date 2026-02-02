@@ -103,7 +103,6 @@ const status = useStatus()
                 class="flex-1"
                 style="--box-padding: 0 var(--ai-gap-base)"
                 :main-style="{ flexDirection: 'column' }"
-                background
                 still-lock
                 :default-lock="defaultRoute.startsWith(item.index)">
                 <template #icon>
@@ -117,14 +116,14 @@ const status = useStatus()
       </el-scrollbar>
     </div>
     <div class="nav-bottom">
-      <ContentBox background @click="status.toggleDark">
+      <ContentBox @click="status.toggleDark">
         <div class="nav-bottom-item">
           <i-ic-baseline-mode-night v-if="toValue(status.dark)" class="text-1.4rem"></i-ic-baseline-mode-night>
           <i-ic-twotone-light-mode v-else class="text-1.4rem"></i-ic-twotone-light-mode>
         </div>
       </ContentBox>
       <I18n></I18n>
-      <ContentBox background>
+      <ContentBox>
         <div class="nav-bottom-item">
           <i-mdi-settings class="text-1.4rem"></i-mdi-settings>
         </div>

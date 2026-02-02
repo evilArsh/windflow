@@ -65,7 +65,7 @@ shortcut.listen("ctrl+b", res => {
               <el-text class="text-2.6rem! font-600">{{ t("model.title") }}</el-text>
               <template #end>
                 <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
-                  <ContentBox @click="ev.toggleNav" background>
+                  <ContentBox @click="ev.toggleNav">
                     <i-material-symbols-right-panel-close-outline
                       class="text-1.6rem"
                       v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
@@ -89,7 +89,6 @@ shortcut.listen("ctrl+b", res => {
               :key="meta.name"
               :default-lock="currentProvider?.name == meta.name"
               still-lock
-              :background="false"
               @click="ev.onCardClick(meta.name)">
               <template #icon><Svg :src="meta.logo" class="text-2rem"></Svg></template>
               <el-text line-clamp="2">{{ meta.alias ?? meta.name }}</el-text>
