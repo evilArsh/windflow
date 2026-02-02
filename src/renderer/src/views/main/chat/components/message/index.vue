@@ -79,8 +79,10 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
           </div>
         </div>
         <template #footer>
-          <Button type="primary" @click="onConfirm">{{ t("btn.confirm") }}</Button>
-          <Button @click="onCancel">{{ t("btn.cancel") }}</Button>
+          <div class="flex justify-end">
+            <Button type="primary" @click="onConfirm">{{ t("btn.confirm") }}</Button>
+            <Button @click="onCancel">{{ t("btn.cancel") }}</Button>
+          </div>
         </template>
       </DialogPanel>
     </el-dialog>
