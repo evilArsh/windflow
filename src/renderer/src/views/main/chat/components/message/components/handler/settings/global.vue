@@ -14,10 +14,9 @@ const sendShortcutList = shallowRef([
   { label: "ctrl + enter", value: "ctrl+enter" },
   { label: "shift + enter", value: "shift+enter" },
 ])
-const simpleModeShortcutList = shallowRef([
-  { label: "ctrl + ↓", value: "ctrl+arrowDown" },
-  //
-])
+const simpleModeShortcutList = shallowRef([{ label: "ctrl + ↓", value: "ctrl+arrowDown" }])
+const newChatList = shallowRef([{ label: "ctrl + n", value: "ctrl+n" }])
+const newSubChatList = shallowRef([{ label: "ctrl + shift + n", value: "ctrl+shift+n" }])
 
 const { data: sendShortcut } = settingsStore.dataWatcher<string>(
   SettingKeys.ChatSendShortcut,
@@ -29,6 +28,12 @@ const { data: simpleModeShortcut } = settingsStore.dataWatcher<string>(
   null,
   simpleModeShortcutList.value[0].value
 )
+const { data: newChat } = settingsStore.dataWatcher<string>(SettingKeys.ChatNewChat, null, newChatList.value[0].value)
+const { data: newSubChat } = settingsStore.dataWatcher<string>(
+  SettingKeys.ChatNewSubChat,
+  null,
+  newSubChatList.value[0].value
+)
 </script>
 <template>
   <Group>
@@ -39,9 +44,23 @@ const { data: simpleModeShortcut } = settingsStore.dataWatcher<string>(
         </el-option>
       </el-select>
     </Item>
-    <Item :title="t('chat.settings.inputSimpleShortcut')" icon-class="i-material-symbols-line-start-rounded">
+    <Item :title="t('chat.settings.inputSimpleShortcut')" icon-class="i-ic-twotone-linear-scale">
       <el-select v-model="simpleModeShortcut" :teleported="false">
         <el-option v-for="item in simpleModeShortcutList" :key="item.value" :label="item.label" :value="item.value">
+          {{ item.label }}
+        </el-option>
+      </el-select>
+    </Item>
+    <Item :title="t('chat.settings.newChatShortcut')" icon-class="i-ic-outline-playlist-add">
+      <el-select v-model="newChat" :teleported="false">
+        <el-option v-for="item in newChatList" :key="item.value" :label="item.label" :value="item.value">
+          {{ item.label }}
+        </el-option>
+      </el-select>
+    </Item>
+    <Item :title="t('chat.settings.newSubChatShortcut')" icon-class="i-ic-baseline-account-tree">
+      <el-select v-model="newSubChat" :teleported="false">
+        <el-option v-for="item in newSubChatList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
         </el-option>
       </el-select>
