@@ -46,7 +46,11 @@ watch(
 )
 const { key: simpleShortcut } = shortcut.listen("", (active: boolean) => {
   if (!active) return
-  handler.onHandlerHeightChange(minHandlerHeight.value)
+  if (simpleMode.value) {
+    handler.onHandlerHeightChange(minHandlerHeight.value * 4)
+  } else {
+    handler.onHandlerHeightChange(minHandlerHeight.value)
+  }
 })
 settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
 </script>
@@ -57,24 +61,14 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
         <div class="flex flex-col gap-1rem">
           <el-input
             type="textarea"
-            style="
-              --el-input-border-color: transparent;
-              --el-border-color: transparent;
-              --el-input-hover-border-color: transparent;
-              --el-input-focus-border-color: transparent;
-            "
+            class="custom-input"
             autosize
             v-if="isString(cachedMessage.content.content) && cachedMessage.content.content"
             v-model="cachedMessage.content.content" />
           <div v-for="(child, index) in cachedMessage.content.children" :key="index">
             <el-input
               type="textarea"
-              style="
-                --el-input-border-color: transparent;
-                --el-border-color: transparent;
-                --el-input-hover-border-color: transparent;
-                --el-input-focus-border-color: transparent;
-              "
+              class="custom-input"
               autosize
               resize="none"
               v-if="isString(child.content)"
@@ -127,6 +121,12 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
   </div>
 </template>
 <style lang="scss" scoped>
+.custom-input {
+  --el-input-border-color: transparent;
+  --el-border-color: transparent;
+  --el-input-hover-border-color: transparent;
+  --el-input-focus-border-color: transparent;
+}
 .message-container {
   display: flex;
   flex: 1;
