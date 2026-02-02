@@ -30,6 +30,14 @@ export enum SettingKeys {
    */
   ChatInputSimpleModeShortcut = "chat.inputSimpleModeShortcut",
   /**
+   * 新增聊天
+   */
+  ChatNewChat = "chat.newChat",
+  /**
+   * 新增子聊天
+   */
+  ChatNewSubChat = "chat.newSubChat",
+  /**
    * 将用户消息渲染成markdown
    */
   ChatForcePlaintext = "chat.forcePlaintext",

@@ -3,7 +3,7 @@ import { useTask } from "@renderer/hooks/useTask"
 import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
 import { errorToText, isArray } from "@toolmain/shared"
-import { TreeInstance, ScrollbarInstance, ElMessage, NodeDropType, TreeNodeData } from "element-plus"
+import { TreeInstance, ScrollbarInstance, NodeDropType, TreeNodeData } from "element-plus"
 import { storeToRefs } from "pinia"
 import { Reactive } from "vue"
 import useChatStore from "@renderer/store/chat"
@@ -12,7 +12,7 @@ import { useThrottleFn } from "@vueuse/core"
 import { cloneTopic, createChatTopic } from "@windflow/core/message"
 import { findMaxTopicIndex } from "@renderer/store/chat/utils"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
-import { msg } from "@renderer/utils"
+import { msg, msgError, msgWarning } from "@renderer/utils"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -53,7 +53,7 @@ export const useTree = (
   async function createNew(parentId?: string) {
     try {
       if (task.pending()) {
-        ElMessage.warning(t("chat.topicSwitching"))
+        msgWarning(t("chat.topicSwitching"))
         return
       }
       let topic: ChatTopic
@@ -83,13 +83,13 @@ export const useTree = (
       }
       currentNodeKey.value = newNode.id
     } catch (error) {
-      ElMessage.error(errorToText(error))
+      msgError(errorToText(error))
     }
   }
   // 节点点击
   function onNodeClick(data: ChatTopicTree) {
     if (task.pending()) {
-      ElMessage.warning(t("chat.topicSwitching"))
+      msgWarning(t("chat.topicSwitching"))
       return
     }
     currentNodeKey.value = data.id

@@ -91,6 +91,8 @@
       "maxContextLength": "Max Context Messages",
       "maxContextLengthExp": "Maximum number of message contexts to carry in a request.",
       "messageLabel": "Message Settings",
+      "newChatShortcut": "Create New Chat",
+      "newSubChatShortcut": "Create New Children Chat",
       "sendShortcut": "Send Message"
     },
     "terminate": "Terminate",

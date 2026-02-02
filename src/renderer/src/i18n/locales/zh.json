@@ -91,6 +91,8 @@
       "maxContextLength": "最大消息上下文个数",
       "maxContextLengthExp": "请求时携带的消息上下文最大个数",
       "messageLabel": "消息设置",
+      "newChatShortcut": "创建新的聊天",
+      "newSubChatShortcut": "创建新的子聊天",
       "sendShortcut": "发送消息"
     },
     "terminate": "终止",

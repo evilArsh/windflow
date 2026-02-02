@@ -69,13 +69,7 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
             v-if="isString(cachedMessage.content.content) && cachedMessage.content.content"
             v-model="cachedMessage.content.content" />
           <div v-for="(child, index) in cachedMessage.content.children" :key="index">
-            <el-input
-              type="textarea"
-              class="custom-input"
-              autosize
-              resize="none"
-              v-if="isString(child.content)"
-              v-model="child.content" />
+            <el-input type="textarea" autosize resize="none" v-if="isString(child.content)" v-model="child.content" />
           </div>
         </div>
         <template #footer>
