@@ -26,6 +26,20 @@ db.version(1).stores({
   ragFiles: "id,topicId,[topicId+path]",
   embedding: "id",
 })
+db.version(2).stores({
+  providerMeta: "name",
+  model: "id",
+  chatTopic: "id,parentId,[parentId+index]",
+  chatMessage: "id,topicId,[topicId+index],fromId,contextFlag",
+  chatLLMConfig: "id,topicId",
+  chatTTIConfig: "id,topicId",
+  settings: "id",
+  mcpServer: "id",
+  knowledge: "id,embeddingId",
+  ragFiles: "id,topicId,[topicId+path]",
+  embedding: "id",
+})
+
 export * from "./presets"
 export function withTransaction<U>(
   mode: TransactionMode,

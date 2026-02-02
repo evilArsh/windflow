@@ -17,6 +17,9 @@ export async function bulkAddChatTopics(datas: ChatTopic[], params?: QueryParams
 export async function putChatTopic(data: ChatTopic, params?: QueryParams) {
   return topicQueue.add(async () => resolveDb(params).chatTopic.put(cloneDeep(data)))
 }
+export async function bulkPutChatTopic(datas: ChatTopic[], params?: QueryParams) {
+  return topicQueue.add(async () => resolveDb(params).chatTopic.bulkPut(cloneDeep(datas)))
+}
 export async function getTopic(topicId: string) {
   return topicQueue.add(async () => db.chatTopic.get(topicId))
 }
@@ -83,10 +86,12 @@ export async function deleteAllMessages(topicId: string, params?: QueryParams) {
 export async function bulkDeleteChatTopic(data: ChatTopic[]) {
   const topicIds = data.map(item => item.id)
   return db.transaction("rw", [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig], async trans => {
-    await topicQueue.add(async () => trans.chatTopic.bulkDelete(topicIds))
-    await msgQueue.add(async () => trans.chatMessage.where("topicId").anyOf(topicIds).delete())
-    await configQueue.add(async () => trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete())
-    await configQueue.add(async () => trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete())
+    return Dexie.Promise.all([
+      topicQueue.add(async () => trans.chatTopic.bulkDelete(topicIds)),
+      msgQueue.add(async () => trans.chatMessage.where("topicId").anyOf(topicIds).delete()),
+      configQueue.add(async () => trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete()),
+      configQueue.add(async () => trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete()),
+    ])
   })
 }
 /**
@@ -95,6 +100,14 @@ export async function bulkDeleteChatTopic(data: ChatTopic[]) {
 export async function getMaxIndexMessage(topicId: string) {
   return msgQueue.add(async () =>
     db.chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
+  )
+}
+/**
+ * get a node with the maximum index value among the nodes belonging to the `parentId`.
+ */
+export async function getMaxIndexTopic(parentId?: string | null) {
+  return topicQueue.add(async () =>
+    db.chatTopic.where("[parentId+index]").between([parentId, 0], [parentId, Dexie.maxKey]).last()
   )
 }
 /**
