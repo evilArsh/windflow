@@ -17,6 +17,14 @@ const sendShortcutList = shallowRef([
 const simpleModeShortcutList = shallowRef([{ label: "ctrl + ↓", value: "ctrl+arrowDown" }])
 const newChatList = shallowRef([{ label: "ctrl + n", value: "ctrl+n" }])
 const newSubChatList = shallowRef([{ label: "ctrl + shift + n", value: "ctrl+shift+n" }])
+const sidebarToggleList = shallowRef([
+  { label: "ctrl + b", value: "ctrl+b" },
+  { label: "ctrl + q", value: "ctrl+q" },
+])
+const chatRightPanelToggleList = shallowRef([
+  { label: "ctrl + shift + b", value: "ctrl+shift+b" },
+  { label: "ctrl + shift + q", value: "ctrl+shift+q" },
+])
 
 const { data: sendShortcut } = settingsStore.dataWatcher<string>(
   SettingKeys.ChatSendShortcut,
@@ -34,33 +42,59 @@ const { data: newSubChat } = settingsStore.dataWatcher<string>(
   null,
   newSubChatList.value[0].value
 )
+const { data: sidebarToggle } = settingsStore.dataWatcher<string>(
+  SettingKeys.SidebarToggleShortcut,
+  null,
+  sidebarToggleList.value[0].value
+)
+const { data: chatRightSidebarToggle } = settingsStore.dataWatcher<string>(
+  SettingKeys.ChatRightPanelToggleShortcut,
+  null,
+  chatRightPanelToggleList.value[0].value
+)
 </script>
 <template>
   <Group>
     <Item :title="t('chat.settings.sendShortcut')" icon-class="i-ic-baseline-send">
-      <el-select v-model="sendShortcut" :teleported="false">
+      <el-select class="w-20rem!" v-model="sendShortcut" :teleported="false">
         <el-option v-for="item in sendShortcutList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
         </el-option>
       </el-select>
     </Item>
     <Item :title="t('chat.settings.inputSimpleShortcut')" icon-class="i-ic-twotone-linear-scale">
-      <el-select v-model="simpleModeShortcut" :teleported="false">
+      <el-select class="w-20rem!" v-model="simpleModeShortcut" :teleported="false">
         <el-option v-for="item in simpleModeShortcutList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
         </el-option>
       </el-select>
     </Item>
     <Item :title="t('chat.settings.newChatShortcut')" icon-class="i-ic-outline-playlist-add">
-      <el-select v-model="newChat" :teleported="false">
+      <el-select class="w-20rem!" v-model="newChat" :teleported="false">
         <el-option v-for="item in newChatList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
         </el-option>
       </el-select>
     </Item>
     <Item :title="t('chat.settings.newSubChatShortcut')" icon-class="i-ic-baseline-account-tree">
-      <el-select v-model="newSubChat" :teleported="false">
+      <el-select class="w-20rem!" v-model="newSubChat" :teleported="false">
         <el-option v-for="item in newSubChatList" :key="item.value" :label="item.label" :value="item.value">
+          {{ item.label }}
+        </el-option>
+      </el-select>
+    </Item>
+    <Item :title="t('chat.settings.toggleSidebarShortcut')" icon-class="i-material-symbols-right-panel-close-outline">
+      <el-select class="w-20rem!" v-model="sidebarToggle" :teleported="false">
+        <el-option v-for="item in sidebarToggleList" :key="item.value" :label="item.label" :value="item.value">
+          {{ item.label }}
+        </el-option>
+      </el-select>
+    </Item>
+    <Item
+      :title="t('chat.settings.chatRightPanelToggleShortcut')"
+      icon-class="i-material-symbols-left-panel-close-outline">
+      <el-select class="w-20rem!" v-model="chatRightSidebarToggle" :teleported="false">
+        <el-option v-for="item in chatRightPanelToggleList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
         </el-option>
       </el-select>

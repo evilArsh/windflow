@@ -84,8 +84,8 @@
     },
     "search": "搜索",
     "settings": {
+      "chatRightPanelToggleShortcut": "聊天右侧边栏显隐",
       "forcePlaintext": "用户消息渲染成Markdown",
-      "inputShortcutLabel": "输入快捷键",
       "inputSimpleShortcut": "简易聊天框",
       "label": "设置",
       "maxContextLength": "最大消息上下文个数",
@@ -93,7 +93,9 @@
       "messageLabel": "消息设置",
       "newChatShortcut": "创建新的聊天",
       "newSubChatShortcut": "创建新的子聊天",
-      "sendShortcut": "发送消息"
+      "sendShortcut": "发送消息",
+      "shortcutLabel": "快捷键设置",
+      "toggleSidebarShortcut": "全局侧边栏显隐"
     },
     "terminate": "终止",
     "thinking": "深度思考中",

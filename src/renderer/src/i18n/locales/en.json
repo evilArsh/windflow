@@ -84,8 +84,8 @@
     },
     "search": "Search",
     "settings": {
+      "chatRightPanelToggleShortcut": "Chat Right Panel Toggle",
       "forcePlaintext": "Render user  message as Markdown",
-      "inputShortcutLabel": "Input Shortcut Settings",
       "inputSimpleShortcut": "Simple Input",
       "label": "Settings",
       "maxContextLength": "Max Context Messages",
@@ -93,7 +93,9 @@
       "messageLabel": "Message Settings",
       "newChatShortcut": "Create New Chat",
       "newSubChatShortcut": "Create New Children Chat",
-      "sendShortcut": "Send Message"
+      "sendShortcut": "Send Message",
+      "shortcutLabel": "Shortcut Settings",
+      "toggleSidebarShortcut": "Global Sidebar Toggle"
     },
     "terminate": "Terminate",
     "thinking": "Deep Thinking",

@@ -30,6 +30,10 @@ export enum SettingKeys {
    */
   ChatInputSimpleModeShortcut = "chat.inputSimpleModeShortcut",
   /**
+   * 聊天栏右侧显隐
+   */
+  ChatRightPanelToggleShortcut = "chat.rightPanelToggleShortcut",
+  /**
    * 新增聊天
    */
   ChatNewChat = "chat.newChat",
@@ -121,6 +125,10 @@ export enum SettingKeys {
    * 知识库->嵌入 选中的id
    */
   EmbeddingId = "embedding.id",
+  /**
+   * 侧边栏显隐快捷键
+   */
+  SidebarToggleShortcut = "sidebar.toggleShortcut",
 }
 
 export type SettingsValue = Primitive | Array<Primitive> | { [key: string]: SettingsValue }
