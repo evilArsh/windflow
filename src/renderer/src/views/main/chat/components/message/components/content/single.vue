@@ -96,14 +96,14 @@ defineExpose({
         v-else
         :content="message.node.content.content"
         :force-plaintext="!!forcePlaintext"
-        @render-finish="onMarkdownFinish"></Markdown>
+        @updated="onMarkdownFinish"></Markdown>
     </div>
     <div v-else class="chat-item-content p-1rem">
       <Image v-if="isImage" :message :parent></Image>
       <div v-else-if="isText" class="chat-item-content">
         <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.node.finish"></Thinking>
-          <Markdown v-if="isString(child.content)" :content="child.content" @render-finish="onMarkdownFinish" />
+          <Markdown v-if="isString(child.content)" :content="child.content" @updated="onMarkdownFinish" />
           <MCPCall :message="child"></MCPCall>
         </div>
         <Error :message></Error>
