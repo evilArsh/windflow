@@ -10,6 +10,7 @@ const props = defineProps<{
   hideTime?: boolean
   hideProvider?: boolean
   hideModel?: boolean
+  reverse?: boolean
 }>()
 const modelsStore = useModelsStore()
 const message = computed(() => props.message.node)
@@ -19,11 +20,11 @@ const svgSrc = computed(() =>
 )
 </script>
 <template>
-  <div class="chat-item-header" :class="{ reverse: isUser }">
+  <div class="chat-item-header" :class="{ reverse }">
     <ContentBox v-if="!hideLogo" class="m0! flex-shrink-0">
       <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
     </ContentBox>
-    <div class="chat-item-title" :class="{ reverse: isUser }">
+    <div class="chat-item-title" :class="{ reverse }">
       <div v-if="!isUser" class="flex items-center gap-0.5rem flex-wrap">
         <el-text v-if="!hideProvider" class="name">
           {{ modelsStore.find(message.modelId)?.providerName }}

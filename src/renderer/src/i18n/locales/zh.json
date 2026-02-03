@@ -84,10 +84,15 @@
     },
     "search": "搜索",
     "settings": {
+      "ChatListDisplayStyle": "对话展示风格",
       "chatRightPanelToggleShortcut": "聊天右侧边栏显隐",
       "forcePlaintext": "用户消息渲染成Markdown",
       "inputSimpleShortcut": "简易聊天框",
       "label": "设置",
+      "listDisplayMode": {
+        "chat": "对话",
+        "list": "列表"
+      },
       "maxContextLength": "最大消息上下文",
       "maxContextLengthExp": "请求时携带的消息上下文最大个数",
       "messageLabel": "消息设置",
@@ -95,7 +100,8 @@
       "newSubChatShortcut": "创建新的子聊天",
       "sendShortcut": "发送消息",
       "shortcutLabel": "快捷键设置",
-      "toggleSidebarShortcut": "全局侧边栏显隐"
+      "toggleSidebarShortcut": "全局侧边栏显隐",
+      "uiLabel": "聊天界面设置"
     },
     "terminate": "终止",
     "thinking": "深度思考中",

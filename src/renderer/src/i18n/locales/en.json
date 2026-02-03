@@ -84,18 +84,24 @@
     },
     "search": "Search",
     "settings": {
+      "ChatListDisplayStyle": "Chat Display Style",
       "chatRightPanelToggleShortcut": "Chat Right Panel Toggle",
       "forcePlaintext": "Render user  message as Markdown",
       "inputSimpleShortcut": "Simple Input",
       "label": "Settings",
+      "listDisplayMode": {
+        "chat": "Chat",
+        "list": "List"
+      },
       "maxContextLength": "Max Context Messages",
       "maxContextLengthExp": "Maximum number of message contexts to carry in a request.",
       "messageLabel": "Message Settings",
       "newChatShortcut": "Create New Chat",
-      "newSubChatShortcut": "Create New Children Chat",
+      "newSubChatShortcut": "Create New Sub-Chat",
       "sendShortcut": "Send Message",
       "shortcutLabel": "Shortcut Settings",
-      "toggleSidebarShortcut": "Global Sidebar Toggle"
+      "toggleSidebarShortcut": "Global Sidebar Toggle",
+      "uiLabel": "Chat Panel UI"
     },
     "terminate": "Terminate",
     "thinking": "Deep Thinking",
@@ -272,7 +278,7 @@
   },
   "nav": {
     "chat": "Chat",
-    "knowledge": "Knowledge Base",
+    "knowledge": "Knowledge",
     "mcp": "MCP",
     "modelSetting": "Model"
   },

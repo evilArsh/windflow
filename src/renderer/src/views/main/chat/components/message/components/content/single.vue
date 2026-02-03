@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageTree, ChatTopic, SettingKeys } from "@windflow/core/types"
+import { ChatListDisplayStyle, ChatMessageTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { CallBackFn, code1xx, errorToText, isString } from "@toolmain/shared"
 import useSettingsStore from "@renderer/store/settings"
 import { Affix } from "@toolmain/components"
@@ -37,6 +37,9 @@ const isUser = computed(() => message.value.node.content.role === Role.User)
 const isText = computed(() => !message.value.node.type || message.value.node.type === "text")
 const isImage = computed(() => message.value.node.type === "image")
 const isPartial = computed(() => code1xx(message.value.node.status) || message.value.node.status == 206)
+const { data: forcePlaintext } = settingsStore.dataBind<boolean>(SettingKeys.ChatForcePlaintext)
+const { data: chatListDisplay } = settingsStore.dataBind<ChatListDisplayStyle>(SettingKeys.ChatListDisplayStyle)
+const reverse = computed(() => chatListDisplay.value === ChatListDisplayStyle.Chat && isUser.value)
 async function onContentDelete(m: ChatMessageTree, done: CallBackFn) {
   try {
     await chatStore.deleteMessage(m)
@@ -73,23 +76,25 @@ onMounted(() => {
 onBeforeUnmount(() => {
   props.context.menuToggle.unWatchToggle(onUpdateAffix)
 })
-const { data: forcePlaintext } = settingsStore.dataBind<boolean>(SettingKeys.ChatForcePlaintext)
 
 defineExpose({
   update: onUpdateAffix,
 })
 </script>
 <template>
-  <MsgBubble class="chat-item-container" :class="{ reverse: isUser }" :reverse="isUser" :id>
+  <MsgBubble class="chat-item-container" :class="{ reverse }" :reverse :id>
     <template v-if="header" #header>
       <Affix ref="affix" :offset="88" :target="`#${id}`">
-        <Title :message>
+        <Title :message :reverse>
           <Handler :topic :parent :message @delete="done => onContentDelete(message, done)" @edit="onEdit"> </Handler>
         </Title>
       </Affix>
     </template>
-    <div v-if="isUser" class="chat-item-content p-1rem reverse">
-      <p class="flex flex-col items-end" v-if="!forcePlaintext || !isString(message.node.content.content)">
+    <div v-if="isUser" class="chat-item-content p-1rem" :class="{ reverse }">
+      <p
+        class="flex flex-col"
+        :class="[reverse ? 'items-end' : '']"
+        v-if="!forcePlaintext || !isString(message.node.content.content)">
         {{ message.node.content.content }}
       </p>
       <Markdown
