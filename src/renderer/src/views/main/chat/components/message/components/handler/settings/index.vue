@@ -2,6 +2,7 @@
 import { ChatTopic } from "@windflow/core/types"
 import Global from "./global.vue"
 import Message from "./message.vue"
+import ChatUI from "./chatui.vue"
 import Shell from "../components/shell.vue"
 import Group from "../components/group.vue"
 defineProps<{
@@ -26,6 +27,12 @@ const { t } = useI18n()
             <el-text type="primary">{{ t("chat.settings.messageLabel") }}</el-text>
             <template #footer>
               <Message :topic></Message>
+            </template>
+          </ContentBox>
+          <ContentBox normal>
+            <el-text type="primary">{{ t("chat.settings.uiLabel") }}</el-text>
+            <template #footer>
+              <ChatUI :topic></ChatUI>
             </template>
           </ContentBox>
           <ContentBox normal>

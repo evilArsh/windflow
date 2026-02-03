@@ -46,6 +46,10 @@ export enum SettingKeys {
    */
   ChatForcePlaintext = "chat.forcePlaintext",
   /**
+   * 消息展示风格
+   */
+  ChatListDisplayStyle = "chat.listDisplayStyle",
+  /**
    * 清除聊天上下文
    */
   ChatCleanContext = "chat.cleanContext",
@@ -142,4 +146,9 @@ export type Settings<T extends SettingsValue> = {
    */
   desc?: string
   value: T
+}
+
+export enum ChatListDisplayStyle {
+  Chat = "chat",
+  List = "list",
 }
