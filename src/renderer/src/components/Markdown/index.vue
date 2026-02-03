@@ -10,7 +10,7 @@ import {
   Components,
 } from "@windflow/markdown"
 const emit = defineEmits<{
-  renderFinish: []
+  updated: []
 }>()
 const props = defineProps<{
   contentClass?: string
@@ -68,7 +68,7 @@ onMounted(() => {
   mdWorker.on(id, onParseResponse)
 })
 onUpdated(() => {
-  emit("renderFinish")
+  emit("updated")
 })
 onBeforeUnmount(() => {
   mdWorker.emit(id, { type: "Dispose" })
