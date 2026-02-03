@@ -34,18 +34,17 @@ const useMenuToggle = () => {
   function unWatchToggle(callback: CallBackFn) {
     toggleBus.off(callback)
   }
-  function init() {
-    shortcut.listen("ctrl+b", res => {
-      res && toggleTreeMenu()
-    })
-    shortcut.listen("ctrl+shift+b", res => {
-      res && toggleRightPanel()
-    })
-  }
+  const { key: sidebarToggleShortcut } = shortcut.listen("", res => {
+    res && toggleTreeMenu()
+  })
+  const { key: rightSidebarToggleShortcut } = shortcut.listen("", res => {
+    res && toggleRightPanel()
+  })
+  settingsStore.dataBind(SettingKeys.SidebarToggleShortcut, sidebarToggleShortcut)
+  settingsStore.dataBind(SettingKeys.ChatRightPanelToggleShortcut, rightSidebarToggleShortcut)
   onBeforeUnmount(() => {
     toggleBus.reset()
   })
-  onBeforeMount(init)
   return {
     showTreeMenu,
     showRightPanel,
@@ -53,7 +52,6 @@ const useMenuToggle = () => {
     toggleRightPanel,
     watchToggle,
     unWatchToggle,
-    init,
     emitToggle: (toggle?: boolean) => {
       toggleBus.emit(toggle)
     },
