@@ -94,9 +94,9 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
             </div>
             <div class="flex items-center gap1rem">
               <ContentBox @click="_ => toggleRightPanel()">
-                <i-material-symbols-left-panel-close-outline
-                  v-if="!showRightPanel"></i-material-symbols-left-panel-close-outline>
-                <i-material-symbols-right-panel-close-outline v-else></i-material-symbols-right-panel-close-outline>
+                <i-material-symbols-right-panel-close-outline
+                  v-if="!showRightPanel"></i-material-symbols-right-panel-close-outline>
+                <i-material-symbols-left-panel-close-outline v-else></i-material-symbols-left-panel-close-outline>
               </ContentBox>
             </div>
           </div>
