@@ -1,3 +1,17 @@
+## v0.7.13
+
+- feat(chat): add chat panel width setting and improve message alignment
+- feat(chat): add chat debugger setting and shortcut item component
+- refactor(MsgBubble): restructure layout and add icon slot
+- chore(deps): update @toolmain/components to 1.2.24 and bump related packages
+- chore(ui): refactor table component and add shortcut binding hook
+- feat(components): add SidebarToggle component with teleport support
+- feat(chat): add input height default and fix panel toggle icons
+- feat(chat): add chat list display style setting and UI improvements
+- refactor: rename Markdown component event and update locale
+- feat(settings): add sidebar and chat panel toggle shortcuts
+- ci: update changelog for v0.7.12
+
 ## v0.7.12
 
 - feat(chat): complete message sending shortcut
