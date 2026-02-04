@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ScaleConfig } from "@toolmain/components"
-import { useShortcut, z } from "@toolmain/shared"
+import { z } from "@toolmain/shared"
 import { DialogPanel, ScalePanel } from "@toolmain/components"
-
-const shortcut = useShortcut()
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
+import { SettingKeys } from "@windflow/core/types"
 
 const scaleRef = useTemplateRef("scale")
 const headerRef = useTemplateRef<HTMLDivElement>("header")
@@ -41,7 +41,7 @@ const db = {
   },
 }
 
-shortcut.listen("ctrl+d", res => {
+useShortcutBind(SettingKeys.ChatDebugger, res => {
   res && db.toggle()
 })
 </script>

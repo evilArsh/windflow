@@ -85,6 +85,7 @@
     "search": "搜索",
     "settings": {
       "ChatListDisplayStyle": "对话展示风格",
+      "chatDebugger": "消息调试",
       "chatRightPanelToggleShortcut": "聊天右侧边栏显隐",
       "forcePlaintext": "用户消息渲染成Markdown",
       "inputSimpleShortcut": "简易聊天框",

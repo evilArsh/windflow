@@ -74,6 +74,10 @@ export enum SettingKeys {
    */
   ChatCurrentNodeKey = "chat.currentNodeKey",
   /**
+   * 聊天调试框框
+   */
+  ChatDebugger = "chat.debugger",
+  /**
    * mcp子菜单宽度配置
    */
   MCPSubNav = "mcp.subNav",

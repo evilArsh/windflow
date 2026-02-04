@@ -85,6 +85,7 @@
     "search": "Search",
     "settings": {
       "ChatListDisplayStyle": "Chat Display Style",
+      "chatDebugger": "Chat Debugger",
       "chatRightPanelToggleShortcut": "Chat Right Panel Toggle",
       "forcePlaintext": "Render user  message as Markdown",
       "inputSimpleShortcut": "Simple Input",
