@@ -56,10 +56,7 @@ const currentPage = computed({
 })
 </script>
 <template>
-  <DialogPanel class="wh-full">
-    <template #header>
-      <slot name="header"></slot>
-    </template>
+  <DialogPanel class="custom-table">
     <template #default>
       <el-table
         :empty-text="t('tip.noContent')"
@@ -95,4 +92,11 @@ const currentPage = computed({
     </template>
   </DialogPanel>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.custom-table {
+  --dialog-scroll-view-padding: var(--ai-gap-small);
+  --el-card-border-color: transparent;
+  width: 100%;
+  height: 100%;
+}
+</style>

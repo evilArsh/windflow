@@ -6,10 +6,9 @@ import IGlobe from "~icons/material-symbols/globe"
 import IDisplaySettingsOutline from "~icons/material-symbols/display-settings-outline"
 import { type Component } from "vue"
 import { SettingKeys } from "@windflow/core/types"
-import { useI18nWatch, useShortcut } from "@toolmain/shared"
+import { useI18nWatch } from "@toolmain/shared"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const { t } = useI18n()
-
-const shortcut = useShortcut()
 const settingsStore = useSettingsStore()
 const router = useRouter()
 const route = useRoute()
@@ -30,13 +29,9 @@ useI18nWatch(() => {
     { icon: IDisplaySettingsOutline, title: t("mcp.menu.env"), path: "/main/mcp/exec" },
   ]
 })
-const ev = {
-  toggleNav(_?: MouseEvent) {
-    showSubNav.value = !showSubNav.value
-  },
-}
-shortcut.listen("ctrl+b", res => {
-  res && ev.toggleNav()
+useShortcutBind(SettingKeys.SidebarToggleShortcut, res => {
+  if (!res) return
+  showSubNav.value = !showSubNav.value
 })
 </script>
 <template>
@@ -48,16 +43,11 @@ shortcut.listen("ctrl+b", res => {
             <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("mcp.title") }}</el-text>
               <template #end>
-                <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
-                  <ContentBox @click="ev.toggleNav">
-                    <i-material-symbols-right-panel-close-outline
-                      class="text-1.6rem"
-                      v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
-                    <i-material-symbols-left-panel-close-outline
-                      class="text-1.6rem"
-                      v-else></i-material-symbols-left-panel-close-outline>
-                  </ContentBox>
-                </teleport>
+                <SidebarToggle
+                  v-model="showSubNav"
+                  to="#mainContentHeaderSlot"
+                  defer
+                  :disabled="showSubNav"></SidebarToggle>
               </template>
               <template #footer>
                 <el-text type="info">{{ t("mcp.subTitle") }}</el-text>

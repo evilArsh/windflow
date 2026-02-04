@@ -30,8 +30,8 @@
   "chat": {
     "addChat": "新的聊天",
     "addFailed": "添加失败",
-    "cleanContext": "清除上下文({shortcut})",
-    "cleanMessage": "清空聊天({shortcut})",
+    "cleanContext": "清除上下文{shortcut}",
+    "cleanMessage": "清空聊天{shortcut}",
     "context": "聊天上下文",
     "contextDivider": "上下文已清空",
     "defaultPrompt": "你是一个实用的AI助手",

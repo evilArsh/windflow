@@ -2,7 +2,7 @@ import type Node from "element-plus/es/components/tree/src/model/node"
 import { useTask } from "@renderer/hooks/useTask"
 import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
-import { errorToText, isArray, toNumber, useShortcut } from "@toolmain/shared"
+import { errorToText, isArray, toNumber } from "@toolmain/shared"
 import { TreeInstance, ScrollbarInstance, NodeDropType, TreeNodeData } from "element-plus"
 import { storeToRefs } from "pinia"
 import { Reactive } from "vue"
@@ -12,6 +12,7 @@ import { useThrottleFn } from "@vueuse/core"
 import { cloneTopic, createChatTopic } from "@windflow/core/message"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { msg, msgError, msgWarning } from "@renderer/utils"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -19,7 +20,6 @@ export const useTree = (
   panelConfig: Reactive<ScaleConfig>
 ) => {
   const { t } = useI18n()
-  const shortcut = useShortcut()
   const settingsStore = useSettingsStore()
   const chatStore = useChatStore()
   const { topicList } = storeToRefs(chatStore)
@@ -176,8 +176,8 @@ export const useTree = (
   function clearCurrentHover() {
     currentHover.value = ""
   }
-  const { key: newSubChatShortcut, taskPending: taskNewSubChatPending } = shortcut.listen(
-    "",
+  const { taskPending: taskNewSubChatPending } = useShortcutBind(
+    SettingKeys.ChatNewSubChat,
     async (active, _key) => {
       if (!active) return
       if (currentTopic.value) {
@@ -188,8 +188,8 @@ export const useTree = (
     },
     { beforeTrigger: () => !taskNewSubChatPending.value }
   )
-  const { key: newChatShortcut, taskPending: taskNewChatPending } = shortcut.listen(
-    "",
+  const { taskPending: taskNewChatPending } = useShortcutBind(
+    SettingKeys.ChatNewChat,
     async (active: boolean) => {
       try {
         if (!active) return
@@ -200,8 +200,6 @@ export const useTree = (
     },
     { beforeTrigger: () => !taskNewChatPending.value }
   )
-  settingsStore.dataBind(SettingKeys.ChatNewSubChat, newSubChatShortcut)
-  settingsStore.dataBind(SettingKeys.ChatNewChat, newChatShortcut)
   return {
     selectedTopic,
     currentTopic,

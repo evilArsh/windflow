@@ -5,28 +5,19 @@ import { useMenu } from "./hooks/useMenu"
 import useSettingsStore from "@renderer/store/settings"
 import { type ScrollbarInstance } from "element-plus"
 import type { TreeInstance } from "element-plus"
-import { useShortcut, z, CallBackFn, useDialog, cloneDeep } from "@toolmain/shared"
+import { z, CallBackFn, useDialog, cloneDeep } from "@toolmain/shared"
 import { useEventBus } from "@vueuse/core"
 import PQueue from "p-queue"
 import { ScaleConfig, ScaleInstance } from "@toolmain/components"
 import { useTask } from "@renderer/hooks/useTask"
 import { createChatMessage } from "@windflow/core/message"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 
 const useMenuToggle = () => {
   const toggleBus = useEventBus<boolean>("toggle")
   const settingsStore = useSettingsStore()
-  // toggle show left menu
-  const { data: showTreeMenu } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, null, true)
-  // toggle show right menu
-  const { data: showRightPanel } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, null, false)
-  const shortcut = useShortcut()
-  function toggleTreeMenu(toggle?: boolean) {
-    showTreeMenu.value = toggle ?? !showTreeMenu.value
-    toggleBus.emit(showTreeMenu.value)
-  }
-  function toggleRightPanel(toggle?: boolean) {
-    showRightPanel.value = toggle ?? !showRightPanel.value
-    toggleBus.emit(showRightPanel.value)
+  function update() {
+    toggleBus.emit()
   }
   function watchToggle(callback: CallBackFn) {
     toggleBus.on(callback)
@@ -34,27 +25,29 @@ const useMenuToggle = () => {
   function unWatchToggle(callback: CallBackFn) {
     toggleBus.off(callback)
   }
-  const { key: sidebarToggleShortcut } = shortcut.listen("", res => {
-    res && toggleTreeMenu()
+  // toggle show left menu
+  const { data: showTreeMenu } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatToggleMenu, null, true, update)
+  // toggle show right menu
+  const { data: showRightPanel } = settingsStore.dataWatcher<boolean>(SettingKeys.ChatTogglePanel, null, false, update)
+  useShortcutBind(SettingKeys.SidebarToggleShortcut, res => {
+    if (!res) return
+    showTreeMenu.value = !showTreeMenu.value
+    update()
   })
-  const { key: rightSidebarToggleShortcut } = shortcut.listen("", res => {
-    res && toggleRightPanel()
+  useShortcutBind(SettingKeys.ChatRightPanelToggleShortcut, res => {
+    if (!res) return
+    showRightPanel.value = !showRightPanel.value
+    update()
   })
-  settingsStore.dataBind(SettingKeys.SidebarToggleShortcut, sidebarToggleShortcut)
-  settingsStore.dataBind(SettingKeys.ChatRightPanelToggleShortcut, rightSidebarToggleShortcut)
   onBeforeUnmount(() => {
     toggleBus.reset()
   })
   return {
     showTreeMenu,
     showRightPanel,
-    toggleTreeMenu,
-    toggleRightPanel,
     watchToggle,
     unWatchToggle,
-    emitToggle: (toggle?: boolean) => {
-      toggleBus.emit(toggle)
-    },
+    update,
   }
 }
 export const useMessageEdit = () => {

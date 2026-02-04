@@ -6,18 +6,17 @@ import Content from "./components/content/index.vue"
 import RightPanel from "./components/rightPanel/index.vue"
 import { DialogPanel } from "@toolmain/components"
 import { ChatTopicTree, SettingKeys } from "@windflow/core/types"
-import useSettingsStore from "@renderer/store/settings"
+import SidebarToggle from "@renderer/components/SidebarToggle/index.vue"
 import { useMsgContext } from "../../index"
-import { isString, toNumber, useShortcut } from "@toolmain/shared"
+import { isString, toNumber } from "@toolmain/shared"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const props = defineProps<{
   topic?: ChatTopicTree
   context: ReturnType<typeof useMsgContext>
 }>()
-const settingsStore = useSettingsStore()
-const shortcut = useShortcut()
 const chatStore = useChatStore()
 const contentLayout = useTemplateRef<InstanceType<typeof ContentLayout>>("contentLayout")
-const { showRightPanel, toggleRightPanel } = props.context.menuToggle
+const { showRightPanel } = props.context.menuToggle
 const { props: dlgProps, event: dlgEvent, cachedMessage, onCancel, onConfirm } = props.context.messageDialog
 const { t } = useI18n()
 const minHandlerHeight = ref(50)
@@ -51,11 +50,10 @@ watch(
   },
   { immediate: true }
 )
-const { key: simpleShortcut } = shortcut.listen("", (active: boolean) => {
+useShortcutBind(SettingKeys.ChatInputSimpleModeShortcut, (active: boolean) => {
   if (!active) return
   handler.onToggleSimpleInput()
 })
-settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
 </script>
 <template>
   <div class="message-container">
@@ -92,13 +90,7 @@ settingsStore.dataBind(SettingKeys.ChatInputSimpleModeShortcut, simpleShortcut)
             <div class="flex items-center gap1rem">
               <slot name="leftHandler"></slot>
             </div>
-            <div class="flex items-center gap1rem">
-              <ContentBox @click="_ => toggleRightPanel()">
-                <i-material-symbols-right-panel-close-outline
-                  v-if="!showRightPanel"></i-material-symbols-right-panel-close-outline>
-                <i-material-symbols-left-panel-close-outline v-else></i-material-symbols-left-panel-close-outline>
-              </ContentBox>
-            </div>
+            <SidebarToggle v-model="showRightPanel" position="right"></SidebarToggle>
           </div>
         </el-card>
       </template>
