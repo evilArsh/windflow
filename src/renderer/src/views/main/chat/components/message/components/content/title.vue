@@ -6,7 +6,6 @@ import { Role } from "@windflow/core/types"
 const props = defineProps<{
   message: ChatMessageTree
   hideToken?: boolean
-  hideLogo?: boolean
   hideTime?: boolean
   hideProvider?: boolean
   hideModel?: boolean
@@ -15,15 +14,9 @@ const props = defineProps<{
 const modelsStore = useModelsStore()
 const message = computed(() => props.message.node)
 const isUser = computed(() => message.value.content.role === Role.User)
-const svgSrc = computed(() =>
-  modelsStore.getModelLogo(message.value.modelId ? modelsStore.find(message.value.modelId) : undefined)
-)
 </script>
 <template>
   <div class="chat-item-header" :class="{ reverse }">
-    <ContentBox v-if="!hideLogo" class="m0! flex-shrink-0">
-      <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
-    </ContentBox>
     <div class="chat-item-title" :class="{ reverse }">
       <div v-if="!isUser" class="flex items-center gap-0.5rem flex-wrap">
         <el-text v-if="!hideProvider" class="name">
@@ -52,15 +45,14 @@ const svgSrc = computed(() =>
 <style lang="scss" scoped>
 .chat-item-header {
   flex-wrap: wrap;
-  // background-color: var(--el-card-bg-color);
-  border-radius: 0 1rem 1rem 0;
-  padding: 0.25rem 0.5rem;
+  border-radius: 0 var(--ai-gap-medium) var(--ai-gap-medium) 0;
+  padding: var(--ai-gap-base) var(--ai-gap-medium);
   display: flex;
   align-items: center;
   gap: var(--ai-gap-base);
   &.reverse {
     flex-direction: row-reverse;
-    border-radius: 1rem 0 0 1rem;
+    border-radius: var(--ai-gap-medium) 0 0 var(--ai-gap-medium);
   }
 }
 .chat-item-title {

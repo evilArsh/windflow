@@ -16,8 +16,8 @@ const props = defineProps<{
 const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
 </script>
 <template>
-  <div v-if="messages" class="flex flex-col-reverse p[var(--ai-gap-large)] gap[var(--ai-gap-extre-large)]">
-    <div v-for="message in messages" :key="message.id">
+  <div v-if="messages" class="flex flex-col-reverse p[var(--ai-gap-medium)] gap[var(--ai-gap-extre-large)]">
+    <div v-for="message in messages" class="flex flex-col" :key="message.id">
       <Divider v-if="message.node.contextFlag === ChatMessageContextFlag.BOUNDARY" :topic :message></Divider>
       <Multiple v-else-if="message.children?.length" :topic :context :message></Multiple>
       <Single v-else :topic :message :context header></Single>

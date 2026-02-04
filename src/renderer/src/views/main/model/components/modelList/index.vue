@@ -48,7 +48,7 @@ const { beforeActiveChange } = useModelHelper()
 
 const tableProps = shallowReactive<CombineTableProps>({
   stripe: true,
-  border: true,
+  border: false,
   highlightCurrentRow: true,
   context: undefined,
   height: "100%",
@@ -264,6 +264,5 @@ onMounted(onQuery)
   align-items: center;
   padding: var(--model-setting-padding);
   border-radius: 1rem;
-  gap: var(--ai-gap-large);
 }
 </style>
