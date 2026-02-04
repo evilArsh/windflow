@@ -7,8 +7,8 @@ settings:
 catalogs:
   common:
     '@toolmain/components':
-      specifier: ^1.2.23
-      version: 1.2.23
+      specifier: ^1.2.24
+      version: 1.2.24
     '@toolmain/libs':
       specifier: ^1.1.13
       version: 1.1.13
@@ -466,7 +466,7 @@ importers:
         version: 3.21.0
       '@toolmain/components':
         specifier: catalog:common
-        version: 1.2.23(@types/three@0.180.0)(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(dexie@4.2.1)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.27(typescript@5.9.3)))(three@0.180.0)(unocss@66.6.0(postcss@8.5.6)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
+        version: 1.2.24(@types/three@0.180.0)(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(dexie@4.2.1)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.27(typescript@5.9.3)))(three@0.180.0)(unocss@66.6.0(postcss@8.5.6)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
       '@toolmain/libs':
         specifier: catalog:common
         version: 1.1.13(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
@@ -2369,8 +2369,8 @@ packages:
   '@swc/helpers@0.5.18':
     resolution: {integrity: sha512-TXTnIcNJQEKwThMMqBXsZ4VGAza6bvN4pa41Rkqoio6QBKMvo+5lexeTMScGCIxtzgQJzElcvIltani+adC5PQ==}
 
-  '@sxzz/popperjs-es@2.11.7':
-    resolution: {integrity: sha512-Ccy0NlLkzr0Ex2FKvh2X+OyERHXJ88XJ1MXtsI9y9fGexlaXaVTPzBCRBwIxFkORuOb+uBqeu+RqnpgYTEZRUQ==}
+  '@sxzz/popperjs-es@2.11.8':
+    resolution: {integrity: sha512-wOwESXvvED3S8xBmcPWHs2dUuzrE4XiZeFu7e1hROIJkm02a49N120pmOXxY33sBb6hArItm5W5tcg1cBtV+HQ==}
 
   '@szmarczak/http-timer@4.0.6':
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
@@ -2383,8 +2383,8 @@ packages:
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
 
-  '@toolmain/components@1.2.23':
-    resolution: {integrity: sha512-blgeJTb2pB9GG6iDyh48uY6fvISbfwgAAs8YXPDQsfZ3U71jA/QeoknRB4hJmh5aIo/F5s6jWm/MFhgbOQnLxg==}
+  '@toolmain/components@1.2.24':
+    resolution: {integrity: sha512-6cCsG7Yv3FXo05lxk7x7I1HEwIglw6suUsSOuN9HZbESqBtje0KbX2cDPm0EWDgG4SQfUkCcUgDdA8XgK/YzZg==}
     peerDependencies:
       '@types/three': ^0.180.0
       '@vueuse/core': ^14.1.0
@@ -4719,7 +4719,7 @@ packages:
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-agent@3.0.0:
     resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}
@@ -5479,6 +5479,9 @@ packages:
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+
+  lodash@4.17.23:
+    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
 
   log-symbols@4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
@@ -7006,8 +7009,8 @@ packages:
   thenify@3.3.1:
     resolution: {integrity: sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==}
 
-  three-mesh-bvh@0.9.7:
-    resolution: {integrity: sha512-EYSJbykeAjhVxwZjuUYq/kelIbqBoV9sbAgvZ+j1xCgZyNYSkr51WDJWS4WIfK2OX6YcjBGoTicX4RoOVQzx0g==}
+  three-mesh-bvh@0.9.8:
+    resolution: {integrity: sha512-YphYvdXEZSXdz6iNdWJo1RB6qvSCRyiXPEVSvNU6xVWbLDOdSrfEIsJOpgFOnefdmVEvZ6M+sY0cjh9gl7MvdA==}
     peerDependencies:
       three: '>= 0.159.0'
 
@@ -9042,7 +9045,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@sxzz/popperjs-es@2.11.7': {}
+  '@sxzz/popperjs-es@2.11.8': {}
 
   '@szmarczak/http-timer@4.0.6':
     dependencies:
@@ -9057,7 +9060,7 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
-  '@toolmain/components@1.2.23(@types/three@0.180.0)(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(dexie@4.2.1)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.27(typescript@5.9.3)))(three@0.180.0)(unocss@66.6.0(postcss@8.5.6)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))':
+  '@toolmain/components@1.2.24(@types/three@0.180.0)(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(dexie@4.2.1)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.27(typescript@5.9.3)))(three@0.180.0)(unocss@66.6.0(postcss@8.5.6)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))':
     dependencies:
       '@toolmain/libs': 1.1.13(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
       '@toolmain/shared': 1.3.4(@vueuse/core@14.1.0(vue@3.5.27(typescript@5.9.3)))(axios@1.13.2)(element-plus@2.13.1(vue@3.5.27(typescript@5.9.3)))(vue-i18n@11.2.8(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
@@ -9067,7 +9070,7 @@ snapshots:
       element-plus: 2.13.1(vue@3.5.27(typescript@5.9.3))
       pinia: 3.0.4(typescript@5.9.3)(vue@3.5.27(typescript@5.9.3))
       three: 0.180.0
-      three-mesh-bvh: 0.9.7(three@0.180.0)
+      three-mesh-bvh: 0.9.8(three@0.180.0)
       unocss: 66.6.0(postcss@8.5.6)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(sass@1.97.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       vue: 3.5.27(typescript@5.9.3)
       vue-router: 4.6.4(vue@3.5.27(typescript@5.9.3))
@@ -11235,7 +11238,7 @@ snapshots:
       '@electron/asar': 3.4.1
       debug: 4.4.3
       fs-extra: 7.0.1
-      lodash: 4.17.21
+      lodash: 4.17.23
       temp: 0.9.4
     optionalDependencies:
       '@electron/windows-sign': 1.2.2
@@ -11255,7 +11258,7 @@ snapshots:
       '@ctrl/tinycolor': 3.6.1
       '@element-plus/icons-vue': 2.3.2(vue@3.5.27(typescript@5.9.3))
       '@floating-ui/dom': 1.7.4
-      '@popperjs/core': '@sxzz/popperjs-es@2.11.7'
+      '@popperjs/core': '@sxzz/popperjs-es@2.11.8'
       '@types/lodash': 4.17.23
       '@types/lodash-es': 4.17.12
       '@vueuse/core': 10.11.1(vue@3.5.27(typescript@5.9.3))
@@ -12846,6 +12849,8 @@ snapshots:
   lodash.upperfirst@4.3.1: {}
 
   lodash@4.17.21: {}
+
+  lodash@4.17.23: {}
 
   log-symbols@4.1.0:
     dependencies:
@@ -14802,7 +14807,7 @@ snapshots:
     dependencies:
       any-promise: 1.3.0
 
-  three-mesh-bvh@0.9.7(three@0.180.0):
+  three-mesh-bvh@0.9.8(three@0.180.0):
     dependencies:
       three: 0.180.0
 
