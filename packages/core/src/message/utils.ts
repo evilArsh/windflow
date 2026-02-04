@@ -36,6 +36,7 @@ export function createChatTopic(initial?: Partial<ChatTopic>): ChatTopic {
     createAt: Date.now(),
     requestCount: 0,
     maxContextLength: 7,
+    inputHeight: 200,
   }
   return merge(dst, initial)
 }
