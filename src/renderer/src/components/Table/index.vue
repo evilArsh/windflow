@@ -42,7 +42,7 @@ const props = withDefaults(
       defaultTableProps({
         highlightCurrentRow: true,
         stripe: true,
-        border: true,
+        border: false,
       }),
   }
 )
@@ -56,7 +56,7 @@ const currentPage = computed({
 })
 </script>
 <template>
-  <DialogPanel class="custom-table">
+  <DialogPanel class="custom-table" style="--dialog-scroll-view-padding: 0">
     <template #default>
       <el-table
         :empty-text="t('tip.noContent')"
@@ -94,7 +94,6 @@ const currentPage = computed({
 </template>
 <style lang="scss" scoped>
 .custom-table {
-  --dialog-scroll-view-padding: var(--ai-gap-small);
   --el-card-border-color: transparent;
   width: 100%;
   height: 100%;

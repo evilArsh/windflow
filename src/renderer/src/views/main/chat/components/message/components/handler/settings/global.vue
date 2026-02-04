@@ -109,7 +109,7 @@ const { data: chatRightSidebarToggle } = settingsStore.dataWatcher<string>(
         </el-option>
       </el-select>
     </Item>
-    <Item :title="t('chat.settings.toggleSidebarShortcut')" icon-class="i-material-symbols-right-panel-close-outline">
+    <Item :title="t('chat.settings.toggleSidebarShortcut')" icon-class="i-material-symbols-left-panel-close-outline">
       <el-select class="w-20rem!" v-model="sidebarToggle" :teleported="false">
         <el-option v-for="item in sidebarToggleList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
@@ -118,7 +118,7 @@ const { data: chatRightSidebarToggle } = settingsStore.dataWatcher<string>(
     </Item>
     <Item
       :title="t('chat.settings.chatRightPanelToggleShortcut')"
-      icon-class="i-material-symbols-left-panel-close-outline">
+      icon-class="i-material-symbols-right-panel-close-outline">
       <el-select class="w-20rem!" v-model="chatRightSidebarToggle" :teleported="false">
         <el-option v-for="item in chatRightPanelToggleList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
