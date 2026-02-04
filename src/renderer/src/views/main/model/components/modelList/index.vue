@@ -148,7 +148,7 @@ onMounted(onQuery)
       <Detail :model="tempMeta" @close="ev.onCloseModelConfig" @confirm="ev.onModelChange"></Detail>
     </el-dialog>
     <div class="model-setting">
-      <DialogPanel class="w-full h-auto grow-0! shrink! basis-auto!">
+      <DialogPanel style="--el-card-border-color: transparent" class="w-full h-auto grow-0! shrink! basis-auto!">
         <el-collapse v-model="collapseNames" expand-icon-position="left">
           <el-collapse-item :title="t('provider.apiInfo')" name="1">
             <el-form :model="provider" label-width="10rem" class="w-full">
@@ -214,7 +214,6 @@ onMounted(onQuery)
         v-model:page-size="pageSize"
         @change="onList"
         :table-props="tableProps">
-        <template #header> </template>
         <el-table-column width="100" :label="t('provider.model.action')" align="center">
           <template #default="{ row }">
             <el-button size="small" @click="ev.onOpenModelConfig(row)" link type="primary">
@@ -257,8 +256,7 @@ onMounted(onQuery)
 </template>
 <style lang="scss" scoped>
 .model-setting {
-  --model-setting-padding: 1rem;
-
+  --model-setting-padding: 0;
   flex: 1;
   overflow: hidden;
   display: flex;

@@ -8,8 +8,7 @@ import ModelList from "./components/modelList/index.vue"
 import { ProviderMeta, SettingKeys } from "@windflow/core/types"
 import { ElEmpty } from "element-plus"
 import Handler from "./components/handler.vue"
-import { useShortcut } from "@toolmain/shared"
-const shortcut = useShortcut()
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const providerStore = useProviderStore()
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
@@ -27,7 +26,6 @@ const useConfigComponent = () => {
   }
 }
 const { getComponent } = useConfigComponent()
-
 const currentProvider = ref<ProviderMeta>()
 const { data: currentProviderName } = settingsStore.dataWatcher<string>(
   SettingKeys.ProviderCurrentSettingActive,
@@ -46,13 +44,10 @@ const ev = {
   onCardClick(name: string) {
     currentProviderName.value = name
   },
-  toggleNav(_?: MouseEvent) {
-    showSubNav.value = !showSubNav.value
-  },
 }
-
-shortcut.listen("ctrl+b", res => {
-  res && ev.toggleNav()
+useShortcutBind(SettingKeys.SidebarToggleShortcut, res => {
+  if (!res) return
+  showSubNav.value = !showSubNav.value
 })
 </script>
 <template>
@@ -64,16 +59,11 @@ shortcut.listen("ctrl+b", res => {
             <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("model.title") }}</el-text>
               <template #end>
-                <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
-                  <ContentBox @click="ev.toggleNav">
-                    <i-material-symbols-right-panel-close-outline
-                      class="text-1.6rem"
-                      v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
-                    <i-material-symbols-left-panel-close-outline
-                      class="text-1.6rem"
-                      v-else></i-material-symbols-left-panel-close-outline>
-                  </ContentBox>
-                </teleport>
+                <SidebarToggle
+                  v-model="showSubNav"
+                  to="#mainContentHeaderSlot"
+                  defer
+                  :disabled="showSubNav"></SidebarToggle>
               </template>
               <template #footer>
                 <el-text type="info">{{ t("model.subTitle") }}</el-text>
