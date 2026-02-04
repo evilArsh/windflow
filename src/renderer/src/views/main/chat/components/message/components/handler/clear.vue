@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { ChatMessageContextFlag, ChatMessageTree, ChatTopic } from "@windflow/core/types"
-import { errorToText, isArrayLength, useShortcut } from "@toolmain/shared"
+import { ChatMessageContextFlag, ChatMessageTree, ChatTopic, SettingKeys } from "@windflow/core/types"
+import { errorToText, isArrayLength } from "@toolmain/shared"
 import { ElMessageBox } from "element-plus"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import { createChatMessage } from "@windflow/core/message"
 import { msg } from "@renderer/utils"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const props = defineProps<{
   topic: ChatTopic
 }>()
@@ -17,7 +18,6 @@ const { chatMessage } = storeToRefs(chatStore)
 const topic = computed(() => props.topic)
 const messages = computed<ChatMessageTree[] | undefined>(() => chatMessage.value[props.topic.id])
 
-const shortcut = useShortcut()
 const { t } = useI18n()
 const handler = {
   openTip: async (msg: string) => {
@@ -67,8 +67,14 @@ const handler = {
     }
   },
 }
-const { key: cleanMessageKey, trigger: triggerCleanMessage } = shortcut.listen("ctrl+l", handler.cleanMessage)
-const { key: cleanContextKey, trigger: triggerCleanContext } = shortcut.listen("ctrl+k", handler.cleanContext)
+const { key: cleanMessageKey, trigger: triggerCleanMessage } = useShortcutBind(
+  SettingKeys.ChatCleanMessage,
+  handler.cleanMessage
+)
+const { key: cleanContextKey, trigger: triggerCleanContext } = useShortcutBind(
+  SettingKeys.ChatCleanContext,
+  handler.cleanContext
+)
 </script>
 <template>
   <ContentBox
@@ -82,12 +88,12 @@ const { key: cleanContextKey, trigger: triggerCleanContext } = shortcut.listen("
     normal>
     <div class="flex-center gap[--ai-gap-base]">
       <ContentBox background @click="triggerCleanMessage">
-        <el-tooltip placement="top" :content="t('chat.cleanMessage', { shortcut: cleanMessageKey })">
+        <el-tooltip placement="top" :content="t('chat.cleanMessage', { shortcut: `(${cleanMessageKey})` })">
           <i-icon-park-outline-delete class="text-1.4rem"></i-icon-park-outline-delete>
         </el-tooltip>
       </ContentBox>
       <ContentBox background @click="triggerCleanContext">
-        <el-tooltip placement="top" :content="t('chat.cleanContext', { shortcut: cleanContextKey })">
+        <el-tooltip placement="top" :content="t('chat.cleanContext', { shortcut: `(${cleanContextKey})` })">
           <i-icon-park-outline-clear-format class="text-1.4rem"></i-icon-park-outline-clear-format>
         </el-tooltip>
       </ContentBox>

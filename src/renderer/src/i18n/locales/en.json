@@ -30,8 +30,8 @@
   "chat": {
     "addChat": "New Chat",
     "addFailed": "Add Failed",
-    "cleanContext": "Clear Context({shortcut})",
-    "cleanMessage": "Clear Chat({shortcut})",
+    "cleanContext": "Clear Context{shortcut}",
+    "cleanMessage": "Clear Chat{shortcut}",
     "context": "Chat Context",
     "contextDivider": "Context Cleared",
     "defaultPrompt": "You are a helpful AI assistant",

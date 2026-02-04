@@ -14,6 +14,8 @@ const sendShortcutList = shallowRef([
   { label: "ctrl + enter", value: "ctrl+enter" },
   { label: "shift + enter", value: "shift+enter" },
 ])
+const cleanMessageList = shallowRef([{ label: "ctrl + l", value: "ctrl+l" }])
+const cleanContextList = shallowRef([{ label: "ctrl + k", value: "ctrl+k" }])
 const simpleModeShortcutList = shallowRef([{ label: "ctrl + ↓", value: "ctrl+arrowDown" }])
 const newChatList = shallowRef([{ label: "ctrl + n", value: "ctrl+n" }])
 const newSubChatList = shallowRef([{ label: "ctrl + shift + n", value: "ctrl+shift+n" }])
@@ -30,6 +32,16 @@ const { data: sendShortcut } = settingsStore.dataWatcher<string>(
   SettingKeys.ChatSendShortcut,
   null,
   sendShortcutList.value[0].value
+)
+const { data: cleanMessage } = settingsStore.dataWatcher<string>(
+  SettingKeys.ChatCleanMessage,
+  null,
+  cleanMessageList.value[0].value
+)
+const { data: cleanContext } = settingsStore.dataWatcher<string>(
+  SettingKeys.ChatCleanContext,
+  null,
+  cleanContextList.value[0].value
 )
 const { data: simpleModeShortcut } = settingsStore.dataWatcher<string>(
   SettingKeys.ChatInputSimpleModeShortcut,
@@ -58,6 +70,20 @@ const { data: chatRightSidebarToggle } = settingsStore.dataWatcher<string>(
     <Item :title="t('chat.settings.sendShortcut')" icon-class="i-ic-baseline-send">
       <el-select class="w-20rem!" v-model="sendShortcut" :teleported="false">
         <el-option v-for="item in sendShortcutList" :key="item.value" :label="item.label" :value="item.value">
+          {{ item.label }}
+        </el-option>
+      </el-select>
+    </Item>
+    <Item :title="t('chat.cleanMessage')" icon-class="i-icon-park-outline-delete">
+      <el-select class="w-20rem!" v-model="cleanMessage" :teleported="false">
+        <el-option v-for="item in cleanMessageList" :key="item.value" :label="item.label" :value="item.value">
+          {{ item.label }}
+        </el-option>
+      </el-select>
+    </Item>
+    <Item :title="t('chat.cleanContext')" icon-class="i-icon-park-outline-clear-format">
+      <el-select class="w-20rem!" v-model="cleanContext" :teleported="false">
+        <el-option v-for="item in cleanContextList" :key="item.value" :label="item.label" :value="item.value">
           {{ item.label }}
         </el-option>
       </el-select>

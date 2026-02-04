@@ -11,7 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   resizeChange: []
 }>()
-const { emitToggle } = props.context.menuToggle
+const { update } = props.context.menuToggle
 const { t } = useI18n()
 const resizeStyle = ref<CSSProperties>({
   width: px(300),
@@ -20,12 +20,7 @@ const tab = ref("knowledge")
 </script>
 <template>
   <div :style="resizeStyle" class="right-panel">
-    <Resize
-      v-model="resizeStyle"
-      @scaling="emitToggle"
-      @after-scale="emit('resizeChange')"
-      size="8px"
-      direction="left" />
+    <Resize v-model="resizeStyle" @scaling="update" @after-scale="emit('resizeChange')" size="8px" direction="left" />
     <div v-if="topic" class="flex flex-col flex-1 gap-1rem">
       <Prompt :topic></Prompt>
       <el-tabs class="chat-config-tabs" v-model="tab">

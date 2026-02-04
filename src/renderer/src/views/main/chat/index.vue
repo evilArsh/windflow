@@ -10,6 +10,7 @@ import { useMenuContext, useMsgContext } from "./index"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { CallBackFn } from "@toolmain/shared"
 import { ScaleInstance, Spinner, ScalePanel } from "@toolmain/components"
+import SidebarToggle from "@renderer/components/SidebarToggle/index.vue"
 const { t } = useI18n()
 const chatStore = useChatStore()
 const { topicList } = storeToRefs(chatStore)
@@ -33,7 +34,7 @@ const {
   currentHover,
 } = useMenuContext(scaleRef, scrollRef, editTopicRef, menuRef, treeRef)
 const msgContext = useMsgContext()
-const { showTreeMenu, toggleTreeMenu, emitToggle } = msgContext.menuToggle
+const { showTreeMenu, update } = msgContext.menuToggle
 async function onCreateNewTopic(done: CallBackFn) {
   await tree.createNewTopic()
   done()
@@ -46,7 +47,7 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!showTreeMenu" @scaling="emitToggle">
+  <SubNavLayout :id="SettingKeys.ChatSubNav" :hide-submenu="!showTreeMenu" @scaling="update">
     <template #submenu>
       <div class="flex flex-col gap.5rem overflow-hidden">
         <div class="chat-provider-header">
@@ -56,13 +57,7 @@ onBeforeUnmount(() => {
               @update:model-value="tree.onSearchKeywordChange"
               :placeholder="t('chat.search')"
               clearable />
-            <teleport to="#toggleMenu" defer :disabled="showTreeMenu">
-              <ContentBox @click="_ => toggleTreeMenu()">
-                <i-material-symbols-left-panel-close-outline
-                  v-if="showTreeMenu"></i-material-symbols-left-panel-close-outline>
-                <i-material-symbols-right-panel-close-outline v-else></i-material-symbols-right-panel-close-outline>
-              </ContentBox>
-            </teleport>
+            <SidebarToggle v-model="showTreeMenu" to="#toggleMenu" defer :disabled="showTreeMenu"></SidebarToggle>
           </div>
           <Button @click="onCreateNewTopic">
             <i class="text-1.4rem i-ep-plus"></i>

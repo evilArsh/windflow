@@ -5,12 +5,12 @@ import IBook from "~icons/material-symbols/book-4"
 import IBookmark from "~icons/material-symbols/bookmark-stacks"
 import { type Component } from "vue"
 import { SettingKeys } from "@windflow/core/types"
-import { useI18nWatch, useShortcut } from "@toolmain/shared"
+import { useI18nWatch } from "@toolmain/shared"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const { t } = useI18n()
 
 const settingsStore = useSettingsStore()
 
-const shortcut = useShortcut()
 const router = useRouter()
 const route = useRoute()
 const menus = shallowRef<{ icon: Component; title: string; path: string }[]>([])
@@ -23,7 +23,6 @@ const { data: currentRoute } = settingsStore.dataWatcher<string>(
   }
 )
 const { data: showSubNav } = settingsStore.dataWatcher<boolean>(SettingKeys.KnowledgeToggleSubNav, null, true)
-
 const routes = {
   toPath: (path: string) => {
     currentRoute.value = path
@@ -35,13 +34,9 @@ useI18nWatch(() => {
     { icon: IBookmark, title: t("knowledge.menu.embeddingList"), path: "/main/knowledge/embedding" },
   ]
 })
-const ev = {
-  toggleNav(_?: MouseEvent) {
-    showSubNav.value = !showSubNav.value
-  },
-}
-shortcut.listen("ctrl+b", res => {
-  res && ev.toggleNav()
+useShortcutBind(SettingKeys.SidebarToggleShortcut, res => {
+  if (!res) return
+  showSubNav.value = !showSubNav.value
 })
 router.afterEach(to => {
   menus.value.find(m => m.path == to.path) && routes.toPath(to.path)
@@ -56,16 +51,11 @@ router.afterEach(to => {
             <ContentBox normal>
               <el-text class="text-2.6rem! font-600">{{ t("knowledge.title") }}</el-text>
               <template #end>
-                <teleport to="#mainContentHeaderSlot" defer :disabled="showSubNav">
-                  <ContentBox @click="ev.toggleNav">
-                    <i-material-symbols-right-panel-close-outline
-                      class="text-1.6rem"
-                      v-if="!showSubNav"></i-material-symbols-right-panel-close-outline>
-                    <i-material-symbols-left-panel-close-outline
-                      class="text-1.6rem"
-                      v-else></i-material-symbols-left-panel-close-outline>
-                  </ContentBox>
-                </teleport>
+                <SidebarToggle
+                  v-model="showSubNav"
+                  to="#mainContentHeaderSlot"
+                  defer
+                  :disabled="showSubNav"></SidebarToggle>
               </template>
               <template #footer>
                 <el-text type="info">{{ t("knowledge.subTitle") }}</el-text>

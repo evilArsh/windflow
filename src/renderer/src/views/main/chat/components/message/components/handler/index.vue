@@ -7,12 +7,12 @@ import KnowledgeBase from "./kb.vue"
 import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
 import useChatStore from "@renderer/store/chat"
-import useSettingsStore from "@renderer/store/settings"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
-import { errorToText, isFunction, useShortcut } from "@toolmain/shared"
+import { errorToText, isFunction } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
 import { useThrottleFn } from "@vueuse/core"
+import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []
@@ -23,9 +23,7 @@ const props = defineProps<{
   topic: ChatTopic
 }>()
 const topic = computed(() => props.topic)
-const settingsStore = useSettingsStore()
 const { t } = useI18n()
-const shortcut = useShortcut()
 const chatStore = useChatStore()
 const handler = {
   onSend: async (active: boolean, _key: string, done?: unknown) => {
@@ -61,13 +59,12 @@ const {
   key: sendShortcut,
   trigger: triggerSend,
   taskPending,
-} = shortcut.listen("", handler.onSend, {
+} = useShortcutBind(SettingKeys.ChatSendShortcut, handler.onSend, {
   beforeTrigger: e => {
     const tname = (e.target as HTMLElement).tagName.toLowerCase()
     return !taskPending.value && (tname === "textarea" || tname === "input")
   },
 })
-settingsStore.dataBind(SettingKeys.ChatSendShortcut, sendShortcut)
 </script>
 <template>
   <div class="chat-input-container">
