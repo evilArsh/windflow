@@ -86,6 +86,9 @@
     "settings": {
       "ChatListDisplayStyle": "Chat Display Style",
       "chatDebugger": "Chat Debugger",
+      "chatPanelAuto": "Auto",
+      "chatPanelCustom": "custom",
+      "chatPanelWidth": "Chat Panel Width",
       "chatRightPanelToggleShortcut": "Chat Right Panel Toggle",
       "forcePlaintext": "Render user  message as Markdown",
       "inputSimpleShortcut": "Simple Input",

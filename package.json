@@ -1,6 +1,6 @@
 {
   "name": "windflow",
-  "version": "0.7.12",
+  "version": "0.7.13",
   "description": "Power your automated workflows with multiple AI providers",
   "main": "./out/main/index.js",
   "author": "windflow <arshdebian@163.com>",
