@@ -70,26 +70,30 @@ async function onEdit(done: CallBackFn) {
     done()
   }
 }
-const onUpdateAffix = () => {
-  nextTick(() => {
-    affixRef.value?.update()
-    affixIconRef.value?.update()
-  })
-}
-const onMarkdownFinish = useThrottleFn(onUpdateAffix, 200, true, true)
+const onUpdateAffix = useThrottleFn(
+  () => {
+    nextTick(() => {
+      affixRef.value?.update()
+      affixIconRef.value?.update()
+    })
+  },
+  200,
+  true,
+  true
+)
+settingsStore.dataListen<string>(SettingKeys.ChatPanelWidth, onUpdateAffix)
 onMounted(() => {
   props.context.menuToggle.watchToggle(onUpdateAffix)
 })
 onBeforeUnmount(() => {
   props.context.menuToggle.unWatchToggle(onUpdateAffix)
 })
-
 defineExpose({
   update: onUpdateAffix,
 })
 </script>
 <template>
-  <MsgBubble class="chat-item-container" :class="{ reverse }" :reverse :id>
+  <MsgBubble class="chat-item-container" :reverse :id>
     <template v-if="svgSrc" #icon>
       <Affix ref="affixIcon" :offset="88" :target="`#${id}`">
         <ContentBox class="m0! flex-shrink-0">
@@ -115,14 +119,14 @@ defineExpose({
         v-else
         :content="message.node.content.content"
         :force-plaintext="!!forcePlaintext"
-        @updated="onMarkdownFinish"></Markdown>
+        @updated="onUpdateAffix"></Markdown>
     </div>
     <div v-else class="chat-item-content p[var(--ai-gap-medium)]">
       <Image v-if="isImage" :message :parent></Image>
       <div v-else-if="isText" class="chat-item-content">
         <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.node.finish"></Thinking>
-          <Markdown v-if="isString(child.content)" :content="child.content" @updated="onMarkdownFinish" />
+          <Markdown v-if="isString(child.content)" :content="child.content" @updated="onUpdateAffix" />
           <MCPCall :message="child"></MCPCall>
         </div>
         <Error :message></Error>
@@ -133,19 +137,15 @@ defineExpose({
 </template>
 <style lang="scss" scoped>
 .chat-item-container {
-  &.reverse {
-    align-self: flex-end;
-  }
-}
-.chat-item-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  font-size: 1.4rem;
-  flex-direction: column;
-  gap: var(--ai-gap-base);
-  &.reverse {
-    justify-content: flex-end;
+  .chat-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    font-size: 1.4rem;
+    gap: var(--ai-gap-base);
+    &.reverse {
+      justify-content: flex-end;
+    }
   }
 }
 </style>

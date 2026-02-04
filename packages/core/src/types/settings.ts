@@ -78,6 +78,10 @@ export enum SettingKeys {
    */
   ChatDebugger = "chat.debugger",
   /**
+   * 聊天对话列表宽度
+   */
+  ChatPanelWidth = "chat.panelWidth",
+  /**
    * mcp子菜单宽度配置
    */
   MCPSubNav = "mcp.subNav",
@@ -155,4 +159,9 @@ export type Settings<T extends SettingsValue> = {
 export enum ChatListDisplayStyle {
   Chat = "chat",
   List = "list",
+}
+
+export enum ChatPanelWidthStyle {
+  Auto = "auto",
+  Custom = "custom",
 }

@@ -28,8 +28,10 @@ defineProps<{
   display: inline-flex;
   align-items: flex-start;
   gap: var(--ai-gap-base);
+  align-self: flex-start;
   &.reverse {
     flex-direction: row-reverse;
+    align-self: flex-end;
   }
   .msg-bubble-icon {
     display: inline-flex;

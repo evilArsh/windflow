@@ -135,6 +135,19 @@ export default defineStore("settings", () => {
       data: bindValue,
     }
   }
+  /**
+   * listen settings data change
+   */
+  function dataListen<T extends SettingsValue>(id: SettingKeys, callBack: (data?: T, old?: T) => void) {
+    const watcher = watch(
+      () => settings[id],
+      (val, old) => {
+        callBack(val?.value as T, old?.value as T)
+      },
+      { deep: true, immediate: true }
+    )
+    onBeforeUnmount(watcher.stop)
+  }
   async function init() {
     // need pre-load data rather than loading when using, because of possibly UI rendering lag
     const data = await storage.settings.fetch()
@@ -147,6 +160,7 @@ export default defineStore("settings", () => {
     init,
     dataWatcher,
     dataBind,
+    dataListen,
     get,
     settings,
     update,

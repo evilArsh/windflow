@@ -86,6 +86,9 @@
     "settings": {
       "ChatListDisplayStyle": "对话展示风格",
       "chatDebugger": "消息调试",
+      "chatPanelAuto": "自动",
+      "chatPanelCustom": "自定义",
+      "chatPanelWidth": "对话列表宽度",
       "chatRightPanelToggleShortcut": "聊天右侧边栏显隐",
       "forcePlaintext": "用户消息渲染成Markdown",
       "inputSimpleShortcut": "简易聊天框",
