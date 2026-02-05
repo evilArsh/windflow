@@ -95,7 +95,11 @@ defineExpose({
 <template>
   <MsgBubble class="chat-item-container" :reverse :id>
     <template v-if="svgSrc" #icon>
-      <Affix ref="affixIcon" :offset="88" :target="`#${id}`">
+      <Affix
+        style="--affix-fix-shadow: none; --affix-fix-bg-color: var(--el-bg-color)"
+        ref="affixIcon"
+        :offset="88"
+        :target="`#${id}`">
         <ContentBox class="m0! flex-shrink-0">
           <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
         </ContentBox>
