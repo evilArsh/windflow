@@ -141,6 +141,10 @@ export enum SettingKeys {
    * 侧边栏显隐快捷键
    */
   SidebarToggleShortcut = "sidebar.toggleShortcut",
+  /**
+   * 自动更新
+   */
+  AutoUpdate = "autoUpdate",
 }
 
 export type SettingsValue = Primitive | Array<Primitive> | { [key: string]: SettingsValue }

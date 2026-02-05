@@ -49,6 +49,12 @@ export const IpcChannel = {
 
   AutoUpdateCheckUpdate: "autoUpdate.checkUpdate",
   AutoUpdateQuitAndInstall: "autoUpdate.quitAndInstall",
+  AutoUpdateGetCurrentVersion: "autoUpdate.getCurrentVersion",
+  AutoUpdateSetAutoDownload: "autoUpdate.setAutoDownload",
+  AutoUpdateGetAutoDownload: "autoUpdate.getAutoDownload",
+  AutoUpdateManualDownload: "autoUpdate.manualDownload",
+  AutoUpdateCancelDownload: "autoUpdate.cancelDownload",
+  AutoUpdateDownloadTerminable: "autoUpdate.downloadTerminable",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -128,5 +134,14 @@ export interface RAGService {
 
 export interface AutoUpdateService {
   checkUpdate: (feedUrl?: string) => Promise<void>
-  quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => void
+  quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => Promise<void>
+  getCurrentVersion: () => Promise<string>
+  setAutoDownload: (autoDownload: boolean) => Promise<void>
+  getAutoDownload: () => Promise<boolean>
+  manualDownload: () => Promise<string[]>
+  cancelDownload: () => Promise<boolean>
+  /**
+   * auto update mode is always false
+   */
+  downloadTerminable: () => Promise<boolean>
 }

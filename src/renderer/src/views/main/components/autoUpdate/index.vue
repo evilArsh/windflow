@@ -1,68 +1,34 @@
 <script setup lang="ts">
 import { useDialog } from "@toolmain/shared"
 import { useIntervalFn } from "@vueuse/core"
-import { AutoUpdateAvailable, AutoUpdateDownloadProgress, AutoUpdateStatusEvent, EventKey } from "@windflow/shared"
 import { DialogPanel } from "@toolmain/components"
+import { EventKey } from "@windflow/shared"
+import { useUpdate } from "./update"
+import { filesize } from "filesize"
 const { t } = useI18n()
 
-const info = ref<AutoUpdateAvailable>({
-  type: "UpdateNotAvailable",
-  version: "",
-  releaseDate: "",
-  releaseName: "",
-  releaseNotes: "",
-})
-const progress = ref<AutoUpdateDownloadProgress>({
-  type: "DownloadProgress",
-  total: 0,
-  delta: 0,
-  transferred: 0,
-  percent: 0,
-  bytesPerSecond: 0,
-})
+const {
+  info,
+  progress,
+  downloaded,
+  downloading,
+  available,
+  currentVersion,
+  isAutoDownload,
+  isChecking,
+  checkErrorMsg,
+  downloadTerminable,
+  ...ev
+} = useUpdate()
 const { props, event, close, open } = useDialog({
-  width: "40vw",
+  width: "50vw",
   showClose: false,
 })
-const downloaded = computed(() => progress.value.percent == 100)
-const downloading = computed(() => progress.value.percent > 0 && progress.value.percent < 100)
-const available = ref(false)
-
-const ev = {
-  onCheckUpdate() {
-    if (!window.api.autoUpdate.checkUpdate) return
-    window.api.autoUpdate.checkUpdate()
-  },
-  onOpenDetail() {
-    open()
-  },
-  onUpdateEvent(data: AutoUpdateStatusEvent) {
-    // console.log("[updateEvent]", data)
-    switch (data.type) {
-      case "UpdateAvailable":
-        Object.assign(info.value, data)
-        available.value = true
-        break
-      case "UpdateNotAvailable": {
-        available.value = false
-        break
-      }
-      case "UpdateDownloaded": {
-        progress.value.percent = 100
-        pause()
-        break
-      }
-      case "DownloadProgress": {
-        Object.assign(progress.value, data)
-        break
-      }
-    }
-  },
-  onInstall() {
-    window.api?.autoUpdate.quitAndInstall()
-  },
+function onOpenDetail() {
+  ev.getCurrentVersion()
+  open()
 }
-const { pause } = useIntervalFn(ev.onCheckUpdate, 1000 * 60 * 60)
+useIntervalFn(ev.onCheckUpdate, 1000 * 60 * 60)
 onMounted(() => {
   if (!window.api) return
   window.api.bus.on(EventKey.AutoUpdateStatus, ev.onUpdateEvent)
@@ -76,42 +42,81 @@ onBeforeUnmount(() => {
 <template>
   <div class="auto-update">
     <el-dialog v-bind="props" v-on="event" style="--el-dialog-padding-primary: 0">
-      <DialogPanel class="h-50vh w-full">
+      <DialogPanel class="h-60vh w-full">
         <template #header>
           <el-text>
             {{ t("autoUpdate.releaseTitle") }}
           </el-text>
         </template>
         <div class="overflow-hidden w-full h-full flex flex-col gap-1rem">
+          <el-switch
+            size="small"
+            v-model="isAutoDownload"
+            :before-change="ev.onBeforeAutoUpdateChange"
+            :active-text="t('autoUpdate.auto')"></el-switch>
+          <el-alert :closable="false" type="primary">
+            <span v-if="available"> ✨ {{ t("autoUpdate.newVersionAvailable") }} {{ info.version }} </span>
+            <span v-else> 🎉 {{ t("autoUpdate.versionLatest") }} {{ currentVersion }} </span>
+          </el-alert>
+          <el-alert v-if="checkErrorMsg" closable type="error" :title="t('autoUpdate.error')" show-icon>
+            <template #icon>
+              <i class="i-ep-bell"></i>
+            </template>
+            <span>{{ checkErrorMsg }}</span>
+          </el-alert>
           <ContentBox v-if="downloading" class="w-full">
             <el-progress
               class="w-full"
               :percentage="progress.percent"
               :stroke-width="5"
-              :status="progress.percent == 100 ? 'success' : 'warning'"
+              :status="progress.percent == 100 ? 'success' : ''"
               striped
               :show-text="false"
               striped-flow
               :duration="10" />
-            <!-- <template #footer>
-              <el-text type="info" size="small">{{ t("btn.cancel") }}</el-text>
-            </template> -->
           </ContentBox>
+          <div class="flex justify-between gap[var(--ai-gap-base)]">
+            <div>
+              <el-button
+                :loading="isChecking"
+                :disabled="isChecking || downloading"
+                type="success"
+                size="small"
+                @click="ev.onCheckUpdate">
+                {{ t("autoUpdate.checkUpdate") }}
+              </el-button>
+              <Button
+                :disabled="!available || downloading || downloaded || isChecking"
+                type="warning"
+                size="small"
+                @click="ev.onManualDownload">
+                {{ t("autoUpdate.manualDownload") }}
+              </Button>
+              <el-button :disabled="!downloadTerminable" type="danger" size="small" @click="ev.onCancelDownload">
+                {{ t("autoUpdate.cancelDownload") }}
+              </el-button>
+            </div>
+            <div>
+              <el-text v-show="progress.bytesPerSecond" size="small" type="info">
+                {{ filesize(progress.bytesPerSecond) }}/s
+              </el-text>
+            </div>
+          </div>
           <div class="flex-1 overflow-auto" v-html="info.releaseNotes"></div>
         </div>
         <template #footer>
           <div class="flex justify-end">
-            <el-button type="info" plain @click="close">{{ t("btn.close") }}</el-button>
-            <el-button :disabled="!downloaded" type="warning" @click="ev.onInstall">
+            <el-button type="info" plain text @click="close">{{ t("btn.close") }}</el-button>
+            <Button v-if="available" :disabled="!downloaded" type="warning" @click="ev.onInstall">
               {{ t("btn.quitAndInstall") }}
-            </el-button>
+            </Button>
           </div>
         </template>
       </DialogPanel>
     </el-dialog>
     <ContentBox v-if="available" round>
       <el-badge is-dot :offset="[-5, 5]" :hidden="!downloaded" color="var(--el-color-success)">
-        <el-button @click="ev.onOpenDetail" round size="small" plain type="warning">
+        <el-button @click="onOpenDetail" round size="small" plain type="warning">
           <div class="flex flex-col">
             <div class="flex-y-center">
               <i-material-symbols-cloud-download-outline
@@ -124,6 +129,9 @@ onBeforeUnmount(() => {
           </div>
         </el-button>
       </el-badge>
+    </ContentBox>
+    <ContentBox v-else @click="onOpenDetail">
+      <i-ic-outline-update class="text-1.6rem c-[var(--el-text-color-regular)]"></i-ic-outline-update>
     </ContentBox>
   </div>
 </template>

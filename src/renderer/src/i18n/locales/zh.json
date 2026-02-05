@@ -3,8 +3,14 @@
     "name": "AI 助手"
   },
   "autoUpdate": {
+    "auto": "自动更新",
+    "cancelDownload": "取消更新",
+    "checkUpdate": "检查更新",
+    "error": "更新失败，请重试",
+    "manualDownload": "下载更新",
     "newVersionAvailable": "新版本可用",
-    "releaseTitle": "新版本"
+    "releaseTitle": "版本信息",
+    "versionLatest": "已是最新版本"
   },
   "btn": {
     "add": "添加",

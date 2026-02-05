@@ -3,8 +3,14 @@
     "name": "AI Assistant"
   },
   "autoUpdate": {
+    "auto": "AutoUpdate",
+    "cancelDownload": "Cancel Download",
+    "checkUpdate": "Check Update",
+    "error": "Update error, please retry",
+    "manualDownload": "Download",
     "newVersionAvailable": "New Version Available",
-    "releaseTitle": "New Version"
+    "releaseTitle": "New Release Update",
+    "versionLatest": "Already up to date"
   },
   "btn": {
     "add": "Add",
