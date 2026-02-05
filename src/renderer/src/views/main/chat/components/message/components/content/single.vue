@@ -114,7 +114,7 @@ defineExpose({
     </template>
     <div v-if="isUser" class="chat-item-content p[var(--ai-gap-medium)]" :class="{ reverse }">
       <p
-        class="flex flex-col"
+        class="flex flex-col break-all"
         :class="[reverse ? 'items-end' : '']"
         v-if="!forcePlaintext || !isString(message.node.content.content)">
         {{ message.node.content.content }}

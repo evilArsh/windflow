@@ -64,7 +64,18 @@ export type AutoUpdateDownloadProgress = {
   percent: number
   bytesPerSecond: number
 }
-export type AutoUpdateStatusEvent = AutoUpdateAvailable | AutoUpdateDownloadProgress
+export type AutoUpdateChecking = {
+  type: "UpdateChecking"
+}
+export type AutoUpdateError = {
+  type: "UpdateError"
+  msg?: string
+}
+export type AutoUpdateStatusEvent =
+  | AutoUpdateAvailable
+  | AutoUpdateDownloadProgress
+  | AutoUpdateChecking
+  | AutoUpdateError
 // -- AutoUpdate
 
 export enum EventKey {

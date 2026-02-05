@@ -1,9 +1,9 @@
 <template>
-  <el-button v-bind="$attrs" :disabled="disabled" aria-label="ep-button" @click.stop="onClick">
+  <el-button v-bind="$attrs" :disabled="finalDisabled" aria-label="ep-button" @click.stop="onClick">
     <template v-if="$slots.icon" #icon>
       <slot name="icon"></slot>
     </template>
-    <slot v-if="!loading"></slot>
+    <slot v-if="!finalLoading"></slot>
     <el-icon v-else>
       <i class="i-ep-loading loading-icon"></i>
     </el-icon>
@@ -15,18 +15,23 @@ import { ElButton } from "element-plus"
 const emit = defineEmits<(event: "click", done: CallBackFn, e?: MouseEvent) => void>()
 const props = defineProps<{
   normal?: boolean
+  loading?: boolean
+  disabled?: boolean
 }>()
 
-const disabled = ref(false)
-const loading = ref(false)
+const _disabled = ref(false)
+const _loading = ref(false)
+
+const finalDisabled = computed(() => props.disabled || _disabled.value)
+const finalLoading = computed(() => props.loading || _loading.value)
 function done(): void {
-  disabled.value = false
-  loading.value = false
+  _disabled.value = false
+  _loading.value = false
 }
 function onClick(e?: MouseEvent) {
   if (!props.normal) {
-    disabled.value = true
-    loading.value = true
+    _disabled.value = true
+    _loading.value = true
     emit("click", done, e)
     return
   }

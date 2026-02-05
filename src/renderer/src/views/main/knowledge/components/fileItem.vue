@@ -61,6 +61,7 @@ const ev = {
   <el-scrollbar>
     <ContentBox
       v-for="item in filtedFilieList"
+      background
       class="select-unset!"
       :class="[view ? '' : 'mb-1rem!']"
       style="
