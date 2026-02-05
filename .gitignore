@@ -138,3 +138,5 @@ selenium-debug.log
 
 stats.html
 CHANGES.md
+*.proto
+*.bin
