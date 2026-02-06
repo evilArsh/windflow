@@ -81,11 +81,11 @@ const useStatus = () => {
       } else {
         document.documentElement.classList.remove("dark")
       }
+      window.api.theme.setTheme(dark ? Theme.dark : Theme.light)
     }
   )
   function toggleDark() {
     dark.value = !dark.value
-    window.api.theme.setTheme(dark.value ? Theme.dark : Theme.light)
   }
   return { dark, toggleDark }
 }
