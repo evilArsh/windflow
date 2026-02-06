@@ -12,8 +12,8 @@ import {
   Role,
 } from "@windflow/core/types"
 import useModelsStore from "@renderer/store/model"
-import { storage, defaultTTIConfig, defaultLLMConfig, chatTopicDefault, withTransaction } from "@windflow/core/storage"
-import { cloneDeep, code1xx, code2xx, isArray, isArrayLength, uniqueId } from "@toolmain/shared"
+import { storage, defaultTTIConfig, defaultLLMConfig, chatTopicDefault } from "@windflow/core/storage"
+import { cloneDeep, code1xx, code2xx, isArray, uniqueId } from "@toolmain/shared"
 import {
   assembleMessageTree,
   assembleTopicTree,
@@ -220,25 +220,13 @@ export default defineStore("chat_topic", () => {
    * @description 删除一条消息列表的消息
    */
   async function deleteMessage(message: ChatMessageTree) {
-    return withTransaction("rw", ["chatMessage"], async tx => {
-      const all = [message, ...message.children]
-      all.forEach(child => {
-        const msg = unwrapMessage(child)
-        // virtual nodes did not have context, no error occured
-        msgMgr.terminate(msg.topicId, msg.id, true)
-      })
-      if (isArrayLength(message.children)) {
-        await storage.chat.bulkDeleteChatMessage(
-          message.children.map(m => unwrapMessage(m).id),
-          { transaction: tx }
-        )
-      }
-      if (!unwrapMessage(message).id.startsWith(VirtualNodeIdPrefix)) {
-        await storage.chat.deleteChatMessage(unwrapMessage(message).id, { transaction: tx })
-      }
-      removeMessage(message, chatMessage)
-      chatMessageMap.delete(message.id)
-    })
+    const all = [...message.children]
+    if (!unwrapMessage(message).id.startsWith(VirtualNodeIdPrefix)) {
+      all.push(message)
+    }
+    await msgMgr.removeMessages(all.map(unwrapMessage))
+    removeMessage(message, chatMessage)
+    chatMessageMap.delete(message.id)
   }
   async function deleteAllMessage(topic: ChatTopic) {
     const recursiveMove = (node: ChatMessageTree) => {
@@ -271,9 +259,7 @@ export default defineStore("chat_topic", () => {
    * @param append 是否添加到 `topicList` 缓存列表末尾
    */
   async function addChatTopic(topic: ChatTopic, append?: boolean): Promise<ChatTopicTree> {
-    const m = await storage.chat.getMaxIndexTopic(topic.parentId)
-    topic.index = m ? m.index + 1 : 0
-    await storage.chat.addChatTopic(topic)
+    await msgMgr.addChatTopic(topic)
     const treeNode = reactive(topicToTree(topic))
     topicMap.set(treeNode.id, treeNode)
     if (append) {

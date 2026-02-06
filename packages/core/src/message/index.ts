@@ -8,6 +8,7 @@ import {
   ChatContextManager,
   ProviderManager,
   ChatEventResponse,
+  ChatTopic,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
@@ -18,7 +19,7 @@ import { defaultMessage, defaultTTIConfig } from "@windflow/core/storage"
 import { createProviderManager } from "@windflow/core/provider"
 import { storage } from "@windflow/core/storage"
 import { beforeLLMRequest } from "./hooks"
-import { insertNewMessages, saveNewMessages } from "./storage"
+import { addChatTopic, deleteMessages, insertNewMessages, saveNewMessages } from "./storage"
 
 export * from "./utils"
 export class MessageManager {
@@ -338,6 +339,15 @@ export class MessageManager {
     return saveNewMessages(messages)
   }
   /**
+   * batch remove messages
+   */
+  removeMessages(messages: ChatMessage[]): Promise<void> {
+    messages.forEach(msg => {
+      this.terminate(msg.topicId, msg.id, true)
+    })
+    return deleteMessages(messages)
+  }
+  /**
    * insert new messages after `current` message, `messages` must have the same `topicId` as `current`
    */
   insertNewMessages(current: ChatMessage, messages: ChatMessage[]): Promise<void> {
@@ -345,5 +355,11 @@ export class MessageManager {
       throw new Error("all messages must have the same topicId as current")
     }
     return insertNewMessages(current, messages)
+  }
+  /**
+   * add a new topic, `index` value will be automatically modified
+   */
+  addChatTopic(topic: ChatTopic) {
+    return addChatTopic(topic)
   }
 }
