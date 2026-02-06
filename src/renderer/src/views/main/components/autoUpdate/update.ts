@@ -12,9 +12,9 @@ export function useUpdate() {
   const currentVersion = ref("")
 
   const { data: isAutoDownload } = settingsStore.dataWatcher(SettingKeys.AutoUpdate, null, true)
+  const appName = ref("")
   const isChecking = ref(false)
   const downloadTerminable = ref(false)
-
   const checkErrorMsg = ref("")
   const available = ref(false) // update available
 
@@ -41,6 +41,9 @@ export function useUpdate() {
   }
   async function _getDownloadTerminable() {
     downloadTerminable.value = await window.api?.autoUpdate.downloadTerminable()
+  }
+  async function _getAppName() {
+    appName.value = await window.api?.autoUpdate.getName()
   }
   async function getCurrentVersion() {
     const v = await window.api?.autoUpdate.getCurrentVersion()
@@ -120,11 +123,13 @@ export function useUpdate() {
   }
   onMounted(() => {
     _getDownloadTerminable()
+    _getAppName()
     getCurrentVersion()
   })
   return {
     info,
     progress,
+    appName,
     currentVersion,
     downloaded,
     downloading,

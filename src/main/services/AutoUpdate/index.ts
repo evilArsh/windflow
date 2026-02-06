@@ -109,6 +109,9 @@ export class AutoUpdateServiceImpl implements AutoUpdateService, ServiceCore {
   async getCurrentVersion(): Promise<string> {
     return app.getVersion()
   }
+  async getName(): Promise<string> {
+    return app.getName()
+  }
   async downloadTerminable(): Promise<boolean> {
     return this.#downloadToken !== null && !this.#downloadToken.cancelled
   }
@@ -125,6 +128,7 @@ export class AutoUpdateServiceImpl implements AutoUpdateService, ServiceCore {
     ipcMain.handle(IpcChannel.AutoUpdateManualDownload, async _ => this.manualDownload())
     ipcMain.handle(IpcChannel.AutoUpdateCancelDownload, async _ => this.cancelDownload())
     ipcMain.handle(IpcChannel.AutoUpdateDownloadTerminable, async _ => this.downloadTerminable())
+    ipcMain.handle(IpcChannel.AutoUpdateGetName, async _ => this.getName())
   }
   dispose() {
     this.#updateCheckResult?.cancellationToken?.cancel()
