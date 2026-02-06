@@ -23,6 +23,7 @@ const { data: width } = settingsStore.dataBind<string>(SettingKeys.ChatPanelWidt
     v-if="messages"
     :style="{ width }"
     class="flex flex-col-reverse p[var(--ai-gap-medium)] self-center gap[var(--ai-gap-extre-large)]">
+    <el-divider style="--el-border-color: transparent" class="my-0.25rem!"></el-divider>
     <div v-for="message in messages" class="flex flex-col" :key="message.id">
       <Divider v-if="message.node.contextFlag === ChatMessageContextFlag.BOUNDARY" :topic :message></Divider>
       <Multiple v-else-if="message.children?.length" :topic :context :message></Multiple>
