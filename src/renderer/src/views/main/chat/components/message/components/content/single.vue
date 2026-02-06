@@ -35,7 +35,8 @@ const chatStore = useChatStore()
 const topic = computed(() => props.topic)
 const message = computed(() => props.message)
 
-const id = useId()
+// const id = useId()
+const id = `id_${props.message.id}`
 const isUser = computed(() => message.value.node.content.role === Role.User)
 const isText = computed(() => !message.value.node.type || message.value.node.type === "text")
 const isImage = computed(() => message.value.node.type === "image")

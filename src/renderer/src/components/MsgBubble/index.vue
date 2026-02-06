@@ -1,12 +1,24 @@
 <script lang="ts" setup>
 defineProps<{
   reverse?: boolean
+  id: string
 }>()
 </script>
 <template>
-  <div class="msg-bubble-container" :class="{ reverse }">
+  <div :id class="msg-bubble-container" :class="{ reverse }">
     <div class="msg-bubble-icon">
-      <slot name="icon"></slot>
+      <el-anchor
+        style="
+          --el-anchor-padding-indent: 0;
+          --el-anchor-hover-color: unset;
+          --el-anchor-active-color: unset;
+          --el-anchor-color: unset;
+        "
+        :marker="false">
+        <el-anchor-link :href="`#${id}`">
+          <slot name="icon"></slot>
+        </el-anchor-link>
+      </el-anchor>
     </div>
     <el-card class="msg-bubble" shadow="never">
       <template v-if="$slots.header" #header>
