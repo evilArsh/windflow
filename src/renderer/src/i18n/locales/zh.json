@@ -7,6 +7,7 @@
     "cancelDownload": "取消更新",
     "checkUpdate": "检查更新",
     "error": "更新失败，请重试",
+    "log": "更新日志",
     "manualDownload": "下载更新",
     "newVersionAvailable": "新版本可用",
     "releaseTitle": "版本信息",

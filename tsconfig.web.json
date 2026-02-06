@@ -35,7 +35,8 @@
       "@renderer/*": ["src/renderer/src/*"],
       "@windflow/core/*": ["packages/core/src/*"],
       "@windflow/markdown": ["packages/markdown/src/index.ts"],
-      "@windflow/shared": ["packages/shared/src/index.ts"]
+      "@windflow/shared": ["packages/shared/src/index.ts"],
+      "@resources/*": ["resources/*"],
     }
   }
 }

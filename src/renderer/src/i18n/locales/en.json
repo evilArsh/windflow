@@ -7,9 +7,10 @@
     "cancelDownload": "Cancel Download",
     "checkUpdate": "Check Update",
     "error": "Update error, please retry",
+    "log": "Relese Log",
     "manualDownload": "Download",
     "newVersionAvailable": "New Version Available",
-    "releaseTitle": "New Release Update",
+    "releaseTitle": "About",
     "versionLatest": "Already up to date"
   },
   "btn": {

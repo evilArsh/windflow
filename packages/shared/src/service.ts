@@ -55,6 +55,7 @@ export const IpcChannel = {
   AutoUpdateManualDownload: "autoUpdate.manualDownload",
   AutoUpdateCancelDownload: "autoUpdate.cancelDownload",
   AutoUpdateDownloadTerminable: "autoUpdate.downloadTerminable",
+  AutoUpdateGetName: "autoUpdate.getName",
 }
 export interface MCPService {
   updateEnv: (env: ToolEnvironment) => Promise<void>
@@ -144,4 +145,5 @@ export interface AutoUpdateService {
    * auto update mode is always false
    */
   downloadTerminable: () => Promise<boolean>
+  getName: () => Promise<string>
 }
