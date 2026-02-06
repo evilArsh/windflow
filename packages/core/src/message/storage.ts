@@ -1,6 +1,6 @@
-import { ChatMessage } from "@windflow/core/types"
+import { ChatMessage, ChatTopic } from "@windflow/core/types"
 import { storage } from "@windflow/core/storage"
-import { isUndefined } from "@toolmain/shared"
+import { isArrayLength, isUndefined } from "@toolmain/shared"
 const MessageIndexStep = 100
 
 /**
@@ -43,4 +43,15 @@ export async function insertNewMessages(current: ChatMessage, messages: ChatMess
     message.index = currentIndex + i + 1
   })
   await storage.chat.bulkAddChatMessage(messages)
+}
+export async function deleteMessages(messages: ChatMessage[]) {
+  if (isArrayLength(messages)) {
+    return storage.chat.bulkDeleteChatMessage(messages.map(m => m.id))
+  }
+}
+export async function addChatTopic(topic: ChatTopic): Promise<ChatTopic> {
+  const m = await storage.chat.getMaxIndexTopic(topic.parentId)
+  topic.index = m ? m.index + 1 : 0
+  await storage.chat.addChatTopic(topic)
+  return topic
 }
