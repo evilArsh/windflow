@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { useDialog } from "@toolmain/shared"
+import useSettingsStore from "@renderer/store/settings"
+import { CallBackFn, code1xx, errorToText, isArrayLength, isString, useDialog } from "@toolmain/shared"
 import { useIntervalFn } from "@vueuse/core"
 import { DialogPanel } from "@toolmain/components"
 import { EventKey } from "@windflow/shared"
 import { useUpdate } from "./update"
 import { filesize } from "filesize"
 import logo from "@resources/icon.png"
+import ModelSelect from "@renderer/views/main/chat/components/message/components/handler/modelSelect.vue"
+import { useMiniTopic } from "@renderer/hooks/useMiniTopic"
+import { ModelType, SettingKeys } from "@windflow/core/types"
+import { msgError, msgWarning } from "@renderer/utils"
+import { getPrompt } from "./prompt"
 const { t } = useI18n()
-
 const {
   info,
   appName,
@@ -22,18 +27,70 @@ const {
   downloadTerminable,
   ...ev
 } = useUpdate()
+const topicId = "id-auto-update"
+const i18n = useI18n()
+const settingsStore = useSettingsStore()
+
 const { props, event, close, open } = useDialog({
   width: "50vw",
   showClose: false,
 })
+const { topic, update, message, manager, initTopic } = useMiniTopic({
+  maxContextLength: 1,
+  isVirtual: true,
+})
+const translatedText = computed(() => {
+  return isArrayLength(message.value?.content.children) ? message.value.content.children[0].content : ""
+})
+const translateFinished = computed(() => {
+  return message.value ? !code1xx(message.value.status) && message.value.status !== 206 && message.value.finish : true
+})
+const { data: lang } = settingsStore.dataBind<string>(SettingKeys.Language)
 function onOpenDetail() {
   ev.getCurrentVersion()
   open()
 }
+async function onSummarize(done?: CallBackFn, quiet?: boolean) {
+  try {
+    if (!isArrayLength(topic.value.modelIds)) {
+      !quiet && msgWarning(t("error.emptyModels"))
+      done?.()
+      return
+    }
+    if (message.value) {
+      await manager.getStorage().deleteAllMessages(topicId)
+    }
+    await manager.send(
+      topicId,
+      getPrompt(appName.value, currentVersion.value, info.value.releaseNotes, i18n.t(`lang.${lang.value}`)),
+      topic.value.modelIds
+    )
+    done?.()
+  } catch (error) {
+    msgError(errorToText(error))
+    done?.()
+  }
+}
+watch(available, v => {
+  if (v) {
+    manager.terminateAll(topicId)
+    onSummarize(undefined, true)
+  }
+})
+watch(
+  () => info.value,
+  () => {
+    if (!message.value) {
+      onSummarize(undefined, true)
+    }
+  },
+  { deep: true }
+)
 useIntervalFn(ev.onCheckUpdate, 1000 * 60 * 60)
-onMounted(() => {
+onBeforeMount(async () => {
   if (!window.api) return
   window.api.bus.on(EventKey.AutoUpdateStatus, ev.onUpdateEvent)
+  await initTopic(topicId)
   ev.onCheckUpdate()
 })
 onBeforeUnmount(() => {
@@ -80,6 +137,7 @@ onBeforeUnmount(() => {
                     {{ t("autoUpdate.checkUpdate") }}
                   </el-button>
                   <Button
+                    text-loading
                     v-if="available && !downloading && !downloaded && !isChecking"
                     type="warning"
                     size="small"
@@ -107,12 +165,35 @@ onBeforeUnmount(() => {
             :before-change="ev.onBeforeAutoUpdateChange"
             :active-text="t('autoUpdate.auto')"></el-switch>
           <el-divider content-position="left">{{ t("autoUpdate.log") }}</el-divider>
-          <div class="flex-1 overflow-auto" v-html="info.releaseNotes"></div>
+          <div class="flex gap[var(--ai-gap-medium)]">
+            <ModelSelect
+              :topic
+              single
+              :filter="v => v.type.every(t => t === ModelType.Chat)"
+              @change="update"></ModelSelect>
+            <Button
+              text-loading
+              round
+              :disabled="!info.releaseNotes"
+              :loading="message && !translateFinished"
+              type="primary"
+              plain
+              @click="done => onSummarize(done)">
+              <template #icon>
+                <i-ic-baseline-auto-fix-high></i-ic-baseline-auto-fix-high>
+              </template>
+              {{ t("autoUpdate.optimizeReleaseLog") }}
+            </Button>
+          </div>
+          <div class="flex-1 overflow-auto">
+            <Markdown v-if="message && isString(translatedText)" :content="translatedText"></Markdown>
+            <div v-else v-html="info.releaseNotes"></div>
+          </div>
         </div>
         <template #footer>
           <div class="flex justify-end">
             <el-button type="info" plain text @click="close">{{ t("btn.close") }}</el-button>
-            <Button v-if="available" :disabled="!downloaded" type="warning" @click="ev.onInstall">
+            <Button text-loading v-if="available" :disabled="!downloaded" type="warning" @click="ev.onInstall">
               {{ t("btn.quitAndInstall") }}
             </Button>
           </div>

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import {
+  ChatEventResponseMessage,
   ChatEventResponseTopic,
   ChatLLMConfig,
   ChatMessage,
@@ -46,15 +47,16 @@ export default defineStore("chat_topic", () => {
   const chatStorage = msgMgr.getStorage()
   const { t } = useI18n()
   function _onReceiveTopic(ev: ChatEventResponseTopic) {
-    const { data } = ev
-    const current = topicMap.get(data.id)
+    const current = topicMap.get(ev.data.id)
     if (!current) return
     current.node.label = ev.data.label
   }
-  function _onReceiveMessage(message: ChatMessage, contextId?: string) {
+  function _onReceiveMessage(e: ChatEventResponseMessage) {
+    const message = e.data
     const topic = topicMap.get(message.topicId)
-    let cacheMsg = chatMessageMap.get(message.id)
     if (!topic) return
+    const contextId = e.contextId
+    let cacheMsg = chatMessageMap.get(message.id)
     if (!cacheMsg) {
       topic.node.requestCount = Math.max(1, topic.node.requestCount + 1)
       cacheMsg = reactive(wrapMessage(cloneDeep(message)))
@@ -322,7 +324,7 @@ export default defineStore("chat_topic", () => {
   async function init() {
     topicList.length = 0
     topicMap.clear()
-    const data = await chatStorage.fetch()
+    const data = (await chatStorage.fetch()).filter(n => !n.isVirtual)
     const defaultData = chatTopicDefault()
     const newDefault: ChatTopic[] = []
     for (const item of defaultData) {
@@ -343,9 +345,13 @@ export default defineStore("chat_topic", () => {
       })
     )
     msgMgr.removeAllListener()
-    msgMgr.on("message", data => _onReceiveMessage(data.data, data.contextId))
+    msgMgr.on("message", _onReceiveMessage)
     msgMgr.on("topic", _onReceiveTopic)
   }
+  onBeforeUnmount(() => {
+    msgMgr.off("message", _onReceiveMessage)
+    msgMgr.off("topic", _onReceiveTopic)
+  })
   return {
     init,
     topicList,

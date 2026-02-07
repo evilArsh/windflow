@@ -147,6 +147,10 @@ export type ChatTopic = {
    * @description 最大上下文聊天个数
    */
   maxContextLength?: number
+  /**
+   * @description 虚拟节点不会展示在聊天列表中
+   */
+  isVirtual?: boolean
 }
 
 export type ChatLLMConfig = LLMConfig & {
