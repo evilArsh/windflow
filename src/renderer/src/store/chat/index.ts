@@ -27,7 +27,7 @@ import {
   VirtualNodeIdPrefix,
   wrapMessage,
 } from "./utils"
-import { useMessage } from "@renderer/hooks/useMessage"
+import { useMessage } from "@renderer/hooks/useCore"
 import { createChatMessage } from "@windflow/core/message"
 import { isChatReasonerType } from "@windflow/core/models"
 

@@ -198,7 +198,3 @@ export interface Provider extends LLMProvider, MediaProvider {
   name(): string
   fetchModels(provider: ProviderMeta): Promise<ModelMeta[]>
 }
-export interface ProviderManager {
-  getAvailable(): Provider[]
-  getProvider(providerName: string): Provider | undefined
-}

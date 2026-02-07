@@ -6,7 +6,6 @@ import {
   ChatMessageType,
   ChatMessageContextFlag,
   ChatContextManager,
-  ProviderManager,
   ChatEventResponse,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
@@ -15,10 +14,10 @@ import { createChatMessage, getIsolatedMessages, getMessageContexts, getMessageT
 import { createChatContext } from "./context"
 import { cloneDeep, EventBus, isArrayLength, isString, isUndefined, toNumber, useEvent } from "@toolmain/shared"
 import { defaultMessage, defaultTTIConfig } from "@windflow/core/storage"
-import { createProviderManager } from "@windflow/core/provider"
 import { storage } from "@windflow/core/storage"
 import { beforeLLMRequest } from "./hooks"
 import { MessageStorage } from "./storage"
+import { ProviderManager } from "@windflow/core/provider"
 
 export * from "./utils"
 export class MessageManager {
@@ -28,7 +27,7 @@ export class MessageManager {
   readonly #storage: MessageStorage
   constructor() {
     this.#ctx = createChatContext()
-    this.#providerManager = createProviderManager()
+    this.#providerManager = new ProviderManager()
     this.#ev = useEvent<ChatEventResponse>()
     this.#storage = new MessageStorage()
   }

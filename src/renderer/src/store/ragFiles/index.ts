@@ -1,18 +1,20 @@
 import { defineStore } from "pinia"
 import { RAGLocalFileInfo } from "@windflow/shared"
-import { storage } from "@windflow/core/storage"
+import { useKnowledge } from "@renderer/hooks/useCore"
 export default defineStore("ragFiles", () => {
+  const kbMgr = useKnowledge()
+  const storage = kbMgr.getRagFileStorage()
   const ragFiles = reactive<Record<string, RAGLocalFileInfo[]>>({}) // knowledge_base as key
   /**
    * remove ragFile by `id`
    */
   async function remove(id: string) {
-    const data = await storage.ragFiles.get(id)
+    const data = await storage.get(id)
     if (!data) return
     const kb = ragFiles[data.topicId]
     if (!kb) return
     await window.api.rag.removeById(data.topicId, id)
-    await storage.ragFiles.remove(id)
+    await storage.remove(id)
     const i = kb.findIndex(item => item.id === id)
     if (i < 0) return
     kb.splice(i, 1)
@@ -29,7 +31,7 @@ export default defineStore("ragFiles", () => {
    * fetch ragFiles from db by `topicId`
    */
   async function fetchAllByTopicId(topicId: string) {
-    const data = await storage.ragFiles.getAllByTopicId(topicId)
+    const data = await storage.getAllByTopicId(topicId)
     ragFiles[topicId] = data
     return ragFiles[topicId]
   }
@@ -40,11 +42,11 @@ export default defineStore("ragFiles", () => {
     ragFiles[data.topicId].push(data)
   }
   async function add(data: RAGLocalFileInfo) {
-    await storage.ragFiles.add(data)
+    await storage.add(data)
     addToCache(data)
   }
   async function bulkAdd(datas: RAGLocalFileInfo[]) {
-    await storage.ragFiles.bulkAdd(datas)
+    await storage.bulkAdd(datas)
     datas.forEach(addToCache)
   }
   async function get(topicId: string, id: string) {
@@ -53,10 +55,10 @@ export default defineStore("ragFiles", () => {
     return files.find(file => file.id === id)
   }
   async function update(info: RAGLocalFileInfo) {
-    return storage.ragFiles.put(info)
+    return storage.put(info)
   }
   async function fileExist(topicId: string, filePath: string): Promise<boolean> {
-    return storage.ragFiles.fileExist(topicId, filePath)
+    return storage.fileExist(topicId, filePath)
   }
 
   return {

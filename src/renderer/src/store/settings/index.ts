@@ -2,10 +2,12 @@ import { defineStore } from "pinia"
 import { SettingKeys, Settings, SettingsValue } from "@windflow/core/types"
 import { Reactive } from "vue"
 import { cloneDeep, isArray, isFunction, isNull, isObject, isString, isUndefined } from "@toolmain/shared"
-import { storage } from "@windflow/core/storage"
+import { useSettings } from "@renderer/hooks/useCore"
 
 export default defineStore("settings", () => {
   const settings = reactive<Record<string, Settings<SettingsValue>>>({})
+  const stMgr = useSettings()
+  const storage = stMgr.getStorage()
   const updateValue = (id: string, val: Settings<SettingsValue>) => {
     const data = settings[id]
     if (!isUndefined(data)) {
@@ -23,7 +25,7 @@ export default defineStore("settings", () => {
     if (settings[id]) {
       return settings[id] as Settings<T>
     } else {
-      const data = (await storage.settings.get(id)) as Settings<T> | undefined
+      const data = (await storage.get(id)) as Settings<T> | undefined
       if (data) {
         settings[id] = data
         return settings[id] as Settings<T>
@@ -32,11 +34,11 @@ export default defineStore("settings", () => {
     return
   }
   async function update(data: Settings<SettingsValue>) {
-    await storage.settings.put(data)
+    await storage.put(data)
     updateValue(data.id, data)
   }
   async function add(data: Settings<SettingsValue>) {
-    await storage.settings.add(data)
+    await storage.add(data)
     updateValue(data.id, data)
   }
   /**
@@ -150,7 +152,7 @@ export default defineStore("settings", () => {
   }
   async function init() {
     // need pre-load data rather than loading when using, because of possibly UI rendering lag
-    const data = await storage.settings.fetch()
+    const data = await storage.fetch()
     data.forEach(item => {
       settings[item.id] = item
     })
