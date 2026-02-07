@@ -2,11 +2,13 @@ import { MCPServerParam, MCPServerParamCore, EventKey } from "@windflow/shared"
 import { defineStore } from "pinia"
 import PQueue from "p-queue"
 import { cloneDeep, uniqueNanoId } from "@toolmain/shared"
-import { storage } from "@windflow/core/storage"
+import { useMCP } from "@renderer/hooks/useCore"
 const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
   const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
+  const mcpMgr = useMCP()
+  const storage = mcpMgr.getStorage()
   /**
    * 去掉多余mcp tool列表
    */
@@ -59,12 +61,12 @@ export default defineStore("mcp", () => {
     }
   }
   async function add(newData: MCPServerParam) {
-    await storage.mcp.add(newData)
+    await storage.add(newData)
     servers.push(newData)
     return newData
   }
   async function bulkAdd(newDatas: MCPServerParam[]) {
-    await storage.mcp.bulkAdd(newDatas)
+    await storage.bulkAdd(newDatas)
     servers.push(...newDatas)
     return newDatas
   }
@@ -72,16 +74,16 @@ export default defineStore("mcp", () => {
    * 停止并删除 `topicId` 下的 `serverId`
    */
   async function remove(topicId: string, serverId: string) {
-    await storage.mcp.remove(serverId)
+    await storage.remove(serverId)
     const index = servers.findIndex(v => v.id === serverId)
     index >= 0 && servers.splice(index, 1)
     return stop(topicId, serverId)
   }
   async function update(data: MCPServerParam) {
-    return storage.mcp.put(data)
+    return storage.put(data)
   }
   async function getAll() {
-    return storage.mcp.getAll()
+    return storage.getAll()
   }
   async function init() {
     window.api.bus.on(EventKey.MCPStatus, async data => {
@@ -91,11 +93,11 @@ export default defineStore("mcp", () => {
       const status = data.status
       server.status = status
       server.referTopics = data.refs
-      queue.add(async () => storage.mcp.put(clonePure(server)))
+      queue.add(async () => storage.put(clonePure(server)))
       fetchTools(server.id)
     })
     servers.length = 0
-    const data = await storage.mcp.fetch()
+    const data = await storage.fetch()
     servers.push(...data)
   }
   return {

@@ -2,13 +2,15 @@ import { defineStore } from "pinia"
 import { Knowledge } from "@windflow/core/types"
 import useRagFilesStore from "../ragFiles/index"
 import useEmbeddingStore from "@renderer/store/embedding"
-import { storage, withTransaction } from "@windflow/core/storage"
 import { cloneDeep, code5xx, uniqueId } from "@toolmain/shared"
 import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo, EventKey } from "@windflow/shared"
 import { msgError } from "@renderer/utils"
+import { useKnowledge } from "@renderer/hooks/useCore"
 export default defineStore("knowledge", () => {
   const ragFilesStore = useRagFilesStore()
   const embeddingStore = useEmbeddingStore()
+  const kbMgr = useKnowledge()
+  const storage = kbMgr.getKnowledgeStorage()
 
   const knowledges = reactive<Knowledge[]>([])
   const { t } = useI18n()
@@ -16,10 +18,7 @@ export default defineStore("knowledge", () => {
    * remove knowledge and all contents related to it
    */
   async function remove(knowledgeId: string) {
-    await withTransaction("rw", ["knowledge", "ragFiles"], async tx => {
-      await storage.knowledge.remove(knowledgeId, { transaction: tx })
-      await storage.ragFiles.removeByTopicId(knowledgeId, { transaction: tx })
-    })
+    await storage.remove(knowledgeId)
     if (window.api) {
       const res = await window.api.rag.removeByTopicId(knowledgeId)
       if (code5xx(res.code)) {
@@ -36,18 +35,18 @@ export default defineStore("knowledge", () => {
    * find all knowledges which using `embedding`
    */
   async function findByEmbeddingId(embedding: string) {
-    return storage.knowledge.findByEmbeddingId(embedding)
+    return storage.findByEmbeddingId(embedding)
   }
   async function update(data: Knowledge) {
-    return storage.knowledge.put(data)
+    return storage.put(data)
   }
   async function add(data: Knowledge) {
-    await storage.knowledge.add(data)
+    await storage.add(data)
     knowledges.push(cloneDeep(data))
   }
   async function get(knowledgeId: string) {
     const knowledge = knowledges.find(item => item.id === knowledgeId)
-    return knowledge ?? (await storage.knowledge.get(knowledgeId))
+    return knowledge ?? (await storage.get(knowledgeId))
   }
   /**
    * find embedding config which was binded by `knowledgeId`
@@ -110,7 +109,7 @@ export default defineStore("knowledge", () => {
    */
   async function init() {
     knowledges.length = 0
-    const data = await storage.knowledge.fetch()
+    const data = await storage.fetch()
     data.forEach(item => {
       knowledges.push(item)
     })

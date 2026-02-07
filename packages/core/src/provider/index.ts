@@ -1,13 +1,16 @@
-import { Provider, ProviderManager } from "@windflow/core/types"
+import { Provider } from "@windflow/core/types"
 import { DeepSeek } from "./deepseek"
 import { SiliconFlow } from "./siliconflow"
 import { Volcengine } from "./volcengine"
 import { OpenAI } from "./openai/index"
+import { ProviderStorage } from "./utils/storage"
 export * from "./utils"
 export * from "./compatible/utils"
-class ProviderManagerImpl implements ProviderManager {
-  #providers: Map<string, Provider>
+export class ProviderManager {
+  readonly #providers: Map<string, Provider>
+  readonly #storage: ProviderStorage
   constructor() {
+    this.#storage = new ProviderStorage()
     this.#providers = new Map()
 
     const deepseek = new DeepSeek()
@@ -26,8 +29,7 @@ class ProviderManagerImpl implements ProviderManager {
   getAvailable(): Provider[] {
     return Array.from(this.#providers.values())
   }
-}
-
-export function createProviderManager(): ProviderManager {
-  return new ProviderManagerImpl()
+  getStorage() {
+    return this.#storage
+  }
 }
