@@ -28,6 +28,12 @@ export async function bulkUpdate(
 export async function get(modelId: string) {
   return queue.add(async () => db.model.get(modelId))
 }
+/**
+ * retrive the top N most frequently used models
+ */
+export async function getMostFrequentTops(top: number) {
+  return queue.add(async () => db.model.orderBy("frequency").reverse().limit(top).toArray())
+}
 export async function bulkGet(modelIds: string[]) {
   return queue.add(async () => db.model.bulkGet(modelIds))
 }

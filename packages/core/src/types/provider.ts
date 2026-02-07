@@ -52,6 +52,10 @@ export type ModelMeta = {
    * @description 是否启用
    */
   active?: boolean
+  /**
+   * @description 使用次数
+   */
+  frequency?: number
   icon?: string
 }
 /**
