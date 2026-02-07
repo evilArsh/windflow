@@ -12,21 +12,24 @@ const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()
 const props = defineProps<{
+  title?: string
   topic: ChatTopic
+  filter?: (model: ModelMeta) => boolean
+  single?: boolean
 }>()
 const data = computed(() => props.topic)
 const { t } = useI18n()
 const providerStore = useProviderStore()
 const modelStore = useModelStore()
 const { models } = storeToRefs(modelStore)
-
 const activeModels = computed<Record<string, ModelMeta[]>>(() =>
   models.value
     .filter(
       v =>
         v.active &&
         isArrayLength(v.type) &&
-        (isChatReasonerType(v) || isASRType(v) || isChatType(v) || isImageType(v) || isTTSType(v) || isVideoType(v))
+        (isChatReasonerType(v) || isASRType(v) || isChatType(v) || isImageType(v) || isTTSType(v) || isVideoType(v)) &&
+        (props.filter ? props.filter(v) : true)
     )
     .reduce<Record<string, ModelMeta[]>>((acc, cur) => {
       if (acc[cur.providerName]) {
@@ -75,11 +78,15 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
       </ContentBox>
     </template>
     <template #header>
-      <el-text type="primary">{{ t("chat.model.label") }}</el-text>
+      <el-text type="primary">{{ title ?? t("chat.model.label") }}</el-text>
     </template>
     <template #default>
       <div class="h-40rem w-full flex">
-        <el-checkbox-group v-model="data.modelIds" @change="emit('change', data)" class="w-full text-inherit">
+        <el-checkbox-group
+          v-model="data.modelIds"
+          :max="single ? 1 : undefined"
+          @change="emit('change', data)"
+          class="w-full text-inherit">
           <div class="select-wrap">
             <Group>
               <ContentBox v-for="(item, provider) in activeModels" normal :key="provider">

@@ -89,10 +89,10 @@ export function useSettings(): SettingsManager {
   }
   return instance
 }
-export function useModel(): ModelManager {
+export function useModels(): ModelManager {
   const instance = inject(ModelKey)
   if (!instance) {
-    throw new Error("useModel() is called outside of setup()")
+    throw new Error("useModels() is called outside of setup()")
   }
   return instance
 }
