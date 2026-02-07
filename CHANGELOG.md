@@ -1,3 +1,19 @@
+## v0.7.14
+
+- feat(autoUpdate): using AI assistant to automatically translate release notes
+- feat(button): add text loading support and improve loading animation
+- feat(core): track model usage frequency and improve data handling
+- refactor: add storage manager classes for centralized data access
+- refactor(message): extract message storage logic into dedicated class
+- fix(chat): add transparent divider and optimize theme toggle logic
+- feat(chat): add anchor links to message bubbles for navigation
+- feat(message): add batch message removal and topic creation methods
+- feat(auto-update): add app name display and UI enhancements
+- feat(auto-update): refactor UI and enhance AutoUpdate handling
+- chore(Style): delete unrelated files
+- perf(chat): optimize affix icon styling in single message content
+- ci: update changelog for v0.7.13
+
 ## v0.7.13
 
 - feat(chat): add chat panel width setting and improve message alignment
