@@ -43,6 +43,7 @@ export default defineStore("chat_topic", () => {
   const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
   const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
   const msgMgr = useMessage()
+  const chatStorage = msgMgr.getStorage()
   const { t } = useI18n()
   function _onReceiveTopic(ev: ChatEventResponseTopic) {
     const { data } = ev
@@ -169,7 +170,7 @@ export default defineStore("chat_topic", () => {
   async function loadChatTopicData(topic: ChatTopic) {
     const messages = findChatMessage(topic.id, chatMessage)
     if (!messages) {
-      const messagesData = await storage.chat.getChatMessages(topic.id)
+      const messagesData = await chatStorage.getChatMessages(topic.id)
       chatMessage[topic.id] = assembleMessageTree(messagesData, message => {
         const m = reactive<ChatMessageTree>(wrapMessage(message))
         m.node.finish = true
@@ -186,18 +187,18 @@ export default defineStore("chat_topic", () => {
       })
     }
     if (!findChatTTIConfig(topic.id, chatTTIConfig)) {
-      let cnf = await storage.chat.getChatTTIConfig(topic.id)
+      let cnf = await chatStorage.getChatTTIConfig(topic.id)
       if (!cnf) {
         cnf = Object.assign(defaultTTIConfig(), { id: uniqueId(), topicId: topic.id })
-        await storage.chat.addChatTTIConfig(cnf)
+        await chatStorage.addChatTTIConfig(cnf)
       }
       chatTTIConfig[topic.id] = cnf
     }
     if (!findChatLLMConfig(topic.id, chatLLMConfig)) {
-      let cnf = await storage.chat.getChatLLMConfig(topic.id)
+      let cnf = await chatStorage.getChatLLMConfig(topic.id)
       if (!cnf) {
         cnf = Object.assign(defaultLLMConfig(), { id: uniqueId(), topicId: topic.id })
-        await storage.chat.addChatLLMConfig(cnf)
+        await chatStorage.addChatLLMConfig(cnf)
       }
       chatLLMConfig[topic.id] = cnf
     }
@@ -224,8 +225,15 @@ export default defineStore("chat_topic", () => {
     if (!unwrapMessage(message).id.startsWith(VirtualNodeIdPrefix)) {
       all.push(message)
     }
-    await msgMgr.removeMessages(all.map(unwrapMessage))
+    all.forEach(m => {
+      const msg = unwrapMessage(m)
+      msgMgr.terminate(msg.topicId, msg.id, true)
+    })
+    await chatStorage.removeMessages(all.map(unwrapMessage))
     removeMessage(message, chatMessage)
+    all.forEach(m => {
+      chatMessageMap.delete(m.id)
+    })
     chatMessageMap.delete(message.id)
   }
   async function deleteAllMessage(topic: ChatTopic) {
@@ -240,26 +248,26 @@ export default defineStore("chat_topic", () => {
     findChatMessage(topic.id, chatMessage)
       ?.filter(m => unwrapMessage(m).topicId === topic.id)
       .forEach(recursiveMove)
-    await storage.chat.deleteAllMessages(topic.id)
+    await chatStorage.deleteAllMessages(topic.id)
     if (chatMessage[topic.id]) {
       chatMessage[topic.id].length = 0
     }
   }
   async function bulkPutChatTopic(topics: ChatTopic[]) {
-    return storage.chat.bulkPutChatTopic(topics)
+    return chatStorage.bulkPutChatTopic(topics)
   }
   async function updateChatTopic(topic: ChatTopic) {
-    return storage.chat.putChatTopic(topic)
+    return chatStorage.putChatTopic(topic)
   }
   async function updateChatMessage(msg: ChatMessage) {
-    return storage.chat.putChatMessage(msg)
+    return chatStorage.putChatMessage(msg)
   }
   /**
    * 数据库中添加一个新的 `topic`
    * @param append 是否添加到 `topicList` 缓存列表末尾
    */
   async function addChatTopic(topic: ChatTopic, append?: boolean): Promise<ChatTopicTree> {
-    await msgMgr.addChatTopic(topic)
+    await chatStorage.addChatTopic(topic)
     const treeNode = reactive(topicToTree(topic))
     topicMap.set(treeNode.id, treeNode)
     if (append) {
@@ -280,21 +288,21 @@ export default defineStore("chat_topic", () => {
    * @param index postion that inserts to cache array, not database
    */
   async function addChatMessage(msg: ChatMessage, index?: number) {
-    await msgMgr.addNewMessages([msg])
+    await chatStorage.addNewMessages([msg])
     const msgNode = reactive(wrapMessage(msg))
     chatMessageMap.set(msgNode.id, msgNode)
     chatMessage[msg.topicId].splice(index ?? 0, 0, msgNode)
   }
   async function updateChatLLMConfig(cnf: ChatLLMConfig) {
-    await storage.chat.putChatLLMConfig(cnf)
+    chatStorage.putChatLLMConfig(cnf)
     chatLLMConfig[cnf.topicId] = cnf
   }
   async function updateChatTTIConfig(cnf: ChatTTIConfig) {
-    await storage.chat.putChatTTIConfig(cnf)
+    chatStorage.putChatTTIConfig(cnf)
     chatTTIConfig[cnf.topicId] = cnf
   }
   async function removeChatTopic(nodes: ChatTopic[]) {
-    await storage.chat.bulkDeleteChatTopic(nodes)
+    chatStorage.bulkDeleteChatTopic(nodes)
     nodes.forEach(node => {
       topicMap.delete(node.id)
     })
@@ -314,7 +322,7 @@ export default defineStore("chat_topic", () => {
   async function init() {
     topicList.length = 0
     topicMap.clear()
-    const data = await storage.chat.fetch()
+    const data = await chatStorage.fetch()
     const defaultData = chatTopicDefault()
     const newDefault: ChatTopic[] = []
     for (const item of defaultData) {
@@ -324,7 +332,7 @@ export default defineStore("chat_topic", () => {
     }
     if (newDefault.length) {
       data.push(...newDefault)
-      await storage.chat.bulkAddChatTopics(newDefault)
+      await chatStorage.bulkAddChatTopics(newDefault)
     }
     topicList.push(
       ...assembleTopicTree(data, item => {

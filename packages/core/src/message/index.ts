@@ -8,7 +8,6 @@ import {
   ChatContextManager,
   ProviderManager,
   ChatEventResponse,
-  ChatTopic,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
@@ -19,17 +18,19 @@ import { defaultMessage, defaultTTIConfig } from "@windflow/core/storage"
 import { createProviderManager } from "@windflow/core/provider"
 import { storage } from "@windflow/core/storage"
 import { beforeLLMRequest } from "./hooks"
-import { addChatTopic, deleteMessages, insertNewMessages, saveNewMessages } from "./storage"
+import { MessageStorage } from "./storage"
 
 export * from "./utils"
 export class MessageManager {
   readonly #ctx: ChatContextManager
   readonly #providerManager: ProviderManager
   readonly #ev: EventBus<ChatEventResponse>
+  readonly #storage: MessageStorage
   constructor() {
     this.#ctx = createChatContext()
     this.#providerManager = createProviderManager()
     this.#ev = useEvent<ChatEventResponse>()
+    this.#storage = new MessageStorage()
   }
   #emitMessage(message: ChatMessage, contextId?: string) {
     this.#ev.emit("message", { contextId, data: message })
@@ -170,6 +171,9 @@ export class MessageManager {
     }
     return reqInfo
   }
+  getStorage(): MessageStorage {
+    return this.#storage
+  }
   removeAllListener() {
     this.#ev.removeAllListeners()
   }
@@ -198,7 +202,7 @@ export class MessageManager {
       topicId,
     })
     const reqInfo = await this.#createResponseMessages(topicId, userMessage.id, modelMetas)
-    await this.addNewMessages([userMessage, ...reqInfo.map(i => i.message)])
+    await this.getStorage().addNewMessages([userMessage, ...reqInfo.map(i => i.message)])
     this.#emitMessage(userMessage)
     const dispatcher = this.#getDispatcher(reqInfo)
     await Promise.all(dispatcher)
@@ -254,7 +258,7 @@ export class MessageManager {
         // all responding msgs were deleted, create new messages
         const modelMetas = (await storage.model.bulkGet(topic.modelIds)).filter(meta => !isUndefined(meta))
         const reqInfo = await this.#createResponseMessages(topicId, currentMsg.id, modelMetas)
-        await this.insertNewMessages(
+        await this.getStorage().insertNewMessages(
           currentMsg,
           reqInfo.map(i => i.message)
         )
@@ -330,36 +334,5 @@ export class MessageManager {
         this.#ev.emit("topic", { data: topic })
       }
     })
-  }
-  /**
-   * add new messages.
-   * the values of `index` fields of `messages` will be sequentially incremented to the maximum value within each `topicId` group.
-   */
-  addNewMessages(messages: ChatMessage[]): Promise<void> {
-    return saveNewMessages(messages)
-  }
-  /**
-   * batch remove messages
-   */
-  removeMessages(messages: ChatMessage[]): Promise<void> {
-    messages.forEach(msg => {
-      this.terminate(msg.topicId, msg.id, true)
-    })
-    return deleteMessages(messages)
-  }
-  /**
-   * insert new messages after `current` message, `messages` must have the same `topicId` as `current`
-   */
-  insertNewMessages(current: ChatMessage, messages: ChatMessage[]): Promise<void> {
-    if (messages.some(m => m.topicId !== current.topicId)) {
-      throw new Error("all messages must have the same topicId as current")
-    }
-    return insertNewMessages(current, messages)
-  }
-  /**
-   * add a new topic, `index` value will be automatically modified
-   */
-  addChatTopic(topic: ChatTopic) {
-    return addChatTopic(topic)
   }
 }
