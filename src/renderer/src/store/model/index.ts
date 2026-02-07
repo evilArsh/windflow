@@ -2,14 +2,14 @@ import { ModelMeta } from "@windflow/core/types"
 import { defineStore } from "pinia"
 import { getIconHTML } from "@renderer/components/SvgPicker"
 import { modelsDefault } from "@windflow/core/storage"
-import { useModel } from "@renderer/hooks/useCore"
+import { useModels } from "@renderer/hooks/useCore"
 import { useSvgIcon } from "@renderer/hooks/useSvgIcon"
 export default defineStore("model", () => {
   const { providerSvgIcon } = useSvgIcon()
   const models = reactive<ModelMeta[]>([]) // 所有模型
   const cache: Map<string, ModelMeta> = new Map() // 检索缓存
   const defaultLogo = getIconHTML(providerSvgIcon, "user")
-  const manager = useModel()
+  const manager = useModels()
   const storage = manager.getStorage()
   function setModel(newModel: ModelMeta) {
     cache.set(newModel.id, newModel)

@@ -45,9 +45,11 @@ export class MessageManager {
     const messages = await storage.chat.getChatMessages(topicId)
     const rawContexts = getIsolatedMessages(messages, messageId)
     const contexts = getMessageContexts(topic, rawContexts)
+    // increasing frequency of model usage
+    modelMeta.frequency = toNumber(modelMeta.frequency) + 1
     message.status = 100
     message.finish = false
-    this.#emitMessage(message, ctx.id)
+    this.#emitMessage(cloneDeep(message), ctx.id)
     const newHandler = await provider.chat(
       contexts,
       modelMeta,
@@ -79,6 +81,7 @@ export class MessageManager {
       beforeLLMRequest(topic, message)
     )
     this.#ctx.setHandler(contextId, newHandler)
+    storage.model.put(modelMeta)
   }
   async #sendMedia(contextId: string, message: ChatMessage): Promise<void> {
     const ctx = this.#ctx.get(contextId)

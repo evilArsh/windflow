@@ -102,6 +102,9 @@ export class MessageStorage {
   async bulkAddChatTopics(topics: ChatTopic[]) {
     return storage.chat.bulkAddChatTopics(topics)
   }
+  async getTopic(topicId: string) {
+    return storage.chat.getTopic(topicId)
+  }
   async fetch() {
     return storage.chat.fetch()
   }
