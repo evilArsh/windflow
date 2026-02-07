@@ -1,12 +1,16 @@
 <template>
-  <el-button v-bind="$attrs" :disabled="finalDisabled" aria-label="ep-button" @click.stop="onClick">
+  <el-button
+    v-bind="$attrs"
+    :loading="finalLoading"
+    :disabled="finalDisabled"
+    aria-label="ep-button"
+    @click.stop="onClick">
     <template v-if="$slots.icon" #icon>
       <slot name="icon"></slot>
     </template>
-    <slot v-if="!finalLoading"></slot>
-    <el-icon v-else>
-      <i class="i-ep-loading loading-icon"></i>
-    </el-icon>
+    <template v-if="(textLoading && finalLoading) || !finalLoading" #default>
+      <slot></slot>
+    </template>
   </el-button>
 </template>
 <script lang="ts" setup>
@@ -17,6 +21,10 @@ const props = defineProps<{
   normal?: boolean
   loading?: boolean
   disabled?: boolean
+  /**
+   * loading with text
+   */
+  textLoading?: boolean
 }>()
 
 const _disabled = ref(false)
@@ -43,7 +51,7 @@ defineExpose({
 </script>
 <style scoped lang="scss">
 .loading-icon {
-  animation: spin 1s linear infinite;
+  animation: spin 2s linear infinite;
 }
 @keyframes spin {
   from {
