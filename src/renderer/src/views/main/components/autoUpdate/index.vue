@@ -62,7 +62,7 @@ async function onSummarize(done?: CallBackFn, quiet?: boolean) {
     }
     await manager.send(
       topicId,
-      getPrompt(appName.value, currentVersion.value, info.value.releaseNotes, i18n.t(`lang.${lang.value}`)),
+      getPrompt(appName.value, info.value.version, info.value.releaseNotes, i18n.t(`lang.${lang.value}`)),
       topic.value.modelIds
     )
     done?.()
