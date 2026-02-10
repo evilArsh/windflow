@@ -10,7 +10,7 @@ catalogs:
     ajv: ^8.17.1
     ajv-errors: ^3.0.0
     apache-arrow: ^21.1.0
-    axios: ^1.13.2
+    axios: ^1.13.5
     chance: ^1.1.13
     filesize: ^11.0.13
     js-tiktoken: ^1.0.21
@@ -20,10 +20,10 @@ catalogs:
     p-queue: ^9.1.0
   dev:
     '@babel/types': ~7.28.6
-    '@commitlint/config-conventional': ^20.3.1
+    '@commitlint/config-conventional': ^20.4.1
     '@electron/notarize': ^3.1.1
     '@eslint/js': ^9.39.2
-    '@iconify/json': ^2.2.430
+    '@iconify/json': ^2.2.438
     '@iconify/types': ^2.0.0
     '@rollup/plugin-json': ^6.1.0
     '@types/chance': ^1.1.7
@@ -33,23 +33,23 @@ catalogs:
     '@types/lodash.merge': ^4.6.9
     '@types/mdast': ^4.0.4
     '@types/mime-types': ^3.0.1
-    '@types/node': ^25.0.9
+    '@types/node': ^25.2.2
     '@types/pdf-parse': ^1.1.5
     '@types/sqlstring': ^2.3.2
     '@types/unist': ^3.0.3
-    '@typescript-eslint/eslint-plugin': ^8.53.1
+    '@typescript-eslint/eslint-plugin': ^8.55.0
     '@unocss/preset-icons': ^66.6.0
-    '@vitejs/plugin-vue': ^6.0.3
-    '@vitejs/plugin-vue-jsx': ^5.1.3
-    '@vitest/browser': ^4.0.17
-    '@vitest/browser-playwright': ^4.0.17
-    '@vitest/coverage-v8': ^4.0.17
-    '@vitest/ui': ^4.0.17
+    '@vitejs/plugin-vue': ^6.0.4
+    '@vitejs/plugin-vue-jsx': ^5.1.4
+    '@vitest/browser': ^4.0.18
+    '@vitest/browser-playwright': ^4.0.18
+    '@vitest/coverage-v8': ^4.0.18
+    '@vitest/ui': ^4.0.18
     '@vue/test-utils': ^2.4.6
-    commitlint: ^20.3.1
+    commitlint: ^20.4.1
     csstype: ^3.2.3
     devlop: ^1.1.0
-    electron: ^39.2.7
+    electron: ^39.5.1
     electron-builder: ~26.0.20
     electron-vite: ^5.0.0
     eslint: ^9.39.2
@@ -59,45 +59,45 @@ catalogs:
     eslint-plugin-prettier: ^5.5.5
     eslint-plugin-promise: ^7.2.1
     eslint-plugin-vue: ^10.7.0
-    globals: ^17.0.0
+    globals: ^17.3.0
     husky: ^9.1.7
     jsdom: ^27.4.0
     lint-staged: ^16.2.7
     mdast-util-mdx-expression: ^2.0.1
     mdast-util-mdx-jsx: ^3.2.0
     mdast-util-mdxjs-esm: ^2.0.1
-    msw: ^2.12.7
-    playwright: ^1.57.0
-    prettier: ^3.8.0
+    msw: ^2.12.9
+    playwright: ^1.58.2
+    prettier: ^3.8.1
     prettier-eslint: ^16.4.2
-    rollup: ^4.55.2
+    rollup: ^4.57.1
     rollup-plugin-dts: ^6.3.0
     rollup-plugin-esbuild: ^6.2.1
     rollup-plugin-visualizer: ^6.0.5
-    sass: ^1.97.2
+    sass: ^1.97.3
     style-value-types: ^5.1.2
     terser: ^5.46.0
     tsx: ^4.21.0
-    type-fest: ^5.4.1
+    type-fest: ^5.4.4
     typescript: ^5.9.3
-    typescript-eslint: ^8.53.1
+    typescript-eslint: ^8.55.0
     unocss: ^66.6.0
     unplugin-auto-import: ^21.0.0
     unplugin-icons: ^23.0.1
     unplugin-vue-components: ^31.0.0
     vite: ^7.3.1
     vite-node: ^5.3.0
-    vite-plugin-vue-devtools: ^8.0.5
-    vitest: ^4.0.17
-    vitest-browser-vue: ^2.0.1
+    vite-plugin-vue-devtools: ^8.0.6
+    vitest: ^4.0.18
+    vitest-browser-vue: ^2.0.2
     vue-eslint-parser: ^10.2.0
-    vue-tsc: ^3.2.2
+    vue-tsc: ^3.2.4
   node:
     '@electron-toolkit/preload': ^3.0.2
     '@electron-toolkit/utils': ^4.0.0
     '@file-type/xml': ^0.4.4
     '@lancedb/lancedb': ^0.22.3
-    '@modelcontextprotocol/sdk': ^1.25.3
+    '@modelcontextprotocol/sdk': ^1.26.0
     csv-parser: ^3.2.0
     electron-log: ^5.4.3
     electron-store: ^11.0.2
@@ -111,20 +111,20 @@ catalogs:
     sqlstring: ^2.3.3
   web:
     '@iconify/utils': ^3.1.0
-    '@shikijs/monaco': ^3.21.0
+    '@shikijs/monaco': ^3.22.0
     '@unocss/reset': 66.6.0
-    '@vueuse/core': ^14.1.0
+    '@vueuse/core': ^14.2.1
     character-entities: ^2.0.2
     comma-separated-tokens: ^2.0.3
-    dexie: ^4.2.1
-    element-plus: ^2.13.1
+    dexie: ^4.3.0
+    element-plus: ^2.13.2
     estree-util-is-identifier-name: ^3.0.0
     hast-util-whitespace: ^3.0.0
     hotkeys-js: ^4.0.0
     html-url-attributes: ^3.0.1
     mermaid: ^11.12.2
     monaco-editor: ^0.55.1
-    openai: ^6.16.0
+    openai: ^6.19.0
     pinia: ^3.0.4
     property-information: ^7.1.0
     rehype-format: ^5.0.1
@@ -140,14 +140,14 @@ catalogs:
     remark-rehype: ^11.1.2
     remark-squeeze-paragraphs: ^6.0.0
     remark-toc: ^9.0.0
-    shiki: ^3.21.0
+    shiki: ^3.22.0
     space-separated-tokens: ^2.0.2
     style-to-js: ^1.1.21
     unified: ^11.0.5
-    unist-util-visit: ^5.0.0
+    unist-util-visit: ^5.1.0
     vfile: ^6.0.3
     vfile-message: ^4.0.3
-    vue: ^3.5.27
+    vue: ^3.5.28
     vue-i18n: ^11.2.8
     vue-router: ^4.6.4
 
@@ -161,4 +161,4 @@ onlyBuiltDependencies:
   - protobufjs
 
 overrides:
-  decode-named-character-reference: file:./src/renderer/patchs/decode-named-character-reference
+  decode-named-character-reference: file:./patchs/decode-named-character-reference
