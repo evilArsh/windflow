@@ -1,3 +1,11 @@
+## v0.7.15
+
+- chore: fix decode-named-character-reference path, update dependencies
+- feat(mac): add library validation disable entitlement
+- fix(message): refactor event system and improve context management. fix refresh and terminate bug
+- chore(markdown): move decode-named-character-reference patch to root
+- ci: update changelog for v0.7.14
+
 ## v0.7.14
 
 - feat(autoUpdate): using AI assistant to automatically translate release notes
