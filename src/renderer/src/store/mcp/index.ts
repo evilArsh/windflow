@@ -1,11 +1,9 @@
 import { MCPServerParam, MCPServerParamCore, EventKey } from "@windflow/shared"
 import { defineStore } from "pinia"
-import PQueue from "p-queue"
 import { cloneDeep, uniqueNanoId } from "@toolmain/shared"
 import { useMCP } from "@renderer/hooks/useCore"
 const nanoIdAlphabet = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 export default defineStore("mcp", () => {
-  const queue = markRaw(new PQueue({ concurrency: 1 }))
   const servers = reactive<MCPServerParam[]>([])
   const mcpMgr = useMCP()
   const storage = mcpMgr.getStorage()
@@ -93,7 +91,7 @@ export default defineStore("mcp", () => {
       const status = data.status
       server.status = status
       server.referTopics = data.refs
-      queue.add(async () => storage.put(clonePure(server)))
+      storage.put(clonePure(server))
       fetchTools(server.id)
     })
     servers.length = 0

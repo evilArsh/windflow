@@ -88,10 +88,10 @@ export async function bulkDeleteChatTopic(data: ChatTopic[]) {
   const topicIds = data.map(item => item.id)
   return db.transaction("rw", [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig], async trans => {
     return Dexie.Promise.all([
-      topicQueue.add(async () => trans.chatTopic.bulkDelete(topicIds)),
-      msgQueue.add(async () => trans.chatMessage.where("topicId").anyOf(topicIds).delete()),
-      configQueue.add(async () => trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete()),
-      configQueue.add(async () => trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete()),
+      trans.chatTopic.bulkDelete(topicIds),
+      trans.chatMessage.where("topicId").anyOf(topicIds).delete(),
+      trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete(),
+      trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete(),
     ])
   })
 }

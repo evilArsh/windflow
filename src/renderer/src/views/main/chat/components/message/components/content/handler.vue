@@ -33,8 +33,8 @@ const isFinish = computed(() => {
     ? message.value.children.every(child => child.node.finish)
     : message.value.node.finish
 })
-function terminate(done: CallBackFn) {
-  chatStore.terminate(message.value.id)
+async function terminate(done: CallBackFn) {
+  await chatStore.terminate(message.value.id)
   done()
 }
 async function restart(done: CallBackFn) {

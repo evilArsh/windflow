@@ -7,23 +7,29 @@ import {
   ChatMessageContextFlag,
   ChatContextManager,
   ChatEventResponse,
+  ChatEventHandler,
+  ChatTopic,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
-import { createChatMessage, getIsolatedMessages, getMessageContexts, getMessageType } from "./utils"
+import { createChatMessage, getIsolatedMessages, getMessageContexts, getMessageType, resetMessage } from "./utils"
 import { createChatContext } from "./context"
 import { cloneDeep, EventBus, isArrayLength, isString, isUndefined, toNumber, useEvent } from "@toolmain/shared"
-import { defaultMessage, defaultTTIConfig } from "@windflow/core/storage"
+import { defaultTTIConfig } from "@windflow/core/storage"
 import { storage } from "@windflow/core/storage"
 import { beforeLLMRequest } from "./hooks"
 import { MessageStorage } from "./storage"
 import { ProviderManager } from "@windflow/core/provider"
 
+/**
+ * use to listen all topics and messages events
+ */
+export const AllTopicsFlag = "AllTopicFlag"
 export * from "./utils"
 export class MessageManager {
   readonly #ctx: ChatContextManager
   readonly #providerManager: ProviderManager
-  readonly #ev: EventBus<ChatEventResponse>
+  readonly #ev: EventBus<Record<string, ChatEventHandler>>
   readonly #storage: MessageStorage
   constructor() {
     this.#ctx = createChatContext()
@@ -31,35 +37,40 @@ export class MessageManager {
     this.#ev = useEvent<ChatEventResponse>()
     this.#storage = new MessageStorage()
   }
+  #emitAll(contextId?: string, message?: ChatMessage, topic?: ChatTopic) {
+    this.#ev.emit(AllTopicsFlag, { message, contextId, topic })
+  }
   #emitMessage(message: ChatMessage, contextId?: string) {
-    this.#ev.emit("message", { contextId, data: message })
+    this.#ev.emit(message.topicId, {
+      message,
+      contextId,
+    })
+    this.#emitAll(contextId, message)
+  }
+  #emitTopic(topic: ChatTopic) {
+    this.#ev.emit(topic.id, { topic })
+    this.#emitAll(undefined, undefined, topic)
   }
   async #sendChat(contextId: string, message: ChatMessage): Promise<void> {
     const ctx = this.#ctx.get(contextId)
     if (!ctx) return
-    const { modelMeta, providerMeta, provider, handler, topicId, messageId } = ctx
+    const { modelMeta, providerMeta, provider, topicId, messageId } = ctx
     if (!(modelMeta && providerMeta && provider)) return
     const topic = await storage.chat.getTopic(topicId)
     if (!topic) return
-    handler?.terminate()
     const messages = await storage.chat.getChatMessages(topicId)
     const rawContexts = getIsolatedMessages(messages, messageId)
     const contexts = getMessageContexts(topic, rawContexts)
     // increasing frequency of model usage
     modelMeta.frequency = toNumber(modelMeta.frequency) + 1
-    message.status = 100
-    message.finish = false
-    this.#emitMessage(cloneDeep(message), ctx.id)
+    resetMessage(message)
+    this.#emitMessage(message, ctx.id)
     const newHandler = await provider.chat(
       contexts,
       modelMeta,
       providerMeta,
       value => {
-        if (ctx.handler?.getSignal().aborted) {
-          message.status = 499
-          this.#emitMessage(message, ctx.id)
-          return
-        }
+        if (ctx.handler?.getSignal().aborted) return
         const { data, status, msg } = value
         message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
         message.promptTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.prompt_tokens), 0)
@@ -86,15 +97,15 @@ export class MessageManager {
   async #sendMedia(contextId: string, message: ChatMessage): Promise<void> {
     const ctx = this.#ctx.get(contextId)
     if (!ctx) return
-    const { modelMeta, providerMeta, provider, handler } = ctx
+    const { modelMeta, providerMeta, provider } = ctx
     if (!(modelMeta && providerMeta && provider)) return
     if (isImageType(modelMeta)) {
       if (!message.fromId) return
       const askMessage = await storage.chat.getChatMessage(message.fromId)
       if (!askMessage) return
-      handler?.terminate()
-      message.status = 100
+      resetMessage(message)
       this.#emitMessage(message, ctx.id)
+      modelMeta.frequency = toNumber(modelMeta.frequency) + 1
       const conf = (await storage.chat.getChatTTIConfig(message.topicId)) ?? defaultTTIConfig()
       const hdl = await provider.textToImage({ ...conf, prompt: askMessage.content }, modelMeta, providerMeta, res => {
         message.content = res.data
@@ -104,6 +115,7 @@ export class MessageManager {
         this.#emitMessage(message, ctx.id)
       })
       this.#ctx.setHandler(contextId, hdl)
+      storage.model.put(modelMeta)
     } else {
       console.log("[media request not implement]", modelMeta, provider)
       message.finish = true
@@ -153,12 +165,10 @@ export class MessageManager {
       const type = getMessageType(modelMeta)
       if (provider && providerMeta) {
         const message = createChatMessage({
-          content: defaultMessage(),
           fromId: userMessageId,
           topicId,
           type,
           contextFlag: contextIndex == i ? ChatMessageContextFlag.PART : undefined,
-          finish: false,
           modelId: modelMeta.id,
           concurrency: modelMetas.length > 1,
         })
@@ -179,11 +189,11 @@ export class MessageManager {
   removeAllListener() {
     this.#ev.removeAllListeners()
   }
-  on<K extends keyof ChatEventResponse>(event: K, cb: ChatEventResponse[K]): void {
-    this.#ev.on(event, cb)
+  on(topicId: string, cb: ChatEventHandler): void {
+    this.#ev.on(topicId, cb)
   }
-  off<K extends keyof ChatEventResponse>(event: K, cb: ChatEventResponse[K]): void {
-    this.#ev.off(event, cb)
+  off(topicId: string, cb: ChatEventHandler): void {
+    this.#ev.off(topicId, cb)
   }
   /**
    * send multiple messages and return context ids
@@ -282,7 +292,6 @@ export class MessageManager {
       this.#ctx.setModelMeta(ctx.id, modelMeta)
       this.#ctx.setProviderMeta(ctx.id, providerMeta)
       this.#ctx.setProvider(ctx.id, provider)
-      this.#emitMessage(currentMsg)
       await Promise.all(
         this.#getDispatcher([
           {
@@ -297,20 +306,26 @@ export class MessageManager {
   /**
    * @param destroy true to destroy the context and will create new one next time
    */
-  terminate(topicId: string, messageId: string, destroy?: boolean) {
+  async terminate(topicId: string, messageId: string, destroy?: boolean) {
     const ctx = this.#ctx.findByTopic(topicId, messageId)
     if (ctx) {
       ctx.handler?.terminate()
       destroy && this.#ctx.remove(ctx.id)
+      const message = await storage.chat.getChatMessage(messageId)
+      if (message) {
+        message.status = 499
+        await storage.chat.putChatMessage(message)
+        this.#emitMessage(message, ctx.id)
+      }
     }
   }
   /**
    * @param destroy true to destroy the context and will create new one next time
    */
-  terminateAll(topicId: string, destroy?: boolean) {
+  async terminateAll(topicId: string, destroy?: boolean) {
     const ctx = this.#ctx.findAllByTopic(topicId)
     if (isArrayLength(ctx)) {
-      ctx.forEach(c => this.terminate(topicId, c.messageId, destroy))
+      await Promise.all(ctx.map(c => this.terminate(topicId, c.messageId, destroy)))
     }
   }
   /**
@@ -333,7 +348,7 @@ export class MessageManager {
       if (isString(value.data.content)) {
         topic.label = value.data.content
         storage.chat.putChatTopic(topic)
-        this.#ev.emit("topic", { data: topic })
+        this.#emitTopic(topic)
       }
     })
   }

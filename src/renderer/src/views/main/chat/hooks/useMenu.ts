@@ -39,14 +39,18 @@ export const useMenu = (
           return
         }
         const nodes = getAllNodes(treeCtx.selectedTopic.value)
-        for (const item of nodes) {
-          await window.api?.mcp.stopTopicServers(item.id)
+        await Promise.all(
+          nodes
+            .map(topic => {
+              return [chatStore.terminateAll(topic.id, true), window.api?.mcp.stopTopicServers(topic.id)]
+            })
+            .flat()
+        )
+        for (const topic of nodes) {
           // 删除展开的节点key
-          treeCtx.removeDefaultExpandedKeys(item.id)
-          // 终止请求
-          chatStore.terminateAll(item.id, true)
+          treeCtx.removeDefaultExpandedKeys(topic.id)
           // 删除消息缓存
-          chatStore.cacheRemoveChatMessage(item.id)
+          chatStore.cacheRemoveChatMessage(topic.id)
         }
         treeRef.value?.remove(treeCtx.selectedTopic.value)
         await task.getQueue().add(async () => chatStore.removeChatTopic(nodes))

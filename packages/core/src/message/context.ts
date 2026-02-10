@@ -49,7 +49,6 @@ class ChatContextImpl implements ChatContextManager {
     const ctx = this.get(contextId)
     if (!ctx) return false
     const index = this.#getIndex(contextId)
-    ctx.handler?.terminate()
     this.#ctx.splice(index, 1)
     return true
   }
