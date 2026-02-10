@@ -1,6 +1,6 @@
 import { msgError, errorToText, isArrayLength, merge, cloneDeep, uniqueId } from "@toolmain/shared"
 import { createChatTopic } from "@windflow/core/message"
-import { ChatEventResponseMessage, ChatMessage, ChatTopic, ModelType, Role } from "@windflow/core/types"
+import { ChatEventResponse, ChatMessage, ChatTopic, ModelType, Role } from "@windflow/core/types"
 import { useMessage, useModels } from "./useCore"
 
 export function useMiniTopic(initial?: Partial<ChatTopic>) {
@@ -22,7 +22,12 @@ export function useMiniTopic(initial?: Partial<ChatTopic>) {
       )
     )
   )
+  /**
+   * initialize data with specified topic id
+   */
   async function initTopic(topicId: string) {
+    manager.off(_topicId.value, onMessageReceived)
+    manager.on(topicId, onMessageReceived)
     _topicId.value = topicId
     const t = await manager.getStorage().getTopic(_topicId.value)
     if (t) {
@@ -44,13 +49,13 @@ export function useMiniTopic(initial?: Partial<ChatTopic>) {
       message.value.status = 200
     }
   }
-  function onMessageReceived(e: ChatEventResponseMessage) {
-    const { data } = e
-    if (data.topicId === _topicId.value && data.content.role === Role.Assistant) {
+  function onMessageReceived(e: ChatEventResponse) {
+    if (!e.message) return
+    if (e.message.content.role === Role.Assistant) {
       if (!message.value) {
-        message.value = cloneDeep(data)
+        message.value = cloneDeep(e.message)
       } else {
-        Object.assign(message.value, data)
+        Object.assign(message.value, e.message)
       }
     }
   }
@@ -62,9 +67,9 @@ export function useMiniTopic(initial?: Partial<ChatTopic>) {
     }
   }
 
-  manager.on("message", onMessageReceived)
+  manager.on(_topicId.value, onMessageReceived)
   onBeforeUnmount(() => {
-    manager.off("message", onMessageReceived)
+    manager.off(_topicId.value, onMessageReceived)
   })
   return {
     topic,

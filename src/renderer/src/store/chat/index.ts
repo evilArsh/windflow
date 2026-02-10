@@ -1,7 +1,6 @@
 import { defineStore } from "pinia"
 import {
-  ChatEventResponseMessage,
-  ChatEventResponseTopic,
+  ChatEventResponse,
   ChatLLMConfig,
   ChatMessage,
   ChatMessageTree,
@@ -29,7 +28,7 @@ import {
   wrapMessage,
 } from "./utils"
 import { useMessage } from "@renderer/hooks/useCore"
-import { createChatMessage } from "@windflow/core/message"
+import { AllTopicsFlag, createChatMessage } from "@windflow/core/message"
 import { isChatReasonerType } from "@windflow/core/models"
 
 export default defineStore("chat_topic", () => {
@@ -46,13 +45,15 @@ export default defineStore("chat_topic", () => {
   const msgMgr = useMessage()
   const chatStorage = msgMgr.getStorage()
   const { t } = useI18n()
-  function _onReceiveTopic(ev: ChatEventResponseTopic) {
-    const current = topicMap.get(ev.data.id)
-    if (!current) return
-    current.node.label = ev.data.label
-  }
-  function _onReceiveMessage(e: ChatEventResponseMessage) {
-    const message = e.data
+  function onMessageReceived(e: ChatEventResponse) {
+    if (e.topic) {
+      const current = topicMap.get(e.topic.id)
+      if (current) {
+        current.node.label = e.topic.label
+      }
+    }
+    const message = e.message
+    if (!message) return
     const topic = topicMap.get(message.topicId)
     if (!topic) return
     const contextId = e.contextId
@@ -64,7 +65,7 @@ export default defineStore("chat_topic", () => {
       if (!chatMessage[message.topicId]) chatMessage[message.topicId] = []
       if (message.fromId) {
         const fromNode = chatMessageMap.get(message.fromId)
-        // from node does not exist, jut append to end
+        // from node does not exist, just append to end
         if (!fromNode) {
           chatMessage[message.topicId].unshift(cacheMsg)
         } else {
@@ -99,8 +100,9 @@ export default defineStore("chat_topic", () => {
       } else {
         chatMessage[message.topicId].unshift(cacheMsg)
       }
+    } else {
+      Object.assign(cacheMsg.node, message)
     }
-    Object.assign(cacheMsg.node, message)
     if (code1xx(message.status)) {
       cacheMsg.node.finish = false
     } else if (message.status == 206) {
@@ -127,28 +129,32 @@ export default defineStore("chat_topic", () => {
       }
     }
   }
-  function terminateAll(topicId: string, destroy?: boolean) {
-    msgMgr.terminateAll(topicId, destroy)
+  async function terminateAll(topicId: string, destroy?: boolean) {
+    return msgMgr.terminateAll(topicId, destroy)
   }
-  function terminate(messageId: string, destroy?: boolean) {
+  async function terminate(messageId: string, destroy?: boolean) {
     const wrapMsg = chatMessageMap.get(messageId)
     if (!wrapMsg) return
     const msg = unwrapMessage(wrapMsg)
-    msgMgr.terminate(msg.topicId, msg.id, destroy)
-    wrapMsg.children.forEach(m => {
-      const childM = unwrapMessage(m)
-      msgMgr.terminate(childM.topicId, childM.id, destroy)
-    })
+    await Promise.all([
+      msgMgr.terminate(msg.topicId, msg.id, destroy),
+      ...wrapMsg.children.map(m => {
+        const childM = unwrapMessage(m)
+        return msgMgr.terminate(childM.topicId, childM.id, destroy)
+      }),
+    ])
   }
   async function restart(messageId: string): Promise<void> {
     const wrapMsg = chatMessageMap.get(messageId)
     if (!wrapMsg) return
     const msg = unwrapMessage(wrapMsg)
-    msgMgr.terminate(msg.topicId, msg.id)
-    wrapMsg.children.forEach(m => {
-      const childM = unwrapMessage(m)
-      msgMgr.terminate(childM.topicId, childM.id)
-    })
+    await Promise.all([
+      msgMgr.terminate(msg.topicId, msg.id),
+      ...wrapMsg.children.map(m => {
+        const childM = unwrapMessage(m)
+        return msgMgr.restart(childM.topicId, childM.id)
+      }),
+    ])
     if (msg.id.startsWith(VirtualNodeIdPrefix)) {
       await Promise.all(
         wrapMsg.children.map(m => {
@@ -227,10 +233,12 @@ export default defineStore("chat_topic", () => {
     if (!unwrapMessage(message).id.startsWith(VirtualNodeIdPrefix)) {
       all.push(message)
     }
-    all.forEach(m => {
-      const msg = unwrapMessage(m)
-      msgMgr.terminate(msg.topicId, msg.id, true)
-    })
+    await Promise.all(
+      all.map(m => {
+        const msg = unwrapMessage(m)
+        return msgMgr.terminate(msg.topicId, msg.id, true)
+      })
+    )
     await chatStorage.removeMessages(all.map(unwrapMessage))
     removeMessage(message, chatMessage)
     all.forEach(m => {
@@ -239,17 +247,21 @@ export default defineStore("chat_topic", () => {
     chatMessageMap.delete(message.id)
   }
   async function deleteAllMessage(topic: ChatTopic) {
-    const recursiveMove = (node: ChatMessageTree) => {
-      const msg = unwrapMessage(node)
-      msgMgr.terminate(msg.topicId, msg.id, true)
-      node.children.forEach(child => {
-        recursiveMove(child)
-        chatMessageMap.delete(child.id)
-      })
+    const msgs: ChatMessageTree[] = []
+    const recursiveScan = (node: ChatMessageTree) => {
+      msgs.push(node)
+      chatMessageMap.delete(node.id)
+      node.children.forEach(recursiveScan)
     }
     findChatMessage(topic.id, chatMessage)
       ?.filter(m => unwrapMessage(m).topicId === topic.id)
-      .forEach(recursiveMove)
+      .forEach(recursiveScan)
+    await Promise.all(
+      msgs.map(msgTree => {
+        const msg = unwrapMessage(msgTree)
+        return msgMgr.terminate(msg.topicId, msg.id, true)
+      })
+    )
     await chatStorage.deleteAllMessages(topic.id)
     if (chatMessage[topic.id]) {
       chatMessage[topic.id].length = 0
@@ -304,18 +316,29 @@ export default defineStore("chat_topic", () => {
     chatTTIConfig[cnf.topicId] = cnf
   }
   async function removeChatTopic(nodes: ChatTopic[]) {
-    chatStorage.bulkDeleteChatTopic(nodes)
+    await chatStorage.bulkDeleteChatTopic(nodes)
     nodes.forEach(node => {
       topicMap.delete(node.id)
+      delete chatLLMConfig[node.id]
+      delete chatTTIConfig[node.id]
     })
   }
   /**
    * 删除 `topicId` 下的消息列表
    */
   function cacheRemoveChatMessage(topicId: string) {
-    if (Object.hasOwn(chatMessage, topicId)) {
-      delete chatMessage[topicId]
+    const messages = chatMessage[topicId]
+    if (messages) {
+      messages.forEach(m => {
+        chatMessageMap.delete(m.id)
+        if (m.id.startsWith(VirtualNodeIdPrefix)) {
+          m.children.forEach(m => {
+            chatMessageMap.delete(m.id)
+          })
+        }
+      })
     }
+    delete chatMessage[topicId]
   }
 
   /**
@@ -344,13 +367,10 @@ export default defineStore("chat_topic", () => {
         return tree
       })
     )
-    msgMgr.removeAllListener()
-    msgMgr.on("message", _onReceiveMessage)
-    msgMgr.on("topic", _onReceiveTopic)
+    msgMgr.on(AllTopicsFlag, onMessageReceived)
   }
   onBeforeUnmount(() => {
-    msgMgr.off("message", _onReceiveMessage)
-    msgMgr.off("topic", _onReceiveTopic)
+    msgMgr.off(AllTopicsFlag, onMessageReceived)
   })
   return {
     init,

@@ -167,7 +167,6 @@ export function getAllNodes(current: ChatTopicTree): ChatTopic[] {
   const res: ChatTopic[] = []
   res.push(current.node)
   current.children.forEach(item => {
-    res.push(item.node)
     res.push(...getAllNodes(item))
   })
   return res

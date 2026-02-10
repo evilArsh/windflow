@@ -55,6 +55,17 @@ export function createChatMessage(initial?: Partial<ChatMessage>): ChatMessage {
   return merge(dst, initial)
 }
 
+/**
+ * reset message's realtime content: "status,finish,content,msg" to pending status
+ */
+export function resetMessage(message: ChatMessage) {
+  message.status = 100
+  message.finish = false
+  message.content = defaultMessage()
+  message.msg = undefined
+  return message
+}
+
 export function getMessageType(meta: ModelMeta): ChatMessageType {
   return isImageType(meta)
     ? ChatMessageType.IMAGE

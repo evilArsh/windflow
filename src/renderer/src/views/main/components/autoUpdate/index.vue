@@ -71,9 +71,9 @@ async function onSummarize(done?: CallBackFn, quiet?: boolean) {
     done?.()
   }
 }
-watch(available, v => {
+watch(available, async v => {
   if (v) {
-    manager.terminateAll(topicId)
+    await manager.terminateAll(topicId)
     onSummarize(undefined, true)
   }
 })
