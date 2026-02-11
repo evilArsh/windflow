@@ -16,10 +16,7 @@ export function has(model: ModelMeta, modelType: ModelType): boolean {
  * 是否是LLM聊天类型
  */
 export function isChatType(model: ModelMeta): boolean {
-  return has(model, ModelType.Chat) || has(model, ModelType.ChatReasoner)
-}
-export function isChatReasonerType(model: ModelMeta): boolean {
-  return has(model, ModelType.ChatReasoner)
+  return has(model, ModelType.Chat)
 }
 /**
  * 是否包含

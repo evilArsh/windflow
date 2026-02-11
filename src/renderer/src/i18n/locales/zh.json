@@ -277,7 +277,6 @@
   },
   "modelType": {
     "Chat": "对话",
-    "ChatReasoner": "推理对话",
     "Embedding": "嵌入",
     "ImageToImage": "图片转图片",
     "ImageToText": "图片转文本",

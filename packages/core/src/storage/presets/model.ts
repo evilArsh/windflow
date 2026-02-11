@@ -12,7 +12,7 @@ export const modelsDefault = (): ModelMeta[] => {
     {
       id: `deepseek_deepseek-reasoner`,
       modelName: "deepseek-reasoner",
-      type: [ModelType.ChatReasoner],
+      type: [ModelType.Chat],
       providerName: "deepseek",
       subProviderName: "deepseek",
       active: false,
@@ -20,7 +20,7 @@ export const modelsDefault = (): ModelMeta[] => {
     {
       id: `volcengine_deepseek-r1`,
       modelName: "deepseek-r1-250120",
-      type: [ModelType.ChatReasoner],
+      type: [ModelType.Chat],
       providerName: "volcengine",
       subProviderName: "deepseek",
       active: false,
@@ -36,7 +36,7 @@ export const modelsDefault = (): ModelMeta[] => {
     {
       id: `volcengine_deepseek-r1-distill-qwen-7b`,
       modelName: "deepseek-r1-distill-qwen-7b-250120",
-      type: [ModelType.ChatReasoner],
+      type: [ModelType.Chat],
       providerName: "volcengine",
       subProviderName: "deepseek",
       active: false,
@@ -44,7 +44,7 @@ export const modelsDefault = (): ModelMeta[] => {
     {
       id: `volcengine_deepseek-r1-distill-qwen-32b`,
       modelName: "deepseek-r1-distill-qwen-32b-250120",
-      type: [ModelType.ChatReasoner],
+      type: [ModelType.Chat],
       providerName: "volcengine",
       subProviderName: "deepseek",
       active: false,

@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ModelMeta, ModelType } from "@windflow/core/types"
-import flashlight from "~icons/fluent-emoji-flat/flashlight"
 import speech from "~icons/twemoji/speech-balloon"
 import gear from "~icons/fluent-emoji-flat/gear"
 import hammer from "~icons/fluent-emoji-flat/hammer-and-wrench"
@@ -17,7 +16,6 @@ defineProps<{
 const { t } = useI18n()
 const iconMap = {
   [ModelType.Chat]: h(speech),
-  [ModelType.ChatReasoner]: h(flashlight),
   [ModelType.Embedding]: h(gear),
   [ModelType.Reranker]: h(hammer),
   [ModelType.TextToImage]: h(picture),

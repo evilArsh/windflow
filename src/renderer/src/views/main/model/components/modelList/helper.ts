@@ -1,5 +1,4 @@
 import { msg } from "@renderer/utils"
-import { isChatType } from "@windflow/core/models"
 import { ModelMeta, ModelType } from "@windflow/core/types"
 import { CheckboxValueType } from "element-plus"
 
@@ -33,11 +32,7 @@ export function useModelHelper() {
       return
     }
     modelTypes.value.forEach(v => {
-      if (isChatType(model)) {
-        v.disabled = v.value !== ModelType.Chat && v.value !== ModelType.ChatReasoner
-      } else {
-        v.disabled = !model.type.includes(v.value)
-      }
+      v.disabled = !model.type.includes(v.value)
     })
   }
   return {

@@ -8,6 +8,7 @@ import * as model from "./model"
 import * as provider from "./provider"
 import * as ragFiles from "./ragFiles"
 import * as settings from "./settings"
+import { migrateToV4 } from "./migrate"
 
 export const name = "db-windflow-v2"
 
@@ -52,6 +53,21 @@ db.version(3).stores({
   ragFiles: "id,topicId,[topicId+path]",
   embedding: "id",
 })
+db.version(4)
+  .stores({
+    providerMeta: "name",
+    model: "id,frequency",
+    chatTopic: "id,parentId,[parentId+index]",
+    chatMessage: "id,topicId,[topicId+index],fromId,contextFlag",
+    chatLLMConfig: "id,topicId",
+    chatTTIConfig: "id,topicId",
+    settings: "id",
+    mcpServer: "id",
+    knowledge: "id,embeddingId",
+    ragFiles: "id,topicId,[topicId+path]",
+    embedding: "id",
+  })
+  .upgrade(migrateToV4)
 
 export * from "./presets"
 export function withTransaction<U>(

@@ -277,7 +277,6 @@
   },
   "modelType": {
     "Chat": "Chat",
-    "ChatReasoner": "Chat Reasoner",
     "Embedding": "Embedding",
     "ImageToImage": "Image to Image",
     "ImageToText": "Image to Text",
