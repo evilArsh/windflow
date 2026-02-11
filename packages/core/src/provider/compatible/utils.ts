@@ -1,15 +1,6 @@
-import {
-  LLMToolCall,
-  LLMResponse,
-  Role,
-  Message,
-  ModelMeta,
-  LLMConfig,
-  ProviderMeta,
-  LLMToolCallRequest,
-} from "@windflow/core/types"
+import { LLMToolCall, LLMResponse, Role, Message, ProviderMeta, LLMToolCallRequest } from "@windflow/core/types"
 import { AxiosInstance } from "axios"
-import { cloneDeep, errorToText, isNumber, merge } from "@toolmain/shared"
+import { errorToText, isNumber, merge } from "@toolmain/shared"
 
 export function usePartialData() {
   const defaultMessage = (): Message => ({ role: Role.Assistant, content: "" })
@@ -195,17 +186,6 @@ export function useOpenAICompatParser() {
 }
 
 export const openAICompatParser = useOpenAICompatParser()
-
-export function mergeRequestConfig(messages: Message[], modelMeta: ModelMeta, req?: LLMConfig): Record<string, any> {
-  return {
-    stream: true,
-    ...req,
-    model: modelMeta.modelName,
-    messages: cloneDeep(messages),
-    n: 1,
-    response_format: { type: "text" },
-  }
-}
 
 export function generateSummaryText(context: string) {
   return `

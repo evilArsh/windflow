@@ -42,6 +42,7 @@
     "cleanMessage": "清空聊天{shortcut}",
     "context": "聊天上下文",
     "contextDivider": "上下文已清空",
+    "deepThinking": "深度思考",
     "defaultPrompt": "你是一个实用的AI助手",
     "deleteFailed": "删除失败",
     "editChat": "编辑",

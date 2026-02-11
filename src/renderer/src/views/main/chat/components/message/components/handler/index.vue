@@ -6,6 +6,7 @@ import Mcp from "./mcp.vue"
 import KnowledgeBase from "./kb.vue"
 import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
+import Reasoning from "./reasoning.vue"
 import useChatStore from "@renderer/store/chat"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
@@ -72,6 +73,7 @@ const {
       <div class="flex items-center gap-1rem c-[--el-text-color-regular]">
         <ModelSelect :topic @change="handler.onTopicUpdate" />
         <LLMRequestConfig :topic></LLMRequestConfig>
+        <Reasoning :topic></Reasoning>
         <TextToImage :topic></TextToImage>
         <Mcp :topic></Mcp>
         <KnowledgeBase :topic></KnowledgeBase>

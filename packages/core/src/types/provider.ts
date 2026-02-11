@@ -1,5 +1,13 @@
 import { Method } from "axios"
-import { LLMConfig, Message, LLMResponse, MediaRequest, RequestHandler, ImageResponse } from "@windflow/core/types"
+import {
+  LLMConfig,
+  Message,
+  LLMResponse,
+  MediaRequest,
+  RequestHandler,
+  ImageResponse,
+  LLMToolCallRequest,
+} from "@windflow/core/types"
 export enum ModelType {
   Chat = "Chat",
   ChatReasoner = "ChatReasoner",
@@ -123,6 +131,15 @@ export type BeforeRequestCallback = (
   model: ModelMeta,
   provider: ProviderMeta
 ) => Promise<BeforeRequestParams>
+/**
+ * handle original request params and transfer them to provider specified format
+ */
+export type RequestParamsHandler = (
+  context: Message[],
+  modelMeta: ModelMeta,
+  toolList: LLMToolCallRequest[],
+  originalParams?: LLMConfig
+) => Record<string, any>
 export type DeepSeekBalance = {
   /**
    * @description 当前账户是否有余额可供 API 调用
