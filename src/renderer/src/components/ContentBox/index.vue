@@ -64,7 +64,6 @@ const handle = {
     emit("lock", active.value)
   },
   click: (e: MouseEvent) => {
-    // if (disabled) return
     handle.toggleLock()
     emit("click", e)
   },
@@ -102,13 +101,6 @@ watch(
   </div>
 </template>
 <style lang="scss" scoped>
-.normal {
-  --box-shadow-color: transparent;
-  --box-shadow-active-color: transparent;
-  --box-bg-color: transparent;
-  --box-bg-hover-color: transparent;
-  --box-bg-active-color: transparent;
-}
 .comp-content-box {
   --box-padding: var(--ai-gap-small);
   --box-margin: 0;
@@ -119,20 +111,33 @@ watch(
   --box-border-active-color: transparent;
   --box-border-size: 0;
 
-  --box-shadow-color: var(--el-fill-color-lighter);
-  --box-shadow-active-color: var(--el-fill-color-light);
+  --box-shadow: 0 0 3px var(--el-fill-color-lighter);
+  --box-shadow-active: 0 0 5px var(--el-fill-color-light);
 
   --box-bg-color: transparent;
-  --box-bg-hover-color: var(--el-fill-color-dark);
-  --box-bg-active-color: var(--el-fill-color-darker);
+  // --box-bg-hover-color: var(--el-fill-color-dark);
+  // --box-bg-active-color: var(--el-fill-color-darker);
+  --box-bg-hover-color: var(--el-color-info-light-7);
+  --box-bg-active-color: var(--el-color-info-light-5);
 
-  --box-bg-background-color: var(--el-color-info-light-9);
-  --box-bg-background-hover-color: var(--el-color-info-light-7);
-  --box-bg-background-active-color: var(--el-color-info-light-5);
+  // --box-bg-background-color: var(--el-color-info-light-9);
+  // --box-bg-background-hover-color: var(--el-color-info-light-7);
+  // --box-bg-background-active-color: var(--el-color-info-light-5);
 
   --box-icon-color: var(--el-text-color-regular);
   --box-icon-hover-color: var(--el-color-primary-light-7);
   --box-icon-active-color: var(--el-color-primary-light-5);
+
+  &.background {
+    --box-bg-color: var(--el-color-info-light-9);
+  }
+  &.normal {
+    --box-shadow: none;
+    --box-shadow-active-color: none;
+    --box-bg-color: transparent;
+    --box-bg-hover-color: transparent;
+    --box-bg-active-color: transparent;
+  }
 }
 .comp-content-box {
   -webkit-app-region: no-drag;
@@ -150,25 +155,26 @@ watch(
   &.round {
     border-radius: var(--el-border-radius-round);
   }
-  &.background {
-    background-color: var(--box-bg-background-color);
-    &:hover {
-      background-color: var(--box-bg-background-hover-color);
-    }
-    &:active,
-    &.active {
-      background-color: var(--box-bg-background-active-color);
-    }
-  }
+  // &.background {
+  // --box-bg-color: var(--el-color-info-light-9);
+  // background-color: var(--box-bg-background-color);
+  // &:hover {
+  //   background-color: var(--box-bg-background-hover-color);
+  // }
+  // &:active,
+  // &.active {
+  //   background-color: var(--box-bg-background-active-color);
+  // }
+  // }
   &:hover {
     background-color: var(--box-bg-hover-color);
-    box-shadow: 0 0 3px var(--box-shadow-color);
+    box-shadow: var(--box-shadow);
     border-color: var(--box-border-hover-color);
   }
   &:active,
   &.active {
     background-color: var(--box-bg-active-color);
-    box-shadow: 0 0 5px var(--box-shadow-active-color);
+    box-shadow: var(--box-shadow-active);
     border-color: var(--box-border-active-color);
   }
   &.normal {
