@@ -30,7 +30,7 @@ export function siliconflowLLMParamsHandler(
     response_format: { type: "text" },
   }
   // https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions
-  if (!enableThinkingWhiteList.includes(modelMeta.modelName)) {
+  if (enableThinkingWhiteList.includes(modelMeta.modelName)) {
     data.enable_thinking = !!originalParams?.reasoning
   }
   if (isArrayLength(toolList)) {
