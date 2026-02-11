@@ -1,5 +1,5 @@
 import { storage } from "@windflow/core/storage"
-import { ModelMeta, ModelType } from "@windflow/core/types"
+import { ModelMeta } from "@windflow/core/types"
 
 export class ModelStorage {
   async anyOf(modelIds: string[]) {
@@ -17,10 +17,8 @@ export class ModelStorage {
   /**
    * retrive the top N most frequently used models
    */
-  async getMostFrequentModels(top: number, type?: ModelType) {
-    return (await storage.model.getMostFrequentTops(top)).filter(meta => {
-      return type ? meta.type.includes(type) : true
-    })
+  async getMostFrequentModels(top: number) {
+    return storage.model.getMostFrequentTops(top)
   }
   async fetch() {
     return storage.model.fetch()

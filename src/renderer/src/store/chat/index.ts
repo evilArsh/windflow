@@ -8,11 +8,10 @@ import {
   ChatTopicTree,
   ChatTTIConfig,
   Content,
-  ModelType,
   Role,
 } from "@windflow/core/types"
 import useModelsStore from "@renderer/store/model"
-import { storage, defaultTTIConfig, defaultLLMConfig, chatTopicDefault } from "@windflow/core/storage"
+import { defaultTTIConfig, defaultLLMConfig, chatTopicDefault } from "@windflow/core/storage"
 import { cloneDeep, code1xx, code2xx, isArray, uniqueId } from "@toolmain/shared"
 import {
   assembleMessageTree,
@@ -29,7 +28,6 @@ import {
 } from "./utils"
 import { useMessage } from "@renderer/hooks/useCore"
 import { AllTopicsFlag, createChatMessage } from "@windflow/core/message"
-import { isChatReasonerType } from "@windflow/core/models"
 
 export default defineStore("chat_topic", () => {
   const modelsStore = useModelsStore()
@@ -110,18 +108,7 @@ export default defineStore("chat_topic", () => {
     } else {
       topic.node.requestCount = Math.max(0, topic.node.requestCount - 1)
       cacheMsg.node.finish = true
-
       if (code2xx(message.status)) {
-        // auto detect reasoning model
-        if (message.content.children?.some(child => !!child.reasoning_content)) {
-          storage.model.get(message.modelId).then(model => {
-            if (!model) return
-            if (model && !isChatReasonerType(model)) {
-              model.type.push(ModelType.ChatReasoner)
-              modelsStore.put(model)
-            }
-          })
-        }
         // auto summarize a topic title
         if (contextId && topic.node.label === window.defaultTopicTitle) {
           msgMgr.summarize(contextId)

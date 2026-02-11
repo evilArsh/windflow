@@ -77,6 +77,7 @@ defineExpose({
 .menu-handle {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   width: 100%;
   :deep(.el-button) {
     & + .el-button {

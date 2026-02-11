@@ -1,4 +1,4 @@
-import { cloneDeep, isArrayLength, isUndefined } from "@toolmain/shared"
+import { cloneDeep, isArrayLength } from "@toolmain/shared"
 import { LLMConfig, LLMToolCallRequest, Message, ModelMeta } from "@windflow/core/types"
 
 export function siliconflowLLMParamsHandler(
@@ -15,9 +15,7 @@ export function siliconflowLLMParamsHandler(
     n: 1,
     response_format: { type: "text" },
   }
-  if (!isUndefined(originalParams?.reasoning)) {
-    data.enable_thinking = originalParams.reasoning
-  }
+  data.enable_thinking = !!originalParams?.reasoning
   if (isArrayLength(toolList)) {
     data.tools = toolList
   }

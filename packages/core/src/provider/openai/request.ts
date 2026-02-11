@@ -167,6 +167,7 @@ export async function makeRequest(
           max_output_tokens: requestBody?.max_tokens,
           temperature: requestBody?.temperature,
           top_p: requestBody?.top_p,
+          reasoning: { effort: requestBody?.reasoning ? "medium" : "none" },
         },
         {
           signal: requestHandler.getSignal(),
