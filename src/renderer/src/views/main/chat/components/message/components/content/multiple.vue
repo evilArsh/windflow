@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
+import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"
 import Handler from "./handler.vue"
 import useChatStore from "@renderer/store/chat"
+import useModelsStore from "@renderer/store/model"
 import IconLeftToRight from "~icons/ic/baseline-format-line-spacing"
 import IconGrid from "~icons/ic/baseline-grid-on"
 import Tab from "~icons/ic/outline-folder-copy"
@@ -26,8 +28,11 @@ const types = {
 
 const id = useId()
 const chatStore = useChatStore()
+const modelsStore = useModelsStore()
 const message = computed(() => props.message)
-
+const svgSrc = computed(() =>
+  modelsStore.getModelLogo(message.value.node.modelId ? modelsStore.find(message.value.node.modelId) : undefined)
+)
 const childLength = computed(() => message.value.children?.length ?? 0)
 const useLayout = () => {
   const affixRefs = ref<InstanceType<typeof Single>[]>([])
@@ -168,6 +173,17 @@ onMounted(() => {
 </script>
 <template>
   <MsgBubble :id>
+    <template v-if="svgSrc" #icon>
+      <Affix
+        style="--affix-fix-shadow: none; --affix-fix-bg-color: var(--el-bg-color)"
+        ref="affixIcon"
+        :offset="88"
+        :target="`#${id}`">
+        <ContentBox class="m0! flex-shrink-0">
+          <Svg :src="svgSrc" class="flex-1 text-3rem"></Svg>
+        </ContentBox>
+      </Affix>
+    </template>
     <template #header>
       <div class="flex-1 flex items-center px-1rem py-.5rem flex-wrap overflow-hidden">
         <Handler hide-edit :topic :message @delete="del"></Handler>
