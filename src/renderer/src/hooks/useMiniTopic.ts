@@ -46,7 +46,7 @@ export function useMiniTopic(initial?: Partial<ChatTopic>) {
       config = { ...defaultLLMConfig(), id: _topicId.value, topicId: _topicId.value }
     }
     // default set to no reasoning
-    if (!isUndefined(config.reasoning)) {
+    if (isUndefined(config.reasoning)) {
       config.reasoning = false
     }
     await manager.getStorage().putChatLLMConfig(config)

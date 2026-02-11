@@ -29,6 +29,7 @@ import { usePartialData } from "../compatible/utils"
 import { AbortError, HttpCodeError } from "../compatible/error"
 import { nonStreamParse, streamParse } from "./stream"
 import { Stream } from "openai/core/streaming"
+import { modelVersionGt5, supportReasoning } from "./utils"
 
 export function useHandler(): RequestHandler {
   let abortController = new AbortController()
@@ -167,7 +168,11 @@ export async function makeRequest(
           max_output_tokens: requestBody?.max_tokens,
           temperature: requestBody?.temperature,
           top_p: requestBody?.top_p,
-          reasoning: { effort: requestBody?.reasoning ? "medium" : "none" },
+          reasoning: supportReasoning(modelMetaCopy)
+            ? {
+                effort: requestBody?.reasoning ? "medium" : modelVersionGt5(modelMetaCopy) ? "none" : "medium",
+              }
+            : undefined,
         },
         {
           signal: requestHandler.getSignal(),
