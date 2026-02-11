@@ -13,7 +13,10 @@ const sendShortcutList = shallowRef([
 ])
 const cleanMessageList = shallowRef([{ label: "ctrl + l", value: "ctrl+l" }])
 const cleanContextList = shallowRef([{ label: "ctrl + k", value: "ctrl+k" }])
-const simpleModeShortcutList = shallowRef([{ label: "ctrl + ↓", value: "ctrl+arrowDown" }])
+const simpleModeShortcutList = shallowRef([
+  { label: "ctrl + ↓", value: "ctrl+arrowDown" },
+  { label: "ctrl + ↑", value: "ctrl+arrowUp" },
+])
 const newChatList = shallowRef([{ label: "ctrl + n", value: "ctrl+n" }])
 const newSubChatList = shallowRef([{ label: "ctrl + shift + n", value: "ctrl+shift+n" }])
 const sidebarToggleList = shallowRef([
