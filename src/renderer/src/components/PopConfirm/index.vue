@@ -52,7 +52,7 @@ const props = withDefaults(
     confirm: undefined,
     cancel: undefined,
     popperClass: "",
-    popperStyle: "",
+    popperStyle: () => ({}),
     showAfter: 0,
     hideAfter: 200,
     autoClose: 0,
