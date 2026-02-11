@@ -1,8 +1,13 @@
-import { msgError, errorToText, isArrayLength, merge, cloneDeep, uniqueId } from "@toolmain/shared"
+import { msgError, errorToText, isArrayLength, merge, cloneDeep, uniqueId, isUndefined } from "@toolmain/shared"
 import { createChatTopic } from "@windflow/core/message"
-import { ChatEventResponse, ChatMessage, ChatTopic, ModelType, Role } from "@windflow/core/types"
+import { ChatEventResponse, ChatMessage, ChatTopic, Role } from "@windflow/core/types"
 import { useMessage, useModels } from "./useCore"
+import { defaultLLMConfig } from "@windflow/core/storage"
+import { isChatType } from "@windflow/core/models"
 
+/**
+ * mini LLM topic, use for individual chating situation
+ */
 export function useMiniTopic(initial?: Partial<ChatTopic>) {
   const modelMgr = useModels()
   const manager = useMessage()
@@ -33,11 +38,20 @@ export function useMiniTopic(initial?: Partial<ChatTopic>) {
     if (t) {
       topic.value = t
     } else {
-      topic.value.id = topicId
+      topic.value.id = _topicId.value
       await manager.getStorage().addChatTopic(topic.value)
     }
+    let config = await manager.getStorage().getChatLLMConfig(_topicId.value)
+    if (!config) {
+      config = { ...defaultLLMConfig(), id: _topicId.value, topicId: _topicId.value }
+    }
+    // default set to no reasoning
+    if (!isUndefined(config.reasoning)) {
+      config.reasoning = false
+    }
+    await manager.getStorage().putChatLLMConfig(config)
     if (!isArrayLength(topic.value.modelIds)) {
-      const fModel = await modelMgr.getStorage().getMostFrequentModels(10, ModelType.Chat)
+      const fModel = (await modelMgr.getStorage().getMostFrequentModels(10)).filter(isChatType)
       if (isArrayLength(fModel)) {
         topic.value.modelIds = [fModel[0].id]
       }

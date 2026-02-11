@@ -9,9 +9,10 @@ import { filesize } from "filesize"
 import logo from "@resources/icon.png"
 import ModelSelect from "@renderer/views/main/chat/components/message/components/handler/modelSelect.vue"
 import { useMiniTopic } from "@renderer/hooks/useMiniTopic"
-import { ModelType, SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windflow/core/types"
 import { msgError, msgWarning } from "@renderer/utils"
 import { getPrompt } from "./prompt"
+import { isChatType } from "@windflow/core/models"
 const { t } = useI18n()
 const {
   info,
@@ -166,11 +167,7 @@ onBeforeUnmount(() => {
             :active-text="t('autoUpdate.auto')"></el-switch>
           <el-divider content-position="left">{{ t("autoUpdate.log") }}</el-divider>
           <div class="flex gap[var(--ai-gap-medium)]">
-            <ModelSelect
-              :topic
-              single
-              :filter="v => v.type.every(t => t === ModelType.Chat)"
-              @change="update"></ModelSelect>
+            <ModelSelect :topic single :filter="isChatType" @change="update"></ModelSelect>
             <Button
               text-loading
               round

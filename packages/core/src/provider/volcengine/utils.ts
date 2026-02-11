@@ -28,6 +28,10 @@ export function volcengineLLMParamsHandler(
     data.thinking = {
       type: originalParams.reasoning ? "enabled" : "disabled",
     }
+  } else {
+    data.thinking = {
+      type: "auto",
+    }
   }
   if (isArrayLength(toolList)) {
     data.tools = toolList

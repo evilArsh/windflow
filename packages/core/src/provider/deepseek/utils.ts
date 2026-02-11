@@ -1,4 +1,4 @@
-import { cloneDeep, isArrayLength, isUndefined } from "@toolmain/shared"
+import { cloneDeep, isArrayLength } from "@toolmain/shared"
 import { LLMConfig, LLMToolCallRequest, Message, ModelMeta, RequestHandler } from "@windflow/core/types"
 
 export function useHandler(): RequestHandler {
@@ -23,10 +23,8 @@ export function deepSeekLLMParamsHandler(
     n: 1,
     response_format: { type: "text" },
   }
-  if (!isUndefined(originalParams?.reasoning)) {
-    data.thinking = {
-      type: originalParams.reasoning ? "enabled" : "disabled",
-    }
+  data.thinking = {
+    type: originalParams?.reasoning ? "enabled" : "disabled",
   }
   if (isArrayLength(toolList)) {
     data.tools = toolList
