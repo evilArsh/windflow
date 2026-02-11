@@ -30,7 +30,7 @@ export class DeepSeek implements Provider {
     })
     return res.data.data.map<ModelMeta>((v: ModelsResponse["data"][number]) => ({
       id: `${provider.name}_${v.id}`,
-      type: [v.id === "deepseek-chat" ? ModelType.Chat : ModelType.ChatReasoner],
+      type: [ModelType.Chat],
       modelName: v.id,
       providerName: provider.name,
       subProviderName: provider.name,

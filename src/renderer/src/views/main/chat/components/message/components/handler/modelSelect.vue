@@ -6,7 +6,7 @@ import type { ModelMeta, ChatTopic } from "@windflow/core/types"
 import useProviderStore from "@renderer/store/provider"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { isArrayLength } from "@toolmain/shared"
-import { isASRType, isChatReasonerType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
+import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 import Group from "./components/group.vue"
 const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
@@ -28,7 +28,7 @@ const activeModels = computed<Record<string, ModelMeta[]>>(() =>
       v =>
         v.active &&
         isArrayLength(v.type) &&
-        (isChatReasonerType(v) || isASRType(v) || isChatType(v) || isImageType(v) || isTTSType(v) || isVideoType(v)) &&
+        (isASRType(v) || isChatType(v) || isImageType(v) || isTTSType(v) || isVideoType(v)) &&
         (props.filter ? props.filter(v) : true)
     )
     .reduce<Record<string, ModelMeta[]>>((acc, cur) => {

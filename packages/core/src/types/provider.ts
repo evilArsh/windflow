@@ -10,7 +10,6 @@ import {
 } from "@windflow/core/types"
 export enum ModelType {
   Chat = "Chat",
-  ChatReasoner = "ChatReasoner",
 
   Embedding = "Embedding",
 
