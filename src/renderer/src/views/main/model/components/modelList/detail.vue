@@ -42,6 +42,7 @@ const { modelTypes, onTypeGroupChange, beforeActiveChange } = useModelHelper()
 function init() {
   if (props.model) {
     tmodel.value = cloneDeep(props.model)
+    onTypeGroupChange(tmodel.value.type, tmodel.value)
   }
 }
 async function onConfirm(done: CallBackFn) {
