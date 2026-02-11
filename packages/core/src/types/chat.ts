@@ -81,10 +81,6 @@ export type ChatMessage = {
    * @description 标识当前消息是对 `fromId` 消息的回应
    */
   fromId?: string
-  // /**
-  //  * @description 多模型同时请求时，标识父ChatMessage的ID
-  //  */
-  // parentId?: string
   /**
    * @description 本次请求中模型产生的token数
    */

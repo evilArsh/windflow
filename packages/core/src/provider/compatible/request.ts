@@ -8,11 +8,12 @@ import {
   ModelMeta,
   ProviderMeta,
   BeforeRequestCallback,
+  RequestParamsHandler,
 } from "@windflow/core/types"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
-import { mergeRequestConfig, openAICompatParser, usePartialData } from "./utils"
-import { errorToText, resolvePath, ContentType, cloneDeep, isArray } from "@toolmain/shared"
+import { openAICompatParser, usePartialData } from "./utils"
+import { errorToText, resolvePath, ContentType, cloneDeep } from "@toolmain/shared"
 async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {
     const reader = stream.getReader()
@@ -98,6 +99,7 @@ export async function makeRequest(
   modelMeta: ModelMeta,
   requestHandler: LLMRequestHandler,
   callback: (message: LLMResponse) => void,
+  paramHandler: RequestParamsHandler,
   beforeRequest?: BeforeRequestCallback
 ) {
   const partial = usePartialData()
@@ -120,14 +122,11 @@ export async function makeRequest(
     // hooks end
     const toolList = await loadMCPTools(mcpServersIds)
     partial.updateToolLists(toolList)
-    const appendTools = (req: LLMConfig, toolist: unknown) => {
-      return { ...req, ...(isArray(toolist) && toolist.length ? { tools: toolist, tool_calls: toolist } : {}) }
-    }
     let neededCallTools: LLMToolCall[] = []
     let callToolResults: Message[] = []
     while (true) {
       for await (const content of requestHandler.chat(
-        appendTools(mergeRequestConfig(contextCopy, modelMetaCopy, requestBody), toolList),
+        paramHandler(contextCopy, modelMetaCopy, toolList, requestBody),
         providerMetaCopy
       )) {
         partial.add(content)
@@ -136,7 +135,6 @@ export async function makeRequest(
       neededCallTools = partial.getTools()
       if (neededCallTools.length) {
         callToolResults = await callTools(neededCallTools)
-        console.log("[call result]", callToolResults)
         callToolResults.forEach(callResult => {
           partial.addToolCallResults(callResult)
           const neededCalltool = neededCallTools.find(tool => tool.id === callResult.tool_call_id)

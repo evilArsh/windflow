@@ -3,16 +3,22 @@ import {
   ModelMeta,
   ModelType,
   ModelsResponse,
-  ImageResponse,
   RequestHandler,
   MediaRequest,
+  Message,
+  LLMResponse,
+  Provider,
+  BeforeRequestCallback,
+  LLMConfig,
+  ImageResponse,
   Role,
 } from "@windflow/core/types"
-import { Compatible } from "../compatible"
-import { patchAxios } from "../compatible/utils"
-import { useSingleRequest } from "../utils"
+import { generateSummaryText, patchAxios } from "../compatible/utils"
+import { createInstance, useSingleRequest } from "../utils"
 import { AxiosError, CanceledError } from "axios"
 import { cloneDeep, errorToText, resolvePath } from "@toolmain/shared"
+import { makeRequest, useSingleLLMChat } from "../compatible/request"
+import { siliconflowLLMParamsHandler } from "./utils"
 
 const types = [
   { name: "chat", type: ModelType.Chat },
@@ -25,10 +31,8 @@ const types = [
   { name: "text-to-speech", type: ModelType.TextToSpeech },
   { name: "text-to-video", type: ModelType.TextToVideo },
 ]
-export class SiliconFlow extends Compatible {
-  constructor() {
-    super()
-  }
+export class SiliconFlow implements Provider {
+  #axios = createInstance()
   name(): string {
     return "siliconflow"
   }
@@ -79,11 +83,11 @@ export class SiliconFlow extends Compatible {
     return handler
   }
   async fetchModels(provider: ProviderMeta): Promise<ModelMeta[]> {
-    patchAxios(provider, this.axios)
+    patchAxios(provider, this.#axios)
     const req = types.reduce(
       (acc, v) => {
         acc.push(
-          this.axios
+          this.#axios
             .request<ModelsResponse>({
               method: provider.api.models?.method,
               url: provider.api.models?.url,
@@ -117,5 +121,41 @@ export class SiliconFlow extends Compatible {
       }
     }
     return Array.from(datas.values())
+  }
+  async chat(
+    messages: Message[],
+    modelMeta: ModelMeta,
+    providerMeta: ProviderMeta,
+    callback: (message: LLMResponse) => void,
+    beforeRequest?: BeforeRequestCallback
+  ): Promise<RequestHandler> {
+    const requestHandler = useSingleLLMChat()
+    makeRequest(messages, providerMeta, modelMeta, requestHandler, callback, siliconflowLLMParamsHandler, beforeRequest)
+    return requestHandler
+  }
+  async summarize(
+    context: string,
+    modelMeta: ModelMeta,
+    provider: ProviderMeta,
+    callback: (message: LLMResponse) => void,
+    reqConfig?: LLMConfig
+  ): Promise<RequestHandler> {
+    const requestHandler = useSingleLLMChat()
+    const request = async () => {
+      const requestData = siliconflowLLMParamsHandler(
+        [{ role: Role.User, content: generateSummaryText(context) }],
+        modelMeta,
+        [],
+        reqConfig
+      )
+      // force no thinking
+      requestData.enable_thinking = false
+      requestData.stream = false
+      for await (const content of requestHandler.chat(requestData, provider)) {
+        callback(content)
+      }
+    }
+    request()
+    return requestHandler
   }
 }

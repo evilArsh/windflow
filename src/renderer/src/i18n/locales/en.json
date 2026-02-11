@@ -42,6 +42,7 @@
     "cleanMessage": "Clear Chat{shortcut}",
     "context": "Chat Context",
     "contextDivider": "Context Cleared",
+    "deepThinking": "Deep Thinking",
     "defaultPrompt": "You are a helpful AI assistant",
     "deleteFailed": "Delete Failed",
     "editChat": "Edit",

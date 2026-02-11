@@ -202,8 +202,6 @@ onBeforeUnmount(() => {
     display: flex;
     background-color: var(--el-bg-color);
     border-top: 1px solid var(--el-border-color-light);
-    // padding: var(--content-handler-padding);
-    // min-height: calc(var(--ai-header-height) + var(--content-handler-padding));
   }
 }
 </style>

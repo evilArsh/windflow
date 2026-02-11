@@ -23,6 +23,10 @@ export type LLMConfig = {
   frequency_penalty?: number
   presence_penalty?: number
   max_tokens?: number
+  /**
+   * deep thinking toggle
+   */
+  reasoning?: boolean
   // [x: string]: unknown
 }
 export type LLMContent = {
