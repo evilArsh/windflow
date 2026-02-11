@@ -90,7 +90,7 @@ const upload = {
         class="flex flex-1 flex-col overflow-hidden"
         body-class="overflow-hidden"
         shadow="never"
-        style="--el-card-padding: 1rem; --el-card-bg-color: var(--el-fill-color-light)">
+        style="--el-card-padding: 1rem">
         <template #header>
           <el-text type="primary">{{ t("knowledge.fileList") }}</el-text>
         </template>
