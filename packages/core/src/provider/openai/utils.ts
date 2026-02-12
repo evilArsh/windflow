@@ -28,6 +28,12 @@ export function modelVersion(model: ModelMeta): number {
  * FIXME: fix when model version greater than gpt-5*
  */
 export function supportReasoning(model: ModelMeta): boolean {
+  // https://developers.openai.com/api/docs/models
+  // Models used in ChatGPT, not recommended for API use.
+  // gpt-5-chat-latest，chatgpt-4o-latest
+  if (model.modelName === "gpt-5-chat-latest" || model.modelName === "chatgpt-4o-latest") {
+    return false
+  }
   if (isGPTOSeries(model)) {
     return modelVersion(model) >= 5
   }
