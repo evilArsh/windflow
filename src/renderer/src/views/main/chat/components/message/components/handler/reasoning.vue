@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import type { ChatLLMConfig, ModelMeta, ChatTopic } from "@windflow/core/types"
+import type { ChatLLMConfig, ChatTopic } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 import { msgError } from "@renderer/utils"
 import { errorToText } from "@toolmain/shared"
 import { storeToRefs } from "pinia"
 const props = defineProps<{
-  title?: string
   topic: ChatTopic
-  filter?: (model: ModelMeta) => boolean
-  single?: boolean
 }>()
 const topic = computed(() => props.topic)
 const chatStore = useChatStore()

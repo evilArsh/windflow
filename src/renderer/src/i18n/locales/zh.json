@@ -47,6 +47,8 @@
     "deleteFailed": "删除失败",
     "editChat": "编辑",
     "editMessage": "消息编辑",
+    "fileTooLarge": "文件过大",
+    "fileTypeNotSupported": "不支持该类型的文件",
     "kb": {
       "label": "知识库"
     },
@@ -130,7 +132,8 @@
       "n": "生成数量",
       "negativePrompt": "反向提示词",
       "seed": "随机种子"
-    }
+    },
+    "upload": "上传"
   },
   "embedding": {
     "deleteWithKnowledgeBind": "当前嵌入模型已绑定{count}个知识库，无法删除，知识库：{name}",

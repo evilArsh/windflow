@@ -100,15 +100,16 @@ const status = useStatus()
             <div class="nav-menu-item">
               <ContentBox
                 normal-icon
+                style="--box-padding: var(--ai-gap-base); --box-margin: var(--ai-gap-small)"
                 class="flex-1"
-                style="--box-padding: 0 var(--ai-gap-base)"
                 :main-style="{ flexDirection: 'column' }"
                 still-lock
                 :default-lock="defaultRoute.startsWith(item.index)">
                 <template #icon>
-                  <i class="nav-menu-item-icon"><component :is="item.icon"></component></i>
+                  <i class="text-1.8rem">
+                    <component :is="item.icon"></component>
+                  </i>
                 </template>
-                <el-text size="small">{{ item.label }}</el-text>
               </ContentBox>
             </div>
           </el-menu-item>
@@ -170,11 +171,7 @@ const status = useStatus()
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 0 var(--ai-gap-base) 0;
     cursor: pointer;
-    .nav-menu-item-icon {
-      font-size: 1.8rem;
-    }
   }
   .nav-bottom {
     -webkit-app-region: no-drag;

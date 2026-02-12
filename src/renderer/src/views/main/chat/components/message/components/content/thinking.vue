@@ -80,9 +80,7 @@ watch(
           </el-text>
         </div>
       </template>
-      <ContentBox>
-        <Markdown v-if="reasoning_content" :content="reasoning_content"></Markdown>
-      </ContentBox>
+      <Markdown class="p-[var(--ai-gap-base)]" v-if="reasoning_content" :content="reasoning_content"></Markdown>
     </el-collapse-item>
   </el-collapse>
 </template>

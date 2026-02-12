@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 import { DialogPanel } from "@toolmain/components"
+import { TooltipTriggerType } from "element-plus"
+const { width = 500, trigger = "hover" } = defineProps<{
+  width?: number
+  trigger?: TooltipTriggerType
+}>()
 </script>
 <template>
-  <el-popover placement="top" :width="500" trigger="hover" popper-style="--el-popover-padding: 0">
+  <el-popover placement="top" :width :trigger popper-style="--el-popover-padding: 0">
     <template #reference>
       <slot name="reference"></slot>
     </template>
