@@ -47,6 +47,8 @@
     "deleteFailed": "Delete Failed",
     "editChat": "Edit",
     "editMessage": "Edit Message",
+    "fileTooLarge": "file too large",
+    "fileTypeNotSupported": "file type not supported",
     "kb": {
       "label": "Knowledge Base"
     },
@@ -130,7 +132,8 @@
       "n": "Generation Count",
       "negativePrompt": "Negative Prompt",
       "seed": "Random Seed"
-    }
+    },
+    "upload": "Upload"
   },
   "embedding": {
     "deleteWithKnowledgeBind": "This embedding model is bound to {count} knowledge base(s) and cannot be deleted. Knowledge base(s): {name}",

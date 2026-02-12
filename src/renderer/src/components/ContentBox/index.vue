@@ -92,7 +92,7 @@ watch(
       <div v-if="$slots.icon" @click="handle.iconClick" :class="{ 'normal-icon': normalIcon }" class="box-icon">
         <slot name="icon"></slot>
       </div>
-      <div class="box-text"><slot> </slot></div>
+      <div v-if="$slots.default" class="box-text"><slot> </slot></div>
       <div v-if="$slots.end" class="box-end"><slot name="end"></slot></div>
     </div>
     <div v-if="$slots.footer" class="box-footer">

@@ -7,6 +7,7 @@ import KnowledgeBase from "./kb.vue"
 import Settings from "./settings/index.vue"
 import TextInput from "./textInput.vue"
 import Reasoning from "./reasoning.vue"
+import Upload from "./upload.vue"
 import useChatStore from "@renderer/store/chat"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
@@ -74,6 +75,7 @@ const {
         <ModelSelect :topic @change="handler.onTopicUpdate" />
         <LLMRequestConfig :topic></LLMRequestConfig>
         <Reasoning :topic></Reasoning>
+        <Upload :topic></Upload>
         <TextToImage :topic></TextToImage>
         <Mcp :topic></Mcp>
         <KnowledgeBase :topic></KnowledgeBase>
