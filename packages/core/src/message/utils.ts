@@ -224,11 +224,12 @@ export class MediaDownloader {
         })
         .filter(item => !!item)
 
+      const mediaIds = results.map(item => item.id)
       await storage.chat.updateChatMessage(message.id, {
-        mediaIds: results.map(item => item.id),
+        mediaIds,
       })
       message.finish = true
-      message.mediaIds = results.map(item => item.id)
+      message.mediaIds = mediaIds
       msgMgr.emitMessage(message, contextId)
     } catch (error) {
       console.error("[download]", error)

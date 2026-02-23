@@ -8,11 +8,12 @@ import {
   ChatTopicTree,
   ChatTTIConfig,
   Content,
+  Media,
   Role,
 } from "@windflow/core/types"
 import useModelsStore from "@renderer/store/model"
 import { defaultTTIConfig, defaultLLMConfig, chatTopicDefault } from "@windflow/core/storage"
-import { cloneDeep, code1xx, code2xx, isArray, uniqueId } from "@toolmain/shared"
+import { cloneDeep, code2xx, isArray, uniqueId } from "@toolmain/shared"
 import {
   assembleMessageTree,
   assembleTopicTree,
@@ -38,8 +39,8 @@ export default defineStore("chat_topic", () => {
   const chatMessage = reactive<Record<string, ChatMessageTree[]>>({}) // all chat messages group by `topicId`
   const chatMessageMap = new Map<string, ChatMessageTree>()
 
-  const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // 聊天LLM配置,topicId作为key
-  const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // 聊天图片配置,topicId作为key
+  const chatLLMConfig = reactive<Record<string, ChatLLMConfig>>({}) // LLM request config, topicId as key
+  const chatTTIConfig = reactive<Record<string, ChatTTIConfig>>({}) // image chat config, topicId as key
   const msgMgr = useMessage()
   const chatStorage = msgMgr.getStorage()
   const { t } = useI18n()
@@ -48,6 +49,8 @@ export default defineStore("chat_topic", () => {
       const current = topicMap.get(e.topic.id)
       if (current) {
         current.node.label = e.topic.label
+        current.node.requestCount = e.topic.requestCount
+        current.node.mediaIds = e.topic.mediaIds
       }
     }
     const message = e.message
@@ -56,8 +59,9 @@ export default defineStore("chat_topic", () => {
     if (!topic) return
     const contextId = e.contextId
     let cacheMsg = chatMessageMap.get(message.id)
+    // if a message was deleted, the `cacheMsg` also not exist either(a request abort signal happend)
     if (!cacheMsg) {
-      topic.node.requestCount = Math.max(1, topic.node.requestCount + 1)
+      if (message.status === 499) return
       cacheMsg = reactive(wrapMessage(cloneDeep(message)))
       chatMessageMap.set(cacheMsg.id, cacheMsg)
       if (!chatMessage[message.topicId]) chatMessage[message.topicId] = []
@@ -101,13 +105,7 @@ export default defineStore("chat_topic", () => {
     } else {
       Object.assign(cacheMsg.node, message)
     }
-    if (code1xx(message.status)) {
-      cacheMsg.node.finish = false
-    } else if (message.status == 206) {
-      cacheMsg.node.finish = false
-    } else {
-      topic.node.requestCount = Math.max(0, topic.node.requestCount - 1)
-      cacheMsg.node.finish = true
+    if (cacheMsg.node.finish) {
       if (code2xx(message.status)) {
         // auto summarize a topic title
         if (contextId && topic.node.label === window.defaultTopicTitle) {
@@ -311,7 +309,7 @@ export default defineStore("chat_topic", () => {
     })
   }
   /**
-   * 删除 `topicId` 下的消息列表
+   * remove all messages that belongs to `topicId`
    */
   function cacheRemoveChatMessage(topicId: string) {
     const messages = chatMessage[topicId]
@@ -327,7 +325,18 @@ export default defineStore("chat_topic", () => {
     }
     delete chatMessage[topicId]
   }
-
+  async function addChatTempFiles(topic: ChatTopic, files: Media[]) {
+    return msgMgr.addChatTempFiles(topic.id, files)
+  }
+  async function removeChatTempFiles(topic: ChatTopic, fileIds: string[]) {
+    return msgMgr.removeChatTempFile(topic.id, fileIds)
+  }
+  async function addMessageFiles(topic: ChatTopic, files: Media[]) {
+    return msgMgr.addMessageFiles(topic.id, files)
+  }
+  async function removeMessageFiles(topic: ChatTopic, fileIds: string[]) {
+    return msgMgr.removeMessageFiles(topic.id, fileIds)
+  }
   /**
    * initially load chat data from the database and listen message event
    */
@@ -383,5 +392,10 @@ export default defineStore("chat_topic", () => {
     removeChatTopic,
     addChatTopic,
     cacheRemoveChatMessage,
+
+    removeChatTempFiles,
+    removeMessageFiles,
+    addChatTempFiles,
+    addMessageFiles,
   }
 })

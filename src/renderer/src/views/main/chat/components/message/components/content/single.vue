@@ -19,7 +19,6 @@ import { msg, msgError } from "@renderer/utils"
 import { useThrottleFn } from "@vueuse/core"
 const props = defineProps<{
   message: ChatMessageTree
-  parent?: ChatMessageTree
   topic: ChatTopic
   header?: boolean
   context: ReturnType<typeof useMsgContext>
@@ -109,7 +108,7 @@ defineExpose({
     <template v-if="header" #header>
       <Affix ref="affix" :offset="88" :target="`#${id}`">
         <Title :message :reverse>
-          <Handler :topic :parent :message @delete="done => onContentDelete(message, done)" @edit="onEdit"> </Handler>
+          <Handler :topic :message @delete="done => onContentDelete(message, done)" @edit="onEdit"> </Handler>
         </Title>
       </Affix>
     </template>
@@ -127,7 +126,7 @@ defineExpose({
         @updated="onUpdateAffix"></Markdown>
     </div>
     <div v-else class="chat-item-content p[var(--ai-gap-medium)]">
-      <Image v-if="isImage" :message :parent></Image>
+      <Image v-if="isImage" :message></Image>
       <div v-else-if="isText" class="chat-item-content">
         <div v-for="(child, index) in message.node.content.children" :key="index" class="chat-item-content">
           <Thinking :message="child" :finish="!!message.node.finish"></Thinking>

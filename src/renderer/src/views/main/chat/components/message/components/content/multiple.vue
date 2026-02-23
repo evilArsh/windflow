@@ -218,7 +218,6 @@ onMounted(() => {
         v-for="(item, index) in messageChildren"
         :ref="ref => (affixRefs[index] = ref as InstanceType<typeof Single>)"
         :style="itemStyle"
-        :parent="message"
         :context
         :topic
         :message="item"

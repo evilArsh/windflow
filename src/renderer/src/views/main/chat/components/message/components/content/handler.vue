@@ -8,7 +8,6 @@ import { Role } from "@windflow/core/types"
 const props = defineProps<{
   message: ChatMessageTree
   topic: ChatTopic
-  parent?: ChatMessageTree
 }>()
 defineEmits<{
   delete: [done: CallBackFn]

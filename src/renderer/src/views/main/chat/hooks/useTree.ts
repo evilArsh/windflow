@@ -2,7 +2,7 @@ import type Node from "element-plus/es/components/tree/src/model/node"
 import { useTask } from "@renderer/hooks/useTask"
 import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
 import { ScaleConfig } from "@toolmain/components"
-import { errorToText, isArray, toNumber } from "@toolmain/shared"
+import { errorToText, isArray, isArrayLength, toNumber } from "@toolmain/shared"
 import { TreeInstance, ScrollbarInstance, NodeDropType, TreeNodeData } from "element-plus"
 import { storeToRefs } from "pinia"
 import { Reactive } from "vue"
@@ -13,6 +13,8 @@ import { cloneTopic, createChatTopic } from "@windflow/core/message"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { msg, msgError, msgWarning } from "@renderer/utils"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
+import { useModels } from "@renderer/hooks/useCore"
+import { isChatType } from "@windflow/core/models"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,
@@ -22,6 +24,7 @@ export const useTree = (
   const { t } = useI18n()
   const settingsStore = useSettingsStore()
   const chatStore = useChatStore()
+  const modelMgr = useModels()
   const { topicList } = storeToRefs(chatStore)
   const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
   const currentTopic = ref<ChatTopicTree>()
@@ -71,6 +74,13 @@ export const useTree = (
           label: t("chat.addChat"),
           prompt: t("chat.defaultPrompt"),
         })
+      }
+      if (!isArrayLength(topic.modelIds)) {
+        // choose the most recent used model as a default model
+        const fModel = (await modelMgr.getStorage().getMostFrequentModels(10)).filter(isChatType)
+        if (isArrayLength(fModel)) {
+          topic.modelIds = [fModel[0].id]
+        }
       }
       const newNode = await chatStore.addChatTopic(topic)
       if (parentId) {

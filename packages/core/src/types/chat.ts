@@ -151,6 +151,10 @@ export type ChatTopic = {
    * @description 虚拟节点不会展示在聊天列表中
    */
   isVirtual?: boolean
+  /**
+   * @description 当前会话临时拥有的资源id
+   */
+  mediaIds?: string[]
 }
 
 export type ChatLLMConfig = LLMConfig & {

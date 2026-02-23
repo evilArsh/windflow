@@ -1,5 +1,5 @@
-import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig } from "@windflow/core/types"
-import { storage } from "@windflow/core/storage"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, Media } from "@windflow/core/types"
+import { storage, withTransaction } from "@windflow/core/storage"
 import { isArrayLength, isUndefined } from "@toolmain/shared"
 const MessageIndexStep = 100
 
@@ -104,6 +104,72 @@ export class MessageStorage {
   }
   async getTopic(topicId: string) {
     return storage.chat.getTopic(topicId)
+  }
+  async addChatTempFiles(topicId: string, files: Media[]): Promise<string[] | undefined> {
+    return withTransaction("readwrite", ["chatTopic", "media"], async tx => {
+      const topic = await this.getTopic(topicId)
+      if (!topic) return
+      await storage.media.bulkAdd(files, { transaction: tx })
+      if (!topic.mediaIds) {
+        topic.mediaIds = []
+      }
+      topic.mediaIds.push(...files.map(file => file.id))
+      await storage.chat.putChatTopic(topic, { transaction: tx })
+      return topic.mediaIds
+    })
+  }
+  async removeChatTempFile(topicId: string, fileIds: string[]): Promise<string[] | undefined> {
+    return withTransaction("readwrite", ["chatTopic", "media"], async tx => {
+      const topic = await this.getTopic(topicId)
+      if (!topic) return
+      if (isArrayLength(topic.mediaIds)) {
+        const available = fileIds.reduce<string[]>((prev, cur) => {
+          if (topic.mediaIds?.includes(cur) && !prev.includes(cur)) {
+            prev.push(cur)
+          }
+          return prev
+        }, [])
+        if (available.length) {
+          await storage.media.bulkRemove(available, { transaction: tx })
+          topic.mediaIds = topic.mediaIds.filter(id => !available.includes(id))
+          await storage.chat.putChatTopic(topic, { transaction: tx })
+          return topic.mediaIds
+        }
+      }
+    })
+  }
+  async addMessageFiles(messageId: string, files: Media[]): Promise<string[] | undefined> {
+    return withTransaction("readwrite", ["chatMessage", "media"], async tx => {
+      const message = await storage.chat.getChatMessage(messageId)
+      if (!message) return
+      await storage.media.bulkAdd(files, { transaction: tx })
+      if (!message.mediaIds) {
+        message.mediaIds = []
+      }
+      message.mediaIds.push(...files.map(file => file.id))
+      await storage.chat.putChatMessage(message, { transaction: tx })
+      return message.mediaIds
+    })
+  }
+  async removeMessageFiles(messageId: string, fileIds: string[]): Promise<string[] | undefined> {
+    return withTransaction("readwrite", ["chatMessage", "media"], async tx => {
+      const message = await storage.chat.getChatMessage(messageId)
+      if (!message) return
+      if (isArrayLength(message.mediaIds)) {
+        const available = fileIds.reduce<string[]>((prev, cur) => {
+          if (message.mediaIds?.includes(cur) && !prev.includes(cur)) {
+            prev.push(cur)
+          }
+          return prev
+        }, [])
+        if (available.length) {
+          await storage.media.bulkRemove(available, { transaction: tx })
+          message.mediaIds = message.mediaIds?.filter(id => !available.includes(id))
+          await storage.chat.putChatMessage(message, { transaction: tx })
+          return message.mediaIds
+        }
+      }
+    })
   }
   async fetch() {
     return storage.chat.fetch()

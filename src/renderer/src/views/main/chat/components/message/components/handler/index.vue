@@ -35,9 +35,10 @@ const handler = {
           isFunction(done) && done()
           return
         }
-        await chatStore.send(topic.value.id, topic.value.content, topic.value.modelIds)
+        const content = topic.value.content
         topic.value.content = ""
-        await chatStore.updateChatTopic(toValue(topic))
+        await chatStore.updateChatTopic(topic.value)
+        await chatStore.send(topic.value.id, content, topic.value.modelIds)
         await nextTick()
         emit("messageSend")
         isFunction(done) && done()

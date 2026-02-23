@@ -1,7 +1,12 @@
+export type MediaType = "image" | "video" | "audio" | "file"
 export type Media = {
   id: string
-  type: "image" | "video" | "audio" | "file"
+  type: MediaType
   name: string
   data: Blob
   size?: number
+}
+export type MediaSrc = {
+  url: string
+  type: MediaType
 }

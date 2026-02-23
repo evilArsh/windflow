@@ -9,6 +9,7 @@ import {
   ChatEventHandler,
   ChatTopic,
   ChatEvent,
+  Media,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
@@ -21,7 +22,16 @@ import {
   resetMessage,
 } from "./utils"
 import { createChatContext } from "./context"
-import { cloneDeep, EventBus, isArrayLength, isString, isUndefined, toNumber, useEvent } from "@toolmain/shared"
+import {
+  cloneDeep,
+  code1xx,
+  EventBus,
+  isArrayLength,
+  isString,
+  isUndefined,
+  toNumber,
+  useEvent,
+} from "@toolmain/shared"
 import { defaultTTIConfig } from "@windflow/core/storage"
 import { storage } from "@windflow/core/storage"
 import { beforeLLMRequest } from "./hooks"
@@ -68,24 +78,36 @@ export class MessageManager {
       modelMeta,
       providerMeta,
       value => {
-        if (ctx.handler?.getSignal().aborted) return
+        if (ctx.handler?.getSignal().aborted) {
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          storage.chat.putChatTopic(topic)
+          message.finish = true
+          message.status = 499
+          this.emitTopic(topic)
+          // this message may already has been removed from database, because the abort signal may happen when user terminate manually.
+          // or user deleted a topic or a message
+          this.emitMessage(message)
+          return
+        }
         const { data, status, msg } = value
         message.completionTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.completion_tokens), 0)
         message.promptTokens = data.children?.reduce((acc, cur) => acc + toNumber(cur.usage?.prompt_tokens), 0)
         message.status = status
         message.content = data
         message.msg = msg
-        if (status == 206) {
+        if (code1xx(message.status)) {
+          topic.requestCount = Math.max(1, topic.requestCount + 1)
           message.finish = false
-        } else if (status == 200) {
-          message.finish = true
-        } else if (status == 100) {
+        } else if (status == 206) {
           message.finish = false
         } else {
           message.finish = true
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
         }
         storage.chat.putChatMessage(message)
+        storage.chat.putChatTopic(topic)
         this.emitMessage(message, ctx.id)
+        this.emitTopic(topic) // only `requestCount` changed
       },
       beforeLLMRequest(topic, message)
     )
@@ -368,5 +390,49 @@ export class MessageManager {
         this.emitTopic(topic)
       }
     })
+  }
+  /**
+   * add topic's temp files add return the available mediaIds
+   */
+  async addChatTempFiles(topicId: string, files: Media[]): Promise<string[] | undefined> {
+    const topic = await storage.chat.getTopic(topicId)
+    if (!topic) return
+    const ids = await this.getStorage().addChatTempFiles(topicId, files)
+    if (!ids) return
+    topic.mediaIds = ids
+    this.emitTopic(topic)
+  }
+  /**
+   * if fileIds are empty, remove all medias. return the available mediaIds
+   */
+  async removeChatTempFile(topicId: string, fileIds: string[]): Promise<string[] | undefined> {
+    const topic = await storage.chat.getTopic(topicId)
+    if (!topic) return
+    const ids = await this.getStorage().removeChatTempFile(topicId, fileIds)
+    if (!ids) return
+    topic.mediaIds = ids
+    this.emitTopic(topic)
+  }
+  /**
+   * add files to a message add return the available mediaIds
+   */
+  async addMessageFiles(messageId: string, files: Media[]): Promise<string[] | undefined> {
+    const message = await storage.chat.getChatMessage(messageId)
+    if (!message) return
+    const ids = await this.getStorage().addMessageFiles(messageId, files)
+    if (!ids) return
+    message.mediaIds = ids
+    this.emitMessage(message)
+  }
+  /**
+   * if fileIds are empty, remove all medias. return the available mediaIds
+   */
+  async removeMessageFiles(messageId: string, fileIds: string[]): Promise<string[] | undefined> {
+    const message = await storage.chat.getChatMessage(messageId)
+    if (!message) return
+    const ids = await this.getStorage().removeMessageFiles(messageId, fileIds)
+    if (!ids) return
+    message.mediaIds = ids
+    this.emitMessage(message)
   }
 }
