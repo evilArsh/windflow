@@ -26,10 +26,10 @@ export function useTask(queue: PQueue) {
     queue.pause()
     queue.clear()
   }
-  function add<TaskResultType>(function_: Task<TaskResultType>): TaskHandler<TaskResultType> {
+  function add<TaskResultType>(taskFn: Task<TaskResultType>): TaskHandler<TaskResultType> {
     const id = uniqueId()
     const controller = new AbortController()
-    const pending = queue.add(function_, {
+    const pending = queue.add(taskFn, {
       id,
       signal: controller.signal,
     })

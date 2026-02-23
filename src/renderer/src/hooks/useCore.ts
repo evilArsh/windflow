@@ -5,6 +5,7 @@ import { MCPManager } from "@windflow/core/mcp"
 import { SettingsManager } from "@windflow/core/settings"
 import { ModelManager } from "@windflow/core/models"
 import { ProviderManager } from "@windflow/core/provider"
+import { MediaManager } from "@windflow/core/media"
 
 export const ChatMessageKey: InjectionKey<MessageManager> = Symbol("chatMessage")
 export const KnowledgeKey: InjectionKey<KnowledgeManager> = Symbol("knowledgeBase")
@@ -12,6 +13,7 @@ export const MCPKey: InjectionKey<MCPManager> = Symbol("mcp")
 export const SettingsKey: InjectionKey<SettingsManager> = Symbol("settings")
 export const ModelKey: InjectionKey<ModelManager> = Symbol("model")
 export const ProviderKey: InjectionKey<ProviderManager> = Symbol("provider")
+export const MediaKey: InjectionKey<MediaManager> = Symbol("media")
 
 export const createChatMessage = () => {
   const msgMgr = markRaw(new MessageManager())
@@ -61,6 +63,14 @@ export const createProvider = () => {
     },
   }
 }
+export const createMedia = () => {
+  const mediaMgr = markRaw(new MediaManager())
+  return {
+    install: (app: App<Element>) => {
+      app.provide(MediaKey, mediaMgr)
+    },
+  }
+}
 export function useMessage(): MessageManager {
   const instance = inject(ChatMessageKey)
   if (!instance) {
@@ -100,6 +110,13 @@ export function useProvider(): ProviderManager {
   const instance = inject(ProviderKey)
   if (!instance) {
     throw new Error("useProvider() is called outside of setup()")
+  }
+  return instance
+}
+export function useMedia(): MediaManager {
+  const instance = inject(MediaKey)
+  if (!instance) {
+    throw new Error("useMedia() is called outside of setup()")
   }
   return instance
 }

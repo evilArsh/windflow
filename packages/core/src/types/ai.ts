@@ -38,7 +38,7 @@ export type LLMContent = {
   type: string
   content: string
 }
-export type Content = string | LLMContent | Array<LLMContent> | string[]
+export type Content = string | LLMContent | LLMContent[] | string[]
 export interface Message {
   role: string
   content: Content

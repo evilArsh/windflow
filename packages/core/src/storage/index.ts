@@ -8,6 +8,7 @@ import * as model from "./model"
 import * as provider from "./provider"
 import * as ragFiles from "./ragFiles"
 import * as settings from "./settings"
+import * as media from "./media"
 import { migrateToV4 } from "./migrate"
 
 export const name = "db-windflow-v2"
@@ -66,6 +67,7 @@ db.version(4)
     knowledge: "id,embeddingId",
     ragFiles: "id,topicId,[topicId+path]",
     embedding: "id",
+    media: "id,type",
   })
   .upgrade(migrateToV4)
 
@@ -87,5 +89,6 @@ export const storage = {
   embedding,
   settings,
   mcp,
+  media,
 }
 export { db }

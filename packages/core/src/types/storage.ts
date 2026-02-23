@@ -8,6 +8,7 @@ import {
   ChatLLMConfig,
   ChatTTIConfig,
   Knowledge,
+  Media,
 } from "."
 import { MCPServerParam } from "@windflow/shared"
 import Dexie, { Transaction, type EntityTable } from "dexie"
@@ -25,6 +26,7 @@ export type Table = {
   knowledge: EntityTable<Knowledge, "id">
   ragFiles: EntityTable<RAGLocalFileInfo, "id">
   embedding: EntityTable<RAGEmbeddingConfig, "id">
+  media: EntityTable<Media, "id">
 }
 export type TableName = keyof Table
 export type DexieTransaction = Transaction & Table

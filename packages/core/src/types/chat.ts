@@ -89,6 +89,10 @@ export type ChatMessage = {
    * @description 本次请求中用户输入的token数
    */
   promptTokens?: number
+  /**
+   * @description 当前消息拥有的资源id
+   */
+  mediaIds?: string[]
 }
 export type ChatTopic = {
   /**
@@ -222,3 +226,4 @@ export interface ChatEventResponse {
   topic?: ChatTopic
 }
 export type ChatEventHandler = (event: ChatEventResponse) => void
+export type ChatEvent = Record<string, ChatEventHandler>

@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { useRequest } from "@windflow/core/provider"
-import { ChatMessageTree } from "@windflow/core/types"
-import { errorToText, isBase64Image, isString } from "@toolmain/shared"
+import { ChatMessage, ChatMessageTree } from "@windflow/core/types"
+import { isArrayLength } from "@toolmain/shared"
 import useChatStore from "@renderer/store/chat"
-import { useTask } from "@renderer/hooks/useTask"
-import PQueue from "p-queue"
-import { msg } from "@renderer/utils"
+import { useSrc } from "@renderer/hooks/useSrc"
 
 const props = defineProps<{
   message: ChatMessageTree
@@ -13,83 +10,22 @@ const props = defineProps<{
 }>()
 const chatstore = useChatStore()
 const message = computed(() => props.message.node)
-const useImages = () => {
-  const images = ref<string[]>([])
-  const http = useRequest()
-  const task = useTask(new PQueue())
 
-  const blobToBase64 = async (blob: Blob) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    })
-  async function download(url: string) {
-    try {
-      task.getQueue().add(async () => {
-        const { promise } = http.request({
-          url,
-          method: "GET",
-          responseType: "blob",
-        })
-        const res = await promise
-        // FIXME: 优化图片转换
-        const src = await blobToBase64(res.data)
-        images.value.push(src)
-      })
-    } catch (error) {
-      msg({ code: 500, msg: errorToText(error) })
-    }
-  }
-
-  return {
-    images,
-    isPending: computed(() => task.isPending.value),
-    abortAll: () => {
-      http.abortAll()
-      task.clear()
-    },
-    addBase64: (img: string) => images.value.push(img),
-    clearImages: () => (images.value.length = 0),
-    download,
-    dispose: () => {
-      task.getQueue().removeAllListeners()
-      abortAll()
-    },
+const { data, isPending, ...src } = useSrc()
+function onMessageChange(value: ChatMessage) {
+  if (isArrayLength(value.mediaIds)) {
+    value.mediaIds.forEach(src.retrieveFromDB)
   }
 }
-const { images, download, isPending, abortAll, dispose, addBase64, clearImages } = useImages()
 watch(
-  () => message.value.content,
-  value => {
-    if (Array.isArray(value.content)) {
-      if (value.content.some((item: string | Record<string, unknown>) => isString(item) && !isBase64Image(item))) {
-        abortAll()
-        clearImages()
-        value.content.forEach((url: unknown) => {
-          if (!isString(url)) return
-          if (isBase64Image(url)) {
-            addBase64(url)
-            return
-          }
-          download(url)
-        })
-      } else {
-        clearImages()
-        value.content.filter(v => isString(v)).forEach(addBase64)
-      }
-    } else {
-      clearImages()
-    }
-  },
-  { immediate: true }
+  () => message.value.mediaIds,
+  () => onMessageChange(message.value)
 )
 // FIXME: remove async function updateChatMessage out of watch
 watch(isPending, val => {
   if (val) return
-  if (!images.value.length) return
-  message.value.content.content = Array.from(images.value)
+  if (!data.value.length) return
+  message.value.content.content = Array.from(data.value)
   if (props.parent) {
     chatstore.updateChatMessage(props.parent.node)
   } else {
@@ -97,20 +33,23 @@ watch(isPending, val => {
       ...message.value,
       content: {
         ...message.value.content,
-        content: Array.from(images.value),
+        content: Array.from(data.value),
       },
     })
   }
 })
-onBeforeUnmount(dispose)
+onBeforeMount(() => {
+  onMessageChange(message.value)
+})
+onBeforeUnmount(src.dispose)
 </script>
 <template>
   <div class="flex gap-.5rem">
     <el-image
-      v-for="(img, index) in images"
+      v-for="(img, index) in data"
       :key="index"
       preview-teleported
-      :preview-src-list="images"
+      :preview-src-list="data"
       :src="img"
       loading="lazy"></el-image>
   </div>

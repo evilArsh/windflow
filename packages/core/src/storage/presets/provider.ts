@@ -1,4 +1,4 @@
-import { ModelType, ProviderMeta, ModelActiveStatus } from "@windflow/core/types"
+import { ProviderMeta, ModelActiveStatus } from "@windflow/core/types"
 import { uniqueId } from "@toolmain/shared"
 export const providerDefault = (): ProviderMeta[] => {
   return [
@@ -15,8 +15,8 @@ export const providerDefault = (): ProviderMeta[] => {
         llmChat: { method: "POST", url: "/chat/completions" },
         balance: { method: "GET", url: "/user/balance" },
       },
-      selectedTypes: [ModelType.Chat],
-      selectedSubProviders: ["deepseek"],
+      selectedTypes: [],
+      selectedSubProviders: [],
       activeStatus: ModelActiveStatus.All,
     },
     {
@@ -39,7 +39,7 @@ export const providerDefault = (): ProviderMeta[] => {
         speechToText: { method: "GET", url: "" },
         textToSpeech: { method: "GET", url: "" },
       },
-      selectedTypes: [ModelType.Chat],
+      selectedTypes: [],
       selectedSubProviders: [],
       activeStatus: ModelActiveStatus.All,
     },
@@ -61,7 +61,7 @@ export const providerDefault = (): ProviderMeta[] => {
         speechToText: { method: "GET", url: "" },
         textToSpeech: { method: "GET", url: "" },
       },
-      selectedTypes: [ModelType.Chat],
+      selectedTypes: [],
       selectedSubProviders: [],
       activeStatus: ModelActiveStatus.All,
     },

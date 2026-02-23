@@ -13,6 +13,7 @@ import {
   createSettings,
   createModel,
   createProvider,
+  createMedia,
 } from "@renderer/hooks/useCore"
 import { createMarkdownWorker } from "@windflow/markdown"
 import "./modules/fonts"
@@ -33,6 +34,7 @@ app.use(createMCP())
 app.use(createSettings())
 app.use(createModel())
 app.use(createProvider())
+app.use(createMedia())
 app.use(createMarkdownWorker())
 app.mount("#app")
 export default app

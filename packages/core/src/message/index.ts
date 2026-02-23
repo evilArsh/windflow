@@ -6,13 +6,20 @@ import {
   ChatMessageType,
   ChatMessageContextFlag,
   ChatContextManager,
-  ChatEventResponse,
   ChatEventHandler,
   ChatTopic,
+  ChatEvent,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
-import { createChatMessage, getIsolatedMessages, getMessageContexts, getMessageType, resetMessage } from "./utils"
+import {
+  createChatMessage,
+  getIsolatedMessages,
+  getMessageContexts,
+  getMessageType,
+  MediaDownloader,
+  resetMessage,
+} from "./utils"
 import { createChatContext } from "./context"
 import { cloneDeep, EventBus, isArrayLength, isString, isUndefined, toNumber, useEvent } from "@toolmain/shared"
 import { defaultTTIConfig } from "@windflow/core/storage"
@@ -29,27 +36,18 @@ export * from "./utils"
 export class MessageManager {
   readonly #ctx: ChatContextManager
   readonly #providerManager: ProviderManager
-  readonly #ev: EventBus<Record<string, ChatEventHandler>>
+  readonly #ev: EventBus<ChatEvent>
   readonly #storage: MessageStorage
+  readonly #downloader: MediaDownloader
   constructor() {
     this.#ctx = createChatContext()
     this.#providerManager = new ProviderManager()
-    this.#ev = useEvent<ChatEventResponse>()
+    this.#ev = useEvent<ChatEvent>()
     this.#storage = new MessageStorage()
+    this.#downloader = new MediaDownloader()
   }
   #emitAll(contextId?: string, message?: ChatMessage, topic?: ChatTopic) {
     this.#ev.emit(AllTopicsFlag, { message, contextId, topic })
-  }
-  #emitMessage(message: ChatMessage, contextId?: string) {
-    this.#ev.emit(message.topicId, {
-      message,
-      contextId,
-    })
-    this.#emitAll(contextId, message)
-  }
-  #emitTopic(topic: ChatTopic) {
-    this.#ev.emit(topic.id, { topic })
-    this.#emitAll(undefined, undefined, topic)
   }
   async #sendChat(contextId: string, message: ChatMessage): Promise<void> {
     const ctx = this.#ctx.get(contextId)
@@ -64,7 +62,7 @@ export class MessageManager {
     // increasing frequency of model usage
     modelMeta.frequency = toNumber(modelMeta.frequency) + 1
     resetMessage(message)
-    this.#emitMessage(message, ctx.id)
+    this.emitMessage(message, ctx.id)
     const newHandler = await provider.chat(
       contexts,
       modelMeta,
@@ -87,7 +85,7 @@ export class MessageManager {
           message.finish = true
         }
         storage.chat.putChatMessage(message)
-        this.#emitMessage(message, ctx.id)
+        this.emitMessage(message, ctx.id)
       },
       beforeLLMRequest(topic, message)
     )
@@ -104,15 +102,17 @@ export class MessageManager {
       const askMessage = await storage.chat.getChatMessage(message.fromId)
       if (!askMessage) return
       resetMessage(message)
-      this.#emitMessage(message, ctx.id)
+      this.emitMessage(message, ctx.id)
       modelMeta.frequency = toNumber(modelMeta.frequency) + 1
       const conf = (await storage.chat.getChatTTIConfig(message.topicId)) ?? defaultTTIConfig()
       const hdl = await provider.textToImage({ ...conf, prompt: askMessage.content }, modelMeta, providerMeta, res => {
         message.content = res.data
-        message.finish = true
+        // set real status code, but not finished until download complete
+        message.finish = false
         message.status = res.status
         message.msg = res.msg
-        this.#emitMessage(message, ctx.id)
+        this.emitMessage(message, ctx.id)
+        this.#downloader.download(this, message, contextId, "image")
       })
       this.#ctx.setHandler(contextId, hdl)
       storage.model.put(modelMeta)
@@ -121,7 +121,7 @@ export class MessageManager {
       message.finish = true
       message.status = 404
       message.content.content = "not implemented"
-      this.#emitMessage(message, ctx.id)
+      this.emitMessage(message, ctx.id)
     }
   }
   #getDispatcher(
@@ -183,6 +183,23 @@ export class MessageManager {
     }
     return reqInfo
   }
+  /**
+   * emit chat message to specified topicId listener
+   */
+  emitMessage(message: ChatMessage, contextId?: string) {
+    this.#ev.emit(message.topicId, {
+      message,
+      contextId,
+    })
+    this.#emitAll(contextId, message)
+  }
+  /**
+   * emit modified topic to specified topicId listener
+   */
+  emitTopic(topic: ChatTopic) {
+    this.#ev.emit(topic.id, { topic })
+    this.#emitAll(undefined, undefined, topic)
+  }
   getStorage(): MessageStorage {
     return this.#storage
   }
@@ -215,7 +232,7 @@ export class MessageManager {
     })
     const reqInfo = await this.#createResponseMessages(topicId, userMessage.id, modelMetas)
     await this.getStorage().addNewMessages([userMessage, ...reqInfo.map(i => i.message)])
-    this.#emitMessage(userMessage)
+    this.emitMessage(userMessage)
     const dispatcher = this.#getDispatcher(reqInfo)
     await Promise.all(dispatcher)
     return reqInfo.map(info => info.contextId)
@@ -229,7 +246,7 @@ export class MessageManager {
     const currentMsg = await storage.chat.getChatMessage(messageId)
     if (!currentMsg) return []
     if (currentMsg.content.role === Role.User) {
-      this.#emitMessage(currentMsg)
+      this.emitMessage(currentMsg)
       // get user message's responding messages
       const msgs = await storage.chat.getMessagesByFromId(topicId, messageId)
       if (msgs.length) {
@@ -315,7 +332,7 @@ export class MessageManager {
       if (message) {
         message.status = 499
         await storage.chat.putChatMessage(message)
-        this.#emitMessage(message, ctx.id)
+        this.emitMessage(message, ctx.id)
       }
     }
   }
@@ -348,7 +365,7 @@ export class MessageManager {
       if (isString(value.data.content)) {
         topic.label = value.data.content
         storage.chat.putChatTopic(topic)
-        this.#emitTopic(topic)
+        this.emitTopic(topic)
       }
     })
   }

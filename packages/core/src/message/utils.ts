@@ -3,14 +3,32 @@ import {
   ChatMessageContextFlag,
   ChatMessageType,
   ChatTopic,
+  Media,
   Message,
   ModelMeta,
   Role,
 } from "@windflow/core/types"
-import { defaultMessage } from "@windflow/core/storage"
-import { cloneDeep, isArrayLength, isNumber, merge, toNumber, uniqueId } from "@toolmain/shared"
+import { useRequest } from "@windflow/core/provider"
+import { storage, defaultMessage } from "@windflow/core/storage"
+import {
+  cloneDeep,
+  errorToText,
+  isArrayLength,
+  isBase64Image,
+  isHTTPUrl,
+  isNumber,
+  isString,
+  merge,
+  toNumber,
+  uniqueId,
+} from "@toolmain/shared"
 import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
+import { MessageManager } from "."
 
+/**
+ * use to listen all topics and messages events
+ */
+export const AllTopicsFlag = "AllTopicFlag"
 export function cloneTopic(topic: ChatTopic, initial?: Partial<ChatTopic>): ChatTopic {
   const part: Partial<ChatTopic> = {
     id: uniqueId(),
@@ -163,4 +181,63 @@ export function getMessageContexts(topic: ChatTopic, rawMessages: ChatMessage[])
     content: topic.prompt,
   })
   return newContexts
+}
+
+export class MediaDownloader {
+  #req: ReturnType<typeof useRequest>
+  constructor() {
+    this.#req = useRequest()
+  }
+  async download(
+    msgMgr: MessageManager,
+    message: ChatMessage,
+    contextId?: string,
+    type?: "image" | "video" | "audio" | "file"
+  ) {
+    try {
+      const content = message.content.content
+      const urls = (isArrayLength(content) ? content : [content]).map(val => (isString(val) ? val : val.content))
+      const pendings = await Promise.allSettled(
+        urls.map(async url => {
+          if (isBase64Image(url)) {
+            return (await fetch(url)).blob()
+          } else if (isHTTPUrl(url)) {
+            return this.#req.request({
+              url,
+              method: "GET",
+              responseType: "blob",
+            }).promise
+          }
+        })
+      )
+      const results = pendings
+        .map<Media | undefined>(item => {
+          if (item.status === "fulfilled") {
+            const id = uniqueId()
+            return {
+              id,
+              name: id,
+              data: item.value as Blob,
+              type: type ?? "file",
+            }
+          }
+        })
+        .filter(item => !!item)
+
+      await storage.chat.updateChatMessage(message.id, {
+        mediaIds: results.map(item => item.id),
+      })
+      message.finish = true
+      message.mediaIds = results.map(item => item.id)
+      msgMgr.emitMessage(message, contextId)
+    } catch (error) {
+      console.error("[download]", error)
+      message.finish = true
+      message.msg = errorToText(error)
+      msgMgr.emitMessage(message, contextId)
+    }
+  }
+  abortAll() {
+    this.#req.abortAll()
+  }
 }

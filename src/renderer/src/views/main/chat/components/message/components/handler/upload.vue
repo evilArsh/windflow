@@ -26,7 +26,7 @@ function handleChange(uploadFile: UploadFile, uploadFiles: UploadFiles) {
   if (!uploadFile.raw) return
   const size = uploadFile.raw.size
   const name = uploadFile.name
-  if (!allowedExtensions.some(ext => name.endsWith(ext))) {
+  if (!allowedExtensions.some(ext => name.toLowerCase().endsWith(ext))) {
     msgWarning(t("chat.fileTypeNotSupported"))
     return
   }

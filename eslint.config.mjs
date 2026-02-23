@@ -129,7 +129,7 @@ export default defineConfig([
   {
     name: "typescript rules",
     rules: {
-      "no-useless-assignment": "warn",
+      // "no-useless-assignment": "warn",
       "promise/catch-or-return": "off",
       "promise/always-return": "off",
       "@typescript-eslint/no-unused-expressions": 0,
