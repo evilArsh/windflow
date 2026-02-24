@@ -42,6 +42,10 @@ const handler = {
         await nextTick()
         emit("messageSend")
         isFunction(done) && done()
+      } else {
+        if (/^[\r\n\s]*$/.test(topic.value.content)) {
+          topic.value.content = ""
+        }
       }
     } catch (error) {
       msg({ code: 500, msg: errorToText(error) })

@@ -12,13 +12,20 @@ const { t } = useI18n()
 const chatStore = useChatStore()
 const topic = computed(() => props.topic)
 const inputRef = useTemplateRef("input")
-const onInput = useThrottleFn(async () => {
+const _onInput = useThrottleFn(async () => {
   try {
     await chatStore.updateChatTopic(topic.value)
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
   }
 })
+const onInput = (v: string) => {
+  if (/^[\r\n\s]*$/.test(v)) {
+    topic.value.content = ""
+  } else {
+    _onInput()
+  }
+}
 const onAutoFocus = () => {
   requestAnimationFrame(() => {
     inputRef.value?.focus()
