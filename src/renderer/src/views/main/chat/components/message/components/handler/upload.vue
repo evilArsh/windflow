@@ -6,6 +6,8 @@ import { UploadFile, UploadFiles } from "element-plus"
 import { isArrayLength, uniqueId } from "@toolmain/shared"
 import { msgWarning } from "@renderer/utils"
 import { useSrc } from "@renderer/hooks/useSrc"
+import { useTask } from "@renderer/hooks/useTask"
+import PQueue from "p-queue"
 
 const props = defineProps<{
   topic: ChatTopic
@@ -16,38 +18,41 @@ const imagesExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".webp"]
 const filesExtensions = [".xls", ".xlsx", ".doc", ".docx", ".pdf"]
 const maxSize = 1024 * 1024 * 100
 const allowedExtensions = [...imagesExtensions, ...filesExtensions]
+const queue = useTask(new PQueue({ concurrency: 1 }))
 
 const { data, ...src } = useSrc()
 const visible = computed(() => isArrayLength(data.value))
 function onMessageChange(topic: ChatTopic) {
   src.retrieveFromDB(topic.mediaIds)
 }
-async function onFileChange(file: UploadFile, _files: UploadFiles) {
-  try {
-    if (!file.raw) return
-    const size = file.raw.size
-    const name = file.name
-    if (!allowedExtensions.some(ext => name.toLowerCase().endsWith(ext))) {
-      msgWarning(t("chat.fileTypeNotSupported"))
-      return
+function onFileChange(file: UploadFile, _files: UploadFiles) {
+  queue.add(async () => {
+    try {
+      if (!file.raw) return
+      const size = file.raw.size
+      const name = file.name
+      if (!allowedExtensions.some(ext => name.toLowerCase().endsWith(ext))) {
+        msgWarning(t("chat.fileTypeNotSupported"))
+        return
+      }
+      const type = filesExtensions.some(ext => name.toLowerCase().endsWith(ext)) ? "file" : "image"
+      if (size > maxSize) {
+        msgWarning(t("chat.fileTooLarge"))
+        return
+      }
+      await chatStore.addChatTempFiles(props.topic, [
+        {
+          id: uniqueId(),
+          name,
+          type,
+          size,
+          data: file.raw,
+        },
+      ])
+    } catch (error) {
+      console.error("[file error]", error)
     }
-    const type = filesExtensions.some(ext => name.toLowerCase().endsWith(ext)) ? "file" : "image"
-    if (size > maxSize) {
-      msgWarning(t("chat.fileTooLarge"))
-      return
-    }
-    await chatStore.addChatTempFiles(props.topic, [
-      {
-        id: uniqueId(),
-        name,
-        type,
-        size,
-        data: file.raw,
-      },
-    ])
-  } catch (error) {
-    console.error("[file error]", error)
-  }
+  })
 }
 function onFileRemove(mediaId: string) {
   chatStore.removeChatTempFiles(props.topic, [mediaId])

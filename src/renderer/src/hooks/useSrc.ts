@@ -45,33 +45,37 @@ export function useSrc() {
     })
   }
   function retrieveFromDB(mediaIds: string[] | undefined) {
+    // console.log("mediaIds:", mediaIds)
     if (!mediaIds || !isArrayLength(mediaIds)) {
       abortAll()
       clearSrc()
       return
     }
+    // the data to be removed will not be in mediaIds.
     const toRemove = data.value.filter(item => !mediaIds.includes(item.id)).map(item => item.id)
-    const currentDataIds = data.value.map(item => item.id)
-    const toAdd = mediaIds.filter(mediaId => !currentDataIds.includes(mediaId))
+    // const currentDataIds = data.value.map(item => item.id)
+    // const toAdd = mediaIds.filter(mediaId => !currentDataIds.includes(mediaId))
     data.value = data.value.filter(item => !toRemove.includes(item.id))
     toRemove.forEach(mediaId => {
       const tmp = blobTmp.get(mediaId)
       tmp?.startsWith("blob:") && URL.revokeObjectURL(tmp)
       blobTmp.delete(mediaId)
     })
-    for (const mediaId of toAdd) {
-      task.add(async ({ signal }) => {
-        try {
-          const res = await media.getStorage().get(mediaId)
-          if (signal?.aborted) return
-          if (res) {
-            const tmp = URL.createObjectURL(res.data)
-            addResource(tmp, res.type, res.id)
+    for (const mediaId of mediaIds) {
+      if (!data.value.find(item => item.id === mediaId)) {
+        task.add(async ({ signal }) => {
+          try {
+            const res = await media.getStorage().get(mediaId)
+            if (signal?.aborted) return
+            if (res) {
+              const tmp = URL.createObjectURL(res.data)
+              addResource(tmp, res.type, res.id)
+            }
+          } catch (error) {
+            msg({ code: 500, msg: errorToText(error) })
           }
-        } catch (error) {
-          msg({ code: 500, msg: errorToText(error) })
-        }
-      })
+        })
+      }
     }
   }
   function abortAll() {
