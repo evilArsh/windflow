@@ -1,26 +1,24 @@
 import { QueryParams } from "@windflow/core/types"
 import { RAGEmbeddingConfig } from "@windflow/shared"
 import { cloneDeep } from "@toolmain/shared"
-import PQueue from "p-queue"
-import { resolveDb } from "../utils"
-import { db } from "../index"
+import { useDBQueue } from "@windflow/core/storage"
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = useDBQueue()
 export async function put(data: RAGEmbeddingConfig, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).embedding.put(cloneDeep(data)))
+  return queue.add(db => db.embedding.put(cloneDeep(data)), params)
 }
 export async function add(data: RAGEmbeddingConfig, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).embedding.add(cloneDeep(data)))
+  return queue.add(db => db.embedding.add(cloneDeep(data)), params)
 }
 export async function remove(embeddingId: string, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).embedding.delete(embeddingId))
+  return queue.add(db => db.embedding.delete(embeddingId), params)
 }
-export async function get(id: string) {
-  return queue.add(async () => db.embedding.get(id))
+export async function get(id: string, params?: QueryParams) {
+  return queue.add(db => db.embedding.get(id), params)
 }
-export async function gets(ids: string[]) {
-  return queue.add(async () => db.embedding.bulkGet(ids))
+export async function gets(ids: string[], params?: QueryParams) {
+  return queue.add(db => db.embedding.bulkGet(ids), params)
 }
 export async function fetch() {
-  return queue.add(async () => db.embedding.toArray())
+  return queue.add(db => db.embedding.toArray())
 }

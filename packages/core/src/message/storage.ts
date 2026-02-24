@@ -107,20 +107,20 @@ export class MessageStorage {
   }
   async addChatTempFiles(topicId: string, files: Media[]): Promise<string[] | undefined> {
     return withTransaction("readwrite", ["chatTopic", "media"], async tx => {
-      const topic = await this.getTopic(topicId)
+      const topic = await storage.chat.getTopic(topicId, { disableQueue: true })
       if (!topic) return
-      await storage.media.bulkAdd(files, { transaction: tx })
+      await storage.media.bulkAdd(files, { transaction: tx, disableQueue: true })
       if (!topic.mediaIds) {
         topic.mediaIds = []
       }
       topic.mediaIds.push(...files.map(file => file.id))
-      await storage.chat.putChatTopic(topic, { transaction: tx })
+      await storage.chat.putChatTopic(topic, { transaction: tx, disableQueue: true })
       return topic.mediaIds
     })
   }
   async removeChatTempFile(topicId: string, fileIds: string[]): Promise<string[] | undefined> {
     return withTransaction("readwrite", ["chatTopic", "media"], async tx => {
-      const topic = await this.getTopic(topicId)
+      const topic = await storage.chat.getTopic(topicId, { disableQueue: true })
       if (!topic) return
       if (isArrayLength(topic.mediaIds)) {
         const available = fileIds.reduce<string[]>((prev, cur) => {
@@ -130,9 +130,9 @@ export class MessageStorage {
           return prev
         }, [])
         if (available.length) {
-          await storage.media.bulkRemove(available, { transaction: tx })
+          await storage.media.bulkRemove(available, { transaction: tx, disableQueue: true })
           topic.mediaIds = topic.mediaIds.filter(id => !available.includes(id))
-          await storage.chat.putChatTopic(topic, { transaction: tx })
+          await storage.chat.putChatTopic(topic, { transaction: tx, disableQueue: true })
           return topic.mediaIds
         }
       }
@@ -140,20 +140,20 @@ export class MessageStorage {
   }
   async addMessageFiles(messageId: string, files: Media[]): Promise<string[] | undefined> {
     return withTransaction("readwrite", ["chatMessage", "media"], async tx => {
-      const message = await storage.chat.getChatMessage(messageId)
+      const message = await storage.chat.getChatMessage(messageId, { disableQueue: true })
       if (!message) return
-      await storage.media.bulkAdd(files, { transaction: tx })
+      await storage.media.bulkAdd(files, { transaction: tx, disableQueue: true })
       if (!message.mediaIds) {
         message.mediaIds = []
       }
       message.mediaIds.push(...files.map(file => file.id))
-      await storage.chat.putChatMessage(message, { transaction: tx })
+      await storage.chat.putChatMessage(message, { transaction: tx, disableQueue: true })
       return message.mediaIds
     })
   }
   async removeMessageFiles(messageId: string, fileIds: string[]): Promise<string[] | undefined> {
     return withTransaction("readwrite", ["chatMessage", "media"], async tx => {
-      const message = await storage.chat.getChatMessage(messageId)
+      const message = await storage.chat.getChatMessage(messageId, { disableQueue: true })
       if (!message) return
       if (isArrayLength(message.mediaIds)) {
         const available = fileIds.reduce<string[]>((prev, cur) => {
@@ -163,9 +163,9 @@ export class MessageStorage {
           return prev
         }, [])
         if (available.length) {
-          await storage.media.bulkRemove(available, { transaction: tx })
+          await storage.media.bulkRemove(available, { transaction: tx, disableQueue: true })
           message.mediaIds = message.mediaIds?.filter(id => !available.includes(id))
-          await storage.chat.putChatMessage(message, { transaction: tx })
+          await storage.chat.putChatMessage(message, { transaction: tx, disableQueue: true })
           return message.mediaIds
         }
       }

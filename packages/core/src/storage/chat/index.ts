@@ -1,85 +1,83 @@
 import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, QueryParams } from "@windflow/core/types"
-import { db } from "../index"
-import PQueue from "p-queue"
+import { useDBQueue, withTransaction } from "@windflow/core/storage"
 import { cloneDeep, isUndefined } from "@toolmain/shared"
-import { resolveDb } from "../utils"
 import Dexie from "dexie"
 
-const topicQueue = new PQueue({ concurrency: 1 })
-const msgQueue = new PQueue({ concurrency: 1 })
-const configQueue = new PQueue({ concurrency: 1 })
+const topicQueue = useDBQueue()
+const msgQueue = useDBQueue()
+const configQueue = useDBQueue()
 export async function addChatTopic(data: ChatTopic, params?: QueryParams) {
-  return topicQueue.add(async () => resolveDb(params).chatTopic.add(cloneDeep(data)))
+  return topicQueue.add(db => db.chatTopic.add(cloneDeep(data)), params)
 }
 export async function bulkAddChatTopics(datas: ChatTopic[], params?: QueryParams) {
-  return topicQueue.add(async () => resolveDb(params).chatTopic.bulkAdd(cloneDeep(datas)))
+  return topicQueue.add(db => db.chatTopic.bulkAdd(cloneDeep(datas)), params)
 }
 export async function putChatTopic(data: ChatTopic, params?: QueryParams) {
-  return topicQueue.add(async () => resolveDb(params).chatTopic.put(cloneDeep(data)))
+  return topicQueue.add(db => db.chatTopic.put(cloneDeep(data)), params)
 }
 export async function bulkPutChatTopic(datas: ChatTopic[], params?: QueryParams) {
-  return topicQueue.add(async () => resolveDb(params).chatTopic.bulkPut(cloneDeep(datas)))
+  return topicQueue.add(db => db.chatTopic.bulkPut(cloneDeep(datas)), params)
 }
-export async function getTopic(topicId: string) {
-  return topicQueue.add(async () => db.chatTopic.get(topicId))
+export async function getTopic(topicId: string, params?: QueryParams) {
+  return topicQueue.add(db => db.chatTopic.get(topicId), params)
 }
 export async function addChatLLMConfig(data: ChatLLMConfig, params?: QueryParams) {
-  return configQueue.add(async () => resolveDb(params).chatLLMConfig.add(cloneDeep(data)))
+  return configQueue.add(db => db.chatLLMConfig.add(cloneDeep(data)), params)
 }
-export async function getChatLLMConfig(topicId: string) {
-  return configQueue.add(async () => db.chatLLMConfig.where("topicId").equals(topicId).first())
+export async function getChatLLMConfig(topicId: string, params?: QueryParams) {
+  return configQueue.add(db => db.chatLLMConfig.where("topicId").equals(topicId).first(), params)
 }
 export async function putChatLLMConfig(data: ChatLLMConfig, params?: QueryParams) {
-  return configQueue.add(async () => resolveDb(params).chatLLMConfig.put(cloneDeep(data)))
+  return configQueue.add(db => db.chatLLMConfig.put(cloneDeep(data)), params)
 }
 
 export async function addChatTTIConfig(data: ChatTTIConfig, params?: QueryParams) {
-  return configQueue.add(async () => resolveDb(params).chatTTIConfig.add(cloneDeep(data)))
+  return configQueue.add(db => db.chatTTIConfig.add(cloneDeep(data)), params)
 }
 export async function putChatTTIConfig(data: ChatTTIConfig, params?: QueryParams) {
-  return configQueue.add(async () => resolveDb(params).chatTTIConfig.put(cloneDeep(data)))
+  return configQueue.add(db => db.chatTTIConfig.put(cloneDeep(data)), params)
 }
-export async function getChatTTIConfig(topicId: string) {
-  return configQueue.add(async () => db.chatTTIConfig.where("topicId").equals(topicId).first())
+export async function getChatTTIConfig(topicId: string, params?: QueryParams) {
+  return configQueue.add(db => db.chatTTIConfig.where("topicId").equals(topicId).first(), params)
 }
 
 export async function addChatMessage(data: ChatMessage, params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.add(cloneDeep(data)))
+  return msgQueue.add(db => db.chatMessage.add(cloneDeep(data)), params)
 }
 export async function putChatMessage(data: ChatMessage, params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.put(cloneDeep(data)))
+  return msgQueue.add(db => db.chatMessage.put(cloneDeep(data)), params)
 }
 export async function updateChatMessage(id: string, data: Partial<ChatMessage>, params?: QueryParams) {
   const cdata = cloneDeep(data)
   delete cdata.id
-  return msgQueue.add(async () => resolveDb(params).chatMessage.update(id, cdata))
+  return msgQueue.add(db => db.chatMessage.update(id, cdata), params)
 }
 export async function bulkPutChatMessage(data: ChatMessage[], params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.bulkPut(cloneDeep(data)))
+  return msgQueue.add(db => db.chatMessage.bulkPut(cloneDeep(data)), params)
 }
 export async function bulkAddChatMessage(data: ChatMessage[], params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.bulkAdd(cloneDeep(data)))
+  return msgQueue.add(db => db.chatMessage.bulkAdd(cloneDeep(data)), params)
 }
 /**
  * @description get all messages of a topic and sort by `index`
  */
-export async function getChatMessages(topicId: string) {
-  return msgQueue.add(async () => db.chatMessage.where("topicId").equals(topicId).sortBy("index"))
+export async function getChatMessages(topicId: string, params?: QueryParams) {
+  return msgQueue.add(db => db.chatMessage.where("topicId").equals(topicId).sortBy("index"), params)
 }
 /**
  * @description get message by `messageId` in a topic
  */
-export async function getChatMessage(messageId: string): Promise<ChatMessage | undefined> {
-  return msgQueue.add(async () => db.chatMessage.where("id").equals(messageId).first())
+export async function getChatMessage(messageId: string, params?: QueryParams): Promise<ChatMessage | undefined> {
+  return msgQueue.add(db => db.chatMessage.where("id").equals(messageId).first(), params)
 }
 export async function deleteChatMessage(messageId: string, params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.delete(messageId))
+  return msgQueue.add(db => db.chatMessage.delete(messageId), params)
 }
 export async function bulkDeleteChatMessage(messageIds: string[], params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.bulkDelete(messageIds))
+  return msgQueue.add(db => db.chatMessage.bulkDelete(messageIds), params)
 }
 export async function deleteAllMessages(topicId: string, params?: QueryParams) {
-  return msgQueue.add(async () => resolveDb(params).chatMessage.where("topicId").equals(topicId).delete())
+  return msgQueue.add(db => db.chatMessage.where("topicId").equals(topicId).delete(), params)
 }
 /**
  * @description delete chat group and all messages
@@ -90,48 +88,48 @@ export async function bulkDeleteChatTopic(data: ChatTopic[]) {
     .map(item => item.mediaIds)
     .flat()
     .filter(item => !isUndefined(item))
-  return db.transaction(
-    "rw",
-    [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig, db.media],
-    async trans => {
-      return Dexie.Promise.all([
-        trans.chatTopic.bulkDelete(topicIds),
-        trans.chatMessage.where("topicId").anyOf(topicIds).delete(),
-        trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete(),
-        trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete(),
-        trans.media.where("id").anyOf(mediaIds).delete(),
-      ])
-    }
-  )
+  return withTransaction("rw", ["chatMessage", "chatTopic", "chatLLMConfig", "chatTTIConfig", "media"], async trans => {
+    return Dexie.Promise.all([
+      trans.chatTopic.bulkDelete(topicIds),
+      trans.chatMessage.where("topicId").anyOf(topicIds).delete(),
+      trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete(),
+      trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete(),
+      trans.media.where("id").anyOf(mediaIds).delete(),
+    ])
+  })
 }
 /**
  * get a message that has the max value of `index` field in `topicId`
  */
-export async function getMaxIndexMessage(topicId: string) {
-  return msgQueue.add(async () =>
-    db.chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last()
+export async function getMaxIndexMessage(topicId: string, params?: QueryParams) {
+  return msgQueue.add(
+    db => db.chatMessage.where("[topicId+index]").between([topicId, 0], [topicId, Dexie.maxKey]).last(),
+    params
   )
 }
 /**
  * get a node with the maximum index value among the nodes belonging to the `parentId`.
  */
-export async function getMaxIndexTopic(parentId?: string | null) {
-  return topicQueue.add(async () =>
-    db.chatTopic.where("[parentId+index]").between([parentId, 0], [parentId, Dexie.maxKey]).last()
+export async function getMaxIndexTopic(parentId?: string | null, params?: QueryParams) {
+  return topicQueue.add(
+    db => db.chatTopic.where("[parentId+index]").between([parentId, 0], [parentId, Dexie.maxKey]).last(),
+    params
   )
 }
 /**
  * get messages by `fromId`, which response to the same question
  */
-export async function getMessagesByFromId(topicId: string, fromId: string) {
-  return msgQueue.add(async () =>
-    db.chatMessage
-      .where("topicId")
-      .equals(topicId)
-      .and(m => m.fromId === fromId)
-      .toArray()
+export async function getMessagesByFromId(topicId: string, fromId: string, params?: QueryParams) {
+  return msgQueue.add(
+    db =>
+      db.chatMessage
+        .where("topicId")
+        .equals(topicId)
+        .and(m => m.fromId === fromId)
+        .toArray(),
+    params
   )
 }
 export async function fetch() {
-  return topicQueue.add(async () => db.chatTopic.toCollection().sortBy("index"))
+  return topicQueue.add(db => db.chatTopic.toCollection().sortBy("index"))
 }

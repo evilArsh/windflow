@@ -1,20 +1,20 @@
 import { Media, QueryParams } from "@windflow/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import { db } from "../index"
-import { resolveDb } from "../utils"
+import { useDBQueue } from "@windflow/core/storage"
 
+const queue = useDBQueue()
 export async function add(data: Media, params?: QueryParams) {
-  return resolveDb(params).media.add(cloneDeep(data))
+  return queue.add(db => db.media.add(cloneDeep(data)), { ...params, disableQueue: true })
 }
 export async function bulkAdd(datas: Media[], params?: QueryParams) {
-  return resolveDb(params).media.bulkAdd(datas)
+  return queue.add(db => db.media.bulkAdd(datas), { ...params, disableQueue: true })
 }
-export async function get(mediaId: string) {
-  return db.media.get(mediaId)
+export async function get(mediaId: string, params?: QueryParams) {
+  return queue.add(db => db.media.get(mediaId), { ...params, disableQueue: true })
 }
 export async function remove(mediaId: string, params?: QueryParams) {
-  return resolveDb(params).media.delete(mediaId)
+  return queue.add(db => db.media.delete(mediaId), { ...params, disableQueue: true })
 }
 export async function bulkRemove(mediaIds: string[], params?: QueryParams) {
-  return resolveDb(params).media.bulkDelete(mediaIds)
+  return queue.add(db => db.media.bulkDelete(mediaIds), { ...params, disableQueue: true })
 }

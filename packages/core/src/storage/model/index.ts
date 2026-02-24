@@ -1,20 +1,18 @@
 import { ModelMeta, QueryParams } from "@windflow/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import PQueue from "p-queue"
 import { UpdateSpec } from "dexie"
-import { resolveDb } from "../utils"
-import { db } from "../index"
+import { useDBQueue } from "@windflow/core/storage"
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = useDBQueue()
 
 export async function put(data: ModelMeta, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.put(cloneDeep(data)))
+  return queue.add(db => db.model.put(cloneDeep(data)), params)
 }
 export async function add(data: ModelMeta, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.add(cloneDeep(data)))
+  return queue.add(db => db.model.add(cloneDeep(data)), params)
 }
 export async function bulkPut(newModels: ModelMeta[], params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).model.bulkPut(newModels))
+  return queue.add(db => db.model.bulkPut(newModels), params)
 }
 export async function bulkUpdate(
   keysAndChanges: ReadonlyArray<{
@@ -23,23 +21,23 @@ export async function bulkUpdate(
   }>,
   params?: QueryParams
 ) {
-  return queue.add(async () => resolveDb(params).model.bulkUpdate(keysAndChanges))
+  return queue.add(db => db.model.bulkUpdate(keysAndChanges), params)
 }
-export async function get(modelId: string) {
-  return queue.add(async () => db.model.get(modelId))
+export async function get(modelId: string, params?: QueryParams) {
+  return queue.add(db => db.model.get(modelId), params)
 }
 /**
  * retrive the top N most frequently used models
  */
-export async function getMostFrequentTops(top: number) {
-  return queue.add(async () => db.model.orderBy("frequency").reverse().limit(top).toArray())
+export async function getMostFrequentTops(top: number, params?: QueryParams) {
+  return queue.add(db => db.model.orderBy("frequency").reverse().limit(top).toArray(), params)
 }
-export async function bulkGet(modelIds: string[]) {
-  return queue.add(async () => db.model.bulkGet(modelIds))
+export async function bulkGet(modelIds: string[], params?: QueryParams) {
+  return queue.add(db => db.model.bulkGet(modelIds), params)
 }
-export async function anyOf(modelIds: string[]) {
-  return queue.add(async () => db.model.where("id").anyOf(modelIds).toArray())
+export async function anyOf(modelIds: string[], params?: QueryParams) {
+  return queue.add(db => db.model.where("id").anyOf(modelIds).toArray(), params)
 }
 export async function fetch() {
-  return queue.add(async () => db.model.toArray())
+  return queue.add(db => db.model.toArray())
 }

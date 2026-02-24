@@ -1,31 +1,28 @@
 import { MCPClientStatus, MCPServerParam } from "@windflow/shared"
 import { cloneDeep } from "@toolmain/shared"
-import PQueue from "p-queue"
-import { resolveDb } from "../utils"
-import { QueryParams } from "../../types"
-import { mcpStdioDefault } from "../presets/mcp"
-import { db } from "../index"
+import { mcpStdioDefault, useDBQueue } from "@windflow/core/storage"
+import { QueryParams } from "@windflow/core/types"
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = useDBQueue()
 export async function put(data: MCPServerParam, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).mcpServer.put(cloneDeep(data)))
+  return queue.add(db => db.mcpServer.put(cloneDeep(data)), params)
 }
 export async function add(data: MCPServerParam, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).mcpServer.add(cloneDeep(data)))
+  return queue.add(db => db.mcpServer.add(cloneDeep(data)), params)
 }
 export async function bulkAdd(datas: MCPServerParam[], params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).mcpServer.bulkAdd(cloneDeep(datas)))
+  return queue.add(db => db.mcpServer.bulkAdd(cloneDeep(datas)), params)
 }
 export async function remove(id: string, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).mcpServer.delete(id))
+  return queue.add(db => db.mcpServer.delete(id), params)
 }
 export async function getAll() {
-  return queue.add(async () => db.mcpServer.toArray())
+  return queue.add(db => db.mcpServer.toArray())
 }
 export async function fetch() {
   const servers: MCPServerParam[] = []
   const defaultData = mcpStdioDefault()
-  const data = await queue.add(async () => db.mcpServer.toArray())
+  const data = await queue.add(db => db.mcpServer.toArray())
   data.forEach(v => {
     servers.push(v)
     if (v.status === MCPClientStatus.Connected || v.status === MCPClientStatus.Connecting) {
@@ -41,7 +38,7 @@ export async function fetch() {
     }
   }
   if (newCaches.length) {
-    await queue.add(async () => db.mcpServer.bulkAdd(newCaches))
+    await queue.add(db => db.mcpServer.bulkAdd(newCaches))
     servers.push(...newCaches)
   }
 

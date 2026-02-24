@@ -1,5 +1,5 @@
 import Dexie, { TransactionMode } from "dexie"
-import { DexieTable, DexieTransaction, TableName } from "@windflow/core/types"
+import { DexieTable, DexieTransaction, QueryParams, TableName } from "@windflow/core/types"
 import * as chat from "./chat"
 import * as embedding from "./embedding"
 import * as knowledge from "./knowledge"
@@ -10,8 +10,10 @@ import * as ragFiles from "./ragFiles"
 import * as settings from "./settings"
 import * as media from "./media"
 import { migrateToV4 } from "./migrate"
+import PQueue from "p-queue"
 
 export const name = "db-windflow-v2"
+export * from "./presets"
 
 const db = new Dexie(name) as DexieTable
 
@@ -71,15 +73,6 @@ db.version(4)
   })
   .upgrade(migrateToV4)
 
-export * from "./presets"
-export function withTransaction<U>(
-  mode: TransactionMode,
-  tables: TableName[],
-  fn: (trans: DexieTransaction) => PromiseLike<U> | U
-) {
-  return db.transaction(mode, tables, fn)
-}
-
 export const storage = {
   chat,
   model,
@@ -92,3 +85,35 @@ export const storage = {
   media,
 }
 export { db }
+
+export function withTransaction<U>(
+  mode: TransactionMode,
+  tables: TableName[],
+  fn: (trans: DexieTransaction) => PromiseLike<U> | U
+) {
+  return db.transaction(mode, tables, fn)
+}
+
+export function useDBQueue() {
+  const queue = new PQueue({ concurrency: 1 })
+  /**
+   * if transaction is provided, don't use queue.
+   * because `Transaction has already completed or failed` error will occur.
+   */
+  async function add<T>(
+    taskFn: (tx: DexieTransaction | DexieTable) => PromiseLike<T>,
+    params?: QueryParams
+  ): Promise<T> {
+    if (params?.transaction) {
+      return taskFn(params.transaction)
+    }
+    if (params?.disableQueue) {
+      return taskFn(db)
+    }
+    return queue.add(async () => taskFn(db))
+  }
+
+  return {
+    add,
+  }
+}

@@ -6,8 +6,8 @@ export class KnowledgeStorage {
   async remove(knowledgeId: string) {
     return withTransaction("rw", ["knowledge", "ragFiles"], async tx => {
       await Dexie.Promise.all([
-        storage.knowledge.remove(knowledgeId, { transaction: tx }),
-        storage.ragFiles.removeByTopicId(knowledgeId, { transaction: tx }),
+        storage.knowledge.remove(knowledgeId, { transaction: tx, disableQueue: true }),
+        storage.ragFiles.removeByTopicId(knowledgeId, { transaction: tx, disableQueue: true }),
       ])
     })
   }

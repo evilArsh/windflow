@@ -1,28 +1,26 @@
 import { Knowledge, QueryParams } from "@windflow/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import PQueue from "p-queue"
-import { resolveDb } from "../utils"
-import { db } from "../index"
+import { useDBQueue } from "@windflow/core/storage"
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = useDBQueue()
 export async function put(data: Knowledge, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).knowledge.put(cloneDeep(data)))
+  return queue.add(db => db.knowledge.put(cloneDeep(data)), params)
 }
 export async function add(data: Knowledge, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).knowledge.add(cloneDeep(data)))
+  return queue.add(db => db.knowledge.add(cloneDeep(data)), params)
 }
-export async function get(id: string) {
-  return queue.add(async () => db.knowledge.get(id))
+export async function get(id: string, params?: QueryParams) {
+  return queue.add(db => db.knowledge.get(id), params)
 }
-export async function gets(ids: string[]) {
-  return queue.add(async () => db.knowledge.bulkGet(ids))
+export async function gets(ids: string[], params?: QueryParams) {
+  return queue.add(db => db.knowledge.bulkGet(ids), params)
 }
 export async function remove(knowlwdgeId: string, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).knowledge.delete(knowlwdgeId))
+  return queue.add(db => db.knowledge.delete(knowlwdgeId), params)
 }
-export async function findByEmbeddingId(embeddingId: string): Promise<Knowledge[]> {
-  return queue.add(async () => db.knowledge.where("embeddingId").equals(embeddingId).toArray())
+export async function findByEmbeddingId(embeddingId: string, params?: QueryParams): Promise<Knowledge[]> {
+  return queue.add(db => db.knowledge.where("embeddingId").equals(embeddingId).toArray(), params)
 }
 export async function fetch() {
-  return queue.add(async () => db.knowledge.toArray())
+  return queue.add(db => db.knowledge.toArray())
 }

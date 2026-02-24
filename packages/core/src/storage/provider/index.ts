@@ -1,25 +1,23 @@
 import { ProviderMeta, QueryParams } from "@windflow/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import PQueue from "p-queue"
-import { resolveDb } from "../utils"
-import { db } from "../index"
+import { useDBQueue } from "@windflow/core/storage"
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = useDBQueue()
 export async function put(data: ProviderMeta, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).providerMeta.put(cloneDeep(data)))
+  return queue.add(db => db.providerMeta.put(cloneDeep(data)), params)
 }
 export async function add(data: ProviderMeta, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).providerMeta.add(cloneDeep(data)))
+  return queue.add(db => db.providerMeta.add(cloneDeep(data)), params)
 }
 export async function clear(params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).providerMeta.clear())
+  return queue.add(db => db.providerMeta.clear(), params)
 }
-export async function bulkGet(providerNames: string[]) {
-  return queue.add(async () => db.providerMeta.bulkGet(providerNames))
+export async function bulkGet(providerNames: string[], params?: QueryParams) {
+  return queue.add(db => db.providerMeta.bulkGet(providerNames), params)
 }
-export async function get(providerName: string) {
-  return queue.add(async () => db.providerMeta.get(providerName))
+export async function get(providerName: string, params?: QueryParams) {
+  return queue.add(db => db.providerMeta.get(providerName), params)
 }
 export async function fetch() {
-  return queue.add(async () => db.providerMeta.toArray())
+  return queue.add(db => db.providerMeta.toArray())
 }

@@ -1,19 +1,17 @@
 import { QueryParams, SettingKeys, Settings, SettingsValue } from "@windflow/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import PQueue from "p-queue"
-import { resolveDb } from "../utils"
-import { db } from "../index"
+import { useDBQueue } from "@windflow/core/storage"
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = useDBQueue()
 export async function get(id: SettingKeys, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).settings.get(id))
+  return queue.add(db => db.settings.get(id), params)
 }
 export async function add(data: Settings<SettingsValue>, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).settings.add(cloneDeep(data)))
+  return queue.add(db => db.settings.add(cloneDeep(data)), params)
 }
 export async function put(data: Settings<SettingsValue>, params?: QueryParams) {
-  return queue.add(async () => resolveDb(params).settings.put(cloneDeep(data)))
+  return queue.add(db => db.settings.put(cloneDeep(data)), params)
 }
 export async function fetch() {
-  return queue.add(async () => db.settings.toArray())
+  return queue.add(db => db.settings.toArray())
 }

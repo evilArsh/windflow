@@ -34,4 +34,8 @@ export type DexieTransactionTables<Tables extends TableName[]> = Transaction & P
 export type DexieTable = Dexie & Table
 export type QueryParams = {
   transaction?: DexieTransaction
+  /**
+   * force disable queue
+   */
+  disableQueue?: boolean
 }
