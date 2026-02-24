@@ -54,7 +54,9 @@ export const useMenu = (
         }
         treeRef.value?.remove(treeCtx.selectedTopic.value)
         await task.getQueue().add(async () => chatStore.removeChatTopic(nodes))
-        if (treeCtx.selectedTopic.value.id === treeCtx.currentTopic.value?.id) {
+        if (
+          nodes.some(node => node.id === treeCtx.selectedTopic.value?.id || node.id === treeCtx.selectedTopic.value?.id)
+        ) {
           treeCtx.clearCurrentTopic()
         }
       }
