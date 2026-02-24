@@ -1,4 +1,3 @@
-import { uniqueId } from "@toolmain/shared"
 import PQueue from "p-queue"
 
 // -- export from p-queue as it didn't export it
@@ -21,23 +20,44 @@ export interface TaskHandler<TaskResultType> {
 }
 export function useTask(queue: PQueue) {
   const isPending = ref(false)
+  let ctrl: AbortController[] = []
 
   function clear() {
-    queue.pause()
+    ctrl.forEach(c => c.abort())
+    ctrl = []
     queue.clear()
   }
   function add<TaskResultType>(taskFn: Task<TaskResultType>): TaskHandler<TaskResultType> {
-    const id = uniqueId()
     const controller = new AbortController()
     const pending = queue.add(taskFn, {
-      id,
       signal: controller.signal,
     })
+    const onAbort = () => {
+      removeCtrl()
+    }
+    const removeCtrl = () => {
+      controller.signal.removeEventListener("abort", onAbort)
+      const index = ctrl.indexOf(controller)
+      if (index > -1) {
+        ctrl.splice(index, 1)
+      }
+    }
+    ctrl.push(controller)
+    controller.signal.addEventListener("abort", onAbort)
+    const wrappedPending = pending
+      .then(result => {
+        removeCtrl()
+        return result
+      })
+      .catch(error => {
+        removeCtrl()
+        throw error
+      })
     return {
       abort() {
         controller.abort("task aborted")
       },
-      pending,
+      pending: wrappedPending,
     }
   }
   queue.addListener("idle", () => (isPending.value = false))

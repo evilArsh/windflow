@@ -7,6 +7,7 @@ export type Media = {
   size?: number
 }
 export type MediaSrc = {
+  id: string
   url: string
   type: MediaType
 }

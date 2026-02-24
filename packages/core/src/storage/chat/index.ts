@@ -1,7 +1,7 @@
 import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, QueryParams } from "@windflow/core/types"
 import { db } from "../index"
 import PQueue from "p-queue"
-import { cloneDeep } from "@toolmain/shared"
+import { cloneDeep, isUndefined } from "@toolmain/shared"
 import { resolveDb } from "../utils"
 import Dexie from "dexie"
 
@@ -86,14 +86,23 @@ export async function deleteAllMessages(topicId: string, params?: QueryParams) {
  */
 export async function bulkDeleteChatTopic(data: ChatTopic[]) {
   const topicIds = data.map(item => item.id)
-  return db.transaction("rw", [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig], async trans => {
-    return Dexie.Promise.all([
-      trans.chatTopic.bulkDelete(topicIds),
-      trans.chatMessage.where("topicId").anyOf(topicIds).delete(),
-      trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete(),
-      trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete(),
-    ])
-  })
+  const mediaIds = data
+    .map(item => item.mediaIds)
+    .flat()
+    .filter(item => !isUndefined(item))
+  return db.transaction(
+    "rw",
+    [db.chatMessage, db.chatTopic, db.chatLLMConfig, db.chatTTIConfig, db.media],
+    async trans => {
+      return Dexie.Promise.all([
+        trans.chatTopic.bulkDelete(topicIds),
+        trans.chatMessage.where("topicId").anyOf(topicIds).delete(),
+        trans.chatLLMConfig.where("topicId").anyOf(topicIds).delete(),
+        trans.chatTTIConfig.where("topicId").anyOf(topicIds).delete(),
+        trans.media.where("id").anyOf(mediaIds).delete(),
+      ])
+    }
+  )
 }
 /**
  * get a message that has the max value of `index` field in `topicId`

@@ -1,9 +1,14 @@
 <script lang="ts" setup>
 import { DialogPanel } from "@toolmain/components"
 import { TooltipTriggerType } from "element-plus"
-const { width = 500, trigger = "hover" } = defineProps<{
+const {
+  width = 500,
+  trigger = "hover",
+  contentStyle = "",
+} = defineProps<{
   width?: number
   trigger?: TooltipTriggerType
+  contentStyle?: string
 }>()
 </script>
 <template>
@@ -11,7 +16,7 @@ const { width = 500, trigger = "hover" } = defineProps<{
     <template #reference>
       <slot name="reference"></slot>
     </template>
-    <DialogPanel>
+    <DialogPanel :style="contentStyle">
       <template v-if="$slots.header" #header>
         <slot name="header"></slot>
       </template>

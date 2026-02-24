@@ -3,7 +3,7 @@ import type { ChatTopic } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 import Shell from "./components/shell.vue"
 import { UploadFile, UploadFiles } from "element-plus"
-import { isArrayLength } from "@toolmain/shared"
+import { isArrayLength, uniqueId } from "@toolmain/shared"
 import { msgWarning } from "@renderer/utils"
 import { useSrc } from "@renderer/hooks/useSrc"
 
@@ -19,21 +19,16 @@ const allowedExtensions = [...imagesExtensions, ...filesExtensions]
 
 const { data, ...src } = useSrc()
 const visible = computed(() => isArrayLength(data.value))
-function onMessageChange(value: ChatTopic) {
-  src.clearSrc()
-  if (isArrayLength(value.mediaIds)) {
-    value.mediaIds.forEach(src.retrieveFromDB)
-  }
+function onMessageChange(topic: ChatTopic) {
+  src.retrieveFromDB(topic.mediaIds)
 }
 async function onFileChange(file: UploadFile, _files: UploadFiles) {
   try {
     if (!file.raw) return
-    file.status = "uploading"
     const size = file.raw.size
     const name = file.name
     if (!allowedExtensions.some(ext => name.toLowerCase().endsWith(ext))) {
       msgWarning(t("chat.fileTypeNotSupported"))
-      file.status = "fail"
       return
     }
     const type = filesExtensions.some(ext => name.toLowerCase().endsWith(ext)) ? "file" : "image"
@@ -43,7 +38,7 @@ async function onFileChange(file: UploadFile, _files: UploadFiles) {
     }
     await chatStore.addChatTempFiles(props.topic, [
       {
-        id: file.uid.toString(),
+        id: uniqueId(),
         name,
         type,
         size,
@@ -53,6 +48,9 @@ async function onFileChange(file: UploadFile, _files: UploadFiles) {
   } catch (error) {
     console.error("[file error]", error)
   }
+}
+function onFileRemove(mediaId: string) {
+  chatStore.removeChatTempFiles(props.topic, [mediaId])
 }
 watch(
   () => props.topic.mediaIds,
@@ -64,7 +62,7 @@ onBeforeMount(() => {
 onBeforeUnmount(src.dispose)
 </script>
 <template>
-  <Shell :visible :width="300">
+  <Shell :visible :width="200" content-style="--dialog-scroll-view-padding: var(--ai-gap-small)">
     <template #reference>
       <el-upload
         class="flex"
@@ -83,15 +81,21 @@ onBeforeUnmount(src.dispose)
       </el-upload>
     </template>
     <template #default>
-      <div class="h-3rem flex items-center">
-        <template v-for="item in data" :key="item.url">
-          <el-image class="w-3rem" v-if="item.type === 'image'" :src="item.url"></el-image>
+      <div class="flex items-center gap-.5rem overflow-x-auto">
+        <ContentBox v-for="item in data" background class="relative" :key="item.id">
+          <i-ep-circle-close-filled
+            @click.stop="onFileRemove(item.id)"
+            class="c-[var(--el-color-danger)] z-100 text-1.2rem absolute right-0 top-0"></i-ep-circle-close-filled>
+          <el-image
+            class="h-3rem w-3rem"
+            fit="contain"
+            v-if="item.type === 'image'"
+            :preview-src-list="data.map(v => v.url)"
+            :src="item.url"></el-image>
           <audio v-else-if="item.type === 'audio'" :src="item.url"></audio>
           <video v-else-if="item.type === 'video'" :src="item.url"></video>
-          <div class="w-3rem">
-            <i-ep-document class="text-1.8rem"></i-ep-document>
-          </div>
-        </template>
+          <i-ep-document v-else class="h-3rem w-3rem text-1.8rem"></i-ep-document>
+        </ContentBox>
       </div>
     </template>
   </Shell>

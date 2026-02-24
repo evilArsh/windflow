@@ -26,7 +26,13 @@ export const useTree = (
   const chatStore = useChatStore()
   const modelMgr = useModels()
   const { topicList } = storeToRefs(chatStore)
-  const selectedTopic = ref<ChatTopicTree>() // 点击菜单时的节点
+  /**
+   * node when click option button
+   */
+  const selectedTopic = ref<ChatTopicTree>()
+  /**
+   * current selected node
+   */
   const currentTopic = ref<ChatTopicTree>()
   const searchKeyword = ref("")
   const treeProps = reactive({
