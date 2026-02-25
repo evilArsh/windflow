@@ -14,7 +14,7 @@ const { t } = useI18n()
   <Shell>
     <template #reference>
       <ContentBox background>
-        <i-ic-outline-settings class="text-1.6rem" />
+        <i-ic-outline-settings class="text-1.4rem" />
       </ContentBox>
     </template>
     <template #header>

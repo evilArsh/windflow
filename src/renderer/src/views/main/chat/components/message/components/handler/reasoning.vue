@@ -23,26 +23,32 @@ const onClick = async () => {
 }
 </script>
 <template>
-  <ContentBox class="custom-box" :default-lock="config?.reasoning" need-lock background @click="onClick">
-    <div class="flex-center p[var(--ai-gap-small)] gap[var(--ai-gap-base)]">
+  <ContentBox
+    class="custom-box"
+    :class="{ reasoning: config?.reasoning }"
+    style="--ai-gap-base: 0"
+    :default-lock="config?.reasoning"
+    need-lock
+    background
+    normal-icon
+    @click="onClick">
+    <template #icon>
       <i-solar-atom-broken class="icon"></i-solar-atom-broken>
-      <el-text :type="config?.reasoning ? 'primary' : 'info'">{{ t("chat.deepThinking") }}</el-text>
-    </div>
+    </template>
+    <span>{{ t("chat.deepThinking") }}</span>
   </ContentBox>
 </template>
 <style lang="scss" scoped>
 .custom-box {
-  --box-border-color: var(--el-border-color-light);
   --box-border-radius: 1rem;
-  --box-border-size: 1px;
-  --box-padding: 0;
 
-  --box-border-hover-color: var(--el-color-primary-light-7);
-  --box-border-active-color: var(--el-color-primary-light-5);
+  --box-border-hover-color: var(--el-color-primary-light-5);
+  --box-border-active-color: var(--el-color-primary-light-3);
 
   --box-bg-active-color: var(--el-color-primary-light-9);
+  --box-text-active-color: var(--el-color-primary);
   .icon {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
   &.active {
     .icon {

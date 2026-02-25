@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChatMessage, ChatMessageTree } from "@windflow/core/types"
-import { code1xx, isArrayLength } from "@toolmain/shared"
+import { code1xx } from "@toolmain/shared"
 import { useSrc } from "@renderer/hooks/useSrc"
 
 const props = defineProps<{
@@ -13,9 +13,7 @@ const finished = computed(() => message.value.finish)
 const statusDone = computed(() => !code1xx(message.value.status) && message.value.status !== 206)
 const done = computed(() => !isPending.value && finished.value && statusDone.value)
 function onMessageChange(value: ChatMessage) {
-  if (isArrayLength(value.mediaIds)) {
-    value.mediaIds.forEach(src.retrieveFromDB)
-  }
+  src.retrieveFromDB(value.mediaIds)
 }
 watch(
   () => message.value.mediaIds,

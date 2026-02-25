@@ -12,6 +12,7 @@ import Thinking from "./thinking.vue"
 import MCPCall from "./mcpcall.vue"
 import Image from "./image.vue"
 import Error from "./error.vue"
+import Media from "./media.vue"
 import useChatStore from "@renderer/store/chat"
 import { Role } from "@windflow/core/types"
 import { useMsgContext } from "../../../../index"
@@ -55,7 +56,7 @@ async function onContentDelete(m: ChatMessageTree, done: CallBackFn) {
     done()
   }
 }
-async function onEdit(done: CallBackFn) {
+async function onEdit(done?: CallBackFn) {
   try {
     props.context.messageDialog.updateMessages(message.value.node)
     props.context.messageDialog.open()
@@ -67,7 +68,7 @@ async function onEdit(done: CallBackFn) {
   } catch (error) {
     msgError(errorToText(error))
   } finally {
-    done()
+    done?.()
   }
 }
 const onUpdateAffix = useThrottleFn(
@@ -124,6 +125,7 @@ defineExpose({
         :content="message.node.content.content"
         :force-plaintext="!!forcePlaintext"
         @updated="onUpdateAffix"></Markdown>
+      <Media :message="message.node"></Media>
     </div>
     <div v-else class="chat-item-content p[var(--ai-gap-medium)]">
       <Image v-if="isImage" :message></Image>

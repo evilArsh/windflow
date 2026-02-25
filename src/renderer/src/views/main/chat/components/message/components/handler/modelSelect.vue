@@ -65,7 +65,7 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
         <div class="flex-center gap-.5rem">
           <ContentBox style="--box-border-radius: 1rem" background>
             <i-material-symbols-featured-seasonal-and-gifts
-              class="text-1.6rem"></i-material-symbols-featured-seasonal-and-gifts>
+              class="text-1.4rem"></i-material-symbols-featured-seasonal-and-gifts>
           </ContentBox>
           <Abbrs
             :max-length="5"

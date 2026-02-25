@@ -9,9 +9,9 @@ const props = defineProps<{
   message: ChatMessageTree
   topic: ChatTopic
 }>()
-defineEmits<{
+const emit = defineEmits<{
   delete: [done: CallBackFn]
-  edit: [done: CallBackFn]
+  edit: [done?: CallBackFn]
 }>()
 const { t } = useI18n()
 const chatStore = useChatStore()
@@ -32,36 +32,36 @@ const isFinish = computed(() => {
     ? message.value.children.every(child => child.node.finish)
     : message.value.node.finish
 })
-async function terminate(done: CallBackFn) {
+async function terminate(done?: CallBackFn) {
   await chatStore.terminate(message.value.id)
-  done()
+  done?.()
 }
-async function restart(done: CallBackFn) {
+async function restart(done?: CallBackFn) {
   try {
     await chatStore.restart(message.value.id)
-    done()
+    done?.()
   } catch (error) {
     msg({ code: 500, msg: errorToText(error) })
-    done()
+    done?.()
   }
 }
 </script>
 <template>
-  <div class="flex items-center flex-wrap">
-    <ContentBox class="m0!">
-      <Button v-if="!isUser" @click="terminate" :disabled="!isProcessing" text size="small" circle plain type="primary">
-        <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
-      </Button>
+  <div class="handler">
+    <ContentBox
+      :text-loading="false"
+      class="primary"
+      v-if="!isUser"
+      @click="(_, done) => terminate(done)"
+      button
+      :disabled="!isProcessing">
+      <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
     </ContentBox>
-    <ContentBox class="m0!">
-      <Button size="small" @click="restart" :disabled="!isFinish" circle plain text type="primary">
-        <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
-      </Button>
+    <ContentBox :text-loading="false" class="primary" @click="(_, done) => restart(done)" :disabled="!isFinish">
+      <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
     </ContentBox>
-    <ContentBox class="m0!">
-      <Button size="small" :disabled="!isFinish" circle plain text type="primary" @click="done => $emit('edit', done)">
-        <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
-      </Button>
+    <ContentBox :text-loading="false" class="primary" :disabled="!isFinish" @click="(_, done) => emit('edit', done)">
+      <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
     </ContentBox>
     <PopConfirm
       :title="t('tip.deleteConfirm')"
@@ -72,13 +72,30 @@ async function restart(done: CallBackFn) {
       size="small"
       :confirm="done => $emit('delete', done)">
       <template #reference="{ loading, disabled }">
-        <ContentBox class="m0!">
-          <el-button size="small" :loading :disabled="!isFinish || disabled" circle plain text type="danger">
-            <i-solar-trash-bin-trash-outline class="text-1.4rem"></i-solar-trash-bin-trash-outline>
-          </el-button>
+        <ContentBox :text-loading="false" class="danger" :loading :disabled="!isFinish || disabled">
+          <i-solar-trash-bin-trash-outline class="text-1.4rem"></i-solar-trash-bin-trash-outline>
         </ContentBox>
       </template>
     </PopConfirm>
   </div>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.primary {
+  --box-text-color: var(--el-color-primary);
+  --box-text-active-color: var(--el-color-primary);
+  --box-text-hover-color: var(--el-color-primary);
+  --box-padding: var(--ai-gap-base);
+}
+.danger {
+  --box-text-color: var(--el-color-danger);
+  --box-text-active-color: var(--el-color-danger);
+  --box-text-hover-color: var(--el-color-danger);
+  --box-padding: var(--ai-gap-base);
+}
+.handler {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ai-gap-base);
+}
+</style>

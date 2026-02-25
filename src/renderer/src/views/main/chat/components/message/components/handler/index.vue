@@ -99,7 +99,14 @@ const {
       <div class="chat-input-actions">
         <div class="flex items-center"></div>
         <div class="flex items-center">
-          <Button link size="small" type="default" plain @click="done => triggerSend(done)">
+          <Button
+            :loading="taskPending"
+            link
+            size="small"
+            type="default"
+            text-loading
+            plain
+            @click="done => triggerSend(done)">
             {{ t("btn.send", { shortcut: sendShortcut }) }}
           </Button>
         </div>

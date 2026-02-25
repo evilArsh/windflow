@@ -86,7 +86,7 @@ const { loading, dropList, onCommand, update } = useEvent()
   <Shell>
     <template #reference>
       <ContentBox background>
-        <i-material-symbols-assignment-globe-outline class="text-1.6rem"></i-material-symbols-assignment-globe-outline>
+        <i-material-symbols-assignment-globe-outline class="text-1.4rem"></i-material-symbols-assignment-globe-outline>
       </ContentBox>
     </template>
     <template #header>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { CSSProperties } from "@toolmain/shared"
+import { CallBackFn, CSSProperties } from "@toolmain/shared"
+import { Spinner } from "@toolmain/components"
 
 const {
   normal = false,
@@ -13,7 +14,10 @@ const {
   stillLock = false,
   background = false,
   round = false,
-  // disabled = false,
+  disabled = false,
+  loading = false,
+  button = false,
+  textLoading = true,
 } = defineProps<{
   wrapStyle?: CSSProperties
   wrapClass?: string
@@ -42,9 +46,21 @@ const {
   background?: boolean
   round?: boolean
   /**
-   * 是否禁用
+   * button模式下 `disabled` `loading` `textLoading` 生效
    */
-  // disabled?: boolean
+  button?: boolean
+  /**
+   * 是否禁用，button 模式下生效
+   */
+  disabled?: boolean
+  /**
+   * loading 状态，button 模式下生效
+   */
+  loading?: boolean
+  /**
+   * loading状态下是否显示文本，button 模式下生效
+   */
+  textLoading?: boolean
 }>()
 const emit = defineEmits<{
   /**
@@ -53,9 +69,21 @@ const emit = defineEmits<{
    */
   lock: [status: boolean]
   iconClick: [e: MouseEvent]
-  click: [e: MouseEvent]
+  click: [e: MouseEvent, done?: CallBackFn]
 }>()
 const active = ref(false)
+
+const _disabled = ref(false)
+const _loading = ref(false)
+const finalDisabled = computed(() => (button ? disabled || _disabled.value : false))
+const finalLoading = computed(() => (button ? loading || _loading.value : false))
+// always true under non-button mode, otherwise, only show when [no loading] or [loading but show text]
+const slotShow = computed(() => (button ? !finalLoading.value || (finalLoading.value && textLoading) : true))
+function done(): void {
+  _disabled.value = false
+  _loading.value = false
+}
+
 const handle = {
   toggleLock: (toggle?: boolean) => {
     if (stillLock) return
@@ -64,10 +92,18 @@ const handle = {
     emit("lock", active.value)
   },
   click: (e: MouseEvent) => {
+    if (finalDisabled.value) return
     handle.toggleLock()
-    emit("click", e)
+    if (button) {
+      _disabled.value = true
+      _loading.value = true
+      emit("click", e, done)
+    } else {
+      emit("click", e)
+    }
   },
   iconClick: (e: MouseEvent) => {
+    if (finalDisabled.value) return
     emit("iconClick", e)
   },
 }
@@ -82,20 +118,24 @@ watch(
 <template>
   <div
     class="comp-content-box"
-    :class="[{ active, normal, background, round }, wrapClass]"
+    :class="[{ active, normal, background, round, disabled: finalDisabled }, wrapClass]"
     :style="wrapStyle"
     @click="handle.click">
-    <div v-if="$slots.header" class="box-header">
+    <div v-if="$slots.header && !button" class="box-header">
       <slot name="header"></slot>
     </div>
     <div class="box-main" :style="mainStyle" :class="[mainClass]">
-      <div v-if="$slots.icon" @click="handle.iconClick" :class="{ 'normal-icon': normalIcon }" class="box-icon">
-        <slot name="icon"></slot>
+      <div v-if="!$slots.icon && finalLoading" @click="handle.iconClick" class="box-icon">
+        <Spinner class="text-1.4rem" :model-value="true"></Spinner>
       </div>
-      <div v-if="$slots.default" class="box-text"><slot> </slot></div>
-      <div v-if="$slots.end" class="box-end"><slot name="end"></slot></div>
+      <div v-else-if="$slots.icon" @click="handle.iconClick" class="box-icon" :class="{ 'normal-icon': normalIcon }">
+        <slot v-if="!finalLoading" name="icon"></slot>
+        <Spinner v-else class="text-1.4rem" :model-value="finalLoading"></Spinner>
+      </div>
+      <div v-if="$slots.default && slotShow" class="box-text"><slot> </slot></div>
+      <div v-if="$slots.end && slotShow" class="box-end"><slot name="end"></slot></div>
     </div>
-    <div v-if="$slots.footer" class="box-footer">
+    <div v-if="$slots.footer && !button" class="box-footer">
       <slot name="footer"></slot>
     </div>
   </div>
@@ -104,6 +144,10 @@ watch(
 .comp-content-box {
   --box-padding: var(--ai-gap-small);
   --box-margin: 0;
+
+  --box-text-color: var(--el-text-color-regular);
+  --box-text-active-color: var(--el-text-color-regular);
+  --box-text-hover-color: var(--el-text-color-regular);
 
   --box-border-radius: 5px;
   --box-border-color: transparent;
@@ -115,21 +159,15 @@ watch(
   --box-shadow-active: 0 0 5px var(--el-fill-color-light);
 
   --box-bg-color: transparent;
-  // --box-bg-hover-color: var(--el-fill-color-dark);
-  // --box-bg-active-color: var(--el-fill-color-darker);
   --box-bg-hover-color: var(--el-color-info-light-7);
   --box-bg-active-color: var(--el-color-info-light-5);
-
-  // --box-bg-background-color: var(--el-color-info-light-9);
-  // --box-bg-background-hover-color: var(--el-color-info-light-7);
-  // --box-bg-background-active-color: var(--el-color-info-light-5);
 
   --box-icon-color: var(--el-text-color-regular);
   --box-icon-hover-color: var(--el-color-primary-light-7);
   --box-icon-active-color: var(--el-color-primary-light-5);
 
   &.background {
-    --box-bg-color: var(--el-color-info-light-9);
+    --box-bg-color: var(--el-color-info-light-8);
   }
   &.normal {
     --box-shadow: none;
@@ -138,11 +176,34 @@ watch(
     --box-bg-hover-color: transparent;
     --box-bg-active-color: transparent;
   }
+  &.disabled {
+    cursor: not-allowed;
+    --box-shadow: none;
+    --box-shadow-active: none;
+
+    --box-border-color: var(--el-disabled-border-color);
+    --box-border-active-color: var(--el-disabled-border-color);
+    --box-border-hover-color: var(--el-disabled-border-color);
+
+    --box-bg-color: var(--el-disabled-bg-color);
+    --box-bg-hover-color: var(--el-disabled-bg-color);
+    --box-bg-active-color: var(--el-disabled-bg-color);
+
+    --box-icon-color: var(--el-text-color-disabled);
+    --box-icon-hover-color: var(--el-disabled-bg-color);
+    --box-icon-active-color: var(--el-disabled-bg-color);
+
+    --box-text-color: var(--el-text-color-disabled);
+    --box-text-active-color: var(--el-text-color-disabled);
+    --box-text-hover-color: var(--el-text-color-disabled);
+  }
 }
 .comp-content-box {
   -webkit-app-region: no-drag;
   user-select: none;
   cursor: pointer;
+  font-size: var(--el-font-size-base);
+  color: var(--box-text-color);
   margin: var(--box-margin);
   padding: var(--box-padding);
   border-radius: var(--box-border-radius);
@@ -155,27 +216,18 @@ watch(
   &.round {
     border-radius: var(--el-border-radius-round);
   }
-  // &.background {
-  // --box-bg-color: var(--el-color-info-light-9);
-  // background-color: var(--box-bg-background-color);
-  // &:hover {
-  //   background-color: var(--box-bg-background-hover-color);
-  // }
-  // &:active,
-  // &.active {
-  //   background-color: var(--box-bg-background-active-color);
-  // }
-  // }
   &:hover {
     background-color: var(--box-bg-hover-color);
     box-shadow: var(--box-shadow);
     border-color: var(--box-border-hover-color);
+    color: var(--box-text-hover-color);
   }
   &:active,
   &.active {
     background-color: var(--box-bg-active-color);
     box-shadow: var(--box-shadow-active);
     border-color: var(--box-border-active-color);
+    color: var(--box-text-active-color);
   }
   &.normal {
     @extend .normal;

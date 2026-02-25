@@ -109,7 +109,7 @@ watch(topic, ev.refreshKnowledges, {
         normal>
         <div class="flex-center gap-.5rem">
           <ContentBox style="--box-border-radius: 1rem" background>
-            <i-material-symbols-book-4-spark class="text-1.6rem" />
+            <i-material-symbols-book-4-spark class="text-1.4rem" />
           </ContentBox>
           <Abbrs
             :max-length="5"

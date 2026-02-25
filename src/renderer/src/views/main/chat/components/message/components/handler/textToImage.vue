@@ -101,7 +101,7 @@ function onRandSeed() {
   <Shell>
     <template #reference>
       <ContentBox background>
-        <i-material-symbols-image-search-outline class="text-1.6rem"></i-material-symbols-image-search-outline>
+        <i-material-symbols-image-search-outline class="text-1.4rem"></i-material-symbols-image-search-outline>
       </ContentBox>
     </template>
     <template #header>
