@@ -6,12 +6,13 @@ import {
   DataTransformer,
   useCsvTransformer,
   useDocxTransformer,
+  useImageTransformer,
   usePdfTransformer,
   useTextTransformer,
   useXlsxTransformer,
   // useXlsxTransformer2,
 } from "./transformer"
-import { isMaxTokensReached, addChunk, isMaxFileChunksReached, useString } from "./utils"
+import { isMaxTokensExceed, addChunk, useString } from "./utils"
 import { log } from "../utils"
 export function detectFileTypeByExtension(filePath: string) {
   const ext = path.extname(filePath).toLowerCase()
@@ -25,45 +26,50 @@ export function useTextReader(config: RAGEmbeddingConfig) {
   const gStr = useString()
   const gDst: RAGFile[] = []
   function pushLine(line: string, meta: RAGLocalFileInfo) {
-    if (isMaxTokensReached(line, toNumber(config.maxTokens))) {
-      log.debug("[pushLine] max tokens reached of single line, Split the string into two equal parts: ", line)
-      pushLine(line.slice(0, line.length / 2), meta)
-      pushLine(line.slice(line.length / 2), meta)
-    }
-    if (isMaxTokensReached(gDst.toString(), toNumber(config.maxFileChunks))) {
-      throw new Error("max tokens reached of original chunk")
-    }
-    gStr.append(line)
-    if (isMaxTokensReached(gStr.toString(), toNumber(config.maxTokens))) {
-      const last = gStr.popLast()
-      addChunk(gDst, gStr.toString(), meta, config)
-      gStr.clear()
-      last && gStr.append(last)
+    const maxTokens = toNumber(config.maxTokens)
+    if (maxTokens >= 0 && isMaxTokensExceed(line, maxTokens)) {
+      log.info(`[pushLine] max tokens reached of single line, Split the line into smaller parts`)
+      pushLine(line.substring(0, line.length / 2), meta)
+      pushLine(line.substring(line.length / 2), meta)
+    } else {
+      gStr.append(line)
     }
   }
   async function read(meta: RAGLocalFileInfo, transformer: DataTransformer) {
     for await (const line of transformer.next()) {
       try {
-        if (isMaxFileChunksReached(gDst, toNumber(config.maxFileChunks))) {
+        if (isSymbol(line) || gDst.length === toNumber(config.maxFileChunks)) {
           transformer.done()
           break
         }
-        if (!isSymbol(line)) {
-          pushLine(line, meta)
-        } else {
-          // the final chunk should be flush to gDst
-          pushLine("", meta)
-          transformer.done()
-          if (
-            !isMaxTokensReached(gStr.toString(), toNumber(config.maxTokens)) &&
-            !isMaxFileChunksReached(gDst, toNumber(config.maxFileChunks))
-          ) {
-            addChunk(gDst, gStr.toString(), meta, config)
+        pushLine(line, meta)
+        const prev: string[] = []
+        const strs = gStr.slice()
+        let flag = 0
+        const maxTokens = toNumber(config.maxTokens)
+        for (let i = 0; i < strs.length; i++) {
+          if (maxTokens >= 0 && isMaxTokensExceed(prev.concat(strs[i]).join(""), maxTokens)) {
+            // FIXME: this will truncate the strings.
+            // if it's a base64 image, it will be incomplete
+            addChunk(gDst, prev.join(""), meta, config)
+            flag += prev.length
+            prev.length = 0
+            prev.push(strs[i])
+            if (gDst.length === toNumber(config.maxFileChunks)) {
+              break
+            }
+          } else {
+            prev.push(strs[i])
           }
-          break
         }
+        if (prev.length) {
+          addChunk(gDst, prev.join(""), meta, config)
+          flag += prev.length
+        }
+        gStr.truncate(0, flag)
       } catch (error) {
         log.debug("[read file error]", errorToText(error))
+        transformer.done()
         break
       }
     }
@@ -76,7 +82,7 @@ export function useTextReader(config: RAGEmbeddingConfig) {
    */
   async function readBlock(meta: RAGLocalFileInfo, transformer: DataTransformer) {
     for await (const block of transformer.next()) {
-      if (isMaxFileChunksReached(gDst, toNumber(config.maxFileChunks))) {
+      if (gDst.length >= toNumber(config.maxFileChunks)) {
         transformer.done()
         break
       }
@@ -125,6 +131,9 @@ export async function readFile(data: RAGLocalFileInfo, config: RAGEmbeddingConfi
       return responseData(200, "ok", await reader.read(data, transformer))
     } else if (mimeType?.startsWith("text/")) {
       transformer = useTextTransformer(data.path)
+      return responseData(200, "ok", await reader.read(data, transformer))
+    } else if (mimeType?.startsWith("image/")) {
+      transformer = useImageTransformer(data.path)
       return responseData(200, "ok", await reader.read(data, transformer))
     } else {
       return responseData(500, `file type ${data.mimeType} not supported`, [])

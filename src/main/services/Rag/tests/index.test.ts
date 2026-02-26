@@ -69,7 +69,8 @@ describe("main/src/Rag", () => {
     const files: string[] = [
       // path.join(__dirname, ".gitignore"),
       // path.join(__dirname, "work.xlsx"),
-      path.join(__dirname, "test.xlsx"),
+      // "C:/Users/11835/desktop/register.png",
+      // "C:/Users/11835/desktop/test.txt",
     ]
     for await (const file of files) {
       const meta: RAGLocalFileMeta = {
@@ -89,7 +90,12 @@ describe("main/src/Rag", () => {
           fileName: info.name,
           fileSize: info.size,
         },
-        globalConfig
+        // globalConfig
+        {
+          ...globalConfig,
+          maxFileChunks: 1024,
+          maxTokens: 3,
+        }
       )
       console.log(res)
       expect(res.data.length).gte(0)

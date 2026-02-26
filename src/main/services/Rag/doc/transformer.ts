@@ -6,8 +6,9 @@ import mammoth from "mammoth"
 import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValue } from "exceljs"
 import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
 import { Primitive } from "type-fest"
+import sharp from "sharp"
 import { log } from "../utils"
-import { isMaxTokensReached, useString } from "./utils"
+import { isMaxTokensExceed, useString } from "./utils"
 
 export const Flags = {
   Error: Symbol("[ERROR]"),
@@ -136,6 +137,14 @@ export function usePdfTransformer(path: string): DataTransformer<string | symbol
       url: path,
     })
     try {
+      // TODO: handle if contents are images
+      const info = await parser.getInfo()
+      if (info.total == 0) {
+        yield Flags.Done
+        return
+      }
+      // const screen = await parser.getScreenshot()
+      // const table = await parser.getTable()
       const text = await parser.getText()
       for (let i = 0; i < text.pages.length; i++) {
         const textArr = text.pages[i].text.split(/\r?\n/g)
@@ -151,6 +160,25 @@ export function usePdfTransformer(path: string): DataTransformer<string | symbol
       yield Flags.Error
     } finally {
       await parser.destroy()
+    }
+  }
+  return {
+    next,
+    done,
+  }
+}
+
+export function useImageTransformer(path: string): DataTransformer<string | symbol> {
+  function done(): void {}
+  async function* next(): AsyncGenerator<any> {
+    try {
+      const meta = await sharp(path).metadata()
+      const res = await sharp(path).toBuffer()
+      yield `data:image/${meta.format};base64,${res.toString("base64")}`
+      yield Flags.Done
+    } catch (e) {
+      log.error("[useImageTransformer error]", e)
+      yield Flags.Error
     }
   }
   return {
@@ -337,7 +365,7 @@ export function useXlsxTransformer2(path: string, config: XlsxTransformConfig): 
         for (let i = 0; i < data.length; i++) {
           line = data[i].map(h => getValue(h)).join()
           line && gStr.append(line)
-          if (isMaxTokensReached(gStr.toString(), config.maxTokens)) {
+          if (isMaxTokensExceed(gStr.toString(), config.maxTokens)) {
             const last = gStr.popLast()
             const str = gStr.toString("\n")
             gStr.clear()
@@ -346,7 +374,7 @@ export function useXlsxTransformer2(path: string, config: XlsxTransformConfig): 
             yield str
           }
         }
-        if (!isMaxTokensReached(gStr.toString(), config.maxTokens)) {
+        if (!isMaxTokensExceed(gStr.toString(), config.maxTokens)) {
           const str = gStr.toString("\n")
           gStr.clear()
           yield str

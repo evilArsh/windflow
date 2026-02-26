@@ -20,14 +20,8 @@ export function tokenLength(text: string) {
 /**
  * 文本是否超出token长度限制
  */
-export function isMaxTokensReached(text: string, maxTokens: number) {
+export function isMaxTokensExceed(text: string, maxTokens: number) {
   return tokenLength(text) > maxTokens
-}
-/**
- * 文本是否超出chunk长度限制
- */
-export function isMaxFileChunksReached(dst: RAGFile[], maxFileChunks: number) {
-  return dst.length > maxFileChunks
 }
 /**
  * 向文件块中添加新的chunk
@@ -76,5 +70,12 @@ export function useString() {
     }
     return latest
   }
-  return { append, toString, length, clear, popLast }
+  function slice(start?: number, end?: number) {
+    return parts.slice(start, end)
+  }
+  function truncate(start: number, deleteCount?: number | undefined) {
+    const res = parts.splice(start, deleteCount)
+    len -= res.reduce((acc, cur) => acc + cur.length, 0)
+  }
+  return { append, toString, length, clear, popLast, slice, truncate }
 }
