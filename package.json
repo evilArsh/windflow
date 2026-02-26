@@ -89,6 +89,7 @@
     "remark-rehype": "catalog:web",
     "remark-squeeze-paragraphs": "catalog:web",
     "remark-toc": "catalog:web",
+    "sharp": "catalog:node",
     "shiki": "catalog:web",
     "space-separated-tokens": "catalog:web",
     "sqlstring": "catalog:node",

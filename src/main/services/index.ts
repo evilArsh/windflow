@@ -11,7 +11,7 @@ import { AutoUpdateServiceImpl } from "./AutoUpdate"
 export function registerService(mainWindow: BrowserWindow): ServiceCore {
   const bus = new EventBusImpl(mainWindow)
   const mcp = new MCPServiceImpl(bus)
-  const file = new FileServiceImpl()
+  const file = new FileServiceImpl(mainWindow)
   const theme = new ThemeServiceImpl(mainWindow)
   const rag = new RAGServiceImpl(bus)
   const autoUpdate = new AutoUpdateServiceImpl(bus)

@@ -108,6 +108,7 @@ catalogs:
     file-type: ^21.3.0
     mammoth: ^1.11.0
     pdf-parse: ^2.4.5
+    sharp: ^0.34.5
     sqlstring: ^2.3.3
   web:
     '@iconify/utils': ^3.1.0
@@ -152,13 +153,14 @@ catalogs:
     vue-router: ^5.0.3
 
 onlyBuiltDependencies:
-  - esbuild
-  - vue-demi
   - '@parcel/watcher'
   - electron
   - electron-winstaller
+  - esbuild
   - msw
   - protobufjs
+  - sharp
+  - vue-demi
 
 overrides:
   decode-named-character-reference: file:./patchs/decode-named-character-reference

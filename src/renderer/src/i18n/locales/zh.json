@@ -49,6 +49,7 @@
     "editMessage": "消息编辑",
     "fileTooLarge": "文件过大",
     "fileTypeNotSupported": "不支持该类型的文件",
+    "fileUnrecognized": "无法识别文件内容",
     "kb": {
       "label": "知识库"
     },

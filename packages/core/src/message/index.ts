@@ -18,7 +18,7 @@ import {
   getIsolatedMessages,
   getMessageContexts,
   getMessageType,
-  MediaDownloader,
+  MediaHandler,
   resetMessage,
 } from "./utils"
 import { createChatContext } from "./context"
@@ -48,13 +48,13 @@ export class MessageManager {
   readonly #providerManager: ProviderManager
   readonly #ev: EventBus<ChatEvent>
   readonly #storage: MessageStorage
-  readonly #downloader: MediaDownloader
+  readonly #mediaHandler: MediaHandler
   constructor() {
     this.#ctx = createChatContext()
     this.#providerManager = new ProviderManager()
     this.#ev = useEvent<ChatEvent>()
     this.#storage = new MessageStorage()
-    this.#downloader = new MediaDownloader()
+    this.#mediaHandler = new MediaHandler()
   }
   #emitAll(contextId?: string, message?: ChatMessage, topic?: ChatTopic) {
     this.#ev.emit(AllTopicsFlag, { message, contextId, topic })
@@ -80,11 +80,11 @@ export class MessageManager {
       value => {
         if (ctx.handler?.getSignal().aborted) {
           topic.requestCount = Math.max(0, topic.requestCount - 1)
-          storage.chat.putChatTopic(topic)
           message.finish = true
           message.status = 499
           this.emitTopic(topic)
-          // this message may already has been removed from database, because the abort signal may happen when user terminate manually.
+          // this message may already been removed from database,
+          // because the abort signal may happen when user terminate manually.
           // or user deleted a topic or a message
           this.emitMessage(message)
           return
@@ -134,7 +134,7 @@ export class MessageManager {
         message.status = res.status
         message.msg = res.msg
         this.emitMessage(message, ctx.id)
-        this.#downloader.download(this, message, contextId, "image")
+        this.#mediaHandler.download(this, message, contextId, "image")
       })
       this.#ctx.setHandler(contextId, hdl)
       storage.model.put(modelMeta)
@@ -238,6 +238,7 @@ export class MessageManager {
    * send multiple messages and return context ids
    */
   async send(topicId: string, content: Content, modelIds: string[]): Promise<string[]> {
+    const topic = await this.getStorage().getTopic(topicId)
     const modelMetas = (await storage.model.bulkGet(modelIds)).filter(item => !isUndefined(item))
     const userMessage = createChatMessage({
       content: {
@@ -251,7 +252,15 @@ export class MessageManager {
         ? ChatMessageContextFlag.PART
         : undefined,
       topicId,
+      mediaIds: cloneDeep(topic?.mediaIds),
     })
+    if (topic) {
+      // clear temp files
+      await this.getStorage().putChatTopic({
+        ...topic,
+        mediaIds: [],
+      })
+    }
     const reqInfo = await this.#createResponseMessages(topicId, userMessage.id, modelMetas)
     await this.getStorage().addNewMessages([userMessage, ...reqInfo.map(i => i.message)])
     this.emitMessage(userMessage)
@@ -353,6 +362,7 @@ export class MessageManager {
       const message = await storage.chat.getChatMessage(messageId)
       if (message) {
         message.status = 499
+        message.finish = true
         await storage.chat.putChatMessage(message)
         this.emitMessage(message, ctx.id)
       }

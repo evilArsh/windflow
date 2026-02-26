@@ -49,6 +49,7 @@ export default defineConfig([
       "public/",
       ".lintstagedrc*",
       "commitlint*",
+      "components.d.ts",
       "**/build/",
       "**/out/",
       "**/dist/",

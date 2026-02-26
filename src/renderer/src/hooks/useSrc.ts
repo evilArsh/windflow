@@ -1,30 +1,30 @@
 import { useRequest } from "@windflow/core/provider"
-import { errorToText, isArrayLength, uniqueId } from "@toolmain/shared"
+import { errorToText, isArrayLength, isString, uniqueId } from "@toolmain/shared"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
 import { msg } from "@renderer/utils"
 import { useMedia } from "./useCore"
-import { MediaType, MediaSrc } from "@windflow/core/types"
+import { MediaType, Media } from "@windflow/core/types"
 export function useSrc() {
-  const data = ref<MediaSrc[]>([])
+  const data = ref<Media[]>([])
   const http = useRequest()
   const { isPending, ...task } = useTask(new PQueue())
   const blobTmp: Map<string, string> = new Map()
   const media = useMedia()
-  function addResource(url: string, type: MediaType, id?: string) {
-    const _id = id ?? uniqueId()
-    data.value.push({
-      id: _id,
-      url,
-      type,
-    })
-    if (url.startsWith("blob:")) {
-      blobTmp.set(_id, url)
+  function addResource(media: Media) {
+    data.value.push(media)
+    if (isString(media.data) && media.data.startsWith("blob:")) {
+      blobTmp.set(media.id, media.data)
     }
   }
   function addFile(file: File, type: MediaType) {
-    const tmp = URL.createObjectURL(file)
-    addResource(tmp, type)
+    addResource({
+      id: uniqueId(),
+      type,
+      name: file.name,
+      data: URL.createObjectURL(file),
+      size: file.size,
+    })
   }
 
   function download(url: string, type: MediaType) {
@@ -37,15 +37,19 @@ export function useSrc() {
           signal,
         })
         const res = await promise
-        const tmp = URL.createObjectURL(res.data)
-        addResource(tmp, type)
+        addResource({
+          id: uniqueId(),
+          type,
+          name: url.slice(url.lastIndexOf("/") + 1),
+          data: URL.createObjectURL(res.data),
+          path: url,
+        })
       } catch (error) {
         console.error("[download src]", error)
       }
     })
   }
   function retrieveFromDB(mediaIds: string[] | undefined) {
-    // console.log("mediaIds:", mediaIds)
     if (!mediaIds || !isArrayLength(mediaIds)) {
       abortAll()
       clearSrc()
@@ -53,8 +57,6 @@ export function useSrc() {
     }
     // the data to be removed will not be in mediaIds.
     const toRemove = data.value.filter(item => !mediaIds.includes(item.id)).map(item => item.id)
-    // const currentDataIds = data.value.map(item => item.id)
-    // const toAdd = mediaIds.filter(mediaId => !currentDataIds.includes(mediaId))
     data.value = data.value.filter(item => !toRemove.includes(item.id))
     toRemove.forEach(mediaId => {
       const tmp = blobTmp.get(mediaId)
@@ -67,10 +69,8 @@ export function useSrc() {
           try {
             const res = await media.getStorage().get(mediaId)
             if (signal?.aborted) return
-            if (res) {
-              const tmp = URL.createObjectURL(res.data)
-              addResource(tmp, res.type, res.id)
-            }
+            if (!res) return
+            addResource({ ...res })
           } catch (error) {
             msg({ code: 500, msg: errorToText(error) })
           }

@@ -72,6 +72,17 @@ function patch_napi_rs(context, platform, arch) {
   })
   fieldFiles.push(...excludeRules)
 }
+/**
+ * `sharp` dependency
+ */
+function patch_sharp(context, platform, arch) {
+  let fieldFiles = context.packager.config.files[0].filter
+  const excludePlatforms = pickExcludeArchs(platform, arch)
+  const excludeRules = excludePlatforms.map(p => {
+    return `!node_modules/@img/sharp-${p}*/**`
+  })
+  fieldFiles.push(...excludeRules)
+}
 
 exports.default = async function (context) {
   // const fieldAsarUnpack = context.packager.config.asarUnpack // asarUnpack filed in `electron-builder.yml`
@@ -80,4 +91,5 @@ exports.default = async function (context) {
   console.log(`[package platform] ${platform}-${arch}`)
   patch_lanceDB(context, platform, arch)
   patch_napi_rs(context, platform, arch)
+  // patch_sharp(context, platform, arch)
 }

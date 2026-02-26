@@ -1,56 +1,85 @@
 <script setup lang="ts">
-import type { ChatTopic } from "@windflow/core/types"
+import type { ChatTopic, Media } from "@windflow/core/types"
 import useChatStore from "@renderer/store/chat"
 import Shell from "./components/shell.vue"
-import { UploadFile, UploadFiles } from "element-plus"
-import { isArrayLength, uniqueId } from "@toolmain/shared"
-import { msgWarning } from "@renderer/utils"
+import { CallBackFn, code2xx, errorToText, isArrayLength, Response, uniqueId } from "@toolmain/shared"
+import { msgError, msgWarning } from "@renderer/utils"
 import { useSrc } from "@renderer/hooks/useSrc"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
+import { FileInfo } from "@windflow/shared"
+import MediaComp from "@renderer/components/Media/index.vue"
 
 const props = defineProps<{
   topic: ChatTopic
 }>()
 const { t } = useI18n()
 const chatStore = useChatStore()
-const imagesExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".webp"]
-const filesExtensions = [".xls", ".xlsx", ".doc", ".docx", ".pdf"]
+const imagesExtensions = ["jpg", "jpeg", "png", "bmp", "webp"]
+const filesExtensions = ["xls", "xlsx", "doc", "docx", "pdf"]
 const maxSize = 1024 * 1024 * 100
 const allowedExtensions = [...imagesExtensions, ...filesExtensions]
-const queue = useTask(new PQueue({ concurrency: 1 }))
+const queue = useTask(new PQueue())
 
 const { data, ...src } = useSrc()
 const visible = computed(() => isArrayLength(data.value))
 function onMessageChange(topic: ChatTopic) {
   src.retrieveFromDB(topic.mediaIds)
 }
-function onFileChange(file: UploadFile, _files: UploadFiles) {
+function onChooseFile(_: MouseEvent, done?: CallBackFn) {
   queue.add(async () => {
     try {
-      if (!file.raw) return
-      const size = file.raw.size
-      const name = file.name
-      if (!allowedExtensions.some(ext => name.toLowerCase().endsWith(ext))) {
-        msgWarning(t("chat.fileTypeNotSupported"))
-        return
+      if (window.api) {
+        const res = await window.api.file.chooseFilePath(allowedExtensions)
+        if (!res.data.length) return
+        const infos = await window.api.file.getInfo(res.data)
+        const available = infos.data.filter(
+          info => info.isFile && info.size < maxSize && allowedExtensions.some(e => e === info.extension.toLowerCase())
+        )
+        if (!isArrayLength(available)) {
+          return
+        }
+        const datas = await Promise.all(
+          available.map(val => {
+            return new Promise<{ info: FileInfo } & Response<string[]>>((resolve, reject) => {
+              window.api.rag
+                .readFileAsText(val.path, { maxFileChunks: 9999, maxTokens: -1 })
+                .then(res => {
+                  resolve({
+                    info: val,
+                    ...res,
+                  })
+                })
+                .catch(err => {
+                  reject(err)
+                })
+            })
+          })
+        )
+        const effectData = datas
+          .filter(data => code2xx(data.code) && data.data.length)
+          .map<Media>(val => {
+            return {
+              id: uniqueId(),
+              name: val.info.name,
+              type: imagesExtensions.some(ext => val.info.extension.toLowerCase() === ext) ? "image" : "file",
+              size: val.info.size,
+              data: val.data.join("\n"),
+              path: val.info.path,
+              extension: val.info.extension,
+            }
+          })
+        if (!isArrayLength(effectData)) {
+          msgWarning(t("chat.fileUnrecognized"))
+          return
+        }
+        console.log(effectData)
+        await chatStore.addChatTempFiles(props.topic, effectData)
       }
-      const type = filesExtensions.some(ext => name.toLowerCase().endsWith(ext)) ? "file" : "image"
-      if (size > maxSize) {
-        msgWarning(t("chat.fileTooLarge"))
-        return
-      }
-      await chatStore.addChatTempFiles(props.topic, [
-        {
-          id: uniqueId(),
-          name,
-          type,
-          size,
-          data: file.raw,
-        },
-      ])
     } catch (error) {
-      console.error("[file error]", error)
+      msgError(errorToText(error))
+    } finally {
+      done?.()
     }
   })
 }
@@ -64,42 +93,28 @@ watch(
 onBeforeMount(() => {
   onMessageChange(props.topic)
 })
-onBeforeUnmount(src.dispose)
+onBeforeUnmount(() => {
+  src.dispose()
+  queue.clear()
+})
 </script>
 <template>
-  <Shell :visible :width="200" content-style="--dialog-scroll-view-padding: var(--ai-gap-small)">
+  <Shell :visible :width="300" content-style="--dialog-scroll-view-padding: var(--ai-gap-small)">
     <template #reference>
-      <el-upload
-        class="flex"
-        multiple
-        :limit="50"
-        :accept="allowedExtensions.join(',')"
-        :auto-upload="false"
-        :show-file-list="false"
-        :on-change="onFileChange">
-        <ContentBox class="custom-box" background>
-          <div class="flex-center p[var(--ai-gap-small)] gap[var(--ai-gap-base)]">
-            <i-material-symbols-upload class="icon"></i-material-symbols-upload>
-            <el-text>{{ t("chat.upload") }}</el-text>
-          </div>
-        </ContentBox>
-      </el-upload>
+      <ContentBox class="custom-box" style="--ai-gap-base: 0" @click="onChooseFile" background button normal-icon>
+        <template #icon>
+          <i-material-symbols-upload class="icon"></i-material-symbols-upload>
+        </template>
+        <span>{{ t("chat.upload") }}</span>
+      </ContentBox>
     </template>
     <template #default>
-      <div class="flex items-center gap-.5rem overflow-x-auto">
+      <div class="flex items-center gap-.5rem p-[var(--ai-gap-base)] overflow-x-auto">
         <ContentBox v-for="item in data" background class="relative" :key="item.id">
           <i-ep-circle-close-filled
             @click.stop="onFileRemove(item.id)"
             class="c-[var(--el-color-danger)] z-100 text-1.2rem absolute right-0 top-0"></i-ep-circle-close-filled>
-          <el-image
-            class="h-3rem w-3rem"
-            fit="contain"
-            v-if="item.type === 'image'"
-            :preview-src-list="data.map(v => v.url)"
-            :src="item.url"></el-image>
-          <audio v-else-if="item.type === 'audio'" :src="item.url"></audio>
-          <video v-else-if="item.type === 'video'" :src="item.url"></video>
-          <i-ep-document v-else class="h-3rem w-3rem text-1.8rem"></i-ep-document>
+          <MediaComp :data="item"></MediaComp>
         </ContentBox>
       </div>
     </template>
@@ -107,12 +122,9 @@ onBeforeUnmount(src.dispose)
 </template>
 <style lang="scss" scoped>
 .custom-box {
-  --box-border-color: var(--el-border-color-light);
   --box-border-radius: 1rem;
-  --box-border-size: 1px;
-  --box-padding: 0;
   .icon {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
 }
 </style>

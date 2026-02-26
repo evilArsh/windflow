@@ -9,7 +9,7 @@ import {
   Role,
 } from "@windflow/core/types"
 import { useRequest } from "@windflow/core/provider"
-import { storage, defaultMessage } from "@windflow/core/storage"
+import { storage, defaultMessage, withTransaction } from "@windflow/core/storage"
 import {
   cloneDeep,
   errorToText,
@@ -69,6 +69,7 @@ export function createChatMessage(initial?: Partial<ChatMessage>): ChatMessage {
     index: 0,
     topicId: "",
     modelId: "",
+    mediaIds: [],
   }
   return merge(dst, initial)
 }
@@ -183,7 +184,7 @@ export function getMessageContexts(topic: ChatTopic, rawMessages: ChatMessage[])
   return newContexts
 }
 
-export class MediaDownloader {
+export class MediaHandler {
   #req: ReturnType<typeof useRequest>
   constructor() {
     this.#req = useRequest()
@@ -225,8 +226,11 @@ export class MediaDownloader {
         .filter(item => !!item)
 
       const mediaIds = results.map(item => item.id)
-      await storage.chat.updateChatMessage(message.id, {
-        mediaIds,
+      await withTransaction("rw", ["media", "chatMessage"], async tx => {
+        await Promise.all([
+          storage.media.bulkAdd(results, { disableQueue: true, transaction: tx }),
+          storage.chat.updateChatMessage(message.id, { mediaIds }, { disableQueue: true, transaction: tx }),
+        ])
       })
       message.finish = true
       message.mediaIds = mediaIds

@@ -1,7 +1,7 @@
 import { ServiceCore } from "@main/types"
 import { Response, responseData, errorToText, StatusResponse, responseCode, isString } from "@toolmain/shared"
 import { FileService, IpcChannel, FileInfo } from "@windflow/shared"
-import { dialog, ipcMain, shell } from "electron"
+import { BrowserWindow, dialog, ipcMain, shell } from "electron"
 import { useStore } from "@main/hooks/useStore"
 import { useEnv } from "@main/hooks/useEnv"
 import { getFileInfo } from "@main/misc/file"
@@ -12,13 +12,17 @@ import { log } from "./utils"
 export class FileServiceImpl implements FileService, ServiceCore {
   #store = useStore()
   #env = useEnv()
-  async chooseFilePath(): Promise<Response<string[]>> {
+  #mainWindow: BrowserWindow
+  constructor(mainWindow: BrowserWindow) {
+    this.#mainWindow = mainWindow
+  }
+  async chooseFilePath(extensions?: string[]): Promise<Response<string[]>> {
     try {
       const defaultPath = this.#store.get("OpenDefaultPath") ?? this.#env.getRootDir()
-      const result = await dialog.showOpenDialog({
+      const result = await dialog.showOpenDialog(this.#mainWindow, {
         defaultPath,
         properties: ["openFile", "multiSelections", "dontAddToRecent"],
-        filters: [{ name: "All Files", extensions: ["*"] }],
+        filters: [{ name: "All Files", extensions: extensions ?? ["*"] }],
       })
       const res = result.filePaths
       log.debug("[chooseFilePath]", res)
@@ -73,8 +77,8 @@ export class FileServiceImpl implements FileService, ServiceCore {
     }
   }
   registerIpc() {
-    ipcMain.handle(IpcChannel.FileChooseFilePath, async (_): Promise<Response<string[]>> => {
-      return this.chooseFilePath()
+    ipcMain.handle(IpcChannel.FileChooseFilePath, async (_, exts?: string[]): Promise<Response<string[]>> => {
+      return this.chooseFilePath(exts)
     })
     ipcMain.handle(IpcChannel.FileGetInfo, async (_, p: string[]): Promise<Response<FileInfo[]>> => {
       return this.getInfo(p)

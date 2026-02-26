@@ -49,6 +49,7 @@
     "editMessage": "Edit Message",
     "fileTooLarge": "file too large",
     "fileTypeNotSupported": "file type not supported",
+    "fileUnrecognized": "No available content return",
     "kb": {
       "label": "Knowledge Base"
     },

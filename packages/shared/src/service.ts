@@ -46,6 +46,7 @@ export const IpcChannel = {
   RagRestart: "rag.restart",
   RagRemoveById: "rag.removeById",
   RagRemoveByTopicId: "rag.removeByTopicId",
+  RagReadFileAsText: "rag.readFileAsText",
 
   AutoUpdateCheckUpdate: "autoUpdate.checkUpdate",
   AutoUpdateQuitAndInstall: "autoUpdate.quitAndInstall",
@@ -100,7 +101,7 @@ export interface MCPService {
 }
 
 export interface FileService {
-  chooseFilePath: () => Promise<Response<string[]>>
+  chooseFilePath: (extensions?: string[]) => Promise<Response<string[]>>
   getInfo: (absPath: string[]) => Promise<Response<FileInfo[]>>
   open: (absPath: string) => Promise<StatusResponse>
 }
@@ -131,6 +132,13 @@ export interface RAGService {
    * remove all datas which belongs to `topicId`
    */
   removeByTopicId: (topicId: string) => Promise<StatusResponse>
+  /**
+   * read a file and return it's content(if available)
+   */
+  readFileAsText: (
+    absPath: string,
+    config?: Pick<RAGEmbeddingConfig, "maxTokens" | "maxFileChunks">
+  ) => Promise<Response<string[]>>
 }
 
 export interface AutoUpdateService {

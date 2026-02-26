@@ -4,10 +4,18 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run electron-builder",
+      "name": "Debug electron-builder",
       "runtimeExecutable": "electron-builder",
       "cwd": "${workspaceFolder}",
       "args": ["--win", "--config", "${workspaceRoot}/electron-builder.yml"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Specify Unit Test",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "vitest",
+      "args": ["--project", "unit-node", "-t", "read file"]
     },
     {
       "name": "Debug Main Process",

@@ -17,6 +17,7 @@ import {
 import sql from "sqlstring"
 import {
   cloneDeep,
+  code2xx,
   errorToText,
   Response,
   responseCode,
@@ -35,6 +36,7 @@ import { StoreTaskImpl } from "./task/store"
 import { combineTableName } from "./db/utils"
 import { log, RAGServiceId } from "./utils"
 import { getFileInfo } from "@main/misc/file"
+import { readFile } from "./doc"
 
 export type RAGServiceConfig = {
   store?: VectorStoreConfig
@@ -120,7 +122,12 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
           fileName: info.name,
           fileSize: info.size,
         },
-        config
+        {
+          ...config,
+          maxFileChunks: config.maxFileChunks ?? 512,
+          maxInputs: config.maxInputs ?? 20,
+          maxTokens: config.maxTokens ?? 512,
+        }
       )
     } catch (error) {
       log.debug("[processLocalFile error]", errorToText(error))
@@ -205,6 +212,54 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
       return responseCode(500, errorToText(error))
     }
   }
+  async readFileAsText(
+    filePath: string,
+    config?: Pick<RAGEmbeddingConfig, "maxTokens" | "maxFileChunks">
+  ): Promise<Response<string[]>> {
+    let info: FileInfo | undefined
+    try {
+      if (!filePath) {
+        throw new Error("[readFileAsText] file path is empty")
+      }
+      info = await getFileInfo(filePath)
+      if (!info.isFile) {
+        throw new Error(`[readFileAsText] path ${filePath} is not a file`)
+      }
+      const res = await readFile(
+        { id: "", topicId: "", ...info, fileName: info.name, fileSize: info.size },
+        {
+          id: "",
+          name: "",
+          embedding: { providerName: "", model: "", api: "" },
+          dimensions: 0,
+          maxFileChunks: config?.maxFileChunks ?? 512,
+          maxTokens: config?.maxTokens ?? 512,
+        }
+      )
+      if (code2xx(res.code)) {
+        return responseData(
+          200,
+          res.msg,
+          res.data.map(file => file.content)
+        )
+      } else {
+        throw new Error(res.msg)
+      }
+    } catch (error) {
+      log.debug("[readFileAsText error]", errorToText(error))
+      this.#globalBus.emit(EventKey.ServiceLog, {
+        id: uniqueId(),
+        service: RAGServiceId,
+        details: {
+          function: "readFileAsText",
+          args: [filePath, config],
+        },
+        msg: errorToText(error),
+        code: 500,
+      })
+      return responseData(500, errorToText(error), [])
+    }
+  }
   async registerIpc() {
     ipcMain.handle(IpcChannel.RagSearch, async (_, params: RAGSearchParam) => {
       return this.search(params)
@@ -224,6 +279,12 @@ export class RAGServiceImpl implements RAGService, ServiceCore {
     ipcMain.handle(IpcChannel.RagRemoveByTopicId, async (_, topicId: string) => {
       return this.removeByTopicId(topicId)
     })
+    ipcMain.handle(
+      IpcChannel.RagReadFileAsText,
+      async (_, filePath: string, config?: Pick<RAGEmbeddingConfig, "maxTokens" | "maxFileChunks">) => {
+        return this.readFileAsText(filePath, config)
+      }
+    )
   }
 
   dispose() {

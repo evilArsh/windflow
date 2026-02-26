@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ChatMessage } from "@windflow/core/types"
 import { useSrc } from "@renderer/hooks/useSrc"
+import Media from "@renderer/components/Media/index.vue"
 
 const props = defineProps<{
   message: ChatMessage
@@ -20,17 +21,7 @@ onBeforeUnmount(src.dispose)
 </script>
 <template>
   <div v-if="data.length" class="flex items-center gap-.5rem">
-    <div v-for="item in data" class="w-5rem h-5rem relative" :key="item.id">
-      <el-image
-        fit="contain"
-        v-if="item.type === 'image'"
-        :preview-src-list="data.map(v => v.url)"
-        :initial-index="data.findIndex(v => v.id === item.id)"
-        :src="item.url"></el-image>
-      <audio v-else-if="item.type === 'audio'" :src="item.url"></audio>
-      <video v-else-if="item.type === 'video'" :src="item.url"></video>
-      <i-ep-document v-else class="text-1.8rem"></i-ep-document>
-    </div>
+    <Media v-for="item in data" :data="item" :key="item.id"> </Media>
   </div>
 </template>
 <style lang="scss" scoped></style>

@@ -40,6 +40,8 @@ export type RAGEmbeddingConfig = {
   dimensions: number
   /**
    * max tokens of each chunk
+   *
+   * if value is `-1`, it means no limit
    * @default 512
    */
   maxTokens?: number
