@@ -57,10 +57,15 @@ async function restart(done?: CallBackFn) {
       :disabled="!isProcessing">
       <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
     </ContentBox>
-    <ContentBox :text-loading="false" class="primary" @click="(_, done) => restart(done)" :disabled="!isFinish">
+    <ContentBox :text-loading="false" class="primary" @click="(_, done) => restart(done)" button :disabled="!isFinish">
       <i-solar-refresh-bold class="text-1.4rem"></i-solar-refresh-bold>
     </ContentBox>
-    <ContentBox :text-loading="false" class="primary" :disabled="!isFinish" @click="(_, done) => emit('edit', done)">
+    <ContentBox
+      :text-loading="false"
+      class="primary"
+      :disabled="!isFinish"
+      button
+      @click="(_, done) => emit('edit', done)">
       <i-solar-clapperboard-edit-broken class="text-1.4rem"></i-solar-clapperboard-edit-broken>
     </ContentBox>
     <PopConfirm
@@ -72,7 +77,7 @@ async function restart(done?: CallBackFn) {
       size="small"
       :confirm="done => $emit('delete', done)">
       <template #reference="{ loading, disabled }">
-        <ContentBox :text-loading="false" class="danger" :loading :disabled="!isFinish || disabled">
+        <ContentBox :text-loading="false" class="danger" button :loading :disabled="!isFinish || disabled">
           <i-solar-trash-bin-trash-outline class="text-1.4rem"></i-solar-trash-bin-trash-outline>
         </ContentBox>
       </template>

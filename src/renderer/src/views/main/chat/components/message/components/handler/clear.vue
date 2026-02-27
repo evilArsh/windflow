@@ -67,14 +67,20 @@ const handler = {
     }
   },
 }
-const { key: cleanMessageKey, trigger: triggerCleanMessage } = useShortcutBind(
-  SettingKeys.ChatCleanMessage,
-  handler.cleanMessage
-)
-const { key: cleanContextKey, trigger: triggerCleanContext } = useShortcutBind(
-  SettingKeys.ChatCleanContext,
-  handler.cleanContext
-)
+const {
+  key: cleanMessageKey,
+  trigger: triggerCleanMessage,
+  taskPending,
+} = useShortcutBind(SettingKeys.ChatCleanMessage, handler.cleanMessage, {
+  beforeTrigger: () => !taskPending.value,
+})
+const {
+  key: cleanContextKey,
+  trigger: triggerCleanContext,
+  taskPending: taskPendingContext,
+} = useShortcutBind(SettingKeys.ChatCleanContext, handler.cleanContext, {
+  beforeTrigger: () => !taskPendingContext.value,
+})
 </script>
 <template>
   <ContentBox
