@@ -292,7 +292,7 @@ export class MediaHandler {
             return {
               id,
               name: id,
-              data: item.value as Blob,
+              data: item.value ? (item.value instanceof Blob ? item.value : item.value.data) : "",
               type: type ?? "file",
             }
           }

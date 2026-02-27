@@ -16,6 +16,7 @@ import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@win
 import {
   consumeMediaContent,
   createChatMessage,
+  formatContentString,
   getIsolatedMessages,
   getMessageContexts,
   getMessageType,
@@ -72,6 +73,10 @@ export class MessageManager {
     const contexts = await consumeMediaContent(getMessageContexts(topic, rawContexts))
     // increasing frequency of model usage
     modelMeta.frequency = toNumber(modelMeta.frequency) + 1
+    topic.requestCount = Math.max(1, topic.requestCount + 1)
+    storage.chat.putChatTopic(topic)
+    storage.model.put(modelMeta)
+    this.emitTopic(topic)
     resetMessage(message)
     this.emitMessage(message, ctx.id)
     const newHandler = await provider.chat(
@@ -94,29 +99,29 @@ export class MessageManager {
         message.content = data
         message.msg = msg
         if (code1xx(message.status)) {
-          topic.requestCount = Math.max(1, topic.requestCount + 1)
           message.finish = false
         } else if (status == 206) {
           message.finish = false
         } else {
           message.finish = true
           topic.requestCount = Math.max(0, topic.requestCount - 1)
+          storage.chat.putChatTopic(topic)
+          this.emitTopic(topic)
         }
         storage.chat.putChatMessage(message)
-        storage.chat.putChatTopic(topic)
         this.emitMessage(message, ctx.id)
-        this.emitTopic(topic) // only `requestCount` changed
       },
       beforeLLMRequest(topic, message)
     )
     this.#ctx.setHandler(contextId, newHandler)
-    storage.model.put(modelMeta)
   }
   async #sendMedia(contextId: string, message: ChatMessage): Promise<void> {
     const ctx = this.#ctx.get(contextId)
     if (!ctx) return
-    const { modelMeta, providerMeta, provider } = ctx
+    const { modelMeta, providerMeta, provider, topicId } = ctx
     if (!(modelMeta && providerMeta && provider)) return
+    const topic = await storage.chat.getTopic(topicId)
+    if (!topic) return
     if (isImageType(modelMeta)) {
       if (!message.fromId) return
       const askMessage = await storage.chat.getChatMessage(message.fromId)
@@ -124,18 +129,29 @@ export class MessageManager {
       resetMessage(message)
       this.emitMessage(message, ctx.id)
       modelMeta.frequency = toNumber(modelMeta.frequency) + 1
-      const conf = (await storage.chat.getChatTTIConfig(message.topicId)) ?? defaultTTIConfig()
-      const hdl = await provider.textToImage({ ...conf, prompt: askMessage.content }, modelMeta, providerMeta, res => {
-        message.content = res.data
-        // set real status code, but not finished until download complete
-        message.finish = false
-        message.status = res.status
-        message.msg = res.msg
-        this.emitMessage(message, ctx.id)
-        this.#mediaHandler.download(this, message, contextId, "image")
-      })
-      this.#ctx.setHandler(contextId, hdl)
+      topic.requestCount = Math.max(1, topic.requestCount + 1)
+      storage.chat.putChatTopic(topic)
       storage.model.put(modelMeta)
+      this.emitTopic(topic)
+      const conf = (await storage.chat.getChatTTIConfig(message.topicId)) ?? defaultTTIConfig()
+      const hdl = await provider.textToImage(
+        { ...conf, prompt: formatContentString(askMessage.content.content) },
+        modelMeta,
+        providerMeta,
+        res => {
+          message.content = res.data
+          // set real status code, but not finished until download complete
+          message.finish = false
+          message.status = res.status
+          message.msg = res.msg
+          this.emitMessage(message, ctx.id)
+          this.#mediaHandler.download(this, message, contextId, "image")
+          topic.requestCount = Math.max(0, topic.requestCount - 1)
+          storage.chat.putChatTopic(topic)
+          this.emitTopic(topic)
+        }
+      )
+      this.#ctx.setHandler(contextId, hdl)
     } else {
       console.log("[media request not implement]", modelMeta, provider)
       message.finish = true
@@ -357,11 +373,17 @@ export class MessageManager {
       ctx.handler?.terminate()
       destroy && this.#ctx.remove(ctx.id)
       const message = await storage.chat.getChatMessage(messageId)
+      const topic = await storage.chat.getTopic(topicId)
       if (message) {
         message.status = 499
         message.finish = true
         await storage.chat.putChatMessage(message)
         this.emitMessage(message, ctx.id)
+      }
+      if (topic) {
+        topic.requestCount = Math.max(0, topic.requestCount - 1)
+        await storage.chat.putChatTopic(topic)
+        this.emitTopic(topic)
       }
     }
   }
@@ -383,6 +405,9 @@ export class MessageManager {
     const { modelMeta, providerMeta, provider, topicId } = ctx
     if (!(modelMeta && providerMeta && provider)) {
       console.warn("[summarize] stopped while lack of necessary info")
+      return
+    }
+    if (!isChatType(modelMeta)) {
       return
     }
     const topic = await storage.chat.getTopic(topicId)

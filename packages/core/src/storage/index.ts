@@ -100,10 +100,10 @@ export function useDBQueue() {
    * if transaction is provided, don't use queue.
    * because `Transaction has already completed or failed` error will occur.
    */
-  async function add<T>(
+  const add = async <T>(
     taskFn: (tx: DexieTransaction | DexieTable) => PromiseLike<T>,
     params?: QueryParams
-  ): Promise<T> {
+  ): Promise<T> => {
     if (params?.transaction) {
       return taskFn(params.transaction)
     }

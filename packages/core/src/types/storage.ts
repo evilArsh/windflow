@@ -38,4 +38,8 @@ export type QueryParams = {
    * force disable queue
    */
   disableQueue?: boolean
+  /**
+   * request throttle time, ms
+   */
+  // throttle?: number
 }

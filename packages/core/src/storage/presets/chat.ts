@@ -5,7 +5,7 @@ export const chatTopicDefault = (): ChatTopic[] => []
 export function defaultTTIConfig(): TTIConfig {
   return {
     n: 1,
-    size: "",
+    size: "1024x1024",
     seed: new Chance().integer({ min: 0, max: 99999999 }),
     num_inference_steps: 20,
     guidance_scale: 7.5,

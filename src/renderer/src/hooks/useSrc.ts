@@ -12,7 +12,9 @@ export function useSrc() {
   const blobTmp: Map<string, string> = new Map()
   const media = useMedia()
   function addResource(media: Media) {
-    data.value.push(media)
+    if (media.data instanceof Blob) {
+      media.data = URL.createObjectURL(media.data)
+    }
     if (isString(media.data) && media.data.startsWith("blob:")) {
       blobTmp.set(media.id, media.data)
     }
