@@ -12,6 +12,8 @@ export async function migrateToV4(tx: Transaction) {
           if (!prev.includes(ModelType.Chat)) {
             prev.push(ModelType.Chat)
           }
+        } else {
+          prev.push(cur)
         }
         return prev
       }, [] as ModelType[])
@@ -26,6 +28,8 @@ export async function migrateToV4(tx: Transaction) {
           if (!prev.includes(ModelType.Chat)) {
             prev.push(ModelType.Chat)
           }
+        } else {
+          prev.push(cur)
         }
         return prev
       }, [] as ModelType[])
