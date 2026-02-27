@@ -11,7 +11,7 @@ import Upload from "./upload.vue"
 import useChatStore from "@renderer/store/chat"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
-import { errorToText, isFunction } from "@toolmain/shared"
+import { CallBackFn, errorToText, isFunction } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
 import { useThrottleFn } from "@vueuse/core"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
@@ -27,6 +27,7 @@ const props = defineProps<{
 const topic = computed(() => props.topic)
 const { t } = useI18n()
 const chatStore = useChatStore()
+const requestCount = computed(() => props.topic.requestCount)
 const handler = {
   onSend: async (active: boolean, _key: string, done?: unknown) => {
     try {
@@ -60,6 +61,15 @@ const handler = {
   }),
   onToggleSimpleInput() {
     emit("toggleSimpleInput")
+  },
+  async onTerminate(done?: CallBackFn) {
+    try {
+      await chatStore.terminateAll(topic.value.id)
+      done?.()
+    } catch (error) {
+      msg({ code: 500, msg: errorToText(error) })
+      done?.()
+    }
   },
 }
 const {
@@ -98,7 +108,16 @@ const {
       <TextInput :type="simple ? 'text' : 'textarea'" :topic="topic" />
       <div class="chat-input-actions">
         <div class="flex items-center"></div>
-        <div class="flex items-center">
+        <div class="flex items-center gap-[var[--ai-gap-base]]">
+          <ContentBox
+            v-if="requestCount"
+            class="info"
+            :text-loading="false"
+            @click="(_, done) => handler.onTerminate(done)"
+            button
+            :disabled="!requestCount">
+            <i-solar-stop-circle-bold class="text-1.4rem"></i-solar-stop-circle-bold>
+          </ContentBox>
           <Button
             :loading="taskPending"
             link
@@ -115,6 +134,11 @@ const {
   </div>
 </template>
 <style lang="scss" scoped>
+.info {
+  --box-text-color: var(--el-color-info);
+  --box-text-active-color: var(--el-color-info);
+  --box-text-hover-color: var(--el-color-info);
+}
 .chat-input-container {
   --chat-input-bg-color: transparent;
   --chat-input-padding: var(--ai-gap-medium);

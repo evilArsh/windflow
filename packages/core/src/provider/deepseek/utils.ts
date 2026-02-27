@@ -1,4 +1,5 @@
 import { cloneDeep, isArrayLength } from "@toolmain/shared"
+import { formatContentString } from "@windflow/core/message"
 import { LLMConfig, LLMToolCallRequest, Message, ModelMeta, RequestHandler } from "@windflow/core/types"
 
 export function useHandler(): RequestHandler {
@@ -15,11 +16,13 @@ export function deepSeekLLMParamsHandler(
   toolList: LLMToolCallRequest[],
   originalParams?: LLMConfig
 ): Record<string, any> {
+  const messages = cloneDeep(context)
+  messages.forEach(m => (m.content = formatContentString(m.content)))
   const data: Record<string, any> = {
     stream: true,
     ...originalParams,
     model: modelMeta.modelName,
-    messages: cloneDeep(context),
+    messages,
     n: 1,
     response_format: { type: "text" },
   }

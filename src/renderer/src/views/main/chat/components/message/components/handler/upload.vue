@@ -110,12 +110,12 @@ onBeforeUnmount(() => {
     </template>
     <template #default>
       <div class="flex items-center gap-.5rem p-[var(--ai-gap-base)] overflow-x-auto">
-        <ContentBox v-for="item in data" background class="relative" :key="item.id">
+        <div v-for="item in data" background class="relative cursor-pointer" :key="item.id">
           <i-ep-circle-close-filled
             @click.stop="onFileRemove(item.id)"
             class="c-[var(--el-color-danger)] z-100 text-1.2rem absolute right-0 top-0"></i-ep-circle-close-filled>
           <MediaComp :data="item"></MediaComp>
-        </ContentBox>
+        </div>
       </div>
     </template>
   </Shell>

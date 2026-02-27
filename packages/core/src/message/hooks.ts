@@ -1,4 +1,4 @@
-import { cloneDeep, code2xx, isArrayLength, isString, isUndefined } from "@toolmain/shared"
+import { cloneDeep, code2xx, isArrayLength, isUndefined } from "@toolmain/shared"
 import {
   ChatTopic,
   ModelMeta,
@@ -10,6 +10,7 @@ import {
   KnowledgeEmbeddingPair,
 } from "@windflow/core/types"
 import { storage } from "@windflow/core/storage"
+import { formatContentString } from "./utils"
 
 /**
  * the hook is triggered when the 100 status code message is send before do llm request
@@ -25,7 +26,7 @@ export function beforeLLMRequest(topic: ChatTopic, message: ChatMessage): Before
       const userMsg = messages[messages.length - 1]
       if (userMsg.role !== "user") return messages
       if (!window.api) return messages
-      const content = isString(userMsg.content) ? userMsg.content : JSON.stringify(userMsg.content)
+      const content = formatContentString(userMsg.content)
       const res = await window.api.rag.search({
         content,
         sessionId: messageId,

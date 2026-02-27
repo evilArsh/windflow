@@ -14,6 +14,7 @@ import {
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
 import {
+  consumeMediaContent,
   createChatMessage,
   getIsolatedMessages,
   getMessageContexts,
@@ -68,7 +69,7 @@ export class MessageManager {
     if (!topic) return
     const messages = await storage.chat.getChatMessages(topicId)
     const rawContexts = getIsolatedMessages(messages, messageId)
-    const contexts = getMessageContexts(topic, rawContexts)
+    const contexts = await consumeMediaContent(getMessageContexts(topic, rawContexts))
     // increasing frequency of model usage
     modelMeta.frequency = toNumber(modelMeta.frequency) + 1
     resetMessage(message)
@@ -80,13 +81,10 @@ export class MessageManager {
       value => {
         if (ctx.handler?.getSignal().aborted) {
           topic.requestCount = Math.max(0, topic.requestCount - 1)
-          message.finish = true
-          message.status = 499
           this.emitTopic(topic)
-          // this message may already been removed from database,
+          // message may already been removed from database,
           // because the abort signal may happen when user terminate manually.
           // or user deleted a topic or a message
-          this.emitMessage(message)
           return
         }
         const { data, status, msg } = value
@@ -255,11 +253,10 @@ export class MessageManager {
       mediaIds: cloneDeep(topic?.mediaIds),
     })
     if (topic) {
+      topic.mediaIds = []
       // clear temp files
-      await this.getStorage().putChatTopic({
-        ...topic,
-        mediaIds: [],
-      })
+      await this.getStorage().putChatTopic(topic)
+      this.emitTopic(topic)
     }
     const reqInfo = await this.#createResponseMessages(topicId, userMessage.id, modelMetas)
     await this.getStorage().addNewMessages([userMessage, ...reqInfo.map(i => i.message)])
