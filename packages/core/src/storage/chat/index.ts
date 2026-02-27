@@ -70,14 +70,39 @@ export async function getChatMessages(topicId: string, params?: QueryParams) {
 export async function getChatMessage(messageId: string, params?: QueryParams): Promise<ChatMessage | undefined> {
   return msgQueue.add(db => db.chatMessage.where("id").equals(messageId).first(), params)
 }
-export async function deleteChatMessage(messageId: string, params?: QueryParams) {
-  return msgQueue.add(db => db.chatMessage.delete(messageId), params)
+export async function deleteChatMessage(messageId: string) {
+  return withTransaction("rw", ["chatMessage", "media"], async trans => {
+    const message = await trans.chatMessage.get(messageId)
+    if (!message) return
+    const mediaIds = message.mediaIds ?? []
+    return Dexie.Promise.all([trans.chatMessage.delete(messageId), trans.media.where("id").anyOf(mediaIds).delete()])
+  })
 }
-export async function bulkDeleteChatMessage(messageIds: string[], params?: QueryParams) {
-  return msgQueue.add(db => db.chatMessage.bulkDelete(messageIds), params)
+export async function bulkDeleteChatMessage(messageIds: string[]) {
+  return withTransaction("rw", ["chatMessage", "media"], async trans => {
+    const mediaIds = (await trans.chatMessage.bulkGet(messageIds))
+      .filter(item => !isUndefined(item))
+      .map(item => item.mediaIds)
+      .flat()
+      .filter(item => !isUndefined(item))
+    return Dexie.Promise.all([
+      trans.chatMessage.bulkDelete(messageIds),
+      trans.media.bulkDelete(messageIds),
+      trans.media.where("id").anyOf(mediaIds).delete(),
+    ])
+  })
 }
-export async function deleteAllMessages(topicId: string, params?: QueryParams) {
-  return msgQueue.add(db => db.chatMessage.where("topicId").equals(topicId).delete(), params)
+export async function deleteAllMessages(topicId: string) {
+  return withTransaction("rw", ["chatMessage", "media"], async trans => {
+    const mediIds = (await trans.chatMessage.where("topicId").equals(topicId).toArray())
+      .map(item => item.mediaIds)
+      .flat()
+      .filter(item => !isUndefined(item))
+    return Dexie.Promise.all([
+      trans.chatMessage.where("topicId").equals(topicId).delete(),
+      trans.media.where("id").anyOf(mediIds).delete(),
+    ])
+  })
 }
 /**
  * @description delete chat group and all messages

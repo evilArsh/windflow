@@ -18,6 +18,7 @@ export function useSrc() {
     if (isString(media.data) && media.data.startsWith("blob:")) {
       blobTmp.set(media.id, media.data)
     }
+    data.value.push(media)
   }
   function addFile(file: File, type: MediaType) {
     addResource({
