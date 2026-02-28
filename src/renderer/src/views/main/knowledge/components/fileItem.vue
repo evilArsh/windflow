@@ -106,36 +106,38 @@ const ev = {
         </template>
       </ContentBox>
       <template v-if="!view" #footer>
-        <PopConfirm
-          :title="t('tip.deleteConfirm')"
-          :confirm-button-text="t('tip.yes')"
-          confirm-button-type="danger"
-          :cancel-button-text="t('btn.cancel')"
-          size="default"
-          :confirm="done => ev.onDelete(item, done)">
-          <template #reference="{ loading, disabled }">
-            <el-button :loading :disabled size="small" type="danger" round text>
-              <i class="i-ep-delete-filled text-1.4rem"></i>
-            </el-button>
-          </template>
-        </PopConfirm>
-        <PopConfirm
-          :title="t('knowledge.restartRagEmbedding')"
-          :confirm-button-text="t('tip.yes')"
-          confirm-button-type="danger"
-          :cancel-button-text="t('btn.cancel')"
-          size="default"
-          :confirm="done => ev.onRestart(item, done)">
-          <template #reference="{ loading, disabled }">
-            <el-button :loading :disabled size="small" type="warning" round text>
-              <i class="i-ep-refresh text-1.4rem"></i>
-            </el-button>
-          </template>
-        </PopConfirm>
-        <el-divider direction="vertical"></el-divider>
-        <el-text v-if="item.status === RAGFileStatus.Failed" size="small" type="danger" class="break-all!">
-          {{ item.msg }}
-        </el-text>
+        <div class="flex gap-[var(--ai-gap-base)] items-center">
+          <PopConfirm
+            :title="t('tip.deleteConfirm')"
+            :confirm-button-text="t('tip.yes')"
+            confirm-button-type="danger"
+            :cancel-button-text="t('btn.cancel')"
+            size="default"
+            :confirm="done => ev.onDelete(item, done)">
+            <template #reference="{ loading, disabled }">
+              <ContentBox :loading :disabled :text-loading="false">
+                <i class="i-ep-delete-filled text-1.6rem"></i>
+              </ContentBox>
+            </template>
+          </PopConfirm>
+          <PopConfirm
+            :title="t('knowledge.restartRagEmbedding')"
+            :confirm-button-text="t('tip.yes')"
+            confirm-button-type="danger"
+            :cancel-button-text="t('btn.cancel')"
+            size="default"
+            :confirm="done => ev.onRestart(item, done)">
+            <template #reference="{ loading, disabled }">
+              <ContentBox :text-loading="false" :loading :disabled size="small">
+                <i class="i-ep-refresh text-1.6rem"></i>
+              </ContentBox>
+            </template>
+          </PopConfirm>
+          <el-divider direction="vertical"></el-divider>
+          <el-text v-if="item.status === RAGFileStatus.Failed" size="small" type="danger" class="break-all!">
+            {{ item.msg }}
+          </el-text>
+        </div>
       </template>
     </ContentBox>
   </el-scrollbar>

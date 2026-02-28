@@ -74,10 +74,9 @@ async function restart(done?: CallBackFn) {
       confirm-button-type="danger"
       :cancel-button-text="t('btn.cancel')"
       :disabled="!isFinish"
-      size="small"
       :confirm="done => $emit('delete', done)">
       <template #reference="{ loading, disabled }">
-        <ContentBox :text-loading="false" class="danger" button :loading :disabled="!isFinish || disabled">
+        <ContentBox :text-loading="false" class="danger" :loading :disabled="!isFinish || disabled">
           <i-solar-trash-bin-trash-outline class="text-1.4rem"></i-solar-trash-bin-trash-outline>
         </ContentBox>
       </template>

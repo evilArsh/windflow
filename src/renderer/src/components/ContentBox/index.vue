@@ -46,19 +46,19 @@ const {
   background?: boolean
   round?: boolean
   /**
-   * button模式下 `disabled` `loading` `textLoading` 生效
+   * under `button` mode, you should call done manually
    */
   button?: boolean
   /**
-   * 是否禁用，button 模式下生效
+   * 是否禁用
    */
   disabled?: boolean
   /**
-   * loading 状态，button 模式下生效
+   * loading 状态
    */
   loading?: boolean
   /**
-   * loading状态下是否显示文本，button 模式下生效
+   * loading状态下是否显示文本
    */
   textLoading?: boolean
 }>()
@@ -69,16 +69,18 @@ const emit = defineEmits<{
    */
   lock: [status: boolean]
   iconClick: [e: MouseEvent]
+  /**
+   * under `button` mode, you should call done manually
+   */
   click: [e: MouseEvent, done?: CallBackFn]
 }>()
 const active = ref(false)
-
 const _disabled = ref(false)
 const _loading = ref(false)
-const finalDisabled = computed(() => (button ? disabled || _disabled.value : false))
-const finalLoading = computed(() => (button ? loading || _loading.value : false))
+const finalDisabled = computed(() => disabled || _disabled.value)
+const finalLoading = computed(() => loading || _loading.value)
 // always true under non-button mode, otherwise, only show when [no loading] or [loading but show text]
-const slotShow = computed(() => (button ? !finalLoading.value || (finalLoading.value && textLoading) : true))
+const slotShow = computed(() => !finalLoading.value || (finalLoading.value && textLoading))
 function done(): void {
   _disabled.value = false
   _loading.value = false
@@ -121,7 +123,7 @@ watch(
     :class="[{ active, normal, background, round, disabled: finalDisabled }, wrapClass]"
     :style="wrapStyle"
     @click="handle.click">
-    <div v-if="$slots.header && !button" class="box-header">
+    <div v-if="$slots.header" class="box-header">
       <slot name="header"></slot>
     </div>
     <div class="box-main" :style="mainStyle" :class="[mainClass]">
@@ -135,7 +137,7 @@ watch(
       <div v-if="$slots.default && slotShow" class="box-text"><slot> </slot></div>
       <div v-if="$slots.end && slotShow" class="box-end"><slot name="end"></slot></div>
     </div>
-    <div v-if="$slots.footer && !button" class="box-footer">
+    <div v-if="$slots.footer" class="box-footer">
       <slot name="footer"></slot>
     </div>
   </div>
