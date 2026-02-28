@@ -56,10 +56,23 @@ jobs:
           else
             echo "version=$(echo "$(git describe --tags --abbrev=0)" | sed 's/^v//')" >> $GITHUB_OUTPUT
           fi
+      - name: Print Env
+        shell: bash
+        run: |
+          echo "platform: ${{ matrix.os }}"
+          echo "arch: ${{ matrix.arch }}"
+          echo "event_name: ${{ github.event_name }}"
+          echo "ref_name: ${{ github.ref_name }}"
+          echo "ref_type: ${{ github.ref_type }}"
+          echo "get-latest-version: ${{ steps.get-latest-version.outputs.version }}"
+          echo "event.inputs.version: ${{ github.event.inputs.version }}"
+          echo "event.inputs.build-windows: ${{ github.event.inputs.build-windows }}"
+          echo "event.inputs.build-macos: ${{ github.event.inputs.build-macos }}"
+          echo "event.inputs.build-linux: ${{ github.event.inputs.build-linux }}"
       - name: Install pnpm
         uses: pnpm/action-setup@master
         with:
-          version: 10
+          version: "10.28.x"
           # https://github.com/pnpm/action-setup/issues/201
           cache: true
       - name: Setup node
@@ -69,25 +82,29 @@ jobs:
           cache: "pnpm"
           package-manager-cache: true
           cache-dependency-path: "pnpm-lock.yaml"
+      - name: Fix git protocol for GitHub dependencies
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git config --global url."https://".insteadOf git://
       - name: Install dependencies
         run: |
-          pnpm install -r
+          pnpm install
       - name: Build for windows
-        if: ${{ startsWith(matrix.platform, 'windows') && (github.event_name != 'workflow_dispatch' || inputs.build-windows == true) }}
+        if: ${{ startsWith(matrix.platform, 'windows') && (github.event_name != 'workflow_dispatch' || github.event.inputs.build-windows == 'true') }}
         run: |
           pnpm build:win
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for macos
-        if: ${{ startsWith(matrix.platform, 'macos') && (github.event_name != 'workflow_dispatch' || inputs.build-macos == true) }}
+        if: ${{ startsWith(matrix.platform, 'macos') && (github.event_name != 'workflow_dispatch' || github.event.inputs.build-macos == 'true') }}
         run: |
           pnpm build:mac
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for linux
-        if: ${{ startsWith(matrix.platform, 'linux') && (github.event_name != 'workflow_dispatch' || inputs.build-linux == true) }}
+        if: ${{ startsWith(matrix.platform, 'linux') && (github.event_name != 'workflow_dispatch' || github.event.inputs.build-linux == 'true') }}
         run: |
           pnpm build:linux
         env:
