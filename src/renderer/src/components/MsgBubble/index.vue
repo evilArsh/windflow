@@ -41,6 +41,7 @@ defineProps<{
   align-items: flex-start;
   gap: var(--ai-gap-base);
   align-self: flex-start;
+  max-width: 100%;
   &.reverse {
     flex-direction: row-reverse;
     align-self: flex-end;

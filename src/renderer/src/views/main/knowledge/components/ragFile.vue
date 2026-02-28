@@ -58,9 +58,9 @@ const upload = {
           size="small"
           :confirm="done => emit('remove', knowledge.id, done)">
           <template #reference="{ loading, disabled }">
-            <el-button :loading :disabled size="small" type="danger">
+            <ContentBox :loading :disabled :text-loading="false">
               {{ t("btn.delete") }}
-            </el-button>
+            </ContentBox>
           </template>
         </PopConfirm>
         <Button size="small" type="primary" @click="upload.onChooseFile">

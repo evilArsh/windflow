@@ -24,7 +24,7 @@ async function onOpen(_: MouseEvent, done?: CallBackFn) {
 }
 </script>
 <template>
-  <ContentBox class="media-box" background @click="onOpen" button>
+  <ContentBox class="media-box" background @click="onOpen">
     <template #icon>
       <i-ic-baseline-photo-camera-back v-if="data.type === 'image'" class="icon"></i-ic-baseline-photo-camera-back>
       <i-ic-baseline-volume-up v-else-if="data.type === 'audio'" class="icon"></i-ic-baseline-volume-up>
