@@ -1,3 +1,43 @@
+## v0.8.3
+
+- chore: upadte version
+- ci: fix the pnpm version to prevent errors after CI packaging
+- chore: update deps
+- ci: add conditional build options and tag-only release steps
+- ci: exclude chore commits from release notes generation
+- feat: happy chinese new year
+- fix(storage): ensure all model types are preserved during v4 migration
+- feat(storage): cascade delete chat messages with associated media
+- fix(core): improve request tracking ,fix image request and handler error
+- feat(core): refactor message content handling and topic cleanup
+- fix(chat): prevent duplicate shortcut triggers
+- feat(media): enhance media handling and RAG file processing
+- perf(rag): refactor text tile reading algorithm and add image transformer support
+- feat(components): enhance ContentBox with button mode and loading states
+- fix(chat): fix topic deletion logic error
+- fix(chat): optimize media retrieval and file upload handling
+- refactor(storage): add disableQueue option to storage operations
+- feat(chat): enhance bulk topic deletion with media cleanup
+- fix(chat): fix condition for clearing current topic after deletion
+- fix(chat): trim whitespace-only messages before/after sending
+- feat(core): improve abort handling and media file management
+- chore: update deps
+- feat(core): add media management and refactor message handling
+- feat: add file upload support with validation and UI components
+- fix(openai): exclude latest chat models from reasoning support
+- chore: update dependencies
+- feat: remove ChatReasoner model type and migrate to Chat type
+- feat(core): fix reasoning enable condition for siliconflow models
+- feat(openai): add reasoning support detection and conditional logic
+- fix(model-detail): initialize type group on model detail initialization
+- refactor(core): simplify model filtering and reasoning parameter handling
+- feat(core): refactor request handling to use param handler, refactor deep thinking logic
+- feat(chat): add ctrl+arrowUp shortcut for simple mode
+- feat(ui): refactor ContentBox component styling and variants
+- chore(components): update PopConfirm and knowledge components
+- chore: fix release version error
+- ci: update changelog for v0.7.15
+
 ## v0.7.15
 
 - chore: fix decode-named-character-reference path, update dependencies
