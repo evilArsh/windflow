@@ -12,6 +12,7 @@ const emit = defineEmits<{
   (e: "change", topic: ChatTopic): void
 }>()
 const props = defineProps<{
+  disabled?: boolean
   title?: string
   topic: ChatTopic
   filter?: (model: ModelMeta) => boolean
@@ -50,31 +51,20 @@ const activeModelsIcons = computed<AbbrsNode[]>(() =>
 )
 </script>
 <template>
-  <Shell>
+  <Shell :disabled>
     <template #reference>
-      <ContentBox
-        style="
-          --box-border-color: var(--el-border-color-light);
-          --box-border-radius: 1rem;
-          --box-border-size: 1px;
-          --box-padding: 2px;
-          --box-border-hover-color: var(--el-border-color-dark);
-          --box-border-active-color: var(--el-border-color-darker);
-        "
-        normal>
-        <div class="flex-center gap-.5rem">
-          <ContentBox style="--box-border-radius: 1rem" background>
-            <i-material-symbols-featured-seasonal-and-gifts
-              class="text-1.4rem"></i-material-symbols-featured-seasonal-and-gifts>
-          </ContentBox>
-          <Abbrs
-            :max-length="5"
-            :spacing="12"
-            style="--abbrs-padding: 3px"
-            width="22"
-            height="22"
-            :data="activeModelsIcons"></Abbrs>
-        </div>
+      <ContentBox :disabled style="--box-border-radius: 1rem" background normal-icon>
+        <template #icon>
+          <i-material-symbols-featured-seasonal-and-gifts
+            class="text-1.4rem"></i-material-symbols-featured-seasonal-and-gifts>
+        </template>
+        <Abbrs
+          :max-length="5"
+          :spacing="12"
+          style="--abbrs-padding: 3px"
+          width="22"
+          height="22"
+          :data="activeModelsIcons"></Abbrs>
       </ContentBox>
     </template>
     <template #header>

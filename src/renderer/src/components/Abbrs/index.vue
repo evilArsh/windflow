@@ -8,6 +8,7 @@ const props = withDefaults(
      * the gap step
      */
     spacing?: number
+    disabled?: boolean
     data: AbbrsNode[]
     width?: CSSProperties["width"]
     height?: CSSProperties["height"]
@@ -16,6 +17,7 @@ const props = withDefaults(
     maxLength?: number
   }>(),
   {
+    disabled: false,
     spacing: 10,
     width: 30,
     height: 30,
@@ -39,7 +41,7 @@ const exceed = computed(() => props.maxLength >= 0 && props.data.length > props.
 const length = computed(() => (props.maxLength < 0 ? props.data.length : props.maxLength))
 </script>
 <template>
-  <div v-if="data.length" class="abbrs-container">
+  <div v-if="data.length" class="abbrs-container" :class="{ disabled }">
     <TransitionGroup name="list" tag="ul">
       <template v-for="(item, index) in data.slice(0, length)" :key="index">
         <div v-if="item.type === 'text'" :style="nodeStyle(index)" class="abbrs" :class="[nodeClass]">
@@ -99,6 +101,11 @@ const length = computed(() => (props.maxLength < 0 ? props.data.length : props.m
   position: relative;
   display: inline-block;
   overflow: hidden;
+  &.disabled {
+    --abbrs-bg-color: var(--el-disabled-bg-color);
+    --abbrs-text-color: var(--el-text-color-disabled);
+    --abbrs-border-color: var(--el-disabled-border-color);
+  }
 }
 .abbrs {
   border: var(--abbrs-border-type) var(--abbrs-border-width) var(--abbrs-border-color);

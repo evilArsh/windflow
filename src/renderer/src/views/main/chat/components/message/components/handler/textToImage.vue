@@ -13,6 +13,7 @@ import { msg } from "@renderer/utils"
 import Group from "./components/group.vue"
 import Item from "./components/item.vue"
 const props = defineProps<{
+  disabled?: boolean
   topic: ChatTopic
 }>()
 const chatStore = useChatStore()
@@ -98,9 +99,9 @@ function onRandSeed() {
 }
 </script>
 <template>
-  <Shell>
+  <Shell :disabled>
     <template #reference>
-      <ContentBox background>
+      <ContentBox :disabled background>
         <i-material-symbols-image-search-outline class="text-1.4rem"></i-material-symbols-image-search-outline>
       </ContentBox>
     </template>

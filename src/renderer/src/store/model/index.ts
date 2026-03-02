@@ -4,6 +4,7 @@ import { getIconHTML } from "@renderer/components/SvgPicker"
 import { modelsDefault } from "@windflow/core/storage"
 import { useModels } from "@renderer/hooks/useCore"
 import { useSvgIcon } from "@renderer/hooks/useSvgIcon"
+import { isArrayLength, isUndefined } from "@toolmain/shared"
 export default defineStore("model", () => {
   const { providerSvgIcon } = useSvgIcon()
   const models = reactive<ModelMeta[]>([]) // 所有模型
@@ -25,6 +26,10 @@ export default defineStore("model", () => {
       cache.set(modelId, model)
     }
     return model
+  }
+  function findByIds(modelIds: string[]): ModelMeta[] {
+    if (!isArrayLength(modelIds)) return []
+    return modelIds.map(find).filter(v => !isUndefined(v))
   }
   function findByProvider(providerName: string): ModelMeta[] {
     return models.filter(v => v.providerName === providerName)
@@ -87,6 +92,7 @@ export default defineStore("model", () => {
     init,
     setModel,
     find,
+    findByIds,
     findByProvider,
     refresh,
     put,
