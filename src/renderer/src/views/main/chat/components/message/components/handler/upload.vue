@@ -28,6 +28,7 @@ function onMessageChange(topic: ChatTopic) {
   src.retrieveFromDB(topic.mediaIds)
 }
 function onChooseFile(_: MouseEvent, done?: CallBackFn) {
+  const topicId = props.topic.id
   queue.add(async () => {
     try {
       if (window.api) {
@@ -74,8 +75,7 @@ function onChooseFile(_: MouseEvent, done?: CallBackFn) {
           msgWarning(t("chat.fileUnrecognized"))
           return
         }
-        console.log(effectData)
-        await chatStore.addChatTempFiles(props.topic, effectData)
+        await chatStore.addChatTempFiles(topicId, effectData)
       }
     } catch (error) {
       msgError(errorToText(error))
@@ -85,7 +85,7 @@ function onChooseFile(_: MouseEvent, done?: CallBackFn) {
   })
 }
 function onFileRemove(mediaId: string) {
-  chatStore.removeChatTempFiles(props.topic, [mediaId])
+  chatStore.removeChatTempFiles(props.topic.id, [mediaId])
 }
 watch(
   () => props.topic.mediaIds,
