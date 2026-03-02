@@ -134,7 +134,7 @@ watch(
         <slot v-if="!finalLoading" name="icon"></slot>
         <Spinner v-else class="text-1.4rem" :model-value="finalLoading"></Spinner>
       </div>
-      <div v-if="$slots.default && slotShow" class="box-text"><slot> </slot></div>
+      <div v-if="$slots.default && slotShow" class="box-text"><slot></slot></div>
       <div v-if="$slots.end && slotShow" class="box-end"><slot name="end"></slot></div>
     </div>
     <div v-if="$slots.footer" class="box-footer">
