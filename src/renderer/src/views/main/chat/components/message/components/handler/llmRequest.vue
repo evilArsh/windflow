@@ -12,6 +12,7 @@ import { msg } from "@renderer/utils"
 import Group from "./components/group.vue"
 import Item from "./components/item.vue"
 const props = defineProps<{
+  disabled?: boolean
   topic: ChatTopic
 }>()
 const { t } = useI18n()
@@ -83,9 +84,9 @@ const useEvent = () => {
 const { loading, dropList, onCommand, update } = useEvent()
 </script>
 <template>
-  <Shell>
+  <Shell :disabled>
     <template #reference>
-      <ContentBox background>
+      <ContentBox background :disabled>
         <i-material-symbols-assignment-globe-outline class="text-1.4rem"></i-material-symbols-assignment-globe-outline>
       </ContentBox>
     </template>

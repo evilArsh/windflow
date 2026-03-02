@@ -166,11 +166,10 @@ onBeforeUnmount(() => {
             :before-change="ev.onBeforeAutoUpdateChange"
             :active-text="t('autoUpdate.auto')"></el-switch>
           <el-divider content-position="left">{{ t("autoUpdate.log") }}</el-divider>
-          <div class="flex gap[var(--ai-gap-medium)]">
+          <div class="flex gap[var(--ai-gap-medium)] items-center">
             <ModelSelect :topic single :filter="isChatType" @change="update"></ModelSelect>
             <Button
               text-loading
-              round
               :disabled="!info.releaseNotes"
               :loading="message && !translateFinished"
               type="primary"

@@ -11,6 +11,7 @@ import { FileInfo } from "@windflow/shared"
 import MediaComp from "@renderer/components/Media/index.vue"
 
 const props = defineProps<{
+  disabled?: boolean
   topic: ChatTopic
 }>()
 const { t } = useI18n()
@@ -99,9 +100,16 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <Shell :visible :width="300" content-style="--dialog-scroll-view-padding: var(--ai-gap-small)">
+  <Shell :disabled :visible :width="300" content-style="--dialog-scroll-view-padding: var(--ai-gap-small)">
     <template #reference>
-      <ContentBox class="custom-box" style="--ai-gap-base: 0" @click="onChooseFile" background button normal-icon>
+      <ContentBox
+        :disabled
+        class="custom-box"
+        style="--ai-gap-base: 0"
+        @click="onChooseFile"
+        background
+        button
+        normal-icon>
         <template #icon>
           <i-material-symbols-upload class="icon"></i-material-symbols-upload>
         </template>

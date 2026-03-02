@@ -14,6 +14,7 @@ import { CollapseActiveName } from "element-plus"
 import { AbbrsNode } from "@renderer/components/Abbrs"
 import { Spinner } from "@toolmain/components"
 const props = defineProps<{
+  disabled?: boolean
   topic: ChatTopic
 }>()
 const { t } = useI18n()
@@ -95,30 +96,20 @@ watch(topic, ev.refreshKnowledges, {
 })
 </script>
 <template>
-  <Shell>
+  <Shell :disabled>
     <template #reference>
-      <ContentBox
-        style="
-          --box-border-color: var(--el-border-color-light);
-          --box-border-radius: 1rem;
-          --box-border-size: 1px;
-          --box-padding: 2px;
-          --box-border-hover-color: var(--el-border-color-dark);
-          --box-border-active-color: var(--el-border-color-darker);
-        "
-        normal>
-        <div class="flex-center gap-.5rem">
-          <ContentBox style="--box-border-radius: 1rem" background>
-            <i-material-symbols-book-4-spark class="text-1.4rem" />
-          </ContentBox>
-          <Abbrs
-            :max-length="5"
-            :spacing="10"
-            style="--abbrs-padding: 3px"
-            width="22"
-            height="22"
-            :data="currentActive"></Abbrs>
-        </div>
+      <ContentBox :disabled style="--box-border-radius: 1rem" normal-icon background>
+        <template #icon>
+          <i-material-symbols-book-4-spark class="text-1.4rem" />
+        </template>
+        <Abbrs
+          :disabled
+          :max-length="5"
+          :spacing="10"
+          style="--abbrs-padding: 3px"
+          width="22"
+          height="22"
+          :data="currentActive"></Abbrs>
       </ContentBox>
     </template>
     <template #header>

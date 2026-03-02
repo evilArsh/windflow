@@ -5,6 +5,7 @@ import { msgError } from "@renderer/utils"
 import { errorToText } from "@toolmain/shared"
 import { storeToRefs } from "pinia"
 const props = defineProps<{
+  disabled?: boolean
   topic: ChatTopic
 }>()
 const topic = computed(() => props.topic)
@@ -24,6 +25,7 @@ const onClick = async () => {
 </script>
 <template>
   <ContentBox
+    :disabled
     class="custom-box"
     :class="{ reasoning: config?.reasoning }"
     style="--ai-gap-base: 0"

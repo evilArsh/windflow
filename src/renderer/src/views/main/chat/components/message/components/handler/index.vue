@@ -9,12 +9,14 @@ import TextInput from "./textInput.vue"
 import Reasoning from "./reasoning.vue"
 import Upload from "./upload.vue"
 import useChatStore from "@renderer/store/chat"
+import useModelStore from "@renderer/store/model"
 import { ChatTopic, SettingKeys } from "@windflow/core/types"
 import Clear from "./clear.vue"
 import { CallBackFn, errorToText, isFunction } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
 import { useThrottleFn } from "@vueuse/core"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
+import { isChatType, isImageType } from "@windflow/core/models"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []
@@ -26,7 +28,11 @@ const props = defineProps<{
 }>()
 const topic = computed(() => props.topic)
 const { t } = useI18n()
+const modelStore = useModelStore()
 const chatStore = useChatStore()
+const curModels = computed(() => modelStore.findByIds(props.topic.modelIds))
+const curIsChatType = computed(() => curModels.value.some(isChatType))
+const curIsImageType = computed(() => curModels.value.some(isImageType))
 const requestCount = computed(() => props.topic.requestCount)
 const handler = {
   onSend: async (active: boolean, _key: string, done?: unknown) => {
@@ -88,12 +94,12 @@ const {
     <div class="chat-input-header">
       <div class="flex items-center gap-1rem c-[--el-text-color-regular]">
         <ModelSelect :topic @change="handler.onTopicUpdate" />
-        <LLMRequestConfig :topic></LLMRequestConfig>
-        <Reasoning :topic></Reasoning>
-        <Upload :topic></Upload>
-        <TextToImage :topic></TextToImage>
-        <Mcp :topic></Mcp>
-        <KnowledgeBase :topic></KnowledgeBase>
+        <TextToImage :disabled="!curIsImageType" :topic></TextToImage>
+        <LLMRequestConfig :disabled="!curIsChatType" :topic></LLMRequestConfig>
+        <Reasoning :disabled="!curIsChatType" :topic></Reasoning>
+        <Upload :disabled="!curIsChatType" :topic></Upload>
+        <Mcp :disabled="!curIsChatType" :topic></Mcp>
+        <KnowledgeBase :disabled="!curIsChatType" :topic></KnowledgeBase>
         <Settings :topic></Settings>
       </div>
       <div id="mini-input-area" class="flex flex-1 items-center justify-bewteen gap[var(--ai-gap-base)]"></div>

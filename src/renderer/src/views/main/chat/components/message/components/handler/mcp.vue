@@ -12,6 +12,7 @@ import Shell from "./components/shell.vue"
 import { msg } from "@renderer/utils"
 import Group from "./components/group.vue"
 const props = defineProps<{
+  disabled?: boolean
   topic: ChatTopic
 }>()
 const topic = computed<ChatTopic>(() => props.topic)
@@ -100,23 +101,15 @@ const serverHandler = {
 }
 </script>
 <template>
-  <Shell>
+  <Shell :disabled>
     <template #reference>
-      <ContentBox
-        style="
-          --box-border-color: var(--el-border-color-light);
-          --box-border-radius: 1rem;
-          --box-border-size: 1px;
-          --box-padding: 2px;
-          --box-border-hover-color: var(--el-border-color-dark);
-          --box-border-active-color: var(--el-border-color-darker);
-        "
-        normal>
+      <ContentBox :disabled background style="--box-border-radius: 1rem" normal-icon>
+        <template #icon>
+          <i-material-symbols-code-rounded class="text-1.4rem" />
+        </template>
         <div class="flex-center gap-.5rem">
-          <ContentBox style="--box-border-radius: 1rem" background>
-            <i-material-symbols-code-rounded class="text-1.4rem" />
-          </ContentBox>
           <Abbrs
+            :disabled
             :max-length="5"
             :spacing="10"
             style="--abbrs-padding: 3px"
