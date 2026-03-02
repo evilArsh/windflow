@@ -161,6 +161,8 @@ onlyBuiltDependencies:
   - msw
   - protobufjs
   - sharp
+  - esbuild
+  - vue-demi
 
 overrides:
   decode-named-character-reference: file:./patchs/decode-named-character-reference

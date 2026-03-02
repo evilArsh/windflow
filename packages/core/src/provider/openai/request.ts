@@ -26,7 +26,6 @@ import type {
   Tool,
 } from "openai/resources/responses/responses"
 import { usePartialData } from "../compatible/utils"
-import { AbortError, HttpCodeError } from "../compatible/error"
 import { nonStreamParse, streamParse } from "./stream"
 import { Stream } from "openai/core/streaming"
 import { modelVersionGt5, supportReasoning } from "./utils"
@@ -219,28 +218,12 @@ export async function makeRequest(
       }
     }
   } catch (error) {
-    console.error(error)
-    if (error instanceof AbortError) {
-      partial.add({
-        msg: "request aborted",
-        status: 499,
-        data: { content: "", role: Role.Assistant },
-      })
-      callback(partial.getResponse())
-    } else if (error instanceof HttpCodeError) {
-      partial.add({
-        msg: error.message,
-        status: error.code(),
-        data: { content: "", role: Role.Assistant },
-      })
-      callback(partial.getResponse())
-    } else {
-      partial.add({
-        msg: errorToText(error),
-        status: 500,
-        data: { content: "", role: Role.Assistant },
-      })
-      callback(partial.getResponse())
-    }
+    console.log(error)
+    partial.add({
+      msg: errorToText(error),
+      status: 500,
+      data: { content: "", role: Role.Assistant },
+    })
+    callback(partial.getResponse())
   }
 }
