@@ -3,7 +3,7 @@ import fs from "node:fs"
 import csv from "csv-parser"
 import { PDFParse } from "pdf-parse"
 import mammoth from "mammoth"
-import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellValue } from "exceljs"
+import ExcelJS, { CellErrorValue, CellFormulaValue, CellHyperlinkValue, CellRichTextValue, CellValue } from "exceljs"
 import { isArray, isBoolean, isDate, isNull, isNumber, isString, isUndefined } from "@toolmain/shared"
 import { Primitive } from "type-fest"
 import sharp from "sharp"
@@ -253,6 +253,8 @@ export function useXlsxTransformer(path: string): DataTransformer<string | symbo
       return (cell as CellHyperlinkValue).text
     } else if (Object.hasOwn(cell, "result")) {
       return String((cell as CellFormulaValue).result)
+    } else if (Object.hasOwn(cell, "richText")) {
+      return String((cell as CellRichTextValue).richText.map(t => t.text).join("\n"))
     }
     return null
   }
