@@ -35,36 +35,40 @@ async function* request(
   providerMeta: ProviderMeta
 ): AsyncGenerator<LLMResponse> {
   const { api } = providerMeta
-  const response = await fetch(resolvePath([api.url, api.llmChat?.url ?? ""], false), {
-    method: api.llmChat?.method,
-    headers: {
-      "Content-Type": ContentType.ApplicationJson,
-      Authorization: `Bearer ${api.key}`,
-    },
-    body: JSON.stringify(body),
-    signal: abortController.signal,
-  })
-  if (response.status >= 300) {
-    const res = await response.text()
-    throw new HttpCodeError(response.status, `[HTTP error] ${res}`)
-  }
-  if (!response.body) {
-    throw new Error("response body not found")
-  }
-  if (body.stream) {
-    for await (const line of readLines(response.body)) {
-      if (abortController.signal.aborted) {
-        throw new AbortError("Request Aborted")
+  try {
+    const response = await fetch(resolvePath([api.url, api.llmChat?.url ?? ""], false), {
+      method: api.llmChat?.method,
+      headers: {
+        "Content-Type": ContentType.ApplicationJson,
+        Authorization: `Bearer ${api.key}`,
+      },
+      body: JSON.stringify(body),
+      signal: abortController.signal,
+    })
+    if (response.status >= 300) {
+      const res = await response.text()
+      throw new HttpCodeError(response.status, `[HTTP error] ${res}`)
+    }
+    if (!response.body) {
+      throw new Error("response body not found")
+    }
+    if (body.stream) {
+      for await (const line of readLines(response.body)) {
+        if (abortController.signal.aborted) {
+          throw new AbortError("Request Aborted")
+        }
+        for (const res of openAICompatParser.parseLLM(line, true)) {
+          yield res
+        }
       }
-      for (const res of openAICompatParser.parseLLM(line, true)) {
+    } else {
+      const data = await response.text()
+      for (const res of openAICompatParser.parseLLM(data, false)) {
         yield res
       }
     }
-  } else {
-    const data = await response.text()
-    for (const res of openAICompatParser.parseLLM(data, false)) {
-      yield res
-    }
+  } catch (error) {
+    throw new HttpCodeError(500, errorToText(error))
   }
 }
 export function useSingleLLMChat(): LLMRequestHandler {
