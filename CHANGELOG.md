@@ -1,3 +1,17 @@
+## v0.8.4
+
+- chore: bump version to 0.8.4
+- feat(rag): add support for rich text cell parsing in Excel transformer
+- chore: update deps
+- fix:  compatible API request catch error handling
+- refactor(message): refactor media handling and storage initialization
+- feat(upload): expand supported file types and improve validation
+- fix: fix openai request error handling
+- fix(chat): refactor file handling functions to accept topicId directly
+- feat(chat): conditionally disable components based on model type
+- refactor(components): refactor ContentBox to remove button mode restrictions
+- ci: update changelog for v0.8.3
+
 ## v0.8.3
 
 - chore: upadte version
