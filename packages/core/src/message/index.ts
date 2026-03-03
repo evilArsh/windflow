@@ -9,7 +9,6 @@ import {
   ChatEventHandler,
   ChatTopic,
   ChatEvent,
-  Media,
 } from "@windflow/core/types"
 import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
 
@@ -55,7 +54,7 @@ export class MessageManager {
     this.#ctx = createChatContext()
     this.#providerManager = new ProviderManager()
     this.#ev = useEvent<ChatEvent>()
-    this.#storage = new MessageStorage()
+    this.#storage = new MessageStorage(this)
     this.#mediaHandler = new MediaHandler()
   }
   #emitAll(contextId?: string, message?: ChatMessage, topic?: ChatTopic) {
@@ -422,49 +421,5 @@ export class MessageManager {
         this.emitTopic(topic)
       }
     })
-  }
-  /**
-   * add topic's temp files add return the available mediaIds
-   */
-  async addChatTempFiles(topicId: string, files: Media[]): Promise<string[] | undefined> {
-    const topic = await storage.chat.getTopic(topicId)
-    if (!topic) return
-    const ids = await this.getStorage().addChatTempFiles(topicId, files)
-    if (!ids) return
-    topic.mediaIds = ids
-    this.emitTopic(topic)
-  }
-  /**
-   * if fileIds are empty, remove all medias. return the available mediaIds
-   */
-  async removeChatTempFile(topicId: string, fileIds: string[]): Promise<string[] | undefined> {
-    const topic = await storage.chat.getTopic(topicId)
-    if (!topic) return
-    const ids = await this.getStorage().removeChatTempFile(topicId, fileIds)
-    if (!ids) return
-    topic.mediaIds = ids
-    this.emitTopic(topic)
-  }
-  /**
-   * add files to a message add return the available mediaIds
-   */
-  async addMessageFiles(messageId: string, files: Media[]): Promise<string[] | undefined> {
-    const message = await storage.chat.getChatMessage(messageId)
-    if (!message) return
-    const ids = await this.getStorage().addMessageFiles(messageId, files)
-    if (!ids) return
-    message.mediaIds = ids
-    this.emitMessage(message)
-  }
-  /**
-   * if fileIds are empty, remove all medias. return the available mediaIds
-   */
-  async removeMessageFiles(messageId: string, fileIds: string[]): Promise<string[] | undefined> {
-    const message = await storage.chat.getChatMessage(messageId)
-    if (!message) return
-    const ids = await this.getStorage().removeMessageFiles(messageId, fileIds)
-    if (!ids) return
-    message.mediaIds = ids
-    this.emitMessage(message)
   }
 }
