@@ -412,7 +412,10 @@ export class MessageManager {
     const topic = await storage.chat.getTopic(topicId)
     if (!topic) return
     const messages = await storage.chat.getChatMessages(topicId)
-    const contexts = getMessageContexts(topic, messages)
+    const contexts = getMessageContexts(topic, messages).map(m => ({
+      content: m.content.content,
+      role: m.content.role,
+    }))
     if (!contexts.length) return
     provider.summarize(JSON.stringify(contexts), modelMeta, providerMeta, value => {
       if (isString(value.data.content)) {
