@@ -119,8 +119,17 @@ export const useTree = (
   function onNodeExpand(node: ChatTopicTree) {
     pushDefaultExpandedKeys(node.id)
   }
-  function onNodeCollapse(node: ChatTopicTree) {
-    removeDefaultExpandedKeys(node.id)
+  function onNodeCollapse(root: ChatTopicTree) {
+    const stack: ChatTopicTree[] = [root]
+    while (stack.length > 0) {
+      const node = stack.pop()!
+      if (currentTopic.value?.id !== node.id) {
+        removeDefaultExpandedKeys(node.id)
+      }
+      for (let i = node.children.length - 1; i >= 0; i--) {
+        stack.push(node.children[i])
+      }
+    }
   }
   function onNodeDrop(draggingNode: Node, dropNode: Node, dropType: NodeDropType) {
     if (dropType === "before" || dropType === "after") {
@@ -178,6 +187,7 @@ export const useTree = (
       await chatStore.loadChatTopicData(topic.node)
       currentTopic.value = topic
       chatStore.refreshChatTopicModelIds(topic.node)
+      pushDefaultExpandedKeys(topic.id)
     } catch (error) {
       console.log("[setCurrentTopic] error", error)
       msg({ code: 500, msg: errorToText(error) })

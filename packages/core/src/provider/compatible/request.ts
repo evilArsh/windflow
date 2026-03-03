@@ -14,10 +14,9 @@ import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
 import { openAICompatParser, usePartialData } from "./utils"
 import { errorToText, resolvePath, ContentType, cloneDeep } from "@toolmain/shared"
-async function* readLines(stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
+async function* readLines(decoder: TextDecoder, stream: ReadableStream<Uint8Array<ArrayBufferLike>>) {
   try {
     const reader = stream.getReader()
-    const decoder = new TextDecoder()
     while (true) {
       const { done, value } = await reader.read()
       const lineStr = decoder.decode(value, { stream: !done })
@@ -36,6 +35,7 @@ async function* request(
 ): AsyncGenerator<LLMResponse> {
   const { api } = providerMeta
   try {
+    const decoder = new TextDecoder()
     const response = await fetch(resolvePath([api.url, api.llmChat?.url ?? ""], false), {
       method: api.llmChat?.method,
       headers: {
@@ -53,7 +53,7 @@ async function* request(
       throw new Error("response body not found")
     }
     if (body.stream) {
-      for await (const line of readLines(response.body)) {
+      for await (const line of readLines(decoder, response.body)) {
         if (abortController.signal.aborted) {
           throw new AbortError("Request Aborted")
         }
