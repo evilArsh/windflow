@@ -21,7 +21,7 @@
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "dependencies": {
+  "peerDependencies": {
     "@toolmain/shared": "catalog:common",
     "ajv": "catalog:common",
     "ajv-errors": "catalog:common"
