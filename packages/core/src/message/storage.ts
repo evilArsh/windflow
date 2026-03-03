@@ -1,9 +1,14 @@
 import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, Media } from "@windflow/core/types"
 import { storage, withTransaction } from "@windflow/core/storage"
 import { isArrayLength, isUndefined } from "@toolmain/shared"
+import { MessageManager } from "./index"
 const MessageIndexStep = 100
 
 export class MessageStorage {
+  #msgMgr: MessageManager | undefined
+  constructor(msgMgr?: MessageManager) {
+    this.#msgMgr = msgMgr
+  }
   /**
    * add new messages.
    * the values of `index` fields of `messages` will be sequentially incremented to the maximum value within each `topicId` group.
@@ -106,41 +111,43 @@ export class MessageStorage {
     return storage.chat.getTopic(topicId)
   }
   async addChatTempFiles(topicId: string, files: Media[]): Promise<string[] | undefined> {
-    return withTransaction("readwrite", ["chatTopic", "media"], async tx => {
-      const topic = await storage.chat.getTopic(topicId, { disableQueue: true })
+    const topic = await withTransaction("readwrite", ["chatTopic", "media"], async tx => {
+      const topic = await storage.chat.getTopic(topicId, { transaction: tx, disableQueue: true })
       if (!topic) return
       await storage.media.bulkAdd(files, { transaction: tx, disableQueue: true })
-      if (!topic.mediaIds) {
-        topic.mediaIds = []
-      }
+      if (!topic.mediaIds) topic.mediaIds = []
       topic.mediaIds.push(...files.map(file => file.id))
       await storage.chat.putChatTopic(topic, { transaction: tx, disableQueue: true })
-      return topic.mediaIds
+      return topic
     })
+    if (!topic) return
+    this.#msgMgr?.emitTopic(topic)
+    return topic.mediaIds
   }
   async removeChatTempFile(topicId: string, fileIds: string[]): Promise<string[] | undefined> {
-    return withTransaction("readwrite", ["chatTopic", "media"], async tx => {
-      const topic = await storage.chat.getTopic(topicId, { disableQueue: true })
+    const topic = await withTransaction("readwrite", ["chatTopic", "media"], async tx => {
+      const topic = await storage.chat.getTopic(topicId, { transaction: tx, disableQueue: true })
       if (!topic) return
-      if (isArrayLength(topic.mediaIds)) {
-        const available = fileIds.reduce<string[]>((prev, cur) => {
-          if (topic.mediaIds?.includes(cur) && !prev.includes(cur)) {
-            prev.push(cur)
-          }
-          return prev
-        }, [])
-        if (available.length) {
-          await storage.media.bulkRemove(available, { transaction: tx, disableQueue: true })
-          topic.mediaIds = topic.mediaIds.filter(id => !available.includes(id))
-          await storage.chat.putChatTopic(topic, { transaction: tx, disableQueue: true })
-          return topic.mediaIds
+      const available = fileIds.reduce<string[]>((prev, cur) => {
+        if (topic.mediaIds?.includes(cur) && !prev.includes(cur)) {
+          prev.push(cur)
         }
+        return prev
+      }, [])
+      if (available.length) {
+        await storage.media.bulkRemove(available, { transaction: tx, disableQueue: true })
+        topic.mediaIds = topic.mediaIds?.filter(id => !available.includes(id))
+        await storage.chat.putChatTopic(topic, { transaction: tx, disableQueue: true })
+        return topic
       }
     })
+    if (!topic) return
+    this.#msgMgr?.emitTopic(topic)
+    return topic.mediaIds
   }
   async addMessageFiles(messageId: string, files: Media[]): Promise<string[] | undefined> {
-    return withTransaction("readwrite", ["chatMessage", "media"], async tx => {
-      const message = await storage.chat.getChatMessage(messageId, { disableQueue: true })
+    const message = await withTransaction("readwrite", ["chatMessage", "media"], async tx => {
+      const message = await storage.chat.getChatMessage(messageId, { transaction: tx, disableQueue: true })
       if (!message) return
       await storage.media.bulkAdd(files, { transaction: tx, disableQueue: true })
       if (!message.mediaIds) {
@@ -148,28 +155,32 @@ export class MessageStorage {
       }
       message.mediaIds.push(...files.map(file => file.id))
       await storage.chat.putChatMessage(message, { transaction: tx, disableQueue: true })
-      return message.mediaIds
+      return message
     })
+    if (!message) return
+    this.#msgMgr?.emitMessage(message)
+    return message.mediaIds
   }
   async removeMessageFiles(messageId: string, fileIds: string[]): Promise<string[] | undefined> {
-    return withTransaction("readwrite", ["chatMessage", "media"], async tx => {
-      const message = await storage.chat.getChatMessage(messageId, { disableQueue: true })
+    const message = await withTransaction("readwrite", ["chatMessage", "media"], async tx => {
+      const message = await storage.chat.getChatMessage(messageId, { transaction: tx, disableQueue: true })
       if (!message) return
-      if (isArrayLength(message.mediaIds)) {
-        const available = fileIds.reduce<string[]>((prev, cur) => {
-          if (message.mediaIds?.includes(cur) && !prev.includes(cur)) {
-            prev.push(cur)
-          }
-          return prev
-        }, [])
-        if (available.length) {
-          await storage.media.bulkRemove(available, { transaction: tx, disableQueue: true })
-          message.mediaIds = message.mediaIds?.filter(id => !available.includes(id))
-          await storage.chat.putChatMessage(message, { transaction: tx, disableQueue: true })
-          return message.mediaIds
+      const available = fileIds.reduce<string[]>((prev, cur) => {
+        if (message.mediaIds?.includes(cur) && !prev.includes(cur)) {
+          prev.push(cur)
         }
+        return prev
+      }, [])
+      if (available.length) {
+        await storage.media.bulkRemove(available, { transaction: tx, disableQueue: true })
+        message.mediaIds = message.mediaIds?.filter(id => !available.includes(id))
+        await storage.chat.putChatMessage(message, { transaction: tx, disableQueue: true })
+        return message
       }
     })
+    if (!message) return
+    this.#msgMgr?.emitMessage(message)
+    return message.mediaIds
   }
   async fetch() {
     return storage.chat.fetch()

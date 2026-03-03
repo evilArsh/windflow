@@ -326,16 +326,16 @@ export default defineStore("chat_topic", () => {
     delete chatMessage[topicId]
   }
   async function addChatTempFiles(topicId: string, files: Media[]) {
-    return msgMgr.addChatTempFiles(topicId, files)
+    return chatStorage.addChatTempFiles(topicId, files)
   }
   async function removeChatTempFiles(topicId: string, fileIds: string[]) {
-    return msgMgr.removeChatTempFile(topicId, fileIds)
+    return chatStorage.removeChatTempFile(topicId, fileIds)
   }
   async function addMessageFiles(topicId: string, files: Media[]) {
-    return msgMgr.addMessageFiles(topicId, files)
+    return chatStorage.addMessageFiles(topicId, files)
   }
   async function removeMessageFiles(topicId: string, fileIds: string[]) {
-    return msgMgr.removeMessageFiles(topicId, fileIds)
+    return chatStorage.removeMessageFiles(topicId, fileIds)
   }
   /**
    * initially load chat data from the database and listen message event
