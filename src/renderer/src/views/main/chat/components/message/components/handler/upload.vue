@@ -17,7 +17,8 @@ const props = defineProps<{
 const { t } = useI18n()
 const chatStore = useChatStore()
 const imagesExtensions = ["jpg", "jpeg", "png", "bmp", "webp"]
-const filesExtensions = ["xls", "xlsx", "doc", "docx", "pdf"]
+const filesExtensions = ["xls", "xlsx", "doc", "docx", "pdf", "txt", "csv", "md", "sh"]
+const mimeType = ["images/", "text/"]
 const maxSize = 1024 * 1024 * 100
 const allowedExtensions = [...imagesExtensions, ...filesExtensions]
 const queue = useTask(new PQueue())
@@ -32,11 +33,15 @@ function onChooseFile(_: MouseEvent, done?: CallBackFn) {
   queue.add(async () => {
     try {
       if (window.api) {
-        const res = await window.api.file.chooseFilePath(allowedExtensions)
+        const res = await window.api.file.chooseFilePath()
         if (!res.data.length) return
         const infos = await window.api.file.getInfo(res.data)
         const available = infos.data.filter(
-          info => info.isFile && info.size < maxSize && allowedExtensions.some(e => e === info.extension.toLowerCase())
+          info =>
+            info.isFile &&
+            info.size < maxSize &&
+            (allowedExtensions.some(e => e === info.extension.toLowerCase()) ||
+              (info.mimeType && mimeType.includes(info.mimeType)))
         )
         if (!isArrayLength(available)) {
           return

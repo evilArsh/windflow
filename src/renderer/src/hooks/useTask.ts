@@ -23,7 +23,7 @@ export function useTask(queue: PQueue) {
   let ctrl: AbortController[] = []
 
   function clear() {
-    ctrl.forEach(c => c.abort())
+    ctrl.forEach(c => c.abort("[task clear]"))
     ctrl = []
     queue.clear()
   }
