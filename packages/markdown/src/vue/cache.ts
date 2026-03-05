@@ -1,4 +1,4 @@
-import { Nodes } from "hast"
+import type { Nodes } from "hast"
 import type { Position } from "estree"
 import { Child } from "./types"
 

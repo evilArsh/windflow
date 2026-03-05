@@ -948,6 +948,9 @@ importers:
       mermaid:
         specifier: catalog:web
         version: 11.12.3
+      p-queue:
+        specifier: catalog:common
+        version: 9.1.0
       property-information:
         specifier: catalog:web
         version: 7.1.0
@@ -975,6 +978,9 @@ importers:
       remark-math:
         specifier: catalog:web
         version: 6.0.0
+      remark-parse:
+        specifier: catalog:web
+        version: 11.0.0
       remark-rehype:
         specifier: catalog:web
         version: 11.1.2
