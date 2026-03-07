@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ProviderMeta } from "@windflow/core/types"
+import { ProviderMeta } from "@windai/core/types"
 import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, cloneDeep } from "@toolmain/shared"
 import { Method } from "axios"

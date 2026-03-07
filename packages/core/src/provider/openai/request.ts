@@ -10,7 +10,7 @@ import {
   RequestHandler,
   LLMToolCallRequest,
   LLMContent,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import OpenAISDK from "openai"
 import { callTools, loadMCPTools } from "../utils/mcp"
 import { cloneDeep, errorToText, isArray, isString } from "@toolmain/shared"

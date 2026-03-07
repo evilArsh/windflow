@@ -10,7 +10,7 @@ import {
   ImageResponse,
   BeforeRequestCallback,
   Role,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import OpenAISDK from "openai"
 import { makeRequest, useHandler } from "./request"
 import { generateSummaryText } from "../compatible/utils"

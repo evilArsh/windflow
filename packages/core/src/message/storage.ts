@@ -1,5 +1,5 @@
-import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, Media } from "@windflow/core/types"
-import { storage, withTransaction } from "@windflow/core/storage"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, Media } from "@windai/core/types"
+import { storage, withTransaction } from "@windai/core/storage"
 import { isArrayLength, isUndefined } from "@toolmain/shared"
 import { MessageManager } from "./index"
 const MessageIndexStep = 100

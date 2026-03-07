@@ -1,4 +1,4 @@
-import { MCPServerParam, MCPServerParamCore, EventKey } from "@windflow/shared"
+import { MCPServerParam, MCPServerParamCore, EventKey } from "@windai/shared"
 import { defineStore } from "pinia"
 import { cloneDeep, uniqueNanoId } from "@toolmain/shared"
 import { useMCP } from "@renderer/hooks/useCore"

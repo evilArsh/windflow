@@ -1,4 +1,4 @@
-import { GeneralRequestHandler } from "@windflow/core/types"
+import { GeneralRequestHandler } from "@windai/core/types"
 import { uniqueId } from "@toolmain/shared"
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios"
 

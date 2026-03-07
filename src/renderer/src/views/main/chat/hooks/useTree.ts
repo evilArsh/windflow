@@ -1,6 +1,6 @@
 import type Node from "element-plus/es/components/tree/src/model/node"
 import { useTask } from "@renderer/hooks/useTask"
-import { ChatTopicTree, ChatTopic, SettingKeys } from "@windflow/core/types"
+import { ChatTopicTree, ChatTopic, SettingKeys } from "@windai/core/types"
 import { ScaleConfig } from "@toolmain/components"
 import { errorToText, isArray, isArrayLength, toNumber } from "@toolmain/shared"
 import { TreeInstance, ScrollbarInstance, NodeDropType, TreeNodeData } from "element-plus"
@@ -9,12 +9,12 @@ import { Reactive } from "vue"
 import useChatStore from "@renderer/store/chat"
 import useSettingsStore from "@renderer/store/settings"
 import { useThrottleFn } from "@vueuse/core"
-import { cloneTopic, createChatTopic } from "@windflow/core/message"
+import { cloneTopic, createChatTopic } from "@windai/core/message"
 import { getDefaultIcon } from "@renderer/components/SvgPicker"
 import { msg, msgError, msgWarning } from "@renderer/utils"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 import { useModels } from "@renderer/hooks/useCore"
-import { isChatType } from "@windflow/core/models"
+import { isChatType } from "@windai/core/models"
 export const useTree = (
   treeRef: Readonly<Ref<TreeInstance | null>>,
   scrollRef: Readonly<Ref<ScrollbarInstance | null>>,

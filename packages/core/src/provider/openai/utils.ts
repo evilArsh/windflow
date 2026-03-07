@@ -1,4 +1,4 @@
-import { ModelMeta } from "@windflow/core/types"
+import { ModelMeta } from "@windai/core/types"
 
 export function isOSeries(model: ModelMeta): boolean {
   return /^\d*o\d*/.test(model.modelName)

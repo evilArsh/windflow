@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ChatLLMConfig, ChatTopic } from "@windflow/core/types"
+import type { ChatLLMConfig, ChatTopic } from "@windai/core/types"
 import useChatStore from "@renderer/store/chat"
 import { msgError } from "@renderer/utils"
 import { errorToText } from "@toolmain/shared"

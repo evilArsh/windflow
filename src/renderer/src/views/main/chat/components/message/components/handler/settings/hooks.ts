@@ -1,4 +1,4 @@
-import { ChatListDisplayStyle, ChatPanelWidthStyle, SettingKeys } from "@windflow/core/types"
+import { ChatListDisplayStyle, ChatPanelWidthStyle, SettingKeys } from "@windai/core/types"
 import useSettingsStore from "@renderer/store/settings"
 import { toNumber } from "@toolmain/shared"
 

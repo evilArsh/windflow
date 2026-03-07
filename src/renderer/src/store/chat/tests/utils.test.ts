@@ -6,7 +6,7 @@ import { describe, it } from "vitest"
 //   ChatTTIConfig,
 //   ChatMessageType,
 //   ChatMessageContextFlag,
-// } from "@windflow/core/types"
+// } from "@windai/core/types"
 describe("chat-store-utils", () => {
   it("test getIsolatedMessages", () => {
     useInjectedSetup(() => {})

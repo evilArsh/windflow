@@ -12,9 +12,9 @@ export default mergeConfig(
       alias: [
         { find: "@main", replacement: path.resolve("src/main") },
         { find: "@preload", replacement: path.resolve("src/preload") },
-        { find: "@windflow/shared", replacement: path.resolve("packages/shared/src") },
-        { find: "@windflow/core", replacement: path.resolve("packages/core/src") },
-        { find: "@windflow/markdown", replacement: path.resolve("packages/markdown/src") },
+        { find: "@windai/shared", replacement: path.resolve("packages/shared/src") },
+        { find: "@windai/core", replacement: path.resolve("packages/core/src") },
+        { find: "@windai/markdown", replacement: path.resolve("packages/markdown/src") },
         { find: "@renderer", replacement: path.resolve("src/renderer/src") },
       ],
     },

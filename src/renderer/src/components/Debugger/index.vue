@@ -3,7 +3,7 @@ import { CSSProperties } from "@toolmain/shared"
 import { useDebounceFn } from "@vueuse/core"
 import { DialogPanel } from "@toolmain/components"
 import { Resize } from "@toolmain/components"
-import { openAICompatParser, usePartialData } from "@windflow/core/provider"
+import { openAICompatParser, usePartialData } from "@windai/core/provider"
 
 const leftStyle = ref<CSSProperties>({
   width: "40%",

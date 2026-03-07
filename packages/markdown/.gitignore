@@ -1,0 +1,4 @@
+*.d.[cm]ts
+*.mjs
+src/**/*.d.ts
+temp

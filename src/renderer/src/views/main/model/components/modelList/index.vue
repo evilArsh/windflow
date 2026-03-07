@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ProviderMeta, ModelMeta, ModelActiveStatus, SettingKeys } from "@windflow/core/types"
+import { ProviderMeta, ModelMeta, ModelActiveStatus, SettingKeys } from "@windai/core/types"
 import useModelStore from "@renderer/store/model"
 import useProviderStore from "@renderer/store/provider"
 import useSettingsStore from "@renderer/store/settings"

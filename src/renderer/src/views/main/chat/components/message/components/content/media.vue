@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage } from "@windflow/core/types"
+import { ChatMessage } from "@windai/core/types"
 import { useSrc } from "@renderer/hooks/useSrc"
 import Media from "@renderer/components/Media/index.vue"
 

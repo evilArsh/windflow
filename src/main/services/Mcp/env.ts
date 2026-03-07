@@ -1,5 +1,5 @@
 import { Response, errorToText, responseData } from "@toolmain/shared"
-import { ToolEnvironment, ToolEnvTestResult } from "@windflow/shared"
+import { ToolEnvironment, ToolEnvTestResult } from "@windai/shared"
 import { execa, ExecaError } from "execa"
 import path from "node:path"
 import { log } from "./vars"

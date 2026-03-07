@@ -1,5 +1,5 @@
-import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, QueryParams } from "@windflow/core/types"
-import { useDBQueue, withTransaction } from "@windflow/core/storage"
+import { ChatLLMConfig, ChatMessage, ChatTopic, ChatTTIConfig, QueryParams } from "@windai/core/types"
+import { useDBQueue, withTransaction } from "@windai/core/storage"
 import { cloneDeep, isUndefined } from "@toolmain/shared"
 import Dexie from "dexie"
 

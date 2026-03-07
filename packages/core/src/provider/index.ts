@@ -1,4 +1,4 @@
-import { Provider } from "@windflow/core/types"
+import { Provider } from "@windai/core/types"
 import { DeepSeek } from "./deepseek"
 import { SiliconFlow } from "./siliconflow"
 import { Volcengine } from "./volcengine"

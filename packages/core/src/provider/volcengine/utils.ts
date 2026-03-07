@@ -1,6 +1,6 @@
 import { cloneDeep, isArrayLength, isUndefined } from "@toolmain/shared"
-import { formatContentString } from "@windflow/core/message"
-import { LLMConfig, LLMToolCallRequest, Message, ModelMeta, RequestHandler } from "@windflow/core/types"
+import { formatContentString } from "@windai/core/message"
+import { LLMConfig, LLMToolCallRequest, Message, ModelMeta, RequestHandler } from "@windai/core/types"
 
 export function useHandler(): RequestHandler {
   return {

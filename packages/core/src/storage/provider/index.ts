@@ -1,6 +1,6 @@
-import { ProviderMeta, QueryParams } from "@windflow/core/types"
+import { ProviderMeta, QueryParams } from "@windai/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import { useDBQueue } from "@windflow/core/storage"
+import { useDBQueue } from "@windai/core/storage"
 
 const queue = useDBQueue()
 export async function put(data: ProviderMeta, params?: QueryParams) {

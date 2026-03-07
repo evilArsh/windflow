@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic, SettingKeys } from "@windflow/core/types"
+import { ChatTopic, SettingKeys } from "@windai/core/types"
 import ShortcutItem from "../components/shortcutItem.vue"
 import Group from "../components/group.vue"
 defineProps<{

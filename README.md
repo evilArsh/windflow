@@ -114,7 +114,7 @@ windflow follows a typical Electron multi-process architecture:
 
 The project is organized into several main packages:
 
-#### @windflow/core
+#### @windai/core
 
 Core LLM logic and services for the application:
 
@@ -124,7 +124,7 @@ Core LLM logic and services for the application:
 - **Storage**: Comprehensive storage solutions for chats, embeddings, knowledge bases, MCP tools, models, presets, providers, RAG files, and settings
 - **Types**: Type definitions for AI, chat, knowledge, provider, request, and storage systems
 
-#### @windflow/markdown
+#### @windai/markdown
 
 Markdown processing and rendering utilities:
 

@@ -1,7 +1,6 @@
-import { App, InjectionKey } from "vue"
-import { EventBus, isNull, useEvent } from "@toolmain/shared"
+import { App, InjectionKey, inject } from "vue"
+import { EventEmitter } from "events"
 import { MDWorkerExpose, MDWorkerMessage, MDWorkerMessageCore } from "./types"
-import MDWorker from "./index.worker.ts?worker"
 
 export * from "./parser"
 export * from "./types"
@@ -12,17 +11,17 @@ export const MarkdownWorkerKey: InjectionKey<MDWorkerExpose> = Symbol("MarkdownW
 
 class MDWorkerExposeImpl implements MDWorkerExpose {
   #worker: Worker
-  #event: EventBus<Record<string, any>>
+  #event: EventEmitter
   #pendingMessages: MDWorkerMessage[]
   #animationFrameId: number | null = null
 
   constructor(worker: Worker) {
     this.#worker = worker
-    this.#event = useEvent()
+    this.#event = new EventEmitter()
     this.#pendingMessages = []
     this.#worker.addEventListener("message", (e: MessageEvent<MDWorkerMessage>) => {
       this.#pendingMessages.push(e.data)
-      if (isNull(this.#animationFrameId)) {
+      if (this.#animationFrameId === null) {
         this.#animationFrameId = requestAnimationFrame(this.#processPendingMessages.bind(this))
       }
     })
@@ -52,7 +51,9 @@ class MDWorkerExposeImpl implements MDWorkerExpose {
   }
 }
 export function createMarkdownWorker() {
-  const worker = new MDWorker()
+  const worker = new Worker(new URL("./index.worker.ts", import.meta.url), {
+    type: "module",
+  })
   const expose = new MDWorkerExposeImpl(worker)
   return {
     install: (app: App<Element>) => {

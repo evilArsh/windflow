@@ -1,4 +1,4 @@
-import { RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@windflow/shared"
+import { RAGFile, RAGFileStatus, RAGLocalFileMeta } from "@windai/shared"
 import PQueue from "p-queue"
 import { EmbeddingResponse, TaskChain, TaskInfo, TaskInfoStatus, TaskManager } from "./types"
 import axios, { AxiosResponse } from "axios"

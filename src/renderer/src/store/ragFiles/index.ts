@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { RAGLocalFileInfo } from "@windflow/shared"
+import { RAGLocalFileInfo } from "@windai/shared"
 import { useKnowledge } from "@renderer/hooks/useCore"
 export default defineStore("ragFiles", () => {
   const kbMgr = useKnowledge()

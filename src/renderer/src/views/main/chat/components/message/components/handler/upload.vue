@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ChatTopic, Media } from "@windflow/core/types"
+import type { ChatTopic, Media } from "@windai/core/types"
 import useChatStore from "@renderer/store/chat"
 import Shell from "./components/shell.vue"
 import { CallBackFn, code2xx, errorToText, isArrayLength, Response, uniqueId } from "@toolmain/shared"
@@ -7,7 +7,7 @@ import { msgError, msgWarning } from "@renderer/utils"
 import { useSrc } from "@renderer/hooks/useSrc"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
-import { FileInfo } from "@windflow/shared"
+import { FileInfo } from "@windai/shared"
 import MediaComp from "@renderer/components/Media/index.vue"
 
 const props = defineProps<{

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@windflow/core/types"
+import { ChatTopic } from "@windai/core/types"
 import Group from "../components/group.vue"
 import Item from "../components/item.vue"
-import { ChatPanelWidthStyle } from "@windflow/core/types"
+import { ChatPanelWidthStyle } from "@windai/core/types"
 import { useChatListDisplayStyle, useChatPanelWidth } from "./hooks"
 defineProps<{
   topic: ChatTopic

@@ -1,5 +1,5 @@
-import { storage } from "@windflow/core/storage"
-import { SettingKeys, Settings, SettingsValue } from "@windflow/core/types"
+import { storage } from "@windai/core/storage"
+import { SettingKeys, Settings, SettingsValue } from "@windai/core/types"
 
 export class SettingsStorage {
   async get(settingsId: SettingKeys) {

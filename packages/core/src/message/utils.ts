@@ -9,9 +9,9 @@ import {
   Message,
   ModelMeta,
   Role,
-} from "@windflow/core/types"
-import { useRequest } from "@windflow/core/provider"
-import { storage, defaultMessage, withTransaction } from "@windflow/core/storage"
+} from "@windai/core/types"
+import { useRequest } from "@windai/core/provider"
+import { storage, defaultMessage, withTransaction } from "@windai/core/storage"
 import {
   cloneDeep,
   errorToText,
@@ -26,7 +26,7 @@ import {
   toNumber,
   uniqueId,
 } from "@toolmain/shared"
-import { isASRType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
+import { isASRType, isImageType, isTTSType, isVideoType } from "@windai/core/models"
 import json5 from "json5"
 import { MessageManager } from "."
 

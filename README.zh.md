@@ -114,7 +114,7 @@ windflow 遵循典型的 Electron 多进程架构：
 
 项目组织为几个主要包：
 
-#### @windflow/core
+#### @windai/core
 
 应用程序的核心业务逻辑和服务：
 
@@ -124,7 +124,7 @@ windflow 遵循典型的 Electron 多进程架构：
 - **存储**: 用于聊天、嵌入、知识库、MCP 工具、模型、预设、提供商、RAG 文件和设置的全面存储解决方案
 - **类型**: AI、聊天、知识、提供商、请求和存储系统的类型定义
 
-#### @windflow/markdown
+#### @windai/markdown
 
 Markdown 处理和渲染实用工具：
 
@@ -133,7 +133,7 @@ Markdown 处理和渲染实用工具：
 - **功能**: 支持数学公式、GFM（GitHub 风格 Markdown）、表情符号、HTML 转换等
 - **基于 Worker**: 包含专门的 worker 以实现高效的 Markdown 处理
 
-#### @windflow/shared
+#### @windai/shared
 
 应用程序间共享的类型和实用工具：
 

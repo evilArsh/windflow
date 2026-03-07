@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@windflow/core/types"
+import { ChatTopic } from "@windai/core/types"
 import Global from "./global.vue"
 import Message from "./message.vue"
 import ChatUI from "./chatui.vue"

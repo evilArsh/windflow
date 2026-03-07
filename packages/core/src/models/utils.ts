@@ -1,4 +1,4 @@
-import { ModelMeta, ModelType } from "@windflow/core/types"
+import { ModelMeta, ModelType } from "@windai/core/types"
 
 /**
  * model 只有 modelType 一种类型

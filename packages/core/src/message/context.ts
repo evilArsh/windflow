@@ -1,12 +1,5 @@
 import { cloneDeep, uniqueId } from "@toolmain/shared"
-import {
-  ChatContextManager,
-  ChatContext,
-  Provider,
-  RequestHandler,
-  ModelMeta,
-  ProviderMeta,
-} from "@windflow/core/types"
+import { ChatContextManager, ChatContext, Provider, RequestHandler, ModelMeta, ProviderMeta } from "@windai/core/types"
 
 class ChatContextImpl implements ChatContextManager {
   #ctx: ChatContext[]

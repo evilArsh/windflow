@@ -1,4 +1,4 @@
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@windflow/shared"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@windai/shared"
 import { errorToText, isSymbol, Response, responseData, toNumber } from "@toolmain/shared"
 import path from "node:path"
 

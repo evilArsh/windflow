@@ -1,10 +1,9 @@
 import PQueue from "p-queue"
 import { useParser } from "./parser"
-import { MDWorkerMessage } from "./types"
-import { uniqueId } from "@toolmain/shared"
+import type { MDWorkerMessage } from "./types"
 
 function useTasker() {
-  const context = new Map<string, { queue: PQueue; control: Record<string, AbortController> }>()
+  const context = new Map<string, { queue: PQueue; control: AbortController }>()
   function has(id: string) {
     return context.has(id)
   }
@@ -16,37 +15,30 @@ function useTasker() {
     if (!ctx) {
       ctx = {
         queue: new PQueue({ concurrency: 1 }),
-        control: {},
+        control: new AbortController(),
       }
       context.set(id, ctx)
     }
-    const tId = uniqueId()
-    const ctrl = new AbortController()
-    ctx.control[tId] = ctrl
+    if (ctx.control.signal.aborted) {
+      return
+    }
+    // console.log(`[task start] id: ${id}`)
     ctx.queue.add(
       async ({ signal }) => {
         try {
-          // console.log(`[task start] id: ${id}, taskId: ${tId}`)
           await task(signal)
         } catch (error) {
-          console.log(`[task failed] id: ${id}, taskId: ${tId}`, error)
-        } finally {
-          delete ctx.control[tId]
+          console.log(`[task failed] id: ${id}`, error)
         }
       },
-      { id: tId, signal: ctrl.signal }
+      { signal: ctx.control.signal }
     )
   }
   function remove(id: string) {
     const ctx = context.get(id)
     if (!ctx) return
-    for (const [_key, value] of Object.entries(ctx.control)) {
-      // console.log(`[task end] id: ${id} taskId: ${key}`)
-      value.abort()
-    }
-    ctx.control = {}
+    ctx.control.abort()
     ctx.queue.clear()
-    // console.log(`[task remove] id: ${id}`)
     context.delete(id)
   }
   function getContext() {

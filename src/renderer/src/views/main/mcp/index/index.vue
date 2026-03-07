@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import useMcpStore from "@renderer/store/mcp"
-import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@windflow/shared"
+import { MCPClientStatus, MCPRootTopicId, MCPServerParam } from "@windai/shared"
 import { storeToRefs } from "pinia"
 import { useDialog, CallBackFn, errorToText } from "@toolmain/shared"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"

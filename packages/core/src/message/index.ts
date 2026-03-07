@@ -9,8 +9,8 @@ import {
   ChatEventHandler,
   ChatTopic,
   ChatEvent,
-} from "@windflow/core/types"
-import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windflow/core/models"
+} from "@windai/core/types"
+import { isASRType, isChatType, isImageType, isTTSType, isVideoType } from "@windai/core/models"
 
 import {
   consumeMediaContent,
@@ -33,11 +33,11 @@ import {
   toNumber,
   useEvent,
 } from "@toolmain/shared"
-import { defaultTTIConfig } from "@windflow/core/storage"
-import { storage } from "@windflow/core/storage"
+import { defaultTTIConfig } from "@windai/core/storage"
+import { storage } from "@windai/core/storage"
 import { beforeLLMRequest } from "./hooks"
 import { MessageStorage } from "./storage"
-import { ProviderManager } from "@windflow/core/provider"
+import { ProviderManager } from "@windai/core/provider"
 
 /**
  * use to listen all topics and messages events

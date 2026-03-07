@@ -1,6 +1,6 @@
 import { ServiceCore } from "@main/types"
-import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@windflow/shared"
-import { EventBus } from "@windflow/shared"
+import { CoreEvent, CoreEventKey, EventKey, EventMap } from "@windai/shared"
+import { EventBus } from "@windai/shared"
 import { BrowserWindow, ipcMain, IpcMainEvent } from "electron"
 import EventEmitter from "node:events"
 export class EventBusImpl implements ServiceCore, EventBus {

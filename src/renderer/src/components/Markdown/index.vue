@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import { VNode } from "vue"
 import CodeBlock from "./components/CodeBlock/index.vue"
-import {
-  useMarkdownWorker,
-  useMermaid,
-  useVueRuntime,
-  MDWorkerMessageCore,
-  wrapAsCode,
-  Components,
-} from "@windflow/markdown"
+import { useMarkdownWorker, useVueRuntime, MDWorkerMessageCore, wrapAsCode, Components } from "@windai/markdown"
+import { useMermaid } from "./hooks"
 const emit = defineEmits<{
   updated: []
 }>()

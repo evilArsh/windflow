@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPServerParam } from "@windflow/shared"
+import { MCPServerParam } from "@windai/shared"
 defineProps<{
   data: MCPServerParam
   hideFlag?: boolean

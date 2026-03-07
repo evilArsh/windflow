@@ -1,6 +1,6 @@
-import { Media, QueryParams } from "@windflow/core/types"
+import { Media, QueryParams } from "@windai/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import { useDBQueue } from "@windflow/core/storage"
+import { useDBQueue } from "@windai/core/storage"
 
 const queue = useDBQueue()
 export async function add(data: Media, params?: QueryParams) {

@@ -1,7 +1,7 @@
-import { QueryParams } from "@windflow/core/types"
-import { RAGEmbeddingConfig } from "@windflow/shared"
+import { QueryParams } from "@windai/core/types"
+import { RAGEmbeddingConfig } from "@windai/shared"
 import { cloneDeep } from "@toolmain/shared"
-import { useDBQueue } from "@windflow/core/storage"
+import { useDBQueue } from "@windai/core/storage"
 
 const queue = useDBQueue()
 export async function put(data: RAGEmbeddingConfig, params?: QueryParams) {

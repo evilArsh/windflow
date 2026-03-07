@@ -15,7 +15,7 @@ import {
   createProvider,
   createMedia,
 } from "@renderer/hooks/useCore"
-import { createMarkdownWorker } from "@windflow/markdown"
+import { createMarkdownWorker } from "@windai/markdown"
 import "./modules/fonts"
 import "./modules/unocss"
 import "./modules/element"

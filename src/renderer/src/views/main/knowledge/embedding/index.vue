@@ -6,10 +6,10 @@ import { storeToRefs } from "pinia"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
 import { cloneDeep, useDialog, CallBackFn, errorToText, uniqueId } from "@toolmain/shared"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 import EmbeddingForm from "./components/form.vue"
 import { msgError } from "@renderer/utils"
-import { RAGEmbeddingConfig } from "@windflow/shared"
+import { RAGEmbeddingConfig } from "@windai/shared"
 const route = useRoute()
 
 const knowledgeStore = useKnowledgeStore()

@@ -1,9 +1,9 @@
 import { msgError, errorToText, isArrayLength, merge, cloneDeep, uniqueId, isUndefined } from "@toolmain/shared"
-import { createChatTopic } from "@windflow/core/message"
-import { ChatEventResponse, ChatMessage, ChatTopic, Role } from "@windflow/core/types"
+import { createChatTopic } from "@windai/core/message"
+import { ChatEventResponse, ChatMessage, ChatTopic, Role } from "@windai/core/types"
 import { useMessage, useModels } from "./useCore"
-import { defaultLLMConfig } from "@windflow/core/storage"
-import { isChatType } from "@windflow/core/models"
+import { defaultLLMConfig } from "@windai/core/storage"
+import { isChatType } from "@windai/core/models"
 
 /**
  * mini LLM topic, use for individual chating situation

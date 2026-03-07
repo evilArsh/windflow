@@ -1,4 +1,4 @@
-import { LLMResponse, Role } from "@windflow/core/types"
+import { LLMResponse, Role } from "@windai/core/types"
 import { toNumber } from "@toolmain/shared"
 import OpenAISDK from "openai"
 import { Stream } from "openai/core/streaming"

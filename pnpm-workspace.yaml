@@ -1,5 +1,4 @@
 packages:
-  - demo/*
   - packages/*
 
 catalogs:
@@ -21,26 +20,29 @@ catalogs:
     throttle-debounce: ^5.0.2
   dev:
     '@babel/types': ~7.29.0
-    '@commitlint/config-conventional': ^20.4.2
+    '@changesets/cli': ^2.30.0
+    '@commitlint/config-conventional': ^20.4.3
     '@electron/notarize': ^3.1.1
     '@eslint/js': ^10.0.1
-    '@iconify/json': ^2.2.445
+    '@iconify/json': ^2.2.446
     '@iconify/types': ^2.0.0
+    '@microsoft/api-extractor': ^7.57.6
     '@rollup/plugin-json': ^6.1.0
     '@types/chance': ^1.1.7
     '@types/estree': ^1.0.8
+    '@types/events': ^3.0.3
     '@types/hash-sum': ^1.0.2
     '@types/hast': ^3.0.4
     '@types/lodash.merge': ^4.6.9
     '@types/mdast': ^4.0.4
     '@types/mime-types': ^3.0.1
-    '@types/node': ^25.3.3
+    '@types/node': ^25.3.5
     '@types/pdf-parse': ^1.1.5
     '@types/sqlstring': ^2.3.2
     '@types/throttle-debounce': ^5.0.2
     '@types/unist': ^3.0.3
     '@typescript-eslint/eslint-plugin': ^8.56.1
-    '@unocss/preset-icons': ^66.6.3
+    '@unocss/preset-icons': ^66.6.5
     '@vitejs/plugin-vue': ^6.0.4
     '@vitejs/plugin-vue-jsx': ^5.1.4
     '@vitest/browser': ^4.0.18
@@ -48,10 +50,10 @@ catalogs:
     '@vitest/coverage-v8': ^4.0.18
     '@vitest/ui': ^4.0.18
     '@vue/test-utils': ^2.4.6
-    commitlint: ^20.4.2
+    commitlint: ^20.4.3
     csstype: ^3.2.3
     devlop: ^1.1.0
-    electron: ^39.7.0
+    electron: ^39.8.0
     electron-builder: ~26.0.20
     electron-vite: ^5.0.0
     eslint: ^10.0.2
@@ -64,7 +66,7 @@ catalogs:
     globals: ^17.4.0
     husky: ^9.1.7
     jsdom: ^28.1.0
-    lint-staged: ^16.3.1
+    lint-staged: ^16.3.2
     mdast-util-mdx-expression: ^2.0.1
     mdast-util-mdx-jsx: ^3.2.0
     mdast-util-mdxjs-esm: ^2.0.1
@@ -75,7 +77,7 @@ catalogs:
     rollup: ^4.59.0
     rollup-plugin-dts: ^6.3.0
     rollup-plugin-esbuild: ^6.2.1
-    rollup-plugin-visualizer: ^7.0.0
+    rollup-plugin-visualizer: ^7.0.1
     sass: ^1.97.3
     style-value-types: ^5.1.2
     terser: ^5.46.0
@@ -83,7 +85,7 @@ catalogs:
     type-fest: ^5.4.4
     typescript: ^5.9.3
     typescript-eslint: ^8.56.1
-    unocss: ^66.6.2
+    unocss: ^66.6.5
     unplugin-auto-import: ^21.0.0
     unplugin-icons: ^23.0.1
     unplugin-vue-components: ^31.0.0
@@ -122,12 +124,13 @@ catalogs:
     dexie: ^4.3.0
     element-plus: ^2.13.3
     estree-util-is-identifier-name: ^3.0.0
+    events: ^3.3.0
     hast-util-whitespace: ^3.0.0
     hotkeys-js: ^4.0.2
     html-url-attributes: ^3.0.1
     mermaid: ^11.12.3
     monaco-editor: ^0.55.1
-    openai: ^6.25.0
+    openai: ^6.27.0
     pinia: ^3.0.4
     property-information: ^7.1.0
     rehype-format: ^5.0.1
@@ -163,6 +166,7 @@ onlyBuiltDependencies:
   - sharp
   - esbuild
   - vue-demi
+  - esbuild
 
 overrides:
-  decode-named-character-reference: file:./patchs/decode-named-character-reference
+  decode-named-character-reference: npm:@windai/decode-named-character-reference

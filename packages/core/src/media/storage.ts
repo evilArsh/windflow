@@ -1,5 +1,5 @@
-import { storage } from "@windflow/core/storage"
-import { Media } from "@windflow/core/types"
+import { storage } from "@windai/core/storage"
+import { Media } from "@windai/core/types"
 
 export class MediaStorage {
   async add(data: Media) {

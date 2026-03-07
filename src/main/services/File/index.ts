@@ -1,6 +1,6 @@
 import { ServiceCore } from "@main/types"
 import { Response, responseData, errorToText, StatusResponse, responseCode, isString } from "@toolmain/shared"
-import { FileService, IpcChannel, FileInfo } from "@windflow/shared"
+import { FileService, IpcChannel, FileInfo } from "@windai/shared"
 import { BrowserWindow, dialog, ipcMain, shell } from "electron"
 import { useStore } from "@main/hooks/useStore"
 import { useEnv } from "@main/hooks/useEnv"

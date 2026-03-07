@@ -1,7 +1,7 @@
-import { MCPClientStatus, MCPServerParam } from "@windflow/shared"
+import { MCPClientStatus, MCPServerParam } from "@windai/shared"
 import { cloneDeep } from "@toolmain/shared"
-import { mcpStdioDefault, useDBQueue } from "@windflow/core/storage"
-import { QueryParams } from "@windflow/core/types"
+import { mcpStdioDefault, useDBQueue } from "@windai/core/storage"
+import { QueryParams } from "@windai/core/types"
 
 const queue = useDBQueue()
 export async function put(data: MCPServerParam, params?: QueryParams) {

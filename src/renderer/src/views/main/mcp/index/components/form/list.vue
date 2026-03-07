@@ -5,9 +5,9 @@ import { DialogPanel } from "@toolmain/components"
 import { CallBackFn, errorToText } from "@toolmain/shared"
 import { msg, msgError } from "@renderer/utils"
 import { storeToRefs } from "pinia"
-import { MCPServerParam } from "@windflow/shared"
+import { MCPServerParam } from "@windai/shared"
 import { useI18n } from "vue-i18n"
-import { useSchemaValidate } from "@windflow/shared"
+import { useSchemaValidate } from "@windai/shared"
 import { assembleParam, McpServersSchema } from "../helper"
 type MCPServersConfig = { mcpServers: Record<string, MCPServerParam["params"]> }
 const emit = defineEmits<{

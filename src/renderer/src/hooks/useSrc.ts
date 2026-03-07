@@ -1,10 +1,10 @@
-import { useRequest } from "@windflow/core/provider"
+import { useRequest } from "@windai/core/provider"
 import { errorToText, isArrayLength, isString, uniqueId } from "@toolmain/shared"
 import { useTask } from "@renderer/hooks/useTask"
 import PQueue from "p-queue"
 import { msg } from "@renderer/utils"
 import { useMedia } from "./useCore"
-import { MediaType, Media } from "@windflow/core/types"
+import { MediaType, Media } from "@windai/core/types"
 export function useSrc() {
   const data = ref<Media[]>([])
   const http = useRequest()

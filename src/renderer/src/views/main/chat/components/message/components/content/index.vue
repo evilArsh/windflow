@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageContextFlag, ChatMessageTree, ChatTopic, SettingKeys } from "@windflow/core/types"
+import { ChatMessageContextFlag, ChatMessageTree, ChatTopic, SettingKeys } from "@windai/core/types"
 import useSettingsStore from "@renderer/store/settings"
 import Single from "./single.vue"
 import Multiple from "./multiple.vue"

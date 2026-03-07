@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
+import { ChatMessageTree, ChatTopic } from "@windai/core/types"
 import useChatStore from "@renderer/store/chat"
 import { CallBackFn, errorToText } from "@toolmain/shared"
 import { msg } from "@renderer/utils"

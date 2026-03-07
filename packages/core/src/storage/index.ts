@@ -1,5 +1,5 @@
 import Dexie, { TransactionMode } from "dexie"
-import { DexieTable, DexieTransaction, QueryParams, TableName } from "@windflow/core/types"
+import { DexieTable, DexieTransaction, QueryParams, TableName } from "@windai/core/types"
 import * as chat from "./chat"
 import * as embedding from "./embedding"
 import * as knowledge from "./knowledge"

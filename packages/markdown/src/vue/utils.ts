@@ -11,7 +11,6 @@ import { stringify as spaces } from "space-separated-tokens"
 import styleToJs from "style-to-js"
 import { VFileMessage } from "vfile-message"
 import { Fragment } from "vue"
-import { isObject, isString } from "@toolmain/shared"
 
 // `react-dom` triggers a warning for *any* white space in tables.
 // To follow GFM, `mdast-util-to-hast` injects line endings between elements.
@@ -38,7 +37,7 @@ export function addNode(
   // If this is swapped out for a component:
   // 当tagName有component单独处理时, eg:components: { code: Components }, type 为 ComponentMeta
   // node为当前tagName的hast,会被传入type为Component的node属性中
-  if (!isString(type) && type !== Fragment && state.passNode) {
+  if (typeof type !== "string" && type !== Fragment && state.passNode) {
     props.node = node
   }
 }
@@ -57,7 +56,12 @@ export function createElementProps(state: State, node: Element): Props {
       const result = createProperty(state, prop, node.properties[prop])
       if (result) {
         const [key, value] = result
-        if (state.tableCellAlignToStyle && key === "align" && isString(value) && tableCellElement.has(node.tagName)) {
+        if (
+          state.tableCellAlignToStyle &&
+          key === "align" &&
+          typeof value === "string" &&
+          tableCellElement.has(node.tagName)
+        ) {
           alignValue = value
         } else {
           props[key] = value
@@ -68,7 +72,7 @@ export function createElementProps(state: State, node: Element): Props {
   if (alignValue) {
     // Assume style is an object.
     if (!props.style) props.style = {}
-    if (isObject(props.style)) {
+    if (props.style !== null && typeof props.style === "object") {
       const key: string = state.stylePropertyNameCase === "css" ? "text-align" : "textAlign"
       props.style = {
         ...props.style,
@@ -175,7 +179,7 @@ function createProperty(
   }
   // React only accepts `style` as object.
   if (info.property === "style") {
-    let styleObject = isObject(value) ? value : parseStyle(state, String(value))
+    let styleObject = value !== null && typeof value === "object" ? value : parseStyle(state, String(value))
     if (state.stylePropertyNameCase === "css") {
       styleObject = transformStylesToCssCasing(styleObject)
     }
@@ -228,7 +232,7 @@ export function createJsxElementProps(state: State, node: MdxJsxFlowElementHast 
       // For JSX, the author is responsible of passing in the correct values.
       const name = attribute.name
       let value: unknown
-      if (isObject(attribute.value)) {
+      if (attribute.value !== null && typeof attribute.value === "object") {
         if (attribute.value.data && attribute.value.data.estree && state.evaluater) {
           const program = attribute.value.data.estree
           const expression = program.body[0]

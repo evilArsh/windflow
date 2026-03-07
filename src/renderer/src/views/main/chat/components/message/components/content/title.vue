@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ChatMessageTree } from "@windflow/core/types"
+import { ChatMessageTree } from "@windai/core/types"
 import useModelsStore from "@renderer/store/model"
 import { formatSecond, toNumber } from "@toolmain/shared"
-import { Role } from "@windflow/core/types"
+import { Role } from "@windai/core/types"
 const props = defineProps<{
   message: ChatMessageTree
   hideToken?: boolean

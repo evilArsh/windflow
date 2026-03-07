@@ -1,8 +1,8 @@
 import useSettingsStore from "@renderer/store/settings"
 import { msgError } from "@renderer/utils"
 import { CallBackFn, errorToText } from "@toolmain/shared"
-import { SettingKeys } from "@windflow/core/types"
-import { AutoUpdateAvailable, AutoUpdateDownloadProgress, AutoUpdateStatusEvent } from "@windflow/shared"
+import { SettingKeys } from "@windai/core/types"
+import { AutoUpdateAvailable, AutoUpdateDownloadProgress, AutoUpdateStatusEvent } from "@windai/shared"
 
 async function setAutoUpdate(auto?: boolean) {
   return window.api?.autoUpdate.setAutoDownload(!!auto)

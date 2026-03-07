@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { RAGEmbeddingConfig } from "@windflow/shared"
+import { RAGEmbeddingConfig } from "@windai/shared"
 import { cloneDeep, isUndefined } from "@toolmain/shared"
 import { useKnowledge } from "@renderer/hooks/useCore"
 export default defineStore("embedding", () => {

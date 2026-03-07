@@ -1,4 +1,4 @@
-import { ChatMessage, SettingKeys } from "@windflow/core/types"
+import { ChatMessage, SettingKeys } from "@windai/core/types"
 import { useTree } from "./hooks/useTree"
 import { useDlg } from "./hooks/useDlg"
 import { useMenu } from "./hooks/useMenu"
@@ -10,7 +10,7 @@ import { useEventBus } from "@vueuse/core"
 import PQueue from "p-queue"
 import { ScaleConfig, ScaleInstance } from "@toolmain/components"
 import { useTask } from "@renderer/hooks/useTask"
-import { createChatMessage } from "@windflow/core/message"
+import { createChatMessage } from "@windai/core/message"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 
 const useMenuToggle = () => {

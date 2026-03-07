@@ -10,9 +10,9 @@ import {
   Knowledge,
   Media,
 } from "."
-import { MCPServerParam } from "@windflow/shared"
+import { MCPServerParam } from "@windai/shared"
 import Dexie, { Transaction, type EntityTable } from "dexie"
-import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@windflow/shared"
+import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@windai/shared"
 
 export type Table = {
   providerMeta: EntityTable<ProviderMeta, "name">

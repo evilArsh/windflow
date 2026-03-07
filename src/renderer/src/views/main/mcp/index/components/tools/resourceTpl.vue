@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { MCPResourceTemplatesItem } from "@windflow/shared"
+import { MCPResourceTemplatesItem } from "@windai/shared"
 
 defineProps<{ data: MCPResourceTemplatesItem }>()
 </script>

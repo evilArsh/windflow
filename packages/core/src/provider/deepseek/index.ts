@@ -11,7 +11,7 @@ import {
   BeforeRequestCallback,
   LLMConfig,
   Role,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import { generateSummaryText, patchAxios } from "../compatible/utils"
 import { makeRequest, useSingleLLMChat } from "../compatible/request"
 import { deepSeekLLMParamsHandler, useHandler } from "./utils"

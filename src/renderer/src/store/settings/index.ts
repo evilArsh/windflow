@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { SettingKeys, Settings, SettingsValue } from "@windflow/core/types"
+import { SettingKeys, Settings, SettingsValue } from "@windai/core/types"
 import { Reactive } from "vue"
 import { cloneDeep, isArray, isFunction, isNull, isObject, isString, isUndefined } from "@toolmain/shared"
 import { useSettings } from "@renderer/hooks/useCore"

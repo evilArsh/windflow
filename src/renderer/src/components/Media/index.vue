@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { msgError } from "@renderer/utils"
 import { CallBackFn, errorToText } from "@toolmain/shared"
-import { Media } from "@windflow/core/types"
+import { Media } from "@windai/core/types"
 import { filesize } from "filesize"
 
 const props = defineProps<{

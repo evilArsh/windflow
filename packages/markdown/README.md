@@ -1,4 +1,4 @@
-# @windflow/markdown
+# @windai/markdown
 
 mardown parser for vue, support worker thread, and transfer to vue's vnode
 
@@ -6,10 +6,24 @@ mardown parser for vue, support worker thread, and transfer to vue's vnode
 
 this package includes worker thread and non worker thread versions.
 
+### install dependencies
+
+```sh
+pnpm add vue
+```
+
+### config vite.config.ts
+
+```ts
+optimizeDeps: {
+  exclude: ["@windai/markdown"],
+}
+```
+
 ### generally usage
 
 ```ts
-import { useParser, useVueRuntime } from "@windflow/markdown"
+import { useParser, useVueRuntime } from "@windai/markdown"
 import { VNode } from "vue"
 
 const mdStr: string = `
@@ -32,7 +46,7 @@ const vnode: VNode = rt.toVnode(node)
 register vue plugin
 
 ```ts
-import { createMarkdownWorker } from "@windflow/markdown"
+import { createMarkdownWorker } from "@windai/markdown"
 const app = createApp(App)
 app.use(createMarkdownWorker())
 ```
@@ -42,13 +56,12 @@ example
 ```vue
 <script setup lang="ts">
 import { VNode } from "vue"
-import { useMarkdownWorker, useMermaid, useVueRuntime, MDWorkerMessageCore } from "@windflow/markdown"
+import { useMarkdownWorker, useVueRuntime, MDWorkerMessageCore } from "@windai/markdown"
 const props = defineProps<{
   content: string
 }>()
 const html = shallowRef<VNode>()
 const id = useId()
-const mermaid = useMermaid()
 const mdWorker = useMarkdownWorker()
 const rt = useVueRuntime()
 function onParseContent(content: string) {
@@ -65,7 +78,6 @@ function onParseResponse(event: MDWorkerMessageCore) {
 }
 watch(() => props.content, onParseContent)
 onMounted(() => {
-  mermaid.init()
   onParseContent(props.content)
   mdWorker.on(id, onParseResponse)
 })

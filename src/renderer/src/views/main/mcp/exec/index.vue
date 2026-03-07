@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@windflow/core/types"
-import { defaultEnv, ToolEnvironment } from "@windflow/shared"
+import { SettingKeys } from "@windai/core/types"
+import { defaultEnv, ToolEnvironment } from "@windai/shared"
 import Npm from "./components/npm.vue"
 import Python from "./components/python.vue"
 import useEnvStore from "@renderer/store/env"

@@ -10,7 +10,7 @@ import {
   LLMConfig,
   Role,
   ImageResponse,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import { generateSummaryText } from "../compatible/utils"
 import { makeRequest, useSingleLLMChat } from "../compatible/request"
 import { volcengineLLMParamsHandler, useHandler } from "./utils"

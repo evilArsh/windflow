@@ -8,8 +8,8 @@ import {
   BeforeRequestParams,
   Message,
   KnowledgeEmbeddingPair,
-} from "@windflow/core/types"
-import { storage } from "@windflow/core/storage"
+} from "@windai/core/types"
+import { storage } from "@windai/core/storage"
 import { formatContentString } from "./utils"
 
 /**

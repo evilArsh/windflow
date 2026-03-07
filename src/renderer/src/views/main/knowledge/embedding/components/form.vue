@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { RAGEmbeddingConfig } from "@windflow/shared"
+import { RAGEmbeddingConfig } from "@windai/shared"
 import { Arrayable } from "@vueuse/core"
 import { FormItemRule, FormInstance, CascaderValue, CascaderProps, CascaderNode, Resolve } from "element-plus"
 import useProviderStore from "@renderer/store/provider"
 import useModelStore from "@renderer/store/model"
 import { storeToRefs } from "pinia"
-import { ModelMeta, ProviderMeta } from "@windflow/core/types"
+import { ModelMeta, ProviderMeta } from "@windai/core/types"
 import { isArrayLength, resolvePath } from "@toolmain/shared"
-import { isRerankerType, isEmbeddingType } from "@windflow/core/models"
+import { isRerankerType, isEmbeddingType } from "@windai/core/models"
 
 const props = defineProps<{
   mode: "add" | "edit" | "view"

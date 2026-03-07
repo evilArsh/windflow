@@ -1,9 +1,9 @@
 import { defineStore } from "pinia"
-import { Knowledge } from "@windflow/core/types"
+import { Knowledge } from "@windai/core/types"
 import useRagFilesStore from "../ragFiles/index"
 import useEmbeddingStore from "@renderer/store/embedding"
 import { cloneDeep, code5xx, uniqueId } from "@toolmain/shared"
-import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo, EventKey } from "@windflow/shared"
+import { RAGEmbeddingConfig, RAGFileStatus, RAGLocalFileInfo, EventKey } from "@windai/shared"
 import { msgError } from "@renderer/utils"
 import { useKnowledge } from "@renderer/hooks/useCore"
 export default defineStore("knowledge", () => {

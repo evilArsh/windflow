@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Element } from "hast"
-import { ExtraProps, getLang } from "@windflow/markdown"
+import { ExtraProps, getLang } from "@windai/markdown"
 import { isUndefined } from "@toolmain/shared"
 import Code from "./code.vue"
 import RawCode from "./rawCode.vue"

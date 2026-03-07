@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { ChatTopic } from "@windflow/core/types"
+import { ChatTopic } from "@windai/core/types"
 import useKnowledgeStore from "@renderer/store/knowledge"
 import useRagFilesStore from "@renderer/store/ragFiles"
 import useChatStore from "@renderer/store/chat"
 import { storeToRefs } from "pinia"
 import FileItem from "@renderer/views/main/knowledge/components/fileItem.vue"
-import { RAGLocalFileInfo } from "@windflow/shared"
+import { RAGLocalFileInfo } from "@windai/shared"
 import { errorToText } from "@toolmain/shared"
 import Shell from "./components/shell.vue"
 import { msgError } from "@renderer/utils"

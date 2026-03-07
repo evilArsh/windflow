@@ -9,7 +9,7 @@ import {
   ProviderMeta,
   BeforeRequestCallback,
   RequestParamsHandler,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import { HttpCodeError, AbortError } from "./error"
 import { callTools, loadMCPTools } from "../utils/mcp"
 import { openAICompatParser, usePartialData } from "./utils"

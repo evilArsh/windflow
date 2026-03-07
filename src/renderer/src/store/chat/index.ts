@@ -10,9 +10,9 @@ import {
   Content,
   Media,
   Role,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import useModelsStore from "@renderer/store/model"
-import { defaultTTIConfig, defaultLLMConfig, chatTopicDefault } from "@windflow/core/storage"
+import { defaultTTIConfig, defaultLLMConfig, chatTopicDefault } from "@windai/core/storage"
 import { cloneDeep, code2xx, isArray, uniqueId } from "@toolmain/shared"
 import {
   assembleMessageTree,
@@ -28,7 +28,7 @@ import {
   wrapMessage,
 } from "./utils"
 import { useMessage } from "@renderer/hooks/useCore"
-import { AllTopicsFlag, createChatMessage } from "@windflow/core/message"
+import { AllTopicsFlag, createChatMessage } from "@windai/core/message"
 
 export default defineStore("chat_topic", () => {
   const modelsStore = useModelsStore()

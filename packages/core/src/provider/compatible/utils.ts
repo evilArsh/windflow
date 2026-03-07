@@ -1,4 +1,4 @@
-import { LLMToolCall, LLMResponse, Role, Message, ProviderMeta, LLMToolCallRequest } from "@windflow/core/types"
+import { LLMToolCall, LLMResponse, Role, Message, ProviderMeta, LLMToolCallRequest } from "@windai/core/types"
 import { AxiosInstance } from "axios"
 import { errorToText, isNumber, merge } from "@toolmain/shared"
 

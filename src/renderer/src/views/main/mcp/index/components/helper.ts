@@ -1,4 +1,4 @@
-import { MCPServerParam } from "@windflow/shared"
+import { MCPServerParam } from "@windai/shared"
 import { isObject, isHTTPUrl, isArray } from "@toolmain/shared"
 import useMcpStore from "@renderer/store/mcp"
 

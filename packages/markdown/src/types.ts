@@ -1,5 +1,5 @@
-import { Root } from "hast"
-import { Components } from "./vue/types"
+import type { Root } from "hast"
+import type { Components } from "./vue/types"
 
 export type MDWorkerMessageCore =
   | { type: "Parse"; markdown: string; components?: Components }

@@ -2,7 +2,7 @@ import type { Expression, Program } from "estree"
 import type { Element, Parents } from "hast"
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from "mdast-util-mdx-jsx"
 import type { Schema } from "property-information"
-import { Component, VNode } from "vue"
+import type { Component, VNode } from "vue"
 
 export type Child = VNode | string
 

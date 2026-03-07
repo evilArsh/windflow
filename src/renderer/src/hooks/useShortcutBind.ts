@@ -1,6 +1,6 @@
 import { ShortcutOptions, useShortcut } from "@toolmain/shared"
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 
 /**
  * simple wrapper of `useSettingsStore` and `useShortcut`

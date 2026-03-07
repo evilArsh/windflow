@@ -10,13 +10,13 @@ import Reasoning from "./reasoning.vue"
 import Upload from "./upload.vue"
 import useChatStore from "@renderer/store/chat"
 import useModelStore from "@renderer/store/model"
-import { ChatTopic, SettingKeys } from "@windflow/core/types"
+import { ChatTopic, SettingKeys } from "@windai/core/types"
 import Clear from "./clear.vue"
 import { CallBackFn, errorToText, isFunction } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
 import { useThrottleFn } from "@vueuse/core"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
-import { isChatType, isImageType } from "@windflow/core/models"
+import { isChatType, isImageType } from "@windai/core/models"
 const emit = defineEmits<{
   messageSend: []
   contextClean: []

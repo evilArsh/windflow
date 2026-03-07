@@ -1,9 +1,9 @@
-import { ToolEnvironment, defaultEnv } from "@windflow/shared"
+import { ToolEnvironment, defaultEnv } from "@windai/shared"
 import { defineStore } from "pinia"
 import { CallBackFn } from "@toolmain/shared"
 import { cloneDeep } from "@toolmain/shared"
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 
 export default defineStore("env", () => {
   const settingsStore = useSettingsStore()

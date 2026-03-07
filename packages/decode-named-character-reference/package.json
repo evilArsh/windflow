@@ -1,11 +1,14 @@
 {
-  "name": "decode-named-character-reference",
+  "name": "@windai/decode-named-character-reference",
   "version": "1.2.0",
   "description": "",
   "license": "MIT",
-  "author": "",
+  "author": "windflow <arshdebian@163.com>",
   "type": "module",
   "main": "index.js",
+  "files": [
+    "*.js"
+  ],
   "exports": {
     "deno": "./index.js",
     "edge-light": "./index.js",
@@ -14,5 +17,8 @@
     "workerd": "./index.js",
     "browser": "./index.js",
     "default": "./index.js"
+  },
+  "dependencies": {
+    "character-entities": "catalog:web"
   }
 }

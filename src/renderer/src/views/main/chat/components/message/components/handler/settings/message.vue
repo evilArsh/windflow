@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import useSettingsStore from "@renderer/store/settings"
 import useChatStore from "@renderer/store/chat"
-import { ChatTopic, SettingKeys } from "@windflow/core/types"
+import { ChatTopic, SettingKeys } from "@windai/core/types"
 import { errorToText } from "@toolmain/shared"
 import { msg } from "@renderer/utils"
 import Group from "../components/group.vue"

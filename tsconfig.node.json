@@ -5,6 +5,8 @@
     "src/preload/**/*",
     "src/tests/setup-node.ts",
     "packages/shared/**/*.ts",
+    "packages/**/vite.config.ts",
+    "packages/**/vite.config.mts",
     "scripts"
   ],
   "compilerOptions": {
@@ -23,7 +25,7 @@
       // "@/*": ["src/*"],
       "@main/*": ["src/main/*"],
       "@preload/*": ["src/preload/*"],
-      "@windflow/shared": ["packages/shared/src/index.ts"]
+      "@windai/shared": ["packages/shared/src/index.ts"]
     }
   }
 }

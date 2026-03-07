@@ -1,5 +1,5 @@
 import { isUndefined, toNumber } from "@toolmain/shared"
-import { createChatMessage } from "@windflow/core/message"
+import { createChatMessage } from "@windai/core/message"
 import {
   ChatLLMConfig,
   ChatMessage,
@@ -7,7 +7,7 @@ import {
   ChatTopic,
   ChatTopicTree,
   ChatTTIConfig,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 
 export const VirtualNodeIdPrefix = "virtual_"
 /**

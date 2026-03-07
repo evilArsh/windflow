@@ -1,6 +1,6 @@
-import { storage, withTransaction } from "@windflow/core/storage"
-import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@windflow/shared"
-import { Knowledge } from "@windflow/core/types"
+import { storage, withTransaction } from "@windai/core/storage"
+import { RAGEmbeddingConfig, RAGLocalFileInfo } from "@windai/shared"
+import { Knowledge } from "@windai/core/types"
 import Dexie from "dexie"
 export class KnowledgeStorage {
   async remove(knowledgeId: string) {

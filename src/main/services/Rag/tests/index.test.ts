@@ -11,7 +11,7 @@ import {
   RAGFileStatus,
   RAGLocalFileInfo,
   RAGLocalFileMeta,
-} from "@windflow/shared"
+} from "@windai/shared"
 import fs from "node:fs"
 import { VectorStore } from "../db"
 import { combineTableName, createTableSchema } from "../db/utils"

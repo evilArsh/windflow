@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron"
-import { EventBus, IpcChannel, CoreEvent, CoreEventKey, EventKey, EventMap } from "@windflow/shared"
+import { EventBus, IpcChannel, CoreEvent, CoreEventKey, EventKey, EventMap } from "@windai/shared"
 import EventEmitter from "node:events"
 import { useLog } from "@main/hooks/useLog"
 

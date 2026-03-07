@@ -1,4 +1,4 @@
-import { ModelMeta, ModelType } from "@windflow/core/types"
+import { ModelMeta, ModelType } from "@windai/core/types"
 export const modelsDefault = (): ModelMeta[] => {
   return [
     {

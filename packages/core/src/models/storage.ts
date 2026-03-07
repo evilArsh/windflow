@@ -1,5 +1,5 @@
-import { storage } from "@windflow/core/storage"
-import { ModelMeta } from "@windflow/core/types"
+import { storage } from "@windai/core/storage"
+import { ModelMeta } from "@windai/core/types"
 
 export class ModelStorage {
   async anyOf(modelIds: string[]) {

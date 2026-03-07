@@ -1,6 +1,6 @@
-import { QueryParams, SettingKeys, Settings, SettingsValue } from "@windflow/core/types"
+import { QueryParams, SettingKeys, Settings, SettingsValue } from "@windai/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import { useDBQueue } from "@windflow/core/storage"
+import { useDBQueue } from "@windai/core/storage"
 
 const queue = useDBQueue()
 export async function get(id: SettingKeys, params?: QueryParams) {

@@ -1,5 +1,5 @@
-import { storage } from "@windflow/core/storage"
-import { ProviderMeta } from "@windflow/core/types"
+import { storage } from "@windai/core/storage"
+import { ProviderMeta } from "@windai/core/types"
 
 export class ProviderStorage {
   async put(meta: ProviderMeta) {

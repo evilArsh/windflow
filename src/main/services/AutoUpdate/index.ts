@@ -1,5 +1,5 @@
 import { ServiceCore } from "@main/types"
-import { AutoUpdateAvailable, AutoUpdateService, EventBus, EventKey, IpcChannel } from "@windflow/shared"
+import { AutoUpdateAvailable, AutoUpdateService, EventBus, EventKey, IpcChannel } from "@windai/shared"
 import { autoUpdater, CancellationToken, UpdateCheckResult, UpdateInfo } from "electron-updater"
 import { ipcMain, app } from "electron"
 import { log } from "./vars"

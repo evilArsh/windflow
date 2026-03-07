@@ -13,7 +13,7 @@ import {
   EventBus,
   IpcChannel,
   RAGService,
-} from "@windflow/shared"
+} from "@windai/shared"
 import sql from "sqlstring"
 import {
   cloneDeep,

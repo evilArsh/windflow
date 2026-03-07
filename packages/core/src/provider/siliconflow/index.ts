@@ -12,7 +12,7 @@ import {
   LLMConfig,
   ImageResponse,
   Role,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 import { generateSummaryText, patchAxios } from "../compatible/utils"
 import { createInstance, useSingleRequest } from "../utils"
 import { AxiosError, CanceledError } from "axios"

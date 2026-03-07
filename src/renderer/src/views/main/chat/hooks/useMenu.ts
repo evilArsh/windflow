@@ -1,4 +1,4 @@
-import { ChatTopicTree } from "@windflow/core/types"
+import { ChatTopicTree } from "@windai/core/types"
 import { ScaleConfig } from "@toolmain/components"
 import { toNumber, CallBackFn, errorToText } from "@toolmain/shared"
 import { TreeInstance } from "element-plus"

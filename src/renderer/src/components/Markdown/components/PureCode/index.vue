@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { errorToText, useShiki } from "@toolmain/shared"
-import { useVueRuntime } from "@windflow/markdown"
+import { useVueRuntime } from "@windai/markdown"
 import { ElText } from "element-plus"
 const { codeToAst } = useShiki()
 

@@ -5,12 +5,12 @@ import { fileURLToPath } from "node:url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 async function runDev() {
   try {
-    console.log("[building] @windflow/shared start")
-    await execa("pnpm", ["-F", "@windflow/shared", "build"], {
+    console.log("[building] @windai/shared start")
+    await execa("pnpm", ["-F", "@windai/shared", "build"], {
       cwd: resolve(__dirname, ".."),
       stdio: "inherit",
     })
-    console.log("[building] @windflow/shared done")
+    console.log("[building] @windai/shared done")
     console.log("[lanuching] electron-vite")
     const devProcess = execa("electron-vite", ["dev"], {
       cwd: resolve(__dirname, ".."),

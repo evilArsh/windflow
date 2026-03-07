@@ -23,7 +23,7 @@ import {
   ToolEnvironment,
   ToolEnvTestResult,
   MCPServerParamCore,
-} from "@windflow/shared"
+} from "@windai/shared"
 import { errorToText, Response, responseData } from "@toolmain/shared"
 import { ipcMain } from "electron"
 import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js"

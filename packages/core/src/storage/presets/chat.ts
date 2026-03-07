@@ -1,4 +1,4 @@
-import { ChatTopic, Message, Role, LLMConfig, TTIConfig } from "@windflow/core/types"
+import { ChatTopic, Message, Role, LLMConfig, TTIConfig } from "@windai/core/types"
 import { merge } from "@toolmain/shared"
 import Chance from "chance"
 export const chatTopicDefault = (): ChatTopic[] => []

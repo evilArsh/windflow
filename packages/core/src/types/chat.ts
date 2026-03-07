@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@toolmain/shared"
-import { LLMConfig, Message, ModelMeta, Provider, ProviderMeta, RequestHandler, TTIConfig } from "@windflow/core/types"
+import { LLMConfig, Message, ModelMeta, Provider, ProviderMeta, RequestHandler, TTIConfig } from "@windai/core/types"
 export enum ChatMessageType {
   /**
    * @description 文本消息

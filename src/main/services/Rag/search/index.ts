@@ -1,4 +1,4 @@
-import { RAGFile, RAGSearchParam, RagSearchStatus, RAGSearchTask } from "@windflow/shared"
+import { RAGFile, RAGSearchParam, RagSearchStatus, RAGSearchTask } from "@windai/shared"
 import { errorToText, HttpStatusCode, isArray, isArrayLength, isNull, toNumber } from "@toolmain/shared"
 import { EmbeddingResponse, RerankResponse } from "../task/types"
 import { encapEmbeddinConfig, log } from "../utils"

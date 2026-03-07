@@ -1,7 +1,7 @@
-import { ProviderMeta } from "@windflow/core/types"
+import { ProviderMeta } from "@windai/core/types"
 import { defineStore } from "pinia"
 import { getIconHTML } from "@renderer/components/SvgPicker"
-import { providerDefault } from "@windflow/core/storage"
+import { providerDefault } from "@windai/core/storage"
 import { useSvgIcon } from "@renderer/hooks/useSvgIcon"
 import { useProvider } from "@renderer/hooks/useCore"
 

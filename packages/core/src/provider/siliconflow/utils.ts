@@ -1,6 +1,6 @@
 import { cloneDeep, isArrayLength } from "@toolmain/shared"
-import { formatContentString } from "@windflow/core/message"
-import { LLMConfig, LLMToolCallRequest, Message, ModelMeta } from "@windflow/core/types"
+import { formatContentString } from "@windai/core/message"
+import { LLMConfig, LLMToolCallRequest, Message, ModelMeta } from "@windai/core/types"
 
 const enableThinkingWhiteList = [
   "Pro/zai-org/GLM-4.7",

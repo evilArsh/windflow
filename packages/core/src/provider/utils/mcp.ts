@@ -1,4 +1,4 @@
-import { Message, LLMToolCall, Role, LLMToolCallRequest } from "@windflow/core/types"
+import { Message, LLMToolCall, Role, LLMToolCallRequest } from "@windai/core/types"
 import json5 from "json5"
 export async function loadMCPTools(mcpServersIds: string[]): Promise<LLMToolCallRequest[]> {
   if (!window.api) {

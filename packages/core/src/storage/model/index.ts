@@ -1,7 +1,7 @@
-import { ModelMeta, QueryParams } from "@windflow/core/types"
+import { ModelMeta, QueryParams } from "@windai/core/types"
 import { cloneDeep } from "@toolmain/shared"
 import { UpdateSpec } from "dexie"
-import { useDBQueue } from "@windflow/core/storage"
+import { useDBQueue } from "@windai/core/storage"
 
 const queue = useDBQueue()
 

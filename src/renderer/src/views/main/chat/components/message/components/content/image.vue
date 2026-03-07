@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessage, ChatMessageTree } from "@windflow/core/types"
+import { ChatMessage, ChatMessageTree } from "@windai/core/types"
 import { code1xx, isString, isUndefined } from "@toolmain/shared"
 import { useSrc } from "@renderer/hooks/useSrc"
 

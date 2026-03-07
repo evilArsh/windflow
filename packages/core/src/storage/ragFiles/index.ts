@@ -1,7 +1,7 @@
-import { QueryParams } from "@windflow/core/types"
+import { QueryParams } from "@windai/core/types"
 import { cloneDeep } from "@toolmain/shared"
-import { RAGLocalFileInfo } from "@windflow/shared"
-import { useDBQueue } from "@windflow/core/storage"
+import { RAGLocalFileInfo } from "@windai/shared"
+import { useDBQueue } from "@windai/core/storage"
 
 const queue = useDBQueue()
 export async function put(data: RAGLocalFileInfo, params?: QueryParams) {

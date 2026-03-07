@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ModelMeta, ModelType } from "@windflow/core/types"
+import { ModelMeta, ModelType } from "@windai/core/types"
 import speech from "~icons/twemoji/speech-balloon"
 import gear from "~icons/fluent-emoji-flat/gear"
 import hammer from "~icons/fluent-emoji-flat/hammer-and-wrench"

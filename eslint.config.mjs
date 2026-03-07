@@ -68,6 +68,7 @@ export default defineConfig([
       "scripts/*.{js,cjs,mjs}",
       "uno.config.{ts,mts,js,mjs}",
       "electron.vite.config.{ts,mts,js,mjs}",
+      "packages/**/*.{mjs,js}",
     ],
   },
   {

@@ -1,4 +1,4 @@
-import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@windflow/shared"
+import { RAGEmbeddingConfig, RAGFile, RAGLocalFileInfo } from "@windai/shared"
 import { isString, uniqueId } from "@toolmain/shared"
 import { Tiktoken, getEncoding } from "js-tiktoken"
 /**

@@ -5,7 +5,7 @@ import ITerminal from "~icons/material-symbols/terminal"
 import IGlobe from "~icons/material-symbols/globe"
 import IDisplaySettingsOutline from "~icons/material-symbols/display-settings-outline"
 import { type Component } from "vue"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 import { useI18nWatch } from "@toolmain/shared"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
 const { t } = useI18n()

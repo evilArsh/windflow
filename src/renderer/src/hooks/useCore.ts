@@ -1,11 +1,11 @@
 import { App, InjectionKey } from "vue"
-import { MessageManager } from "@windflow/core/message"
-import { KnowledgeManager } from "@windflow/core/knowledge"
-import { MCPManager } from "@windflow/core/mcp"
-import { SettingsManager } from "@windflow/core/settings"
-import { ModelManager } from "@windflow/core/models"
-import { ProviderManager } from "@windflow/core/provider"
-import { MediaManager } from "@windflow/core/media"
+import { MessageManager } from "@windai/core/message"
+import { KnowledgeManager } from "@windai/core/knowledge"
+import { MCPManager } from "@windai/core/mcp"
+import { SettingsManager } from "@windai/core/settings"
+import { ModelManager } from "@windai/core/models"
+import { ProviderManager } from "@windai/core/provider"
+import { MediaManager } from "@windai/core/media"
 
 export const ChatMessageKey: InjectionKey<MessageManager> = Symbol("chatMessage")
 export const KnowledgeKey: InjectionKey<KnowledgeManager> = Symbol("knowledgeBase")

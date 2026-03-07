@@ -1,50 +1,28 @@
 {
-  "name": "@windflow/markdown",
-  "version": "0.0.1",
-  "description": "",
+  "name": "@windai/markdown",
+  "version": "1.0.3",
+  "description": "high performance markdown renderer for vue",
   "type": "module",
-  "scripts": {},
-  "exports": {},
-  "keywords": [],
-  "author": "",
+  "author": "windflow <arshdebian@163.com>",
+  "scripts": {
+    "build": "vue-tsc -p tsconfig.json --declaration --emitDeclarationOnly && vite build -c vite.config.mts && api-extractor run"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "vue",
+    "markdown"
+  ],
   "license": "Apache-2.0",
-  "dependencies": {
-    "@toolmain/shared": "catalog:common",
-    "comma-separated-tokens": "catalog:web",
-    "devlop": "catalog:dev",
-    "estree-util-is-identifier-name": "catalog:web",
-    "hast-util-whitespace": "catalog:web",
-    "html-url-attributes": "catalog:web",
-    "mermaid": "catalog:web",
-    "p-queue": "catalog:common",
-    "property-information": "catalog:web",
-    "rehype-format": "catalog:web",
-    "rehype-mathjax": "catalog:web",
-    "rehype-stringify": "catalog:web",
-    "remark-directive": "catalog:web",
-    "remark-emoji": "catalog:web",
-    "remark-frontmatter": "catalog:web",
-    "remark-gfm": "catalog:web",
-    "remark-math": "catalog:web",
-    "remark-parse": "catalog:web",
-    "remark-rehype": "catalog:web",
-    "remark-squeeze-paragraphs": "catalog:web",
-    "remark-toc": "catalog:web",
-    "space-separated-tokens": "catalog:web",
-    "style-to-js": "catalog:web",
-    "unified": "catalog:web",
-    "unist-util-visit": "catalog:web",
-    "vfile": "catalog:web",
-    "vfile-message": "catalog:web"
-  },
-  "devDependencies": {
-    "@types/estree": "catalog:dev",
-    "@types/hast": "catalog:dev",
-    "mdast-util-mdx-expression": "catalog:dev",
-    "mdast-util-mdx-jsx": "catalog:dev",
-    "mdast-util-mdxjs-esm": "catalog:dev"
-  },
   "peerDependencies": {
+    "mermaid": "catalog:web",
     "vue": "catalog:web"
   }
 }

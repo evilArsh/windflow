@@ -5,7 +5,7 @@ import {
   RAGLocalFileMeta,
   EventBus,
   EventKey,
-} from "@windflow/shared"
+} from "@windai/shared"
 import { ProcessStatus, TaskInfo, TaskInfoStatus, TaskChain, TaskManager } from "./types"
 import { cloneDeep, errorToText } from "@toolmain/shared"
 import { encapEmbeddinConfig, log } from "../utils"

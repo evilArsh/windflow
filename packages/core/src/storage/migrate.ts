@@ -1,5 +1,5 @@
 import { Transaction } from "dexie"
-import { ModelMeta, ModelType, ProviderMeta } from "@windflow/core/types"
+import { ModelMeta, ModelType, ProviderMeta } from "@windai/core/types"
 
 export async function migrateToV4(tx: Transaction) {
   console.log("[migrateToV4]")

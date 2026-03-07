@@ -12,8 +12,7 @@ import { Child, State, Options, Props, ComponentMeta, Components } from "./types
 import { ok as assert } from "devlop"
 import { whitespace } from "hast-util-whitespace"
 import { html, svg } from "property-information"
-import { Fragment, VNode } from "vue"
-import { isString, isUndefined } from "@toolmain/shared"
+import { Fragment, VNode, h } from "vue"
 import {
   addChildren,
   addNode,
@@ -50,7 +49,7 @@ export function useVueRuntime(options?: Options) {
     }
     const result = one(tree)
     // JSX element.
-    if (result && !isString(result)) {
+    if (result && typeof result !== "string") {
       return result
     }
     // Text node or something that turned into nothing.
@@ -77,7 +76,7 @@ export function useVueRuntime(options?: Options) {
     if (type === Fragment) {
       delete props.children
       return h("div", props, children)
-    } else if (isString(type)) {
+    } else if (typeof type === "string") {
       delete props.children
       return h(type, props, children)
     } else {
@@ -107,7 +106,7 @@ export function useVueRuntime(options?: Options) {
     while (++index < node.children.length) {
       const child = node.children[index]
       const result = one(child)
-      if (!isUndefined(result)) children.push(result)
+      if (result !== undefined) children.push(result)
     }
     return children
   }
@@ -147,12 +146,10 @@ export function useVueRuntime(options?: Options) {
 
   function element(node: Element): Child | undefined {
     const parentSchema = state.schema // svg or html
-    let schema = parentSchema
 
     const tagName = node.tagName.toLowerCase()
     if (tagName === "svg" && parentSchema.space === "html") {
-      schema = svg
-      state.schema = schema
+      state.schema = svg
     }
     state.ancestors.push(node)
     /**
@@ -173,7 +170,7 @@ export function useVueRuntime(options?: Options) {
 
     if (tableElements.has(node.tagName)) {
       children = children.filter(child => {
-        return isString(child) ? !whitespace(child) : true
+        return typeof child === "string" ? !whitespace(child) : true
       })
     }
 
@@ -232,11 +229,9 @@ export function useVueRuntime(options?: Options) {
    */
   function mdxJsxElement(node: MdxJsxFlowElementHast | MdxJsxTextElementHast): Child | undefined {
     const parentSchema = state.schema
-    let schema = parentSchema
 
     if (node.name === "svg" && parentSchema.space === "html") {
-      schema = svg
-      state.schema = schema
+      state.schema = svg
     }
 
     state.ancestors.push(node)

@@ -1,4 +1,4 @@
-import { ProviderMeta, ModelActiveStatus } from "@windflow/core/types"
+import { ProviderMeta, ModelActiveStatus } from "@windai/core/types"
 import { uniqueId } from "@toolmain/shared"
 export const providerDefault = (): ProviderMeta[] => {
   return [

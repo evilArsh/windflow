@@ -1,5 +1,5 @@
 import { HttpStatusCode } from "@toolmain/shared"
-import { ProviderMeta, RequestHandler } from "@windflow/core/types"
+import { ProviderMeta, RequestHandler } from "@windai/core/types"
 
 export enum Role {
   System = "system",

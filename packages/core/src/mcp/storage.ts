@@ -1,5 +1,5 @@
-import { MCPServerParam } from "@windflow/shared"
-import { storage } from "@windflow/core/storage"
+import { MCPServerParam } from "@windai/shared"
+import { storage } from "@windai/core/storage"
 
 export class MCPStorage {
   async add(data: MCPServerParam) {

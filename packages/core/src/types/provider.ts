@@ -7,7 +7,7 @@ import {
   RequestHandler,
   ImageResponse,
   LLMToolCallRequest,
-} from "@windflow/core/types"
+} from "@windai/core/types"
 export enum ModelType {
   Chat = "Chat",
 

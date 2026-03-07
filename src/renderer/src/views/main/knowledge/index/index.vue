@@ -7,11 +7,11 @@ import RagFile from "../components/ragFile.vue"
 import { storeToRefs } from "pinia"
 import ContentLayout from "@renderer/components/ContentLayout/index.vue"
 import ContentBox from "@renderer/components/ContentBox/index.vue"
-import { Knowledge } from "@windflow/core/types"
+import { Knowledge } from "@windai/core/types"
 import { cloneDeep, useDialog, CallBackFn, errorToText, uniqueId } from "@toolmain/shared"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 import { msgError } from "@renderer/utils"
-import { RAGLocalFileInfo } from "@windflow/shared"
+import { RAGLocalFileInfo } from "@windai/shared"
 const router = useRouter()
 const addFormRef = useTemplateRef("addForm")
 

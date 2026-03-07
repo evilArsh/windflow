@@ -3,7 +3,7 @@ import { ScaleConfig } from "@toolmain/components"
 import { z } from "@toolmain/shared"
 import { DialogPanel, ScalePanel } from "@toolmain/components"
 import { useShortcutBind } from "@renderer/hooks/useShortcutBind"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 
 const scaleRef = useTemplateRef("scale")
 const headerRef = useTemplateRef<HTMLDivElement>("header")

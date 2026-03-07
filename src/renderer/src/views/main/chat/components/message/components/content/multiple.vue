@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChatMessageTree, ChatTopic } from "@windflow/core/types"
+import { ChatMessageTree, ChatTopic } from "@windai/core/types"
 import { Affix } from "@toolmain/components"
 import MsgBubble from "@renderer/components/MsgBubble/index.vue"
 import Single from "./single.vue"

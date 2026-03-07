@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import useSettingsStore from "@renderer/store/settings"
-import { SettingKeys } from "@windflow/core/types"
+import { SettingKeys } from "@windai/core/types"
 import Item from "./item.vue"
 const props = defineProps<{
   title: string
