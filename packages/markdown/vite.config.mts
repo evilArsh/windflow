@@ -15,7 +15,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: "./src/index.ts",
-      name: "windaiMarkdown",
+      name: "WindaiMarkdown",
       formats: ["es"],
       fileName: "index",
     },

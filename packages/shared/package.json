@@ -3,8 +3,13 @@
   "version": "0.0.1",
   "description": "",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evilArsh/windflow.git",
+    "directory": "packages/shared"
+  },
   "scripts": {
-    "build": "rollup --config=rollup.config.ts --configPlugin=rollup-plugin-esbuild"
+    "build": "rollup --config=rollup.config.ts"
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -14,9 +19,7 @@
     "./*": "./dist/*"
   },
   "files": [
-    "*.d.mts",
-    "*.js",
-    "*.mjs"
+    "dist"
   ],
   "keywords": [],
   "author": "",

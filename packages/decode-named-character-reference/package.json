@@ -6,6 +6,11 @@
   "author": "windflow <arshdebian@163.com>",
   "type": "module",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evilArsh/windflow.git",
+    "directory": "packages/decode-named-character-reference"
+  },
   "files": [
     "*.js"
   ],

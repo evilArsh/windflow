@@ -1,9 +1,14 @@
 {
   "name": "@windai/markdown",
   "version": "1.0.3",
-  "description": "high performance markdown renderer for vue",
+  "description": "high performance markdown parser for vue",
   "type": "module",
   "author": "windflow <arshdebian@163.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evilArsh/windflow.git",
+    "directory": "packages/markdown"
+  },
   "scripts": {
     "build": "vue-tsc -p tsconfig.json --declaration --emitDeclarationOnly && vite build -c vite.config.mts && api-extractor run"
   },
@@ -22,7 +27,6 @@
   ],
   "license": "Apache-2.0",
   "peerDependencies": {
-    "mermaid": "catalog:web",
     "vue": "catalog:web"
   }
 }
